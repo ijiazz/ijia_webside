@@ -1,0 +1,25 @@
+{
+  "name": "crawler",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm run -r build",
+    "check-type": "pnpm tsc -p tsconfig.build.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {},
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npm.org"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "tslib": "^2.7.0",
+    "typescript": "^5.6.3"
+  }
+}

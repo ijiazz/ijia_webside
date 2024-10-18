@@ -1,0 +1,21 @@
+{
+  "configurations": [
+    {
+      "name": "run web api",
+      "request": "launch",
+      "type": "node",
+      "presentation": {
+        "hidden": false,
+        "group": "deno"
+      },
+      "program": "web_api/src/main.ts",
+      "cwd": "${workspaceFolder}",
+      "sourceMaps": true,
+      "runtimeArgs": ["run", "-A", "--no-lock", "-c", "web_api/deno.json", "--env"],
+      "runtimeExecutable": "${env:DENO_INSTALL_ROOT}/deno",
+      "osx": {
+        "runtimeExecutable": "${env:DENO_INSTALL_ROOT}/bin/deno"
+      }
+    }
+  ]
+}

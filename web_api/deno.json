@@ -1,0 +1,7 @@
+{
+  "nodeModulesDir": "manual",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["DOM", "ES2018"],
+    "baseUrl": ".",
+    "rootDir": ".",
+    "jsx": "react"
+  },
+  "exclude": ["node_modules", "dist"]
+}

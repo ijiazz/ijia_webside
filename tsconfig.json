@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ESNext"],
+    "strict": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@data/db": ["db/src/db.ts"],
+      "@data/oos": ["db/src/oos.ts"]
+    },
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "outDir": "dist"
+  },
+  "exclude": ["node_modules"]
+}
