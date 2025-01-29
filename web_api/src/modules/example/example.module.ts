@@ -7,6 +7,10 @@ class ExampleController {
   use() {
     return "hi";
   }
+  @Get("error")
+  getError() {
+    throw new Error("出错了");
+  }
 }
 
 @SetMetadata(MODULE_PATH, "test")

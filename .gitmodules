@@ -1,3 +1,3 @@
-[submodule "db"]
-	path = db
-	url = git@github.com:ijiazz/db.git
+[submodule "data"]
+	path = data
+	url = git@github.com:ijiazz/school_db.git

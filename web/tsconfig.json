@@ -3,10 +3,14 @@
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["DOM", "ES2018"],
+    "types": [],
+    "lib": ["DOM", "ESNext"],
     "baseUrl": ".",
     "rootDir": ".",
-    "jsx": "react"
+    "jsx": "react",
+    "paths": {
+      "@/*": ["./*"],
+    }
   },
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "vite.config.ts"]
 }

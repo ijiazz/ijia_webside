@@ -8,14 +8,11 @@
         "hidden": false,
         "group": "deno"
       },
-      "program": "web_api/src/main.ts",
-      "cwd": "${workspaceFolder}",
+      "program": "src/main.ts",
+      "cwd": "${workspaceFolder}/web_api",
       "sourceMaps": true,
-      "runtimeArgs": ["run", "-A", "--no-lock", "-c", "web_api/deno.json", "--env"],
-      "runtimeExecutable": "${env:DENO_INSTALL_ROOT}/deno",
-      "osx": {
-        "runtimeExecutable": "${env:DENO_INSTALL_ROOT}/bin/deno"
-      }
+      "runtimeArgs": ["run", "--no-lock", "-c", "deno.json", "--env"],
+      "runtimeExecutable": "deno"
     }
   ]
 }

@@ -1,30 +1,31 @@
 //@ts-check
-import { defineEvConfig } from "@eavid/lib-dev/rollup";
-import { isBuiltin } from "node:module";
+import { defineConfig } from "rollup";
+import tsPlugin from "@rollup/plugin-typescript";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import packageJson from "./package.json" with { type: "json" };
 
-export default defineEvConfig({
+/** @type {any} */
+const typescriptPlugin = tsPlugin;
+export default defineConfig({
   input: { main: "src/main.ts" },
   output: {
     format: "es",
     dir: "dist",
-    manualChunks(modId, meta) {
-      if (modId.includes("@nest/")) return "nest";
-    },
+
+    preserveModules: true,
   },
-  plugins: [],
-  extra: {
-    resolve: true,
-    typescript: {
+  plugins: [
+    typescriptPlugin({
       compilerOptions: {
         module: "NodeNext",
         target: "es2023",
         baseUrl: ".",
-        rootDir: "src",
+        rootDir: ".",
         outDir: "dist",
         noEmit: false,
-        declaration: false,
+        declaration: true,
       },
-    },
-  },
+    }),
+  ],
   external: [/^node\:/],
 });

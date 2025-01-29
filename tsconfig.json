@@ -8,11 +8,8 @@
     "skipLibCheck": true,
     "allowJs": true,
     "baseUrl": ".",
-    "paths": {
-      "@data/db": ["db/src/db.ts"],
-      "@data/oos": ["db/src/oos.ts"]
-    },
     "resolveJsonModule": true,
+    "noImplicitOverride": true,
     "noEmit": true,
     "outDir": "dist"
   },

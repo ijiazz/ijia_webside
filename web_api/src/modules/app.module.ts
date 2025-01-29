@@ -1,10 +1,8 @@
-import { Module, UseFilters } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { ExampleModule } from "./example/example.module.ts";
-
-@UseFilters()
+import { StatModule } from "./stat/stat.module.ts";
 @Module({
-  imports: [ExampleModule],
-  controllers: [],
+  imports: [ExampleModule, StatModule],
 })
 export class AppModule {
   constructor() {}

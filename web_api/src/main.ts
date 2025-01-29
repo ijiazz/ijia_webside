@@ -1,28 +1,29 @@
-import { NestFactory } from "@nestjs/core";
-import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify";
-import { AppModule } from "./modules/app.module.ts";
-// import { HttpExceptionFilter } from "./filters/exp.filter.js";
+import { ENV } from "@/config/mod.ts";
+import { setup } from "./serve.ts";
+import { getDbPool, setDbPool, createPgPool, DbPool } from "@ijia/data/yoursql";
 
-async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-
-  const mode: string = "dev";
-  let port: number;
-  switch (mode) {
-    case "dev":
-      //   app.useGlobalFilters(new HttpExceptionFilter());
-      port = 3000;
-      break;
-    case "prod":
-      //   app.use(loggerMiddleware); //首页访问日志
-      port = 80;
-      break;
-    default:
-      throw new Error("请通过环境变量设置MODE正确的值");
+async function testDatabase() {
+  let pool: DbPool;
+  try {
+    pool = getDbPool();
+  } catch (error) {
+    console.warn("未设置 DbPool, 将使用默认数据库地址");
+    pool = createPgPool({ database: "ijia" });
+    setDbPool(pool);
   }
-  //   if (config.LOGS_DIR) app.useGlobalInterceptors(new LoggerInterceptor());
-
-  await app.listen({ port, host: "0.0.0.0" });
-  console.log("start:" + port);
+  try {
+    const conn = await pool.connect();
+    conn.release();
+  } catch (error) {
+    console.error("数据库连接失败", error);
+  }
+}
+async function bootstrap() {
+  const app = await setup();
+  console.log("正测试数据库连接");
+  await testDatabase();
+  console.log(`Server listen: ${ENV.LISTEN_ADDR}:${ENV.LISTEN_PORT}`);
+  await app.listen(ENV.LISTEN_PORT, ENV.LISTEN_ADDR);
+  console.log("Server ready");
 }
 bootstrap();

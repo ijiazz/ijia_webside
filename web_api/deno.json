@@ -1,5 +1,17 @@
 {
   "nodeModulesDir": "manual",
+  "tasks": {
+    "start": "deno run -A --no-lock -c deno.json --env src/main.ts",
+    "cmd": "deno run -A --env scripts/get.ts",
+    "static": "deno run -A npm:http-server --cors -c-1 -a 127.0.0.1 -p 8879",
+    "check-type": "deno check src test"
+  },
+  "fmt": {
+    "lineWidth": 120
+  },
+  "imports": {
+    "@/": "./src/"
+  },
   "compilerOptions": {
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
