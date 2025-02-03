@@ -9,6 +9,5 @@
     "baseUrl": ".",
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "scripts", "./api.ts"]
+  "exclude": ["node_modules", "dist", "scripts", "./_api.ts"]
 }

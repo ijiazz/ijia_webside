@@ -22,7 +22,7 @@ export class PermissionsGuard implements CanActivate {
         //TODO check role
         return true;
       },
-      () => false
+      () => false,
     );
   }
 }

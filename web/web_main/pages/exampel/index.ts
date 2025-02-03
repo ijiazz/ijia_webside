@@ -631,7 +631,7 @@ function init() {
       let card = document.createElement("div");
       card.className = "element";
       card.innerText = `${y}-${i}`;
-      card.style.fontSize="40px"
+      card.style.fontSize = "40px";
       card.style.backgroundColor = "green"; // 背景
       card.style.width = avatarWidth + "px";
       card.style.height = avatarHeight + "px";

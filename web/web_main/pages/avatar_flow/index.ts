@@ -109,7 +109,7 @@ class Animation {
   constructor(
     elementHeight: number,
     resetTop: number,
-    private onOver: (i: number) => void
+    private onOver: (i: number) => void,
   ) {
     this.limit = -elementHeight;
     this.resetTop = resetTop;

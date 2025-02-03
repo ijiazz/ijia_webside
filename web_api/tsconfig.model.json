@@ -7,5 +7,6 @@
     "lib": ["ESNext"],
     "baseUrl": ".",
     "rootDir": "."
-  }
+  },
+  "files": ["./_api.ts"]
 }

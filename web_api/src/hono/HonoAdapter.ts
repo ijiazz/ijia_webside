@@ -28,7 +28,7 @@ export function createHonoAdapter() {
           //@ts-ignore
           serve = Deno.serve(
             { onListen: resolve, port, hostname, key: httpsOptions.key, cert: httpsOptions.cert },
-            hono.fetch
+            hono.fetch,
           );
         });
       },

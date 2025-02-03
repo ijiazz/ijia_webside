@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "rollup -c build/rollup.config.js",
-    "check-type": "tsc -p tsconfig.json",
+    "check-type": "tsc -p tsconfig.json && tsc -p tsconfig.model.json",
     "start": "node --env-file=.env dist/main.js"
   },
   "exports": {

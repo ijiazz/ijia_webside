@@ -28,6 +28,6 @@ export async function addServeStatic(hono: Hono) {
         return path.replace(/^\/file\//, "/");
       },
       root: rootDir,
-    })
+    }),
   );
 }

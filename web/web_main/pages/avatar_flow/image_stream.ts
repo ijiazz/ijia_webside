@@ -5,7 +5,7 @@ async function fetchImages(page: number, pageSize: number): Promise<{ list: Comm
     "/api/stat/comment/count_by_user",
     {
       params: { page, pageSize },
-    }
+    },
   );
   return bodyData;
 }
@@ -24,7 +24,7 @@ export function createImageStream(cacheSize: number) {
         if (!res.list.length) ctrl.close();
       },
     },
-    { highWaterMark: cacheSize, size: (item) => 1 }
+    { highWaterMark: cacheSize, size: (item) => 1 },
   );
 }
 export interface CommentStatByCount {

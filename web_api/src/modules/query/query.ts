@@ -18,9 +18,7 @@ export class BsQuery {
   }
 
   @Get("comment")
-  async getCommentList(
-    @Param() option: q.GetCommentListParam & DebugOption = {},
-  ): Promise<q.CommentRootItemDto[]> {
+  async getCommentList(@Param() option: q.GetCommentListParam & DebugOption = {}): Promise<q.CommentRootItemDto[]> {
     return q.getCommentList(this.client, option);
   }
   @Get("comment_reply")

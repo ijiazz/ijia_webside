@@ -72,7 +72,7 @@ export class HoFetch {
   }
   #handlerMiddleware(
     hoRequest: HoRequest<any> & { _init: any },
-    iter: IterableIterator<MiddlewareHandler>
+    iter: IterableIterator<MiddlewareHandler>,
   ): Promise<HoResponse<any>> {
     const item = iter.next();
     if (item.done) {
@@ -116,7 +116,7 @@ export class HoFetch {
           next.pathname = next.pathname + p;
           return new FetchPathInstanceImpl(fetchApi, next);
         },
-      }
+      },
     ) as FetchSuite<T>;
   }
   use(handler: MiddlewareHandler) {

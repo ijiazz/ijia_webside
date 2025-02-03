@@ -7,9 +7,10 @@
     "lib": ["DOM", "ESNext"],
     "baseUrl": ".",
     "rootDir": ".",
-    "jsx": "react",
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["./*"]
     }
   },
   "exclude": ["node_modules", "dist", "vite.config.ts"]
