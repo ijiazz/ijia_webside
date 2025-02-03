@@ -26,4 +26,4 @@ async function bootstrap() {
   await app.listen(ENV.LISTEN_PORT, ENV.LISTEN_ADDR);
   console.log("Server ready");
 }
-bootstrap();
+await bootstrap();

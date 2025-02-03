@@ -2,7 +2,7 @@
 import { defineConfig } from "rollup";
 import tsPlugin from "@rollup/plugin-typescript";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import packageJson from "./package.json" with { type: "json" };
+import packageJson from "../package.json" with { type: "json" };
 
 /** @type {any} */
 const typescriptPlugin = tsPlugin;

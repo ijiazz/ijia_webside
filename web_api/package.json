@@ -2,8 +2,12 @@
   "name": "web",
   "type": "module",
   "version": "1.0.0",
+  "buildMeta": {
+    "commitSha": "dev",
+    "commitDate": ""
+  },
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c build/rollup.config.js",
     "check-type": "tsc -p tsconfig.json",
     "start": "node --env-file=.env dist/main.js"
   },

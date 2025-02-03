@@ -3,8 +3,11 @@
   "tasks": {
     "start": "deno run -A --no-lock -c deno.json --env src/main.ts",
     "cmd": "deno run -A --env scripts/get.ts",
-    "static": "deno run -A npm:http-server --cors -c-1 -a 127.0.0.1 -p 8879",
-    "check-type": "deno check src test"
+    "check-type": "deno check src test",
+    "gen-buildMeta": {
+      "description": "生成版本元数据",
+      "command": "deno run -A scripts/write_version_meta.ts"
+    }
   },
   "fmt": {
     "lineWidth": 120

@@ -1,16 +1,15 @@
-import {} from "@/global/auth.ts";
+import packageJson from "@/../package.json" with { type: "json" };
 import { Controller, Get, Module, SetMetadata } from "@nestjs/common";
 import { MODULE_PATH } from "@nestjs/common/constants.js";
 
 @Controller()
 class TestController {
-  @Get("hi")
-  use() {
-    return "hi";
-  }
-  @Get("error")
-  getError() {
-    throw new Error("出错了");
+  @Get("version")
+  getVersion(): { version: string; commitSha: string; commitDate: string } {
+    return {
+      version: packageJson.version,
+      ...packageJson.buildMeta,
+    };
   }
 }
 
