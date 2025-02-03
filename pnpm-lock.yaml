@@ -107,8 +107,8 @@ importers:
         specifier: ^4.6.17
         version: 4.6.17
       nest-hono-adapter:
-        specifier: ^0.2.3
-        version: 0.2.3(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@11.0.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(hono@4.6.17)
+        specifier: ^0.3.1
+        version: 0.3.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@11.0.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(hono@4.6.17)
     devDependencies:
       '@types/node':
         specifier: ^22.7.6
@@ -1042,8 +1042,8 @@ packages:
     resolution: {integrity: sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==}
     engines: {node: '>= 0.6'}
 
-  nest-hono-adapter@0.2.3:
-    resolution: {integrity: sha512-Rwpvm8UbemaGoUEptW9yhzwf9Tq73OXePCzFTtke61liKndleD+OzulclJa9punneNLt5ffY6IB6dHNxcRZvNw==}
+  nest-hono-adapter@0.3.1:
+    resolution: {integrity: sha512-b4Hi0Eo42qpCs0uygJI66CVNtELhLCp6cbVRsPI1nW4t9FLxJ/gPeJQ3HRkbfHjsIUxZqiiWOXpdhrZY+eRcnQ==}
     engines: {node: '>=18'}
     peerDependencies:
       '@nestjs/common': '>=9'
@@ -2588,7 +2588,7 @@ snapshots:
   negotiator@1.0.0:
     optional: true
 
-  nest-hono-adapter@0.2.3(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@11.0.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(hono@4.6.17):
+  nest-hono-adapter@0.3.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@11.0.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(hono@4.6.17):
     dependencies:
       '@nestjs/common': 11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1)
       '@nestjs/core': 11.0.1(@nestjs/common@11.0.1(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@11.0.1)(reflect-metadata@0.2.2)(rxjs@7.8.1)

@@ -1,8 +1,9 @@
+import {} from "@/global/auth.ts";
 import { Controller, Get, Module, SetMetadata } from "@nestjs/common";
 import { MODULE_PATH } from "@nestjs/common/constants.js";
 
 @Controller()
-class ExampleController {
+class TestController {
   @Get("hi")
   use() {
     return "hi";
@@ -15,8 +16,8 @@ class ExampleController {
 
 @SetMetadata(MODULE_PATH, "test")
 @Module({
-  controllers: [ExampleController],
+  controllers: [TestController],
 })
-export class ExampleModule {
+export class TestModule {
   constructor() {}
 }

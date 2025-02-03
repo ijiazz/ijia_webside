@@ -4,6 +4,8 @@ const env = process.env;
 export const ENV = {
   IS_DEV: env.MODE === "DEV",
   OOS_DIR: env.OOS_DIR,
+  CHECK_SERVER: env.CHECK_SERVER,
+  JWT_KEY: env.JWT_KEY,
   ...getListen(),
 };
 function getListen(): { LISTEN_ADDR: string; LISTEN_PORT: number } {

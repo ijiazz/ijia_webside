@@ -1,3 +1,4 @@
+import { Permissions } from "@/global/auth.ts";
 import { pla_comment, pla_user } from "@ijia/data/db";
 import { DbQuery, Selection } from "@ijia/data/yoursql";
 import { Controller, Get, Query } from "@nestjs/common";
@@ -5,6 +6,7 @@ import { Controller, Get, Query } from "@nestjs/common";
 @Controller()
 export class CommentStat {
   constructor(private query: DbQuery) {}
+  @Permissions(["root"])
   @Get("comment/count_by_user")
   async getUserByCount(@Query() option: { page?: number; pageSize?: number } = {}) {
     const { page = 0, pageSize = 20 } = option;

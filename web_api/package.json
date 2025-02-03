@@ -19,7 +19,7 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "hono": "^4.6.17",
-    "nest-hono-adapter": "^0.2.3"
+    "nest-hono-adapter": "^0.3.1"
   },
   "devDependencies": {
     "@types/node": "^22.7.6"
