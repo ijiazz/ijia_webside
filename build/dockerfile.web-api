@@ -1,0 +1,38 @@
+FROM node:22-alpine AS prepare
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
+RUN corepack enable && corepack prepare pnpm@10.0.0 --activate
+WORKDIR /build
+ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
+
+
+FROM prepare AS build
+ADD ./data/package.json ./data/package.json
+ADD ./web_api/package.json ./web_api/package.json
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+ADD ./data/tsconfig.json ./data/
+ADD ./data/build ./data/build
+ADD ./data/src ./data/src
+RUN pnpm run init-deps
+
+ADD ./web_api/tsconfig.json ./web_api/
+ADD ./web_api/build ./web_api/build
+ADD ./web_api/src ./web_api/src
+RUN pnpm run --filter=@ijia/web-api build
+
+RUN pnpm deploy --filter=@ijia/web-api --prod /dist/web-api
+
+
+FROM node:22-alpine AS web-api
+WORKDIR /serve/web-api
+COPY --from=build /dist/web-api .
+EXPOSE 3000
+
+ENV DATABASE_URL="postgresql://ijia_web@localhost:5432/ijia"
+ENV OOS_DIR="./store/oos"
+ENV LISTEN="0.0.0.0:3000"
+ENV CHECK_SERVER="localhost:9000"
+
+CMD ["node","dist/main.js"] 

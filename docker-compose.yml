@@ -1,0 +1,31 @@
+services:
+  web-api:
+    image: ijia/web-api
+    container_name: ijia-web-api
+    build:
+      context: .
+      dockerfile: ./build/dockerfile.web-api
+    environment:
+      DATABASE_URL: "postgresql://ijia_web@127.0.0.1:5432/ijia"
+      OOS_DIR: "/data/oos"
+      CHECK_SERVER: "127.0.0.1:9000"
+      JWT_KEY: 123
+    network_mode: host
+    # ports:
+    #   - "3000:3000"
+    extra_hosts:
+      - postgresql:127.0.0.1
+  web-home:
+    image: ijia/web-home
+    container_name: ijia-web-home
+    build:
+      context: .
+      dockerfile: ./build/dockerfile.web
+      args:
+        - name=value
+    extra_hosts:
+      - web_api:host-gateway
+      - file_server:host-gateway
+    ports:
+      - "9001:443"
+      - "9002:80"

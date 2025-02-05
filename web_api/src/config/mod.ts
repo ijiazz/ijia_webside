@@ -21,3 +21,6 @@ function getListen(): { LISTEN_ADDR: string; LISTEN_PORT: number } {
     LISTEN_PORT: port,
   };
 }
+export function getPackageJson() {
+  return import("../../package.json", { with: { type: "json" } }).then((mod) => mod.default);
+}

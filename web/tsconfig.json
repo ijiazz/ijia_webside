@@ -10,8 +10,8 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   },
-  "exclude": ["node_modules", "dist", "vite.config.ts"]
+  "include": ["./src"]
 }

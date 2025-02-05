@@ -1,11 +1,12 @@
-import packageJson from "@/../package.json" with { type: "json" };
+import { getPackageJson } from "@/config/mod.ts";
 import { Controller, Get, Module, SetMetadata } from "@nestjs/common";
 import { MODULE_PATH } from "@nestjs/common/constants.js";
 
 @Controller()
 class TestController {
   @Get("version")
-  getVersion(): { version: string; commitSha: string; commitDate: string } {
+  async getVersion(): Promise<{ version: string; commitSha: string; commitDate: string }> {
+    const packageJson = await getPackageJson();
     return {
       version: packageJson.version,
       ...packageJson.buildMeta,
