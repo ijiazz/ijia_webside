@@ -11,7 +11,6 @@ export class RolesMiddleware implements NestMiddleware<Context, HonoResponse> {
 }
 export function rolesMiddleware(req: NestHonoRequest, res: HonoResponse, next: (error?: any) => void) {
   let info: Promise<SignInfo> | undefined;
-  let permissionsInfo: Promise<{}> | undefined;
   function getUserInfo() {
     if (!info) {
       const jwt_token = getCookie(req, "jwt_token");
@@ -20,14 +19,6 @@ export function rolesMiddleware(req: NestHonoRequest, res: HonoResponse, next: (
     }
     return Promise.resolve(info);
   }
-  req.set("getUserPermission", () => {
-    if (!permissionsInfo)
-      permissionsInfo = getUserInfo().then((info) => {
-        return { userId: info.userId };
-        //TODO 获取用户权限
-      });
-    return permissionsInfo;
-  });
   req.set("getUserInfo", getUserInfo);
   next();
 }

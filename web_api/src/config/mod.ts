@@ -5,7 +5,8 @@ export const ENV = {
   IS_DEV: env.MODE === "DEV",
   OOS_DIR: env.OOS_DIR,
   CHECK_SERVER: env.CHECK_SERVER,
-  JWT_KEY: env.JWT_KEY,
+  JWT_KEY: env.JWT_KEY ?? crypto.randomUUID(),
+  REDIS_CONNECT_URL: env.REDIS_CONNECT_URL,
   ...getListen(),
 };
 function getListen(): { LISTEN_ADDR: string; LISTEN_PORT: number } {

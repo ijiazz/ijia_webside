@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { getDbPool, DbQuery } from "@ijia/data/yoursql";
-import { DB_QUERY_POOL } from "../services/const.ts";
 
+export const DB_QUERY_POOL = "db_query_pool";
 @Module({
   providers: [
     {

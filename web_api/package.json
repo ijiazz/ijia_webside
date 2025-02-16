@@ -24,6 +24,7 @@
     "evlib": "^2.11.1",
     "hono": "^4.6.17",
     "nest-hono-adapter": "^0.3.1",
+    "redis": "^4.7.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {

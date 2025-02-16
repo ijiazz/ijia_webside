@@ -5,6 +5,11 @@ export interface SignInfo {
   exp?: number;
 }
 
+export function signJwt(uname: string, key: string, exp?: number): Promise<string> {
+  if (!uname || typeof uname !== "string") throw TypeError("uname 必须是一个字符串");
+  const body: SignInfo = { userId: uname, exp: exp };
+  return jwtLib.sign(body as Record<string, any>, key, "HS256");
+}
 export async function hashPwd(pwd: string, salt: string = "") {
   const data = await crypto.subtle.digest("SHA-512", new TextEncoder().encode(salt + pwd));
   const u8Arr = new Uint8Array(data, 0, data.byteLength);
