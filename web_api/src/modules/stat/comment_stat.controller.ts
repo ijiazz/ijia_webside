@@ -2,6 +2,7 @@ import { Permissions } from "@/global/auth.ts";
 import { pla_comment, pla_user } from "@ijia/data/db";
 import { DbQuery, Selection } from "@ijia/data/yoursql";
 import { Controller, Get, Query } from "@nestjs/common";
+import { CommentStatByCount } from "./stat.type.ts";
 
 @Controller()
 export class CommentStat {
@@ -17,7 +18,7 @@ export class CommentStat {
 
     const sql = Selection.from(commentByUser, "t")
       .innerJoin(pla_user, "p", "p.pla_uid=t.uid")
-      .select<CommentStat>("t.*, p.user_name, p.avatar")
+      .select<CommentStatByCount>("t.*, p.user_name, p.avatar")
       .where(["t.comment_total > 10"])
       .orderBy("comment_total DESC, t.uid ASC")
       .limit(+pageSize, page * +pageSize);
@@ -26,11 +27,4 @@ export class CommentStat {
 
     return { list };
   }
-}
-
-export interface CommentStatByCount {
-  uid: string;
-  comment_total: number;
-  user_name: string;
-  avatar: string;
 }

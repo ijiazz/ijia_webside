@@ -1,5 +1,5 @@
-import { FetchSuite } from "./fetch_suite.ts";
-declare const api: FetchSuite<ApiSuite>;
+import { InferFetchSuite } from "./fetch_suite.ts";
+declare const api: InferFetchSuite<ApiSuite>;
 function type() {
   api["base/r1"].delete(undefined);
   api["base/r1"].request();
@@ -19,22 +19,20 @@ function type() {
 }
 export type ApiSuite = {
   /** 属性 */
-  "base/r1": {
-    get: {
-      /** 响应值 */
-      response: undefined;
-      params: {
-        /** 77 */
-        acc: number;
-      };
-    };
-    delete: {
-      response: "ccc";
-    };
-    unknown: {};
-    post: {
-      yy: "";
+  "GET base/r1": {
+    /** 响应值 */
+    response: undefined;
+    params: {
+      /** 77 */
+      acc: number;
     };
   };
-  "base/r2": {};
+  "DELETE base/r1": {
+    response: "ccc";
+  };
+
+  "POST base/r1": {
+    yy: "";
+  };
+  "GET base/r2": {};
 };

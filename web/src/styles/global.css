@@ -1,0 +1,43 @@
+:root {
+  /* --scrollbar-bgColor: #212121; */
+  /* --scrollbar-color: #5c5c5c; */
+
+  --scrollbar-bgColor: #ffffff;
+  --scrollbar-color: #b0b0b0;
+}
+/* 
+   ::-webkit-scrollbar-* Firefox 不支持
+   scrollbar-* Safari 不支持
+ */
+::-webkit-scrollbar {
+  /* 滚动条整体部分 */
+  width: 6px;
+  height: 6px;
+  background-color: var(--scrollbar-bgColor);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb {
+  /* 滚动条里面可以拖动的那个 */
+  background-color: var(--scrollbar-color);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-corner {
+  /* 当同时有垂直滚动条和水平滚动条时交汇的部分。通常是浏览器窗口的右下角。 */
+  background-color: var(--scrollbar-bgColor);
+}
+
+* {
+  scrollbar-color: var(--scrollbar-color) var(--scrollbar-bgColor);
+  scrollbar-width: thin;
+}
+
+.ant-tabs-content-holder {
+  overflow: auto;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}

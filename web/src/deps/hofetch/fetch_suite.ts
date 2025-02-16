@@ -1,16 +1,31 @@
 type HttpMethod = "post" | "get" | "delete" | "put" | "patch";
 
-export type FetchSuite<T extends object> = {
-  [key in keyof T]: T extends Record<string, any> ? FetchPath<T[key]> : never;
-};
+export type FetchPath = {
+  [key in HttpMethod]: FetchEndpoint;
+} & FetchItemCommon;
+/** 推断 api 套件 */
+export type InferFetchSuite<T extends object> = UnionToIntersection<ObjectValueOf<MapApiKey<T>>>;
 
-export type FetchPath<T extends object> = {
-  [key in keyof T as key extends HttpMethod ? key : never]: T[key] extends {
-    response: any;
+type MapApiKey<T extends object> = {
+  [key in keyof T as key extends `${string} ${string}` ? key : never]: key extends `${infer Method} ${infer Path}`
+    ? {
+        [P in Path]: InferFetchPath<T[key], Lowercase<Method>>;
+      }
+    : never;
+};
+type ObjectValueOf<T extends object> = T[keyof T];
+
+type ToUnionOfFunction<T> = T extends any ? (x: T) => any : never;
+type UnionToIntersection<T> = ToUnionOfFunction<T> extends (x: infer P) => any ? P : never;
+
+/** 推断api组 */
+export type InferFetchPath<T, Method extends string> = {
+  [key in Method]: T extends {
+    response?: any;
     params?: object;
     body?: any;
   }
-    ? FetchEndpoint<T[key]["response"], T[key]["params"], T[key]["body"]>
+    ? FetchEndpoint<T["response"], T["params"], T["body"]>
     : never;
 } & FetchItemCommon;
 

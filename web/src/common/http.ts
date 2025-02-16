@@ -1,5 +1,5 @@
 import { HoFetch } from "@/deps/hofetch.ts";
+import { ApiDefined } from "@/api.ts";
 export const http = new HoFetch({ bodyParser: {} });
-export const api = {
-  abc: http.createFetchSuite<Record<string, any>>(""),
-};
+
+export const api = http.createFetchSuite<ApiDefined>({ basePath: "/api" });

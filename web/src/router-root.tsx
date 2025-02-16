@@ -1,8 +1,17 @@
-import { createHashRouter, createRoutesFromElements, Route, RouterProvider } from "react-router";
+import { Route, HashRouter, Routes } from "react-router";
 
-function createRoute() {
-  const routers = <Route path="/" element={<div>hhh</div>}></Route>;
-  return createRoutesFromElements(routers);
+function RouterRoot() {
+  return (
+    <Routes>
+      <Route index element={<div>home</div>} />
+      <Route path="test" element={<div>test</div>} />
+    </Routes>
+  );
 }
-const router = createHashRouter(createRoute());
-export const routerRoot = <RouterProvider router={router}></RouterProvider>;
+export function createRouterRoot() {
+  return (
+    <HashRouter>
+      <RouterRoot />
+    </HashRouter>
+  );
+}

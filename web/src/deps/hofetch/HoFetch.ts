@@ -1,4 +1,4 @@
-import type { HoFetchOption, FetchSuite, FetchEndpoint, FetchItemCommon } from "./fetch_suite.ts";
+import type { HoFetchOption, InferFetchSuite, FetchEndpoint, FetchItemCommon } from "./fetch_suite.ts";
 
 export class HoFetch {
   constructor(option: CreateHoFetchOption = {}) {
@@ -64,11 +64,29 @@ export class HoFetch {
   }
 
   #createRequest(hoRequest: HoRequest<any>, init: HoFetchOption<any>): Request {
-    let headers: Headers | undefined;
     let body: BodyInit | null | undefined;
-    let url = hoRequest.url;
+    let headers = hoRequest.headers;
 
-    return new Request(url, { ...init, body, headers });
+    const rawBody = hoRequest.body;
+    if (typeof body !== "string") {
+      if (
+        !(
+          rawBody instanceof ReadableStream ||
+          rawBody instanceof Uint8Array ||
+          rawBody instanceof Blob ||
+          rawBody instanceof ArrayBuffer ||
+          rawBody instanceof FormData
+        )
+      ) {
+        body = JSON.stringify(hoRequest.body);
+        if (!headers.has("content-type")) {
+          headers = new Headers(headers);
+          headers.set("content-type", "application/json");
+        }
+      }
+    }
+
+    return new Request(hoRequest.url, { ...init, method: hoRequest.method, body, headers });
   }
   #handlerMiddleware(
     hoRequest: HoRequest<any> & { _init: any },
@@ -94,30 +112,22 @@ export class HoFetch {
     }
     return hoResponse;
   }
-  createFetchSuite<T extends object>(prefix?: URL | string): FetchSuite<T> {
-    let url: URL;
-    if (prefix) {
-      if (typeof prefix === "string") {
-        let tmp = URL.parse(prefix);
-        if (tmp) url = tmp;
-        else {
-          url = new URL(`${location.origin}`);
-          url.pathname = prefix;
-        }
-      } else prefix = new URL(prefix);
-    } else url = new URL(location.origin);
+  createFetchSuite<T extends object>(option: { basePath?: string; origin?: string } = {}): InferFetchSuite<T> {
+    const { origin = window.location.origin, basePath } = option;
+
     const fetchApi = this;
     return new Proxy(
       {},
       {
         get(target, p, receiver) {
           if (typeof p !== "string") return undefined;
-          const next = new URL(url);
-          next.pathname = next.pathname + p;
+          if (basePath) p = basePath + p;
+          const next = new URL(origin);
+          next.pathname = p;
           return new FetchPathInstanceImpl(fetchApi, next);
         },
       },
-    ) as FetchSuite<T>;
+    ) as InferFetchSuite<T>;
   }
   use(handler: MiddlewareHandler) {
     this.#middlewareHandlers.push(handler);
