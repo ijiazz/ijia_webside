@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - "*"
+      - "*/*"
 jobs:
   check:
     runs-on: ubuntu-latest
