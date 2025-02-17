@@ -1,4 +1,4 @@
-import { HoFetch } from "@/deps/hofetch.ts";
+import { HoFetch } from "@asla/hofetch";
 import { ApiDefined } from "@/api.ts";
 export const http = new HoFetch({ bodyParser: {} });
 

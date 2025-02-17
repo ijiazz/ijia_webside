@@ -3,6 +3,7 @@ lockfileVersion: '9.0'
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
+  injectWorkspacePackages: true
 
 importers:
 
@@ -30,7 +31,9 @@ importers:
         specifier: ^5.6.3
         version: 5.7.3
 
-  data:
+  deps/hofetch: {}
+
+  deps/ijia-data:
     dependencies:
       '@asla/yoursql':
         specifier: ^0.8.0
@@ -63,6 +66,9 @@ importers:
       '@ant-design/pro-components':
         specifier: ^2.8.5
         version: 2.8.5(antd@5.23.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(rc-field-form@2.7.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@asla/hofetch':
+        specifier: workspace:^
+        version: link:../deps/hofetch
       antd:
         specifier: ^5.23.3
         version: 5.23.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -114,7 +120,7 @@ importers:
         version: 1.13.8(hono@4.6.20)
       '@ijia/data':
         specifier: workspace:^
-        version: link:../data
+        version: link:../deps/ijia-data
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.0.7(reflect-metadata@0.2.2)(rxjs@7.8.1)
@@ -137,6 +143,9 @@ importers:
         specifier: ^2.8.1
         version: 2.8.1
     devDependencies:
+      '@asla/hofetch':
+        specifier: workspace:^
+        version: link:../deps/hofetch
       '@types/node':
         specifier: ^22.7.6
         version: 22.13.1

@@ -1,0 +1,14 @@
+{
+  "name": "@asla/hofetch",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "exports": {
+    ".": "./dist/mod.js"
+  },
+  "keywords": [],
+  "license": "MIT"
+}

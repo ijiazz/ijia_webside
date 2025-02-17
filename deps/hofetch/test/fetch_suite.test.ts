@@ -1,4 +1,4 @@
-import { InferFetchSuite } from "./fetch_suite.ts";
+import { InferFetchSuite } from "../src/mod.ts";
 declare const api: InferFetchSuite<ApiSuite>;
 function type() {
   api["base/r1"].delete(undefined);

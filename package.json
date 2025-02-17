@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "init-deps": "rollup -c data/build/rollup.config.mjs",
+    "init-deps": "rollup -c deps/ijia-data/build/rollup.config.mjs && rollup -c deps/hofetch/build/rollup.config.mjs",
     "check-type": "pnpm run -r check-type",
     "check-fmt": "pnpm prettier --check  --config package.json web_api web"
   },

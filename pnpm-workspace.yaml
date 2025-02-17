@@ -1,4 +1,4 @@
 packages:
   - web_api
   - web
-  - data
+  - deps/*
