@@ -12,8 +12,39 @@ jobs:
         with:
           submodules: true
           ssh-key: ${{secrets.MOSS_SERVER_PKEY}}
-      - name: Install
+      - name: Install deps
         uses: ./.github/actions/install-deps
       - run: pnpm init-deps
       - run: pnpm check-type
       - run: pnpm check-fmt
+  test-api:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_PASSWORD: pg_pwd
+      POSTGRES_USER: ci_test
+      POSTGRES_DB: postgres
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{env.POSTGRES_PASSWORD}}
+          POSTGRES_USER: ${{env.POSTGRES_USER}}
+          POSTGRES_DB: ${{env.POSTGRES_DB}}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          ssh-key: ${{secrets.MOSS_SERVER_PKEY}}
+      - name: Install deps
+        uses: ./.github/actions/install-deps
+      - name: Test
+        run: pnpm test
+        env:
+          PG_URL: pg://${{env.POSTGRES_USER}}:${{env.POSTGRES_PASSWORD}}@127.0.0.1:5432/${{env.POSTGRES_DB}}
+        working-directory: ./web_api

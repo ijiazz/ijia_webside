@@ -7,6 +7,7 @@
     "commitDate": ""
   },
   "scripts": {
+    "test": "vitest run",
     "build": "rollup -c build/rollup.config.js",
     "check-type": "tsc -p tsconfig.json && tsc -p tsconfig.model.json",
     "start": "node --env-file=.env dist/main.js",
@@ -29,7 +30,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.7.6",
-    "typedoc": "^0.27.6"
+    "typedoc": "^0.27.6",
+    "vitest": "^3.0.5"
   },
   "files": [
     "dist/**"
