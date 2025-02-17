@@ -1,4 +1,4 @@
-name: Install deps
+name: Setup project
 runs:
   using: composite
   steps:

@@ -12,8 +12,8 @@ jobs:
         with:
           submodules: true
           ssh-key: ${{secrets.MOSS_SERVER_PKEY}}
-      - name: Install deps
-        uses: ./.github/actions/install-deps
+      - name: Setup project
+        uses: ./.github/actions/setup-project
       - run: pnpm init-deps
       - run: pnpm check-type
       - run: pnpm check-fmt
@@ -41,8 +41,8 @@ jobs:
         with:
           submodules: true
           ssh-key: ${{secrets.MOSS_SERVER_PKEY}}
-      - name: Install deps
-        uses: ./.github/actions/install-deps
+      - name: Setup project
+        uses: ./.github/actions/setup-project
       - name: Test
         run: pnpm test
         env:
