@@ -1,5 +1,5 @@
-import { HoFetch } from "@asla/hofetch";
+import { HoFetch, createFetchSuite } from "@asla/hofetch";
 import { ApiDefined } from "@/api.ts";
 export const http = new HoFetch({ bodyParser: {} });
 
-export const api = http.createFetchSuite<ApiDefined>({ basePath: "/api" });
+export const api = createFetchSuite<ApiDefined>(http, { basePath: "/api" });

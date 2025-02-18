@@ -1,3 +1,7 @@
  [submodule "deps/ijia-data"]
 	path = deps/ijia-data
 	url = git@github.com:ijiazz/school_db.git
+ 
+[submodule "deps/hofetch"]
+	path = deps/hofetch
+	url = git@github.com:asnowc/hofetch.git
