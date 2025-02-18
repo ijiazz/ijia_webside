@@ -32,6 +32,7 @@
     "@asla/hofetch": "workspace:^",
     "@types/node": "^22.7.6",
     "typedoc": "^0.27.6",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.5"
   },
   "files": [
