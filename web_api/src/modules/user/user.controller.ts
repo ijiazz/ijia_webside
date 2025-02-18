@@ -65,7 +65,7 @@ export class UserController {
     return users[0];
   }
 
-  @Post("user/login")
+  @Post("/user/login")
   async login(
     @Body(validator({ method: enumType(["id", "email"]) })) body: UserLoginParamDto,
     @Res() res: HonoResponse,

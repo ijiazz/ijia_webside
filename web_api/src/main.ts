@@ -1,5 +1,5 @@
 import { ENV } from "@/config/mod.ts";
-import { setup } from "./serve.ts";
+import { listenNestApp } from "./serve.ts";
 import { getDbPool, setDbPool, createPgPool, DbPool } from "@ijia/data/yoursql";
 
 async function testDatabase() {
@@ -19,11 +19,10 @@ async function testDatabase() {
   }
 }
 async function bootstrap() {
-  const app = await setup();
   console.log("正测试数据库连接");
   await testDatabase();
   console.log(`Server listen: ${ENV.LISTEN_ADDR}:${ENV.LISTEN_PORT}`);
-  await app.listen(ENV.LISTEN_PORT, ENV.LISTEN_ADDR);
+  await listenNestApp({ hostname: ENV.LISTEN_ADDR, port: ENV.LISTEN_PORT });
   console.log("Server ready");
 }
 await bootstrap();

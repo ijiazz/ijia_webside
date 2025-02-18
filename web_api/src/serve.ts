@@ -6,21 +6,19 @@ import { HttpExceptionFilter } from "./global/exception.filter.ts";
 import { ENV } from "./config/mod.ts";
 import { Hono } from "hono";
 import { addServeStatic } from "./hono/serve_static.ts";
-import { RolesMiddleware } from "./global/auth.ts";
 
-const honoAdapter: HonoAdapter = createHonoAdapter();
-
-export const hono: Hono = honoAdapter.getInstance();
-
-export async function setup() {
+export async function listenNestApp(
+  option: { port?: number; hostname?: string; static?: boolean; fakeServer?: boolean } = {},
+) {
+  const { fakeServer, hostname = "127.0.0.1", port = 3000 } = option;
+  const honoAdapter: HonoAdapter = fakeServer ? new HonoAdapter() : createHonoAdapter();
   const app = await NestFactory.create<NestHonoApplication>(AppModule, honoAdapter, {});
-  // app.use(RolesMiddleware);
-  // app.useStaticAssets;
   if (ENV.IS_DEV) {
     app.useGlobalFilters(new HttpExceptionFilter());
   }
-
-  addServeStatic(hono);
+  const hono: Hono = honoAdapter.getInstance();
+  if (option.static) addServeStatic(hono);
   //   if (config.LOGS_DIR) app.useGlobalInterceptors(new LoggerInterceptor());
-  return app;
+  await app.listen(port, hostname);
+  return { app, hono };
 }

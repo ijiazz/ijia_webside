@@ -1,11 +1,12 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "../share/data.module.ts";
 import { UserController } from "./user.controller.ts";
-import { CacheModule } from "../share/cache.module.ts";
+import { LoginService } from "./services/Login.service.ts";
 
 @Module({
   controllers: [UserController],
-  imports: [DataModule, CacheModule],
+  providers: [LoginService],
+  imports: [DataModule],
 })
 export class UserModule {
   constructor() {}

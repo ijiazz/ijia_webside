@@ -1,17 +1,25 @@
-import { hono, setup } from "@/serve.ts";
+import { listenNestApp } from "@/serve.ts";
 import { Hono } from "hono";
-import { NestHonoApplication } from "nest-hono-adapter";
-import { test as viTest } from "vitest";
+import { test as viTest } from "./db_connect.ts";
+import { HoFetch, createFetchSuite, InferFetchSuite } from "@asla/hofetch";
+import { ApiDefined } from "@/api.ts";
+
 export interface Context {
   hono: Hono;
+  api: InferFetchSuite<ApiDefined>;
 }
-let nestApp: Promise<NestHonoApplication> | undefined;
+let nestApp: ReturnType<typeof listenNestApp> | undefined;
 export const test = viTest.extend<Context>({
-  async hono({}, use) {
+  async hono({ ijiaDbPool }, use) {
     if (!nestApp) {
-      nestApp = setup();
+      nestApp = listenNestApp({ fakeServer: true });
     }
-    await nestApp;
+    const { app, hono } = await nestApp;
     await use(hono);
+  },
+  async api({ hono }, use) {
+    const hoFetch = new HoFetch({ fetch: async (req) => hono.fetch(req), defaultOrigin: "http://127.0.0.1" });
+    const api = createFetchSuite<ApiDefined>(hoFetch);
+    return use(api);
   },
 });
