@@ -1,12 +1,9 @@
-import { Injectable } from "@nestjs/common";
 import { user } from "@ijia/data/db";
 import v from "@ijia/data/yoursql";
 import { signJwt } from "@/crypto/jwt.ts";
 import { ENV } from "@/config/mod.ts";
 
-@Injectable()
 export class LoginService {
-  constructor() {}
   loginById(id: string, password: string): Promise<{ userId: number }> {
     return user
       .select<{ userId: number }>({ userId: "id" })

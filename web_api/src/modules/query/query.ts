@@ -1,12 +1,10 @@
 import { type DbPool, getDbPool } from "@ijia/data/yoursql";
 import * as q from "@ijia/data/query";
-import { Controller, Get, Param } from "@nestjs/common";
 
 interface DebugOption {
   sendSql?: (sql: string) => void;
 }
 
-@Controller()
 export class BsQuery {
   constructor(private client: DbPool = getDbPool()) {}
 

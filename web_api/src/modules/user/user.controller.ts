@@ -1,6 +1,5 @@
 import { DbUserClassBindCreate, user, user_class_bind } from "@ijia/data/db";
 import v, { getDbPool } from "@ijia/data/yoursql";
-import { BadRequestException, Body, Controller, Get, Post, Res } from "@nestjs/common";
 import {
   LoginType,
   UserLoginResultDto,
@@ -9,30 +8,28 @@ import {
   type CreateUserProfileResult,
   type UserLoginParamDto,
 } from "./user.type.ts";
-import { validator } from "@/global/checker.pipe.ts";
 import { checkType, typeChecker } from "evlib";
 import { LoginService } from "./services/Login.service.ts";
 import { hashPassword } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
-import type { HonoResponse } from "nest-hono-adapter";
+import { validator } from "hono/validator";
 import { UserInfo } from "@/global/auth.ts";
 import type { SignInfo } from "@/crypto/jwt.ts";
+import { Controller, Get, Post } from "@/hono/decorators.ts";
+import { Context, Hono } from "hono";
 
 const { optional, array, enumType } = typeChecker;
 @Controller()
 export class UserController {
   constructor(private loginService: LoginService) {}
   @Post("/user/profile")
-  async createUser(
-    @Body(
-      validator({
-        email: "string",
-        password: optional.string,
-        classId: optional(array.number),
-      }),
-    )
-    body: CreateUserProfileParam,
-  ): Promise<CreateUserProfileResult> {
+  async createUser(ctx: Context): Promise<CreateUserProfileResult> {
+    validator({
+      email: "string",
+      password: optional.string,
+      classId: optional(array.number),
+    });
+
     const db = getDbPool().begin();
     const createUserSql = user
       .insert({ email: body.email, password: body.password })
