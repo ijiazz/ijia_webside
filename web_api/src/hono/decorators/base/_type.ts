@@ -1,8 +1,7 @@
 export interface EndpointMeta {
   useMiddlewares: unknown[];
-  path?: string;
-
-  method?: string;
+  readonly path?: string;
+  readonly method?: string;
 }
 export interface ControllerMeta {
   useMiddlewares: unknown[];

@@ -1,4 +1,13 @@
-const SymbolMetadata = Symbol.metadata ?? Symbol("Symbol.metadata");
+declare global {
+  interface SymbolConstructor {
+    readonly metadata: unique symbol;
+  }
+}
+
+if (!Symbol.metadata) {
+  Reflect.set(Symbol, "metadata", Symbol("Symbol.metadata"));
+}
+const SymbolMetadata = Symbol.metadata;
 
 export class PrivateMetaDataManage<V> {
   #map = new WeakMap<object, V>();
