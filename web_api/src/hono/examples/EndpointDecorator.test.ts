@@ -1,4 +1,4 @@
-import { ControllerDecorator, EndpointDecorator } from "../decorators.ts";
+import { EndpointDecorator } from "../decorators.ts";
 
 declare const endpointDecorator: EndpointDecorator;
 
@@ -35,24 +35,21 @@ class EndpointDecoratorTest {
   accessor abc: any;
 }
 
-declare const controllerDecorator: ControllerDecorator;
+declare const customEndpointDecorator: EndpointDecorator<(arg: number) => string>;
 
-@controllerDecorator
-class ControllerDecoratorTest {
-  //@ts-expect-error ControllerDecorator 只能装饰类
-  @controllerDecorator
-  attr1: any;
-
-  //@ts-expect-error ControllerDecorator 只能装饰类
-  @controllerDecorator
-  get getter(): any {
-    return;
+class CustomEndpointDecoratorTest {
+  @customEndpointDecorator
+  method1(arg1: number): string {
+    throw "";
   }
-  //@ts-expect-error ControllerDecorator 只能装饰类
-  @controllerDecorator
-  set setter(value: any) {}
-
-  //@ts-expect-error ControllerDecorator 只能装饰类
-  @controllerDecorator
-  accessor abc: any;
+  //@ts-expect-error customEndpointDecorator 限制了装饰类型
+  @customEndpointDecorator
+  method2(arg1: number): number {
+    throw "";
+  }
+  //@ts-expect-error customEndpointDecorator 限制了装饰类型
+  @customEndpointDecorator
+  method3(arg1: string): string {
+    throw "";
+  }
 }

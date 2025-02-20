@@ -1,11 +1,11 @@
 import { Context } from "hono";
 import { cors } from "hono/cors";
 import { bodyLimit } from "hono/body-limit";
-import { BasePath, Post, Get, Use, EndpointDecorator } from "../decorators.ts";
+import { Controller, Post, Get, Use } from "../decorators.ts";
 import { compress } from "hono/compress";
 
 @Use(cors({ origin: "*" }))
-@BasePath("/api")
+@Controller({ basePath: "/api" })
 class TestController {
   @Use(compress())
   @Use(bodyLimit({ maxSize: 1024 }))

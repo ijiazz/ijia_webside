@@ -1,4 +1,4 @@
-import { EndpointDecorator, Endpoint } from "./base.ts";
+import { EndpointDecorator, Endpoint, } from "./base.ts";
 
 export function Post(path: string): EndpointDecorator {
   return Endpoint(path, "POST");
