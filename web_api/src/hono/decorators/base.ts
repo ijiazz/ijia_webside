@@ -3,3 +3,4 @@ export * from "./base/Endpoint.ts";
 export * from "./base/Controller.ts";
 export * from "./base/Middleware.ts";
 export * from "./base/Pipe.ts";
+export * from "./apply.ts";

@@ -1,49 +1,33 @@
-import { Context, Next } from "hono";
+import { Context } from "hono";
 
-import { Get, EndpointDecorator } from "../decorators.ts";
+import { Get, ToArguments, ToResponse } from "../decorators.ts";
 
-declare function PipeOut<T extends any>(
-  toResponse: (data: T, ctx: Context, next: Next) => undefined | Response | Promise<Response>,
-): EndpointDecorator<(...args: any[]) => T | Promise<T>>;
+class Controller {
+  @Get("/test1")
+  method1(ctx: Context) {} //If the ToArguments decorator is not applied, the first argument is passed to Context
 
-declare function PipeIn<T extends any[]>(
-  toParam: (ctx: Context) => T | Promise<T>,
-): EndpointDecorator<(...data: T) => any>;
+  @ToArguments(function (ctx: Context) {
+    //The returned type is the same as the parameter for method2
+    // If types are inconsistent, typescript prompts an exception
+    return [1, "abc"];
+  })
 
-class TestController {
-  @PipeOut((data, ctx) => {
-    data.body;
-    data.title;
+  //The type of data is the same as that returned by method2
+  // If types are inconsistent, typescript prompts an exception
+  @ToResponse((data, ctx: Context) => {
+    data.body; // string
+    data.title; // string
 
     //@ts-expect-error content not exist
     data.content;
 
-    return ctx.html(
-      `<html>
-        <head>
-          <title>${data.title}</title>
-        </head>
-        <body>
-        ${data.body}
-        </body>
-      </html>`,
-    );
+    return ctx.text("ok");
   })
-  @Get("/test1")
-  method1(ctx: Context) {
+  @Get("/test2")
+  method2(size: number, id: string) {
     return {
       title: "123",
       body: "abc",
-    };
-  }
-
-  @PipeIn(function (ctx) {
-    return [ctx, ""];
-  })
-  @Get("/test2")
-  method2(ctx: Context, param: string) {
-    return {
-      list: [1, 2, 3],
     };
   }
 }

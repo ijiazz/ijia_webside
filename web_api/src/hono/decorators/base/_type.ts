@@ -1,12 +1,13 @@
 export interface RouterMeta {
-  useMiddlewares: unknown[];
-  pipInHandler?: unknown;
-  pipOutHandler?: unknown;
+  useMiddlewares: Function[];
 }
 
 export interface EndpointMeta extends RouterMeta {
   readonly path?: string;
   readonly method?: string;
+
+  pipInHandler?: Function;
+  pipOutHandler?: Function;
 }
 export interface ControllerMeta extends RouterMeta {
   path?: string;

@@ -1,15 +1,16 @@
-import { Context, Next } from "hono";
+import { Context } from "hono";
 import type { EndpointDecorator } from "./Endpoint.ts";
 import { createRouterDecoratorFactory } from "./_factory.ts";
+import { DecoratorKindError } from "./errors.ts";
 
-export type PipeOutHandler<T> = (data: T, ctx: Context, next: Next) => undefined | Response | Promise<Response>;
+export type Transformer<T> = (data: T, ctx: Context) => Response | Promise<Response>;
 
-export const PipeOut: <T>(
-  handler: PipeOutHandler<T>,
+export const ToResponse: <T>(
+  handler: Transformer<T>,
 ) => EndpointDecorator<(...args: any[]) => T | Promise<Awaited<T>>> = createRouterDecoratorFactory(
   function (decoratorCtx, handler) {
     if (decoratorCtx.kind === "class") {
-      decoratorCtx.controller.pipOutHandler = handler;
+      throw new DecoratorKindError("method, field", decoratorCtx.kind);
     } else {
       decoratorCtx.endpoint.pipOutHandler = handler;
     }
@@ -18,10 +19,10 @@ export const PipeOut: <T>(
 
 export type PipeInHandler<T extends any[]> = (ctx: Context) => T | Promise<Awaited<T>>;
 
-export const PipeIn: <T extends any[]>(handler: PipeInHandler<T>) => EndpointDecorator<(...data: T) => any> =
+export const ToArguments: <T extends any[]>(handler: PipeInHandler<T>) => EndpointDecorator<(...data: T) => any> =
   createRouterDecoratorFactory(function (decoratorCtx, handler) {
     if (decoratorCtx.kind === "class") {
-      decoratorCtx.controller.pipInHandler = handler;
+      throw new DecoratorKindError("method, field", decoratorCtx.kind);
     } else {
       decoratorCtx.endpoint.pipInHandler = handler;
     }

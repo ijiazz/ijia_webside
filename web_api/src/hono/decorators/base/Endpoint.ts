@@ -4,7 +4,7 @@ import { DecoratePrivatePropertyError, DecoratorKindError } from "./errors.ts";
 
 export type EndpointDecoratorTarget = (...args: any[]) => any;
 /**
- * @typeParam T Types of decoration targets constrained by constraints
+ * @typeParam T: Constrains the type of decoration target
  */
 export type EndpointDecorator<T extends EndpointDecoratorTarget = EndpointDecoratorTarget> = (
   input: T | undefined,
