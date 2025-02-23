@@ -5,7 +5,7 @@
     "lib": ["ESNext"],
     "isolatedModules": true,
     "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] }
+    "paths": { "@/*": ["./src/*"], "@asla/hono-decorator": ["./src/hono-decorator/src/mod.ts"] }
   },
   "exclude": ["node_modules", "dist", "scripts", "./_api.ts"]
 }

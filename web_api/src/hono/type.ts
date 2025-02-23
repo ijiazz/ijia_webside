@@ -4,4 +4,4 @@ import { Context } from "hono";
 type HonoVariables = {
   getUserInfo(): Promise<SignInfo>;
 };
-export type NestHonoRequest = Context<{ Variables: HonoVariables }>;
+export type HonoContext = Context<{ Variables: HonoVariables }>;

@@ -1,6 +1,6 @@
-import { Controller, Post } from "@nestjs/common";
+import { Controller, Post } from "@asla/hono-decorator";
 
-@Controller()
+@Controller({})
 export class RobotController {
   @Post("robot/verification_code")
   genVerificationCode() {}

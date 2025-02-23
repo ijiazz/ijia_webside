@@ -8,28 +8,29 @@ import {
   type CreateUserProfileResult,
   type UserLoginParamDto,
 } from "./user.type.ts";
-import { checkType, typeChecker } from "evlib";
+import { checkType, ExpectType, InferExpect, typeChecker } from "evlib";
 import { LoginService } from "./services/Login.service.ts";
 import { hashPassword } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
-import { validator } from "hono/validator";
-import { UserInfo } from "@/global/auth.ts";
 import type { SignInfo } from "@/crypto/jwt.ts";
-import { Controller, Get, Post } from "@/hono/decorators.ts";
-import { Context, Hono } from "hono";
+import { Controller, Get, PipeInput, PipeOutput, Post } from "@asla/hono-decorator";
+import { Context } from "hono";
+import { HonoContext } from "@/hono/type.ts";
 
 const { optional, array, enumType } = typeChecker;
-@Controller()
+@Controller({})
 export class UserController {
   constructor(private loginService: LoginService) {}
-  @Post("/user/profile")
-  async createUser(ctx: Context): Promise<CreateUserProfileResult> {
-    validator({
+  @PipeInput(function (ctx) {
+    const value = checkValue(ctx.req.json(), {
       email: "string",
       password: optional.string,
       classId: optional(array.number),
     });
-
+    return [value];
+  })
+  @Post("/user/profile")
+  async createUser(body: CreateUserProfileParam): Promise<CreateUserProfileResult> {
     const db = getDbPool().begin();
     const createUserSql = user
       .insert({ email: body.email, password: body.password })
@@ -50,11 +51,18 @@ export class UserController {
   }
   // @Patch("/user/self/profile")
   // updateUser(@Body() body: unknown) {}
+  @PipeInput(function (ctx) {
+    return [ctx.req.json()];
+  })
   @Post("/user/self/bind_platform")
-  async bindPlatform(@Body() body: unknown) {}
+  async bindPlatform(body: unknown) {}
 
+  @PipeInput(async function (ctx: HonoContext) {
+    const userInfo = await ctx.get("getUserInfo")();
+    return [userInfo];
+  })
   @Get("/user/self/profile")
-  async getUser(@UserInfo() userInfo: SignInfo): Promise<UserProfileDto> {
+  async getUser(userInfo: SignInfo): Promise<UserProfileDto> {
     const users = await user
       .select<UserProfileDto>({ userId: "id", avatarUrl: "avatar", nickname: true })
       .where(`id=${v(userInfo.userId)}`)
@@ -62,11 +70,19 @@ export class UserController {
     return users[0];
   }
 
+  @PipeOutput(function (value: UserLoginResultDto | Response | void, ctx) {
+    if (value instanceof Response) return value;
+    if (value) return ctx.json(value, 200);
+    return ctx.body(null, 200);
+  })
+  @PipeInput(function (ctx) {
+    const body: UserLoginParamDto = checkValue(ctx.req.json(), {
+      method: enumType(["id", "email"]),
+    }) as UserLoginParamDto;
+    return [body, ctx];
+  })
   @Post("/user/login")
-  async login(
-    @Body(validator({ method: enumType(["id", "email"]) })) body: UserLoginParamDto,
-    @Res() res: HonoResponse,
-  ): Promise<UserLoginResultDto | void> {
+  async login(body: UserLoginParamDto, ctx: Context): Promise<UserLoginResultDto | Response | void> {
     let user: { userId: number };
     switch (body.method) {
       case LoginType.id: {
@@ -75,7 +91,7 @@ export class UserController {
           { id: "string", password: "string", passwordNoHash: optional.boolean },
           { policy: "delete" },
         );
-        if (error) throw new BadRequestException(error);
+        if (error) return ctx.json(error, 400);
         if (value.passwordNoHash) value.password = await hashPassword(value.password);
 
         user = await this.loginService.loginById(value.id, value.password);
@@ -87,7 +103,7 @@ export class UserController {
           { email: "string", password: "string", passwordNoHash: optional.boolean },
           { policy: "delete" },
         );
-        if (error) throw new BadRequestException(error);
+        if (error) ctx.json(error, 400);
         if (value.passwordNoHash) value.password = await hashPassword(value.password);
 
         user = await this.loginService.loginByEmail(value.email, value.password);
@@ -105,12 +121,16 @@ export class UserController {
 
     const minute = 3 * 24 * 60; // 3 天后过期
     const jwtKey = await this.loginService.signJwt(user.userId, minute);
-    setCookie(res, "jwt-token", jwtKey);
-    res.send(
-      res.json({
-        success: true,
-        message: "登录成功",
-      }),
-    );
+    setCookie(ctx, "jwt-token", jwtKey);
+
+    return ctx.json({
+      success: true,
+      message: "登录成功",
+    });
   }
+}
+function checkValue<T extends ExpectType>(input: unknown, expectType: T): InferExpect<T> {
+  const { value, error } = checkType(input, expectType);
+  if (error) throw error;
+  return value;
 }

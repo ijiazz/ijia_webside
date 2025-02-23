@@ -1,6 +1,7 @@
 import { ENV } from "@/config/mod.ts";
-import { listenNestApp } from "./serve.ts";
+import { createHonoApp } from "./modules/serve.ts";
 import { getDbPool, setDbPool, createPgPool, DbPool } from "@ijia/data/yoursql";
+import { listenUseDenoHttpServer, listenUseNodeHttpServer, ListenOption } from "@/hono/listen.ts";
 
 async function testDatabase() {
   let pool: DbPool;
@@ -22,7 +23,17 @@ async function bootstrap() {
   console.log("正测试数据库连接");
   await testDatabase();
   console.log(`Server listen: ${ENV.LISTEN_ADDR}:${ENV.LISTEN_PORT}`);
-  await listenNestApp({ hostname: ENV.LISTEN_ADDR, port: ENV.LISTEN_PORT });
+  const hono = createHonoApp({});
+  const listenOption: ListenOption = {
+    hostname: ENV.LISTEN_ADDR,
+    port: ENV.LISTEN_PORT,
+  };
+  //@ts-ignore
+  if (globalThis.Deno) {
+    listenUseDenoHttpServer(hono, listenOption);
+  } else {
+    listenUseNodeHttpServer(hono, listenOption);
+  }
   console.log("Server ready");
 }
 await bootstrap();

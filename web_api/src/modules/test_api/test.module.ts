@@ -1,8 +1,7 @@
 import { getPackageJson } from "@/config/mod.ts";
-import { Controller, Get, Module, SetMetadata } from "@nestjs/common";
-import { MODULE_PATH } from "@nestjs/common/constants.js";
+import { Controller, Get } from "@asla/hono-decorator";
 
-@Controller()
+@Controller({ basePath: "test" })
 class TestController {
   @Get("version")
   async getVersion(): Promise<{ version: string; commitSha: string; commitDate: string }> {
@@ -13,11 +12,4 @@ class TestController {
     };
   }
 }
-
-@SetMetadata(MODULE_PATH, "test")
-@Module({
-  controllers: [TestController],
-})
-export class TestModule {
-  constructor() {}
-}
+export const controllers = [TestController];

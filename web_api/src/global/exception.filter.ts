@@ -1,34 +1,20 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from "@nestjs/common";
-import { StatusCode } from "hono/utils/http-status";
-import type { HonoResponse } from "nest-hono-adapter";
 import { resolve } from "node:path/posix";
-@Catch(Error)
-export class HttpExceptionFilter implements ExceptionFilter {
-  constructor() {
-    const pkgRoot = new URL(import.meta.url);
-    pkgRoot.pathname = resolve(pkgRoot.pathname, "../../../..");
-    this.#baseDir = pkgRoot.toString();
+import { Context } from "hono";
+
+const pkgRoot = new URL(import.meta.url);
+pkgRoot.pathname = resolve(pkgRoot.pathname, "../../../..");
+const baseDir = pkgRoot.toString();
+
+export async function errorHandler(error: unknown, ctx: Context) {
+  let html: string;
+  if (error instanceof Error) {
+    html = createErrorText(error, { info: error.stack, baseDir: baseDir });
+  } else {
+    html = String(error);
   }
-  #baseDir: string;
-  catch(error: HttpException | Error, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<HonoResponse>();
-    if (error instanceof Error) {
-      if (error instanceof HttpException) {
-        response.status(error.getStatus() as StatusCode);
-        const html = createErrorText(error);
-        response.send(response.html(html));
-      } else {
-        response.status(500);
-        const html = createErrorText(error, { info: error.stack, baseDir: this.#baseDir });
-        response.send(response.html(html));
-      }
-    } else {
-      response.status(500);
-      response.send(response.text(String(error)));
-    }
-  }
+  return ctx.html(html, 500);
 }
+
 function createErrorText(error: Error, stack?: { info?: string; baseDir?: string }) {
   let text = `<h3>${error.name}</h3></br>`;
 

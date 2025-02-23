@@ -1,50 +1,39 @@
-import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { Required, Roles } from "./roles.decorator.ts";
-import { NestHonoRequest } from "@/hono/type.ts";
-import { UserService } from "./user.service.ts";
+import { HonoContext } from "@/hono/type.ts";
+import {
+  getEndpointContext,
+  createMetadataDecoratorFactory,
+  DecorateReuseError,
+  EndpointDecorator,
+} from "@asla/hono-decorator";
+import * as userService from "./user.service.ts";
 
-@Injectable()
-export class RolesGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private userService: UserService,
-  ) {}
-  canActivate(context: ExecutionContext): Promise<boolean> | boolean {
-    const handler = context.getHandler();
-    const permissions = this.reflector.get(Roles, handler);
-    const roles = this.reflector.get(Roles, handler);
+export function rolesGuard(ctx: HonoContext, next: () => Promise<void>): Promise<void | Response> | Response {
+  const endpointCtx = getEndpointContext(ctx);
+  //TODO
+  // const controllerRoles = endpointCtx.getControllerMetadata<Set<string>>(Roles);
+  // if (!controllerRoles) {
+  // }
 
-    if ((!permissions && !roles) || roles.length === 0) return true;
+  const endpointRoles = endpointCtx.getEndpointMetadata<Set<string>>(Roles);
+  if (!endpointRoles) return next();
 
-    const ctx = context.switchToHttp().getRequest<NestHonoRequest>();
-    const getUserInfo = ctx.get("getUserInfo");
-    if (!getUserInfo) return false;
+  const getUserInfo = ctx.get("getUserInfo");
+  if (!getUserInfo) return ctx.body(null, 401);
 
-    return getUserInfo().then(
-      (user) => {
-        return this.userService.includeRoles(+user.userId, roles);
-      },
-      () => false,
-    );
-  }
+  return getUserInfo().then(
+    (user) => {
+      const hasRole = userService.includeRoles(+user.userId, Array.from(endpointRoles));
+      if (!hasRole) return ctx.body(null, 403);
+    },
+    () => {
+      return ctx.body(null, 401);
+    },
+  );
 }
-
-@Injectable()
-export class LoginGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
-  canActivate(context: ExecutionContext): Promise<boolean> | boolean {
-    const handler = context.getHandler();
-    const required = this.reflector.get(Required, handler) ?? { needLogin: true };
-    if (required.needLogin) {
-      const ctx = context.switchToHttp().getRequest<NestHonoRequest>();
-      const getUserInfo = ctx.get("getUserInfo");
-      if (!getUserInfo) return false;
-      return getUserInfo().then(
-        (user) => true,
-        () => false,
-      );
-    }
-    return true;
-  }
-}
+/** 装饰后，需要包含指定角色的用户才有权限访问接口 */
+export const Roles: (...args: string[]) => EndpointDecorator = createMetadataDecoratorFactory<Set<string>, string[]>(
+  function (roles, ctx) {
+    if (!ctx.metadata) return new Set(roles);
+    throw new DecorateReuseError("Roles");
+  },
+);
