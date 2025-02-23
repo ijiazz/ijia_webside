@@ -8,25 +8,30 @@ import {
   type CreateUserProfileResult,
   type UserLoginParamDto,
 } from "./user.type.ts";
-import { checkType, ExpectType, InferExpect, typeChecker } from "evlib";
-import { LoginService } from "./services/Login.service.ts";
+import { checkType, typeChecker } from "evlib";
+import { loginService } from "./services/Login.service.ts";
 import { hashPassword } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
 import type { SignInfo } from "@/crypto/jwt.ts";
 import { Controller, Get, PipeInput, PipeOutput, Post } from "@asla/hono-decorator";
 import { Context } from "hono";
 import { HonoContext } from "@/hono/type.ts";
+import { checkValue } from "@/global/check.ts";
 
 const { optional, array, enumType } = typeChecker;
 @Controller({})
 export class UserController {
-  constructor(private loginService: LoginService) {}
-  @PipeInput(function (ctx) {
-    const value = checkValue(ctx.req.json(), {
-      email: "string",
-      password: optional.string,
-      classId: optional(array.number),
-    });
+  constructor() {}
+  @PipeInput(async function (ctx) {
+    const value = checkValue(
+      await ctx.req.json(),
+      {
+        email: "string",
+        password: optional.string,
+        classId: optional(array.number),
+      },
+      { policy: "pass" },
+    );
     return [value];
   })
   @Post("/user/profile")
@@ -51,8 +56,8 @@ export class UserController {
   }
   // @Patch("/user/self/profile")
   // updateUser(@Body() body: unknown) {}
-  @PipeInput(function (ctx) {
-    return [ctx.req.json()];
+  @PipeInput(async function (ctx) {
+    return [await ctx.req.json()];
   })
   @Post("/user/self/bind_platform")
   async bindPlatform(body: unknown) {}
@@ -75,10 +80,14 @@ export class UserController {
     if (value) return ctx.json(value, 200);
     return ctx.body(null, 200);
   })
-  @PipeInput(function (ctx) {
-    const body: UserLoginParamDto = checkValue(ctx.req.json(), {
-      method: enumType(["id", "email"]),
-    }) as UserLoginParamDto;
+  @PipeInput(async function (ctx) {
+    const body: UserLoginParamDto = checkValue(
+      await ctx.req.json(),
+      {
+        method: enumType(["id", "email"]),
+      },
+      { policy: "pass" },
+    ) as UserLoginParamDto;
     return [body, ctx];
   })
   @Post("/user/login")
@@ -94,7 +103,7 @@ export class UserController {
         if (error) return ctx.json(error, 400);
         if (value.passwordNoHash) value.password = await hashPassword(value.password);
 
-        user = await this.loginService.loginById(value.id, value.password);
+        user = await loginService.loginById(value.id, value.password);
         break;
       }
       case LoginType.email: {
@@ -106,7 +115,7 @@ export class UserController {
         if (error) ctx.json(error, 400);
         if (value.passwordNoHash) value.password = await hashPassword(value.password);
 
-        user = await this.loginService.loginByEmail(value.email, value.password);
+        user = await loginService.loginByEmail(value.email, value.password);
         break;
       }
       default:
@@ -120,7 +129,7 @@ export class UserController {
     }
 
     const minute = 3 * 24 * 60; // 3 天后过期
-    const jwtKey = await this.loginService.signJwt(user.userId, minute);
+    const jwtKey = await loginService.signJwt(user.userId, minute);
     setCookie(ctx, "jwt-token", jwtKey);
 
     return ctx.json({
@@ -128,9 +137,4 @@ export class UserController {
       message: "登录成功",
     });
   }
-}
-function checkValue<T extends ExpectType>(input: unknown, expectType: T): InferExpect<T> {
-  const { value, error } = checkType(input, expectType);
-  if (error) throw error;
-  return value;
 }

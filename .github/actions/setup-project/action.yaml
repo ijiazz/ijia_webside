@@ -11,3 +11,5 @@ runs:
         cache: pnpm
     - run: pnpm install
       shell: bash
+    - run: pnpm init-deps
+      shell: bash

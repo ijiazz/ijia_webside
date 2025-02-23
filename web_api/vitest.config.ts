@@ -12,7 +12,7 @@ export default {
       IJIA_TEMPLATE_DBNAME: "test_ijia_template",
     },
 
-    include: ["./src/**/*.test.ts"],
+    include: ["./test/**/*.test.ts"],
     setupFiles: ["../deps/ijia-data/test/setup/extend_yoursql.ts"],
     globalSetup: "../deps/ijia-data/test/setup/setup_pgsql.ts",
   },

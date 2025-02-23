@@ -2,9 +2,9 @@ name: hono-decorator
 on:
   push:
     branches:
-      - "*"
-      - "*/*"
-    paths: ./web_api/src/hono-decorator/**
+      - "**"
+    paths:
+      - web_api/src/hono-decorator/**
 jobs:
   test:
     runs-on: ubuntu-latest

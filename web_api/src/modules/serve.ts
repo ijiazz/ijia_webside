@@ -11,6 +11,9 @@ export function createHonoApp(option: { static?: boolean } = {}) {
     hono.onError(errorHandler);
   }
   if (option.static) addServeStatic(hono);
-  applyController(hono, controllers);
+  for (const Controller of controllers) {
+    console.log(Controller.name);
+    applyController(hono, new Controller());
+  }
   return hono;
 }

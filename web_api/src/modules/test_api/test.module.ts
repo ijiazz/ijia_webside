@@ -12,4 +12,4 @@ class TestController {
     };
   }
 }
-export const controllers = [TestController];
+export const controllers: (new () => any)[] = [TestController];

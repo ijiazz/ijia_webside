@@ -63,3 +63,5 @@ test("The Endpoint decorator must be applied before PipeOutput() can be applied"
     }
   }).toThrowError();
 });
+test.todo("如果发送异常，则抛出 HttpError", function () {});
+test.todo("HttpError", function () {});

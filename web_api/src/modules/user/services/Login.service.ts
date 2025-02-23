@@ -26,3 +26,4 @@ export class LoginService {
     return signJwt(userId.toString(), ENV.JWT_KEY, exp);
   }
 }
+export const loginService = new LoginService();

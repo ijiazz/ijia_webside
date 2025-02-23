@@ -15,6 +15,5 @@
   "imports": {
     "@/": "./src/"
   },
-  "compilerOptions": {
-  }
+  "compilerOptions": {}
 }

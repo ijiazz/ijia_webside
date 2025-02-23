@@ -1,3 +1,3 @@
 import { UserController } from "./user.controller.ts";
 
-export const controllers = [UserController];
+export const controllers: (new () => any)[] = [UserController];
