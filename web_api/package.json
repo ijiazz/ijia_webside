@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "vitest run",
+    "test-decorator": "vitest --root src/hono-decorator  run",
     "build": "rollup -c build/rollup.config.js",
     "check-type": "tsc -p tsconfig.json && tsc -p tsconfig.model.json",
     "start": "node --env-file=.env dist/main.js",

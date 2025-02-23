@@ -5,13 +5,20 @@ on:
       - "**"
     paths:
       - web_api/src/hono-decorator/**
+      - .github/workflows/**
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup project
-        uses: ./.github/actions/setup-project
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install
       - name: Test
-        run: pnpm test
-        working-directory: ./web_api/src/hono-decorator
+        run: pnpm run test-decorator 
+        working-directory: ./web_api
