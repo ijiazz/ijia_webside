@@ -2,7 +2,7 @@ import process from "node:process";
 
 const env = process.env;
 export const ENV = {
-  IS_DEV: env.MODE === "DEV",
+  IS_DEV: env.MODE === "DEV" || Boolean(env.VITEST),
   OOS_DIR: env.OOS_DIR,
   CHECK_SERVER: env.CHECK_SERVER,
   JWT_KEY: env.JWT_KEY ?? crypto.randomUUID(),

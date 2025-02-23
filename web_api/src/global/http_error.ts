@@ -1,21 +1,31 @@
 import { resolve } from "node:path/posix";
 import { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { ENV } from "@/config/mod.ts";
+import { toErrorStr } from "evlib";
 
 const pkgRoot = new URL(import.meta.url);
 pkgRoot.pathname = resolve(pkgRoot.pathname, "../../../..");
 const baseDir = pkgRoot.toString();
 
-export async function errorHandler(error: unknown, ctx: Context) {
+function errorProd(error: unknown, ctx: Context) {
   let html: string;
+  let status = 500;
   if (error instanceof Error) {
-    html = createErrorText(error, { info: error.stack, baseDir: baseDir });
+    html = createErrorHtmlText(error, ENV.IS_DEV ? { info: error.stack, baseDir: baseDir } : undefined);
   } else {
     html = String(error);
   }
-  return ctx.html(html, 500);
+  return ctx.html(html, status as ContentfulStatusCode);
+}
+function errorTest(error: unknown, ctx: Context) {
+  console.log(error)
+  return ctx.text(toErrorStr(error, true), 500);
 }
 
-function createErrorText(error: Error, stack?: { info?: string; baseDir?: string }) {
+export const errorHandler = ENV.IS_DEV ? errorTest : errorProd;
+
+function createErrorHtmlText(error: Error, stack?: { info?: string; baseDir?: string }) {
   let text = `<h3>${error.name}</h3></br>`;
 
   let detail: string;

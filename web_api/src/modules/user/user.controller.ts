@@ -95,24 +95,22 @@ export class UserController {
     let user: { userId: number };
     switch (body.method) {
       case LoginType.id: {
-        const { value, error } = checkType(
+        const value = checkValue(
           body,
           { id: "string", password: "string", passwordNoHash: optional.boolean },
           { policy: "delete" },
         );
-        if (error) return ctx.json(error, 400);
         if (value.passwordNoHash) value.password = await hashPassword(value.password);
 
-        user = await loginService.loginById(value.id, value.password);
+        user = await loginService.loginById(+value.id, value.password);
         break;
       }
       case LoginType.email: {
-        const { value, error } = checkType(
+        const value = checkValue(
           body,
           { email: "string", password: "string", passwordNoHash: optional.boolean },
           { policy: "delete" },
         );
-        if (error) ctx.json(error, 400);
         if (value.passwordNoHash) value.password = await hashPassword(value.password);
 
         user = await loginService.loginByEmail(value.email, value.password);

@@ -4,7 +4,7 @@ import { signJwt } from "@/crypto/jwt.ts";
 import { ENV } from "@/config/mod.ts";
 
 export class LoginService {
-  loginById(id: string, password: string): Promise<{ userId: number }> {
+  loginById(id: number, password: string): Promise<{ userId: number }> {
     return user
       .select<{ userId: number }>({ userId: "id" })
       .where(`id=${v(id)} AND password=${v(password)}`)
