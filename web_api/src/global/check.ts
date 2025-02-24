@@ -7,6 +7,6 @@ export function checkValue<T extends ExpectType>(
   option?: TypeCheckOptions,
 ): InferExpect<T> {
   const { value, error } = checkType(input, expectType, option);
-  if (error) throw new HTTPException(400, { cause: error });
+  if (error) throw new HTTPException(400, { cause: error, res: Response.json(error) });
   return value;
 }

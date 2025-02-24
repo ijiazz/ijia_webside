@@ -5,30 +5,31 @@ import {
   DecorateReuseError,
   EndpointDecorator,
 } from "@asla/hono-decorator";
-import * as userService from "./user.service.ts";
+import { HTTPException } from "hono/http-exception";
+import { getCookie } from "hono/cookie";
+import { UserInfo } from "./userInfo.ts";
 
-export function rolesGuard(ctx: HonoContext, next: () => Promise<void>): Promise<void | Response> | Response {
+async function checkRoles(ctx: HonoContext, requiredAnyRoles?: Set<string>) {
+  if (!requiredAnyRoles) return;
+  const userInfo = ctx.get("userInfo");
+  if (!userInfo) throw new HTTPException(401);
+
+  const userRoles = await userInfo.getRoles();
+  if (!userRoles.some((role) => requiredAnyRoles.has(role))) {
+    throw new HTTPException(403);
+  }
+}
+export async function rolesGuard(ctx: HonoContext, next: () => Promise<void>): Promise<void | Response> {
+  const token = getCookie(ctx, "jwtToken");
+  if (token) ctx.set("userInfo", new UserInfo(token));
+
   const endpointCtx = getEndpointContext(ctx);
-  //TODO
-  // const controllerRoles = endpointCtx.getControllerMetadata<Set<string>>(Roles);
-  // if (!controllerRoles) {
-  // }
+  const controllerRoles = endpointCtx.getControllerMetadata<Set<string>>(Roles);
+  if (!controllerRoles) await checkRoles(ctx, controllerRoles);
 
   const endpointRoles = endpointCtx.getEndpointMetadata<Set<string>>(Roles);
-  if (!endpointRoles) return next();
-
-  const getUserInfo = ctx.get("getUserInfo");
-  if (!getUserInfo) return ctx.body(null, 401);
-
-  return getUserInfo().then(
-    (user) => {
-      const hasRole = userService.includeRoles(+user.userId, Array.from(endpointRoles));
-      if (!hasRole) return ctx.body(null, 403);
-    },
-    () => {
-      return ctx.body(null, 401);
-    },
-  );
+  if (!endpointRoles) await checkRoles(ctx, endpointRoles);
+  return next();
 }
 /** 装饰后，需要包含指定角色的用户才有权限访问接口 */
 export const Roles: (...args: string[]) => EndpointDecorator = createMetadataDecoratorFactory<Set<string>, string[]>(

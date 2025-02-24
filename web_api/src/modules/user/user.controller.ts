@@ -8,11 +8,10 @@ import {
   type CreateUserProfileResult,
   type UserLoginParamDto,
 } from "./user.type.ts";
-import { checkType, typeChecker } from "evlib";
+import { typeChecker } from "evlib";
 import { loginService } from "./services/Login.service.ts";
 import { hashPassword } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
-import type { SignInfo } from "@/crypto/jwt.ts";
 import { Controller, Get, PipeInput, PipeOutput, Post } from "@asla/hono-decorator";
 import { Context } from "hono";
 import { HonoContext } from "@/hono/type.ts";
@@ -63,14 +62,15 @@ export class UserController {
   async bindPlatform(body: unknown) {}
 
   @PipeInput(async function (ctx: HonoContext) {
-    const userInfo = await ctx.get("getUserInfo")();
-    return [userInfo];
+    const userInfo = await ctx.get("userInfo");
+    const jwtInfo = await userInfo.getJwtInfo();
+    return [+jwtInfo.userId];
   })
   @Get("/user/self/profile")
-  async getUser(userInfo: SignInfo): Promise<UserProfileDto> {
+  async getUser(userId: number): Promise<UserProfileDto> {
     const users = await user
       .select<UserProfileDto>({ userId: "id", avatarUrl: "avatar", nickname: true })
-      .where(`id=${v(userInfo.userId)}`)
+      .where(`id=${v(userId)}`)
       .queryRows();
     return users[0];
   }

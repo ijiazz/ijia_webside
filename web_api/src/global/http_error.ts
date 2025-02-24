@@ -3,27 +3,38 @@ import { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { ENV } from "@/config/mod.ts";
 import { toErrorStr } from "evlib";
+import { HTTPException } from "hono/http-exception";
 
 const pkgRoot = new URL(import.meta.url);
 pkgRoot.pathname = resolve(pkgRoot.pathname, "../../../..");
 const baseDir = pkgRoot.toString();
 
-function errorProd(error: unknown, ctx: Context) {
-  let html: string;
-  let status = 500;
-  if (error instanceof Error) {
-    html = createErrorHtmlText(error, ENV.IS_DEV ? { info: error.stack, baseDir: baseDir } : undefined);
+function errorProd(error: unknown, ctx: Context): Response | Promise<Response> {
+  if (error instanceof HTTPException) {
+    return error.getResponse();
   } else {
-    html = String(error);
+    let html: string;
+    let status = 500;
+    if (error instanceof Error) {
+      html = createErrorHtmlText(error, ENV.IS_DEV ? { info: error.stack, baseDir: baseDir } : undefined);
+    } else {
+      html = String(error);
+    }
+    return ctx.html(html, status as ContentfulStatusCode);
   }
-  return ctx.html(html, status as ContentfulStatusCode);
 }
-function errorTest(error: unknown, ctx: Context) {
-  console.log(error);
-  return ctx.text(toErrorStr(error, true), 500);
+function errorTest(error: unknown, ctx: Context): Response | Promise<Response> {
+  if (error instanceof HTTPException) {
+    return error.getResponse();
+  } else {
+    console.log(error);
+    return ctx.text(toErrorStr(error, true), 500);
+  }
 }
 
-export const errorHandler = ENV.IS_DEV ? errorTest : errorProd;
+export const errorHandler: (error: unknown, ctx: Context) => Response | Promise<Response> = ENV.IS_DEV
+  ? errorTest
+  : errorProd;
 
 function createErrorHtmlText(error: Error, stack?: { info?: string; baseDir?: string }) {
   let text = `<h3>${error.name}</h3></br>`;

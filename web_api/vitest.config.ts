@@ -13,7 +13,7 @@ export default {
     },
 
     include: ["./test/**/*.test.ts"],
-    setupFiles: ["../deps/ijia-data/test/setup/extend_yoursql.ts"],
+    setupFiles: ["../deps/ijia-data/test/setup/extend_yoursql.ts", "./test/asserts/asserts.ts"],
     globalSetup: "../deps/ijia-data/test/setup/setup_pgsql.ts",
   },
   plugins: [tsconfigPaths({})],
