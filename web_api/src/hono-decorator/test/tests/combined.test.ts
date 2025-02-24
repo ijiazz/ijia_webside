@@ -48,6 +48,5 @@ test("combined use", async function () {
   const hono = new Hono();
   applyController(hono, new TestController());
 
-  const response = await hono.request("/api/test3");
-  expect(response.status).toBe(200);
+  await expect(hono.request("/api/test3")).resolves.responseStatus(200);
 });

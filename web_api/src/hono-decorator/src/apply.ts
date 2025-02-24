@@ -12,48 +12,44 @@ export function applyController(hono: Hono, controller: object, option: ApplyCon
   if (typeof controller !== "object" || controller === null)
     throw new TypeError("The controller must be an object type");
   const controllerClass = getObjectClass(controller);
-  let controllerMetadataList: ControllerMetaLink | undefined;
+  let controllerMetaLink: ControllerMetaLink | undefined;
   if (typeof controllerClass === "function") {
-    controllerMetadataList = getControllerClassMetaLink(controllerClass);
+    controllerMetaLink = getControllerClassMetaLink(controllerClass);
   }
-  if (!controllerMetadataList) {
+  if (!controllerMetaLink) {
     throw new Error("The controller class does not apply the endpoint decorator");
   }
 
-  const controllerMetaData = mergeMetadataList(controllerMetadataList);
-  const basePath = option.basePath ?? controllerMetaData.path ?? "";
+  const { basePath: controllerBasePath, mergedEndpointMap } = mergeControllerMetadataList(controllerMetaLink);
+  const basePath = option.basePath ?? controllerBasePath ?? "";
 
-  for (const endpointMeta of controllerMetaData.endpoints.values()) {
-    const metadata = endpointMeta.metadata;
-    const endpointApplyMeta = getEndpointApplyMeta(endpointMeta.key, metadata);
-
+  for (const endpointApplyMeta of mergedEndpointMap.values()) {
     const handler = createHandler(controller as Record<string | symbol | number, Function>, endpointApplyMeta);
 
-    const path = basePath + (endpointMeta.path ?? "");
+    const path = basePath + endpointApplyMeta.path;
 
     const entryHandler: MiddlewareHandler = function (ctx, next) {
-      CONTEXT_METADATA.set(ctx, new EndpointContext(controllerMetadataList, endpointMeta));
+      CONTEXT_METADATA.set(ctx, new EndpointContext(controllerMetaLink.childRoot, endpointApplyMeta));
       return next();
     };
-    {
-      const endPointMiddlewares = endpointApplyMeta.useMiddlewares ?? [];
-      const middleware: MiddlewareHandler[] = [
-        entryHandler,
-        ...controllerMetaData.useMiddlewares,
-        ...endPointMiddlewares,
-      ];
-      if (middleware.length) hono.use(path, ...middleware);
-    }
-
-    if (!endpointMeta.method) {
-      hono.all(path, handler);
+    const middleware: MiddlewareHandler[] = [entryHandler, ...(endpointApplyMeta.useMiddlewares ?? [])];
+    if (!endpointApplyMeta.method) {
+      hono.all(path, ...middleware, handler);
     } else {
-      hono.on(endpointMeta.method.toLocaleLowerCase(), path, handler);
+      hono.on(endpointApplyMeta.method, path, ...middleware, handler);
     }
   }
 }
-function getEndpointApplyMeta(key: string | number | symbol, metadata: Map<any, any>) {
-  const endpointApplyMeta: EndpointApplyMeta = { key: key, useMiddlewares: metadata.get(Use) };
+function getEndpointApplyMeta(endpointMetadata: EndpointMeta, controllerMiddlewares: MiddlewareHandler[] = []) {
+  const metadata = endpointMetadata.metadata;
+
+  const endpointMiddlewares: MiddlewareHandler[] = metadata.get(Use) ?? [];
+
+  const endpointApplyMeta: EndpointApplyMeta = {
+    ...endpointMetadata,
+    useMiddlewares: [...controllerMiddlewares, ...endpointMiddlewares],
+    metadata,
+  };
   const inputTransformers: ((...args: any[]) => any)[] | undefined = metadata.get(PipeInput);
   if (inputTransformers) {
     if (inputTransformers.length > 1) {
@@ -76,6 +72,7 @@ function createHandler(controller: Record<string | symbol | number, Function>, r
     let args: any[];
     if (routerMeta.toArguments) {
       const inputTransformers = routerMeta.inputTransformers ?? [];
+
       const finalInput = await useTransformers(inputTransformers, ctx);
       args = await routerMeta.toArguments.call(undefined, finalInput);
     } else args = [ctx];
@@ -99,63 +96,65 @@ async function useTransformers(transformers: DataTransformer<any, any>[], arg: a
   return arg;
 }
 
-function mergeMetadataList(controllerMetaLink?: ControllerMetaLink): ControllerApplyMeta {
-  const controllerMetaList: ControllerMeta[] = [];
+function mergeControllerMetadataList(controllerMetaLink: ControllerMetaLink) {
+  let basePath: string | undefined;
+  const mergedEndpointMap = new Map<string | symbol | number, EndpointApplyMeta>();
 
-  while (controllerMetaLink) {
-    controllerMetaList.unshift(controllerMetaLink.data);
-    if (!controllerMetaLink.data.extends) break;
-    controllerMetaLink = controllerMetaLink.next;
-  }
-  const finalMeta: ControllerApplyMeta = {
-    endpoints: new Map(),
-    useMiddlewares: [],
-  };
-  const finalEndpoints = finalMeta.endpoints;
+  let node: ControllerMetaLinkNode | undefined = controllerMetaLink.childRoot;
+  let mergedMiddlewares: MiddlewareHandler[] = [];
+  while (node) {
+    const controllerMeta = node.data;
+    if (basePath === undefined) basePath = controllerMeta.path;
+    const middlewares = controllerMeta.metadata.get(Use);
+    if (middlewares?.length) mergedMiddlewares = mergedMiddlewares.concat(middlewares);
+    node = node.parent;
 
-  for (const current of controllerMetaList) {
-    const metadata = current.metadata;
-
-    const currentMiddlewares = metadata.get(Use);
-    if (currentMiddlewares) finalMeta.useMiddlewares = currentMiddlewares.concat(finalMeta.useMiddlewares);
-
-    if (typeof current.path === "string") finalMeta.path = current.path;
-    for (const [key, endpointMeat] of current.endpoints) {
-      finalEndpoints.set(key, endpointMeat);
+    for (const [key, endpointMeta] of controllerMeta.endpoints) {
+      if (mergedEndpointMap.has(key)) continue;
+      mergedEndpointMap.set(key, getEndpointApplyMeta(endpointMeta, mergedMiddlewares));
     }
   }
-  return finalMeta;
+
+  return { basePath, mergedEndpointMap };
 }
 
-/** Return in the list，Subclasses are on the left, and superclasses are on the right */
+/** Return link direction:  Child -> Parent   */
 function getControllerClassMetaLink(controllerClass: Function): ControllerMetaLink | undefined {
   let meta = privateControllerMeta.getClassMetadata(controllerClass);
   if (!meta) return;
-  const controllerMeta: ControllerMetaLink | undefined = { data: meta };
-  let current = controllerMeta;
+  const root: ControllerMetaLinkNode | undefined = { data: meta };
 
-  let currentClass = getParentClass(controllerClass);
-  while (currentClass) {
-    const meta = privateControllerMeta.getClassMetadata(currentClass);
-    if (meta) {
-      current.next = {
-        data: meta,
-      };
-      current = current.next;
-    } else break;
-    currentClass = getParentClass(currentClass);
+  let current = root;
+  if (meta.extends) {
+    let currentClass = getParentClass(controllerClass);
+    while (currentClass) {
+      meta = privateControllerMeta.getClassMetadata(currentClass);
+      if (meta) {
+        current.parent = {
+          data: meta,
+          child: current,
+        };
+        current = current.parent;
+
+        if (!meta.extends) break;
+      } else break;
+      currentClass = getParentClass(currentClass);
+    }
   }
-  return controllerMeta;
+
+  return { childRoot: root, parentRoot: current };
 }
-type ControllerMetaLink = {
+
+type ControllerMetaLinkNode = {
   data: ControllerMeta;
-  next?: ControllerMetaLink;
+  parent?: ControllerMetaLinkNode;
+  child?: ControllerMetaLinkNode;
 };
-type ControllerApplyMeta = Pick<ControllerMeta, "endpoints" | "path"> & {
-  useMiddlewares: MiddlewareHandler[];
+type ControllerMetaLink = {
+  childRoot: ControllerMetaLinkNode;
+  parentRoot: ControllerMetaLinkNode;
 };
-type EndpointApplyMeta = {
-  key: symbol | number | string;
+type EndpointApplyMeta = EndpointMeta & {
   useMiddlewares?: MiddlewareHandler[];
 
   inputTransformers?: DataTransformer<any, any>[];
@@ -166,22 +165,22 @@ type EndpointApplyMeta = {
 };
 
 export class ControllerContext {
-  constructor(private readonly controllerMetaLink: ControllerMetaLink) {}
+  constructor(private readonly controllerMetaLink: ControllerMetaLinkNode) {}
 
   getControllerMetadata<T = unknown>(key: any): T | undefined {
     return this.controllerMetaLink.data.metadata.get(key);
   }
   *eachParentMetadata(): Generator<ControllerContext> {
-    let current = this.controllerMetaLink.next;
+    let current = this.controllerMetaLink.parent;
     while (current) {
       yield new ControllerContext(current);
-      current = current.next;
+      current = current.parent;
     }
   }
 }
 export class EndpointContext extends ControllerContext {
   constructor(
-    controllerMetaLink: ControllerMetaLink,
+    controllerMetaLink: ControllerMetaLinkNode,
     private readonly endpoint: Readonly<EndpointMeta>,
   ) {
     super(controllerMetaLink);

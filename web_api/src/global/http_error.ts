@@ -19,7 +19,7 @@ function errorProd(error: unknown, ctx: Context) {
   return ctx.html(html, status as ContentfulStatusCode);
 }
 function errorTest(error: unknown, ctx: Context) {
-  console.log(error)
+  console.log(error);
   return ctx.text(toErrorStr(error, true), 500);
 }
 

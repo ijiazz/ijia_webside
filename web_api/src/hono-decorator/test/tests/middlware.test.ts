@@ -13,8 +13,7 @@ test("Use() applies to the endpoint", async function () {
   const hono = new Hono();
   applyController(hono, new Controller());
 
-  let res = await hono.request("/");
-  await expect(res.json()).resolves.toEqual(["A"]);
+  await expect(hono.request("/")).resolves.responseSuccessWith("json", ["A"]);
 });
 test("Use() Applies to the controller", async function () {
   @Use(keyMiddleware("Mid"))
@@ -31,11 +30,8 @@ test("Use() Applies to the controller", async function () {
   const hono = new Hono();
   applyController(hono, new Controller());
 
-  let res = await hono.request("/a");
-  await expect(res.json()).resolves.toEqual(["methodA", "Mid"]);
-
-  res = await hono.request("/b");
-  await expect(res.json()).resolves.toEqual(["methodB", "Mid"]);
+  await expect(hono.request("/a")).resolves.responseSuccessWith("json", ["methodA", "Mid"]);
+  await expect(hono.request("/b")).resolves.responseSuccessWith("json", ["methodB", "Mid"]);
 });
 test("Use() cannot be applied to controllers without endpoints", async function () {
   expect(() => {
@@ -75,9 +71,7 @@ describe("Order of middleware", function () {
   test("The order in which requests pass through the controller middleware", async function () {
     const hono = new Hono();
     applyController(hono, new TestA());
-
-    let res = await hono.request("/");
-    await expect(res.json()).resolves.toEqual(["A", "B", "G", "H"]);
+    await expect(hono.request("/")).resolves.responseSuccessWith("json", ["A", "B", "G", "H"]);
   });
   test("The order in which requests pass through the inherited controller middleware", async function () {
     const hono = new Hono();
@@ -98,14 +92,10 @@ describe("Order of middleware", function () {
         return ctx.json(ctx.get(MIDDLEWARE_SET_KEY));
       }
     }
-    applyController(hono, new TestB());
     applyController(hono, new TestC());
 
-    let res = await hono.request("/");
-    await expect(res.json()).resolves.toEqual(["C", "D", "A", "B", "G", "H"]);
-
-    res = await hono.request("/sub");
-    await expect(res.json()).resolves.toEqual(["E", "F", "C", "D", "A", "B", "G", "H"]);
+    await expect(hono.request("/sub")).resolves.responseSuccessWith("json", ["E", "F", "G", "H"]);
+    await expect(hono.request("/")).resolves.responseSuccessWith("json", ["E", "F", "C", "D", "A", "B", "G", "H"]);
   });
 });
 

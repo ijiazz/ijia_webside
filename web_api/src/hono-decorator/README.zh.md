@@ -9,7 +9,7 @@ ECMA 装饰器，目前处以 Stage 3。在未来，它将成为 JavaScript 语�
 
 ```ts
 import { Context, Hono } from "hono";
-import { Controller, Post, Get, Use, applyController, ToResponse } from "hono/decorators";
+import { Controller, Post, Get, Use, applyController, PipeOutput } from "hono/decorators";
 import { compress } from "hono/compress";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
@@ -27,7 +27,7 @@ class TestController {
   @Get("/test2")
   method2 = () => {};
 
-  @ToResponse((data, ctx) => {
+  @PipeOutput((data, ctx) => {
     data.body; // string
     data.title; // string
 
@@ -55,7 +55,6 @@ class TestController {
 }
 const hono = new Hono();
 applyController(hono, new TestController());
-applyController(hono, userController); //
 // Apply more...
 
 await hono.request("/api/test3");
@@ -66,6 +65,8 @@ await hono.request("/api/test3");
 在应用装饰器后，实际上只是给这个类添加元数据，在调用 `applyController()` 时，通过读取这个类的元数据，然后根据元数据设置路由、中间件。
 
 ### 端点装饰器
+
+端点装饰器为类添加了路由信息。它是所有装饰器的基础。在应用其他装饰器前，必须应用端点装饰器，且一个方法或属性只能应用一个端点装饰器
 
 ```ts
 export type EndpointDecoratorTarget = (...args: any[]) => any;
@@ -89,8 +90,6 @@ export function Get(path: string): EndpointDecorator {
 // The same is true of other common methods such as Patch and Put
 ```
 
-端点装饰器是所有装饰器的基础，在应用其他装饰器前，必须应用端点装饰器，且一个方法或属性只能应用一个端点装饰器
-
 ```ts
 class Test {
   @Get("/test1")
@@ -104,6 +103,8 @@ class Test {
 ```
 
 ### 控制器装饰器
+
+控制器装饰器可以定义一组路由的一些行为。它只能应用到类上面
 
 ```ts
 export type ControllerDecoratorTarget = new (...args: any[]) => any;
@@ -124,8 +125,6 @@ export type ControllerOption = {
 
 export declare function Controller(option: ControllerOption): ControllerDecorator;
 ```
-
-控制器装饰器可以定义一组路由的一些行为，例如应用中间件等
 
 ### 中间件装饰器
 
@@ -157,10 +156,10 @@ class Controller {
 ### 转换装饰器
 
 ```ts
-export declare function ToResponse<T>(
+export declare function PipeOutput<T>(
   handler: Transformer<T>,
 ): EndpointDecorator<(...args: any[]) => T | Promise<Awaited<T>>>;
-export declare function ToArguments<T extends any[]>(handler: PipeInHandler<T>): EndpointDecorator<(...data: T) => any>;
+export declare function PipeInput<T extends any[]>(handler: PipeInHandler<T>): EndpointDecorator<(...data: T) => any>;
 ```
 
 转换装饰器可以将 Hono 的 Context 对象转换为控制器方法所需的参数，也可以将控制器方法返回的对象转换为 Response 对象
@@ -168,9 +167,9 @@ export declare function ToArguments<T extends any[]>(handler: PipeInHandler<T>):
 ```ts
 class Controller {
   @Get("/test1")
-  method1(ctx: Context) {} //If the ToArguments decorator is not applied, the first argument is passed to Context
+  method1(ctx: Context) {} //If the PipeInput decorator is not applied, the first argument is passed to Context
 
-  @ToArguments(function (ctx: Context) {
+  @PipeInput(function (ctx: Context) {
     //The returned type is the same as the parameter for method2
     // If types are inconsistent, typescript prompts an exception
     return [1, "abc"];
@@ -178,7 +177,7 @@ class Controller {
 
   //The type of data is the same as that returned by method2
   // If types are inconsistent, typescript prompts an exception
-  @ToResponse((data, ctx: Context) => {
+  @PipeOutput((data, ctx: Context) => {
     data.body; // string
     data.title; // string
 
@@ -199,21 +198,68 @@ class Controller {
 
 ### 自定义装饰器
 
-我们可以基于上面提到的装饰器，自定义具体职责的装饰器，例如，设置变量、参数校验、权限校验等。
-一个权限校验的示例
+可以通过 `createMetadataDecoratorFactory` 创建自定义装饰器。实际上，除了 `Endpoint` 和 `Controller`, 其他的装饰器都是通过 `createMetadataDecoratorFactory` 创建的。
+
+下面是一个示例。自定义了 Roles 装饰器。该装饰器可以装饰后，需要特定角色才能访问接口
 
 ```ts
-function Roles(...roles: string[]): EndpointDecorator<(...data: T) => any> {
-  return Use(async function (ctx: Context, next) {
-    // Judgment role ...
-  });
+import { Post, Use, applyController, createMetadataDecoratorFactory, getEndpointContext } from "@asla/hono-decorator";
+
+const Roles = createMetadataDecoratorFactory<Set<string>, string[]>(function (args, decoratorContext) {
+  if (decoratorContext.metadata) {
+    // 已设置，添加角色
+    for (const arg of args) {
+      decoratorContext.metadata.add(arg);
+    }
+  } else {
+    return new Set(args); // 设置数据
+  }
+});
+function includeRoles(match: Set<string>, input?: Set<string>) {
+  if (!input?.size) return false;
+  return match.intersection(input).size > 0;
+}
+const RolesGuard: MiddlewareHandler = async function (ctx, next) {
+  const body = await ctx.req.json();
+  const currentRoles = new Set<string>(body);
+
+  const endpointContext = getEndpointContext(ctx);
+
+  let roles = endpointContext.getControllerMetadata<Set<string>>(Roles);
+  if (roles && !includeRoles(roles, currentRoles)) return ctx.body(null, 403);
+
+  roles = endpointContext.getEndpointMetadata<Set<string>>(Roles);
+  if (roles && !includeRoles(roles, currentRoles)) return ctx.body(null, 403);
+  return next();
+};
+
+@Roles("admin")
+@Use(RolesGuard)
+class Controller {
+  @Roles("root", "test") // admin && (root || test)
+  @Post("/create")
+  create(ctx: Context) {
+    return ctx.text("ok");
+  }
+  @Post("/delete") // admin
+  delete(ctx: Context) {
+    return ctx.text("ok");
+  }
 }
 
-class Controller {
-  @Roles("admin", "root")
-  @Get("/")
-  method() {}
-}
+const hono = new Hono();
+applyController(hono, new Controller());
+
+const ADMIN = JSON.stringify(["admin"]);
+const ROOT = JSON.stringify(["root"]);
+const ADMIN_AND_ROOT = JSON.stringify(["admin", "root"]);
+
+await hono.request("/delete", { method: "POST", body: JSON.stringify([]) }); // 403;
+await hono.request("/delete", { method: "POST", body: ADMIN }); // 200;
+
+await hono.request("/create", { method: "POST", body: ADMIN }); // 403;
+await hono.request("/create", { method: "POST", body: ROOT }); // 403;
+await hono.request("/create", { method: "POST", body: ADMIN_AND_ROOT }); // 200;
 ```
 
 ### 继承

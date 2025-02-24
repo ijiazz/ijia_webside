@@ -5,6 +5,7 @@ export default {
   esbuild: { target: "es2023" },
   test: {
     include: ["./test/**/*.test.ts"],
+    setupFiles: ["./test/fixtures/asserts.ts"],
   },
   plugins: [tsconfigPaths({})],
 } satisfies ViteUserConfig;

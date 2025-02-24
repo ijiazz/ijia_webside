@@ -15,13 +15,8 @@ test("Use an Endpoint to set the GET route", async function () {
   const hono = new Hono();
   applyController(hono, new Controller());
 
-  let res = await hono.request("/test");
-  expect(res.status).toBe(200);
-  await expect(res.text()).resolves.toBe("method");
-
-  res = await hono.request("/handler");
-  expect(res.status).toBe(200);
-  await expect(res.text()).resolves.toBe("handler");
+  await expect(hono.request("/test")).resolves.responseSuccessWith("text", "method");
+  await expect(hono.request("/handler")).resolves.responseSuccessWith("text", "handler");
 });
 test("Use an endpoint to set routes for all methods", async function () {
   class Controller {
@@ -33,14 +28,8 @@ test("Use an endpoint to set routes for all methods", async function () {
   const hono = new Hono();
   applyController(hono, new Controller());
 
-  let response = await hono.request("/test");
-  expect(response.status).toBe(200);
-
-  await expect(response.text()).resolves.toBe("GET");
-
-  response = await hono.request("/test", { method: "POST" });
-  expect(response.status).toBe(200);
-  await expect(response.text()).resolves.toBe("POST");
+  await expect(hono.request("/test")).resolves.responseSuccessWith("text", "GET");
+  await expect(hono.request("/test", { method: "POST" })).resolves.responseSuccessWith("text", "POST");
 });
 test("A handler can apply multiple Endpoint()", async function () {
   class Controller {
@@ -53,11 +42,9 @@ test("A handler can apply multiple Endpoint()", async function () {
   const hono = new Hono();
   applyController(hono, new Controller());
 
-  let response = await hono.request("/test1");
-  expect(response.status).toBe(200);
+  await expect(hono.request("/test1")).resolves.responseStatus(200);
 
-  response = await hono.request("/test2");
-  expect(response.status).toBe(200);
+  await expect(hono.request("/test2")).resolves.responseStatus(200);
 });
 
 test("Endpoint() can only decorate methods and class attributes", async function () {

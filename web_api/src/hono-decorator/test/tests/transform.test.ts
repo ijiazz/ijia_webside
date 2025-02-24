@@ -21,9 +21,7 @@ test("transform", async function () {
   const hono = new Hono();
   applyController(hono, new Controller());
 
-  let res = await hono.request("/transform?title=hi&number=12");
-  expect(res.status).toBe(200);
-  await expect(res.text()).resolves.toBe("hi12");
+  await expect(hono.request("/transform?title=hi&number=12")).resolves.responseSuccessWith("text", "hi12");
 });
 
 test("PipeInput() cannot be used twice on the same target", async function () {
@@ -63,5 +61,3 @@ test("The Endpoint decorator must be applied before PipeOutput() can be applied"
     }
   }).toThrowError();
 });
-test.todo("如果发送异常，则抛出 HttpError", function () {});
-test.todo("HttpError", function () {});

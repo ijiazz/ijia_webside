@@ -15,13 +15,8 @@ test("basePath", async function () {
   const hono = new Hono();
   applyController(hono, new Test());
 
-  let res = await hono.request("/api/test");
-  expect(res.status).toBe(200);
-  await expect(res.text()).resolves.toBe("1");
-
-  res = await hono.request("/apitest");
-  expect(res.status).toBe(200);
-  await expect(res.text()).resolves.toBe("2");
+  await expect(hono.request("/api/test")).resolves.responseSuccessWith("text", "1");
+  await expect(hono.request("/apitest")).resolves.responseSuccessWith("text", "2");
 });
 test("Repeated definitions can overwrite previously decorated data", async function () {
   @Controller({ basePath: "/prefix" })
@@ -34,8 +29,6 @@ test("Repeated definitions can overwrite previously decorated data", async funct
   const hono = new Hono();
   applyController(hono, new Test());
 
-  let res = await hono.request("/api/test");
-  expect(res.status).toBe(404);
-  res = await hono.request("/prefix/test");
-  expect(res.status).toBe(200);
+  await expect(hono.request("/api/test")).resolves.responseStatus(404);
+  await expect(hono.request("/prefix/test")).resolves.responseStatus(200);
 });
