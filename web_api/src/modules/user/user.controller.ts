@@ -8,7 +8,7 @@ import {
   type CreateUserProfileResult,
   type UserLoginParamDto,
 } from "./user.type.ts";
-import { typeChecker } from "evlib";
+import { optional, array, enumType } from "evlib/validator";
 import { loginService } from "./services/Login.service.ts";
 import { hashPassword } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
@@ -17,7 +17,6 @@ import { Context } from "hono";
 import { HonoContext } from "@/hono/type.ts";
 import { checkValue } from "@/global/check.ts";
 
-const { optional, array, enumType } = typeChecker;
 @Controller({})
 export class UserController {
   constructor() {}

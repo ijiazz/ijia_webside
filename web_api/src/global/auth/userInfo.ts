@@ -1,5 +1,5 @@
 import { jwtManage, SignInfo } from "@/crypto/jwt.ts";
-import { user_role_bind, role } from "@ijia/data/db";
+import { user_role_bind } from "@ijia/data/db";
 import { v } from "@ijia/data/yoursql";
 
 async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
@@ -23,8 +23,8 @@ async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
 async function getUserRoleNameList(userId: number): Promise<string[]> {
   const roles = await user_role_bind
     .fromAs("bind")
-    .innerJoin(role, undefined, `bind.user_id=${v(userId)} AND bind.user_id=role.user_id`)
     .select<{ role_name: string }>({ role_name: "role.user_name" })
+    .where(`bind.user_id=${v(userId)}`)
     .queryRows();
 
   return roles.map((item) => item.role_name);

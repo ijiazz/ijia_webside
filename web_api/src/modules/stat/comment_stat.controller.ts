@@ -2,17 +2,15 @@ import { pla_comment, pla_user } from "@ijia/data/db";
 import { Selection } from "@ijia/data/yoursql";
 import { Controller, Get, PipeInput } from "@asla/hono-decorator";
 import { CommentStatByCount } from "./stat.type.ts";
-import { checkType, typeChecker } from "evlib";
-const { optional } = typeChecker;
+import { optional } from "evlib/validator";
+import { checkValue } from "@/global/check.ts";
 
 @Controller({ basePath: "/stat" })
 export class CommentStat {
   constructor() {}
   @PipeInput(function (ctx) {
     const q = ctx.req.queries();
-    const { value, error } = checkType(q, { page: optional.string, pageSize: optional.string });
-    if (error) throw error;
-
+    const value = checkValue(q, { page: optional.string, pageSize: optional.string });
     return [value];
   })
   @Get("comment/count_by_user")

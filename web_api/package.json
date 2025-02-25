@@ -21,8 +21,8 @@
   "dependencies": {
     "@hono/node-server": "^1.13.7",
     "@ijia/data": "workspace:^",
-    "evlib": "^2.11.1",
-    "hono": "^4.6.17",
+    "evlib": "^3.0.2",
+    "hono": "^4.7.2",
     "redis": "^4.7.0",
     "tslib": "^2.8.1"
   },
