@@ -19,7 +19,7 @@ class Controller {
       return "23";
     },
     function (i) {
-      return [1, "22"];
+      return parseInt(i);
     },
   )
 
@@ -35,7 +35,7 @@ class Controller {
     return ctx.text("ok");
   })
   @Get("/test2")
-  method2(size: number, id: string) {
+  method2(size: number) {
     return {
       title: "123",
       body: "abc",

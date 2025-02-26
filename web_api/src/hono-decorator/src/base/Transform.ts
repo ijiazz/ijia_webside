@@ -9,64 +9,98 @@ export type ResponseTransformer<T> = (result: T, ctx: Context) => Response | Pro
 
 interface ResTransformDecoratorFactory {
   <T>(handler: ResponseTransformer<T>): EndpointDecorator<(...args: any[]) => T | Promise<T>>;
-  <R0, R1>(
-    pipe: DataTransformer<R0, R1>,
-    handler: ResponseTransformer<R1>,
-  ): EndpointDecorator<(...args: any[]) => R0 | Promise<R0>>;
-  <R0, R1, R2>(
-    pipe1: DataTransformer<R0, R1>,
-    pipe2: DataTransformer<R1, R2>,
-    handler: ResponseTransformer<R2>,
-  ): EndpointDecorator<(...args: any[]) => R0 | Promise<R0>>;
-  <
-    R0,
-    ResFinal,
-    Pipes extends [
-      DataTransformer<R0, any>,
-      ...pipes: DataTransformer<any, any>[],
-      handler: ResponseTransformer<ResFinal>,
-    ],
-  >(
-    ...pipes: Pipes
-  ): EndpointDecorator<(...args: any[]) => R0 | Promise<R0>>;
 }
 
-export const PipeOutput: ResTransformDecoratorFactory = createMetadataDecoratorFactory<Function[], Function[]>(
-  function (handlers, { metadata }) {
-    if (metadata) throw new DecorateReuseError("PipeOutput");
-    return handlers;
-  },
-);
+export const ToResponse: ResTransformDecoratorFactory = createMetadataDecoratorFactory<
+  Function,
+  [ResponseTransformer<any>]
+>(function (args, { metadata }) {
+  if (metadata) throw new DecorateReuseError("PipeOutput");
+  const handler = args[0];
+  if (typeof handler !== "function") throw new Error("handler must be a function");
+  return handler;
+});
+export function PipeOutput<T>(handler: ResponseTransformer<T>): EndpointDecorator<(...args: any[]) => T | Promise<T>>;
+export function PipeOutput<R0, R1>(
+  pipe: DataTransformer<R0, R1>,
+  handler: ResponseTransformer<R1>,
+): EndpointDecorator<(...args: any[]) => R0 | Promise<R0>>;
+export function PipeOutput<R0, R1, R2>(
+  pipe1: DataTransformer<R0, R1>,
+  pipe2: DataTransformer<R1, R2>,
+  handler: ResponseTransformer<R2>,
+): EndpointDecorator<(...args: any[]) => R0 | Promise<R0>>;
+export function PipeOutput<
+  R0,
+  ResFinal,
+  Pipes extends [
+    DataTransformer<R0, any>,
+    ...pipes: DataTransformer<any, any>[],
+    handler: ResponseTransformer<ResFinal>,
+  ],
+>(...pipes: Pipes): EndpointDecorator<(...args: any[]) => R0 | Promise<R0>>;
+export function PipeOutput(...handlers: any[]) {
+  if (handlers.length === 1) return ToResponse(handlers[0]);
+  const finalHandler = handlers.pop();
+  return ToResponse(function (result, ctx) {
+    result = useTransformers(handlers, result);
+    if (result instanceof Promise) return result.then((r) => finalHandler(r, ctx));
+    else return finalHandler(result, ctx);
+  });
+}
 
-export type RequestTransformer<Args extends any[], Input = unknown> = (input: Input) => Args | Promise<Args>;
+export type RequestTransformer<Args, Input = unknown> = (input: Input) => Args | Promise<Args>;
 
 interface ReqTransformDecoratorFactory {
   <Args extends any[]>(handler: RequestTransformer<Args, Context>): EndpointDecorator<(...data: Args) => any>;
-  <P0 extends any[], P1>(
-    pipe: DataTransformer<Context, P1>,
-    handler: RequestTransformer<P0, P1>,
-  ): EndpointDecorator<(...data: P0) => any>;
-  <P0 extends any[], P1, P2>(
-    pipe1: DataTransformer<Context, P1>,
-    pipe2: DataTransformer<P1, P2>,
-    handler: RequestTransformer<P0, P2>,
-  ): EndpointDecorator<(...data: P0) => any>;
-  <
-    P0 extends any[],
-    Pipes extends [
-      pipe1: DataTransformer<Context, any>,
-      ...args: DataTransformer<any, any>[],
-      handler: RequestTransformer<P0, any>,
-    ],
-  >(
-    ...transformers: Pipes
-  ): EndpointDecorator<(...data: P0) => any>;
 }
 
-export const PipeInput: ReqTransformDecoratorFactory = createMetadataDecoratorFactory<Function[], Function[]>(function (
-  handlers,
-  { metadata },
-) {
+export const ToArguments: ReqTransformDecoratorFactory = createMetadataDecoratorFactory<
+  Function,
+  [RequestTransformer<any[], Context>]
+>(function (args, { metadata }) {
   if (metadata) throw new DecorateReuseError("PipeInput");
-  return handlers;
+  const handler = args[0];
+  if (typeof handler !== "function") throw new Error("handler must be a function");
+  return handler;
 });
+export function PipeInput<Args>(handler: RequestTransformer<Args, Context>): EndpointDecorator<(data: Args) => any>;
+export function PipeInput<P0, P1>(
+  pipe: DataTransformer<Context, P1>,
+  handler: RequestTransformer<P0, P1>,
+): EndpointDecorator<(data: P0) => any>;
+export function PipeInput<P0, P1, P2>(
+  pipe1: DataTransformer<Context, P1>,
+  pipe2: DataTransformer<P1, P2>,
+  handler: RequestTransformer<P0, P2>,
+): EndpointDecorator<(data: P0) => any>;
+export function PipeInput<
+  P0,
+  Pipes extends [
+    pipe1: DataTransformer<Context, any>,
+    ...args: DataTransformer<any, any>[],
+    handler: RequestTransformer<P0, any>,
+  ],
+>(...transformers: Pipes): EndpointDecorator<(data: P0) => any>;
+export function PipeInput(...handlers: any[]): EndpointDecorator<(...data: any[]) => any> {
+  if (handlers.length === 1) return ToArguments(handlers[0]);
+  return ToArguments(function (ctx) {
+    const result = useTransformers(handlers, ctx);
+    if (result instanceof Promise) return result.then((args) => [args]);
+    else return [result];
+  });
+}
+function useTransformers(transformers: DataTransformer<any, any>[], arg: any) {
+  let i = 0;
+  for (; !(arg instanceof Promise) && i < transformers.length; i++) {
+    let transformer = transformers[i];
+    arg = transformer(arg);
+  }
+  if (arg instanceof Promise) {
+    for (; i < transformers.length; i++) {
+      let transformer = transformers[i];
+      arg = arg.then(transformer);
+    }
+  }
+  return arg;
+}

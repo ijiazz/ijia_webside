@@ -17,14 +17,14 @@ export class BsQuery {
   }
 
   @PipeInput(function (ctx) {
-    return [ctx.req.param()];
+    return ctx.req.param();
   })
   @Get("comment")
   async getCommentList(option: q.GetCommentListParam & DebugOption = {}): Promise<q.CommentRootItemDto[]> {
     return q.getCommentList(this.client, option);
   }
   @PipeInput(function (ctx) {
-    return [ctx.req.param()];
+    return ctx.req.param();
   })
   @Get("comment_reply")
   async getCommentReplyByCid(option: q.GetCommentReplyListParam & DebugOption = {}): Promise<q.CommentReplyItemDto[]> {

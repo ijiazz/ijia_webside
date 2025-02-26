@@ -2,6 +2,7 @@ import type { Platform } from "@ijia/data/db";
 
 export type CreateUserProfileParam = {
   email: string;
+  emailVerificationCode: string;
   password?: string;
   /** 班级 id */
   classId?: number[];

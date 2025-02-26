@@ -12,7 +12,7 @@ import { optional, array, enumType } from "evlib/validator";
 import { loginService } from "./services/Login.service.ts";
 import { hashPassword } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
-import { Controller, Get, PipeInput, PipeOutput, Post } from "@asla/hono-decorator";
+import { Controller, Get, PipeInput, PipeOutput, Post, ToArguments } from "@asla/hono-decorator";
 import { Context } from "hono";
 import { HonoContext } from "@/hono/type.ts";
 import { checkValue } from "@/global/check.ts";
@@ -21,16 +21,16 @@ import { checkValue } from "@/global/check.ts";
 export class UserController {
   constructor() {}
   @PipeInput(async function (ctx) {
-    const value = checkValue(
+    return checkValue(
       await ctx.req.json(),
       {
         email: "string",
         password: optional.string,
         classId: optional(array.number),
+        emailVerificationCode: "string",
       },
       { policy: "pass" },
     );
-    return [value];
   })
   @Post("/user/profile")
   async createUser(body: CreateUserProfileParam): Promise<CreateUserProfileResult> {
@@ -63,7 +63,7 @@ export class UserController {
   @PipeInput(async function (ctx: HonoContext) {
     const userInfo = await ctx.get("userInfo");
     const jwtInfo = await userInfo.getJwtInfo();
-    return [+jwtInfo.userId];
+    return +jwtInfo.userId;
   })
   @Get("/user/self/profile")
   async getUser(userId: number): Promise<UserProfileDto> {
@@ -79,7 +79,7 @@ export class UserController {
     if (value) return ctx.json(value, 200);
     return ctx.body(null, 200);
   })
-  @PipeInput(async function (ctx) {
+  @ToArguments(async function (ctx) {
     const body: UserLoginParamDto = checkValue(
       await ctx.req.json(),
       {

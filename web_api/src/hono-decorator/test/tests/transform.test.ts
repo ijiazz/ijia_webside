@@ -1,15 +1,15 @@
 import { test, expect } from "vitest";
 import { Hono } from "hono";
-import { applyController, Get, PipeInput, PipeOutput } from "@asla/hono-decorator";
+import { applyController, Get, PipeInput, ToArguments, ToResponse, PipeOutput } from "@asla/hono-decorator";
 
 test("transform", async function () {
   class Controller {
-    @PipeInput(async function (ctx) {
+    @ToArguments(async function (ctx) {
       const title = ctx.req.query("title")!;
       const number = ctx.req.query("number")!;
       return [title, +number] as const;
     })
-    @PipeOutput(function (data, ctx) {
+    @ToResponse(function (data, ctx) {
       return ctx.text(data.body);
     })
     @Get("/transform")
@@ -24,40 +24,111 @@ test("transform", async function () {
   await expect(hono.request("/transform?title=hi&number=12")).resolves.responseSuccessWith("text", "hi12");
 });
 
-test("PipeInput() cannot be used twice on the same target", async function () {
+test("ToArguments() cannot be used twice on the same target", async function () {
   expect(() => {
     class Controller {
-      @PipeInput((ctx) => [])
-      @PipeInput((ctx) => [])
+      @ToArguments((ctx) => [])
+      @ToArguments((ctx) => [])
+      @Get("/transform")
+      method() {}
+    }
+  }).toThrowError();
+});
+test("ToArguments() can only accept one function parameter", async function () {
+  expect(() => {
+    class Controller {
+      //@ts-expect-error
+      @ToArguments({})
+      @Get("/transform")
+      method() {}
+    }
+  }).toThrowError();
+  expect(() => {
+    class Controller {
+      //@ts-expect-error
+      @ToArguments()
       @Get("/transform")
       method() {}
     }
   }).toThrowError();
 });
 
-test("The Endpoint decorator must be applied before PipeInput() can be applied", async function () {
+test("The Endpoint decorator must be applied before ToArguments() can be applied", async function () {
   expect(() => {
     class Controller {
-      @PipeInput((ctx) => [])
+      @ToArguments((ctx) => [])
       method() {}
     }
   }).toThrowError();
 });
-test("PipeOutput() cannot be used twice on the same target", async function () {
+test("ToResponse() cannot be used twice on the same target", async function () {
   expect(() => {
     class Controller {
-      @PipeOutput((data, ctx) => ctx.body(null, 200))
-      @PipeOutput((data, ctx) => ctx.body(null, 200))
+      @ToResponse((data, ctx) => ctx.body(null, 200))
+      @ToResponse((data, ctx) => ctx.body(null, 200))
       @Get("/transform")
       method() {}
     }
   }).toThrowError();
 });
-test("The Endpoint decorator must be applied before PipeOutput() can be applied", async function () {
+test("The Endpoint decorator must be applied before ToResponse() can be applied", async function () {
   expect(() => {
     class Controller {
-      @PipeOutput((data, ctx) => ctx.body(null, 200))
+      @ToResponse((data, ctx) => ctx.body(null, 200))
       method() {}
     }
   }).toThrowError();
+});
+test("ToResponse() can only accept one function parameter", async function () {
+  expect(() => {
+    class Controller {
+      //@ts-expect-error
+      @ToResponse({})
+      @Get("/transform")
+      method() {}
+    }
+  }).toThrowError();
+  expect(() => {
+    class Controller {
+      //@ts-expect-error
+      @ToResponse()
+      @Get("/transform")
+      method() {}
+    }
+  }).toThrowError();
+});
+test("Pipe link", async function () {
+  class Controller {
+    @PipeInput(
+      function (ctx) {
+        return ctx.req.query("title")!;
+      },
+      function (title) {
+        return title + "1";
+      },
+      async function (title) {
+        return title + "2";
+      },
+    )
+    @PipeOutput(
+      function (data) {
+        return "a" + data;
+      },
+      function (data) {
+        return "b" + data;
+      },
+      function (data, ctx) {
+        return ctx.text(data);
+      },
+    )
+    @Get("/transform")
+    async method(title: string) {
+      return title;
+    }
+  }
+
+  const hono = new Hono();
+  applyController(hono, new Controller());
+
+  await expect(hono.request("/transform?title=hi")).resolves.responseSuccessWith("text", "bahi12");
 });

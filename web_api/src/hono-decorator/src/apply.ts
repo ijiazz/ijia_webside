@@ -2,7 +2,7 @@ import { Context, Hono, MiddlewareHandler } from "hono";
 import { privateControllerMeta } from "./base/_metadata.ts";
 import { ControllerMeta, EndpointMeta } from "./base/_type.ts";
 import { getObjectClass, getParentClass } from "./_util.ts";
-import { DataTransformer, PipeInput, PipeOutput, Use } from "./base.ts";
+import { ToResponse, ToArguments, Use } from "./base.ts";
 
 export type ApplyControllerOption = {
   basePath?: string;
@@ -50,50 +50,26 @@ function getEndpointApplyMeta(endpointMetadata: EndpointMeta, controllerMiddlewa
     useMiddlewares: [...controllerMiddlewares, ...endpointMiddlewares],
     metadata,
   };
-  const inputTransformers: ((...args: any[]) => any)[] | undefined = metadata.get(PipeInput);
-  if (inputTransformers) {
-    if (inputTransformers.length > 1) {
-      endpointApplyMeta.inputTransformers = inputTransformers.slice(0, -1);
-      endpointApplyMeta.toArguments = inputTransformers.slice(-1)[0];
-    } else endpointApplyMeta.toArguments = inputTransformers[0];
-  }
 
-  const outputsTransformers: ((...args: any[]) => any)[] | undefined = metadata.get(PipeOutput);
-  if (outputsTransformers) {
-    if (outputsTransformers.length > 1) {
-      endpointApplyMeta.outputsTransformers = outputsTransformers.slice(0, -1);
-      endpointApplyMeta.toResponse = outputsTransformers.slice(-1)[0];
-    } else endpointApplyMeta.toResponse = outputsTransformers[0];
-  }
+  endpointApplyMeta.toArguments = metadata.get(ToArguments);
+  endpointApplyMeta.toResponse = metadata.get(ToResponse);
+
   return endpointApplyMeta;
 }
 function createHandler(controller: Record<string | symbol | number, Function>, routerMeta: EndpointApplyMeta) {
   return async function (ctx: Context, next?: Function): Promise<Response> {
     let args: any[];
     if (routerMeta.toArguments) {
-      const inputTransformers = routerMeta.inputTransformers ?? [];
-
-      const finalInput = await useTransformers(inputTransformers, ctx);
-      args = await routerMeta.toArguments.call(undefined, finalInput);
+      args = await routerMeta.toArguments.call(undefined, ctx);
     } else args = [ctx];
 
     let result = await controller[routerMeta.key].apply(controller, args);
     if (routerMeta.toResponse) {
-      if (routerMeta.outputsTransformers) {
-        const outputTransformers = routerMeta.outputsTransformers ?? [];
-        result = await useTransformers(outputTransformers, result);
-      }
       result = await routerMeta.toResponse.call(undefined, result, ctx);
     }
 
     return result;
   };
-}
-
-async function useTransformers(transformers: DataTransformer<any, any>[], arg: any) {
-  let transformer = transformers[0];
-  while (transformer) arg = await transformer(arg);
-  return arg;
 }
 
 function mergeControllerMetadataList(controllerMetaLink: ControllerMetaLink) {
@@ -157,11 +133,9 @@ type ControllerMetaLink = {
 type EndpointApplyMeta = EndpointMeta & {
   useMiddlewares?: MiddlewareHandler[];
 
-  inputTransformers?: DataTransformer<any, any>[];
-  toArguments?: (...args: any[]) => any;
+  toArguments?: (ctx: Context) => any[] | Promise<any[]>;
 
-  outputsTransformers?: DataTransformer<any, any>[];
-  toResponse?: (...args: any[]) => any;
+  toResponse?: (value: any, ctx: Context) => Response | Promise<Response>;
 };
 
 export class ControllerContext {

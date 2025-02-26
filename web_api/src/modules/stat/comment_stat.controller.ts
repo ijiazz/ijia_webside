@@ -10,8 +10,7 @@ export class CommentStat {
   constructor() {}
   @PipeInput(function (ctx) {
     const q = ctx.req.queries();
-    const value = checkValue(q, { page: optional.string, pageSize: optional.string });
-    return [value];
+    return checkValue(q, { page: optional.string, pageSize: optional.string });
   })
   @Get("comment/count_by_user")
   async getUserByCount(option: { page?: number | string; pageSize?: number | string } = {}) {
