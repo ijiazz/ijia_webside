@@ -1,8 +1,9 @@
 import type { Platform } from "@ijia/data/db";
+import type { EmailVerificationReply } from "../verification_code/mod.ts";
 
 export type CreateUserProfileParam = {
   email: string;
-  emailVerificationCode: string;
+  emailVerification: EmailVerificationReply;
   password?: string;
   /** 班级 id */
   classId?: number[];
@@ -27,6 +28,7 @@ export type BindPlatformParam = {
 
 export type UserLoginResultDto = {
   success: boolean;
+  token: string;
   message?: string;
   redirect?: string;
   tip?: {
@@ -35,13 +37,13 @@ export type UserLoginResultDto = {
   };
 };
 export type UserLoginByIdParam = {
-  method: "id";
+  method: LoginType.id;
   id: string;
   password: string;
   passwordNoHash?: boolean;
 };
 export type UserLoginByEmailParam = {
-  method: "email";
+  method: LoginType.email;
   email: string;
   password: string;
   passwordNoHash?: boolean;
@@ -52,3 +54,7 @@ export enum LoginType {
   id = "id",
   email = "email",
 }
+
+export type SendEmailVerificationCodeParam = {
+  email: string;
+};

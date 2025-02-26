@@ -8,7 +8,7 @@ export type DataTransformer<Input, Output> = (input: Input) => Output;
 export type ResponseTransformer<T> = (result: T, ctx: Context) => Response | Promise<Response>;
 
 interface ResTransformDecoratorFactory {
-  <T>(handler: ResponseTransformer<T>): EndpointDecorator<(...args: any[]) => T | Promise<T>>;
+  <T>(handler: ResponseTransformer<Awaited<T>>): EndpointDecorator<(...args: any[]) => T | Promise<T>>;
 }
 
 export const ToResponse: ResTransformDecoratorFactory = createMetadataDecoratorFactory<
@@ -20,15 +20,17 @@ export const ToResponse: ResTransformDecoratorFactory = createMetadataDecoratorF
   if (typeof handler !== "function") throw new Error("handler must be a function");
   return handler;
 });
-export function PipeOutput<T>(handler: ResponseTransformer<T>): EndpointDecorator<(...args: any[]) => T | Promise<T>>;
+export function PipeOutput<T>(
+  handler: ResponseTransformer<Awaited<T>>,
+): EndpointDecorator<(...args: any[]) => T | Promise<T>>;
 export function PipeOutput<R0, R1>(
-  pipe: DataTransformer<R0, R1>,
-  handler: ResponseTransformer<R1>,
+  pipe: DataTransformer<Awaited<R0>, R1>,
+  handler: ResponseTransformer<Awaited<R1>>,
 ): EndpointDecorator<(...args: any[]) => R0 | Promise<R0>>;
 export function PipeOutput<R0, R1, R2>(
-  pipe1: DataTransformer<R0, R1>,
-  pipe2: DataTransformer<R1, R2>,
-  handler: ResponseTransformer<R2>,
+  pipe1: DataTransformer<Awaited<R0>, R1>,
+  pipe2: DataTransformer<Awaited<R1>, R2>,
+  handler: ResponseTransformer<Awaited<R2>>,
 ): EndpointDecorator<(...args: any[]) => R0 | Promise<R0>>;
 export function PipeOutput<
   R0,
@@ -67,12 +69,12 @@ export const ToArguments: ReqTransformDecoratorFactory = createMetadataDecorator
 export function PipeInput<Args>(handler: RequestTransformer<Args, Context>): EndpointDecorator<(data: Args) => any>;
 export function PipeInput<P0, P1>(
   pipe: DataTransformer<Context, P1>,
-  handler: RequestTransformer<P0, P1>,
+  handler: RequestTransformer<P0, Awaited<P1>>,
 ): EndpointDecorator<(data: P0) => any>;
 export function PipeInput<P0, P1, P2>(
   pipe1: DataTransformer<Context, P1>,
-  pipe2: DataTransformer<P1, P2>,
-  handler: RequestTransformer<P0, P2>,
+  pipe2: DataTransformer<Awaited<P1>, P2>,
+  handler: RequestTransformer<P0, Awaited<P2>>,
 ): EndpointDecorator<(data: P0) => any>;
 export function PipeInput<
   P0,
