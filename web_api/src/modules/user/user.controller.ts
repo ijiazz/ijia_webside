@@ -156,12 +156,12 @@ export class UserController {
   }
 
   @PipeOutput(toJson)
-  @Post("/user/email/verification")
   @PipeInput(async function (ctx) {
     const body = await ctx.req.json();
     return checkValue(body, { captchaReply: imageCaptchaReplyChecker(), email: "string" });
   })
-  async sendEmailVerificationCode(body: { email: string; captchaReply: ImageCaptchaReply }) {
+  @Post("/user/email/captcha")
+  async sendEmailCaptcha(body: { email: string; captchaReply: ImageCaptchaReply }) {
     const pass = await imageCaptchaController.verify(body.captchaReply);
     if (!pass) throw new HTTPException(403, { cause: "验证码错误" });
     //TODO: 创建用户时邮件验证码内容

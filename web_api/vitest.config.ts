@@ -3,12 +3,14 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import process from "node:process";
 
 const PG_URL = process.env.PG_URL || "pg://test@127.0.0.1:5432/postgres";
+const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 
 export default {
   esbuild: { target: "es2023" },
   test: {
     env: {
       TEST_LOGIN_DB: PG_URL,
+      TEST_LOGIN_REDIS: REDIS_URL,
       IJIA_TEMPLATE_DBNAME: "test_ijia_template",
     },
 

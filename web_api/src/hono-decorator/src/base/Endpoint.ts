@@ -1,5 +1,5 @@
 import { createInitDecorateMeta, privateControllerMeta } from "./_metadata.ts";
-import { ControllerMeta, EndpointMeta } from "./_type.ts";
+import { ControllerMeta } from "./_type.ts";
 
 import { DecoratePrivatePropertyError, DecoratorKindError } from "./errors.ts";
 
@@ -28,9 +28,12 @@ export function Endpoint(path: string, method?: string): EndpointDecorator {
     if (config.endpoints.has(key))
       throw new Error("One controller cannot be configured with multiple routes of the same type");
 
-    const endpointMeta: EndpointMeta = { key: ctx.name, path, method, metadata: new Map() };
-    config.endpoints.set(key, endpointMeta);
-    config.endpointsField.set(ctx.name, endpointMeta);
+    config.endpoints.set(key, { key: ctx.name, path, method });
+    let endpointMetadata = config.fieldMetadataMap.get(ctx.name);
+    if (!endpointMetadata) {
+      endpointMetadata = new Map();
+      config.fieldMetadataMap.set(ctx.name, endpointMetadata);
+    }
   };
 }
 function getInitDecorateMeta(meta: object): ControllerMeta {

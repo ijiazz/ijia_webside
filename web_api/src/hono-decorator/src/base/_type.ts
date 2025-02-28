@@ -1,17 +1,14 @@
-interface RouterMeta {
-  readonly metadata: Map<any, any>;
-}
-
-export interface EndpointMeta extends RouterMeta {
+export interface EndpointMeta {
   readonly path: string;
   readonly method?: string;
   readonly key: number | string | symbol;
 }
-export interface ControllerMeta extends RouterMeta {
+export interface ControllerMeta {
   path?: string;
   extends?: boolean;
-  /** endpointKey (method+path) -> meta */
+  readonly metadata: Map<any, any>;
+  /** endpointKey (method+path) -> endpointMeta */
   readonly endpoints: Map<string, EndpointMeta>;
-  /** controllerKey -> meta */
-  readonly endpointsField: Map<number | string | symbol, EndpointMeta>;
+  /** controllerKey -> fieldMetadata */
+  readonly fieldMetadataMap: Map<number | string | symbol, Map<any, any>>;
 }

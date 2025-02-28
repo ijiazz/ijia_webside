@@ -40,22 +40,7 @@ export function applyController(hono: Hono, controller: object, option: ApplyCon
     }
   }
 }
-function getEndpointApplyMeta(endpointMetadata: EndpointMeta, controllerMiddlewares: MiddlewareHandler[] = []) {
-  const metadata = endpointMetadata.metadata;
 
-  const endpointMiddlewares: MiddlewareHandler[] = metadata.get(Use) ?? [];
-
-  const endpointApplyMeta: EndpointApplyMeta = {
-    ...endpointMetadata,
-    useMiddlewares: [...controllerMiddlewares, ...endpointMiddlewares],
-    metadata,
-  };
-
-  endpointApplyMeta.toArguments = metadata.get(ToArguments);
-  endpointApplyMeta.toResponse = metadata.get(ToResponse);
-
-  return endpointApplyMeta;
-}
 function createHandler(controller: Record<string | symbol | number, Function>, routerMeta: EndpointApplyMeta) {
   return async function (ctx: Context, next?: Function): Promise<Response> {
     let args: any[];
@@ -85,9 +70,24 @@ function mergeControllerMetadataList(controllerMetaLink: ControllerMetaLink) {
     if (middlewares?.length) mergedMiddlewares = mergedMiddlewares.concat(middlewares);
     node = node.parent;
 
+    const toResponse = controllerMeta.metadata.get(ToResponse);
+    const toArguments = controllerMeta.metadata.get(ToArguments);
+    const fieldMetadataMap = controllerMeta.fieldMetadataMap ?? new Map();
+
     for (const [key, endpointMeta] of controllerMeta.endpoints) {
       if (mergedEndpointMap.has(key)) continue;
-      mergedEndpointMap.set(key, getEndpointApplyMeta(endpointMeta, mergedMiddlewares));
+      const fieldMetadata = fieldMetadataMap.get(endpointMeta.key) ?? new Map();
+
+      const endpointMiddlewares: MiddlewareHandler[] = fieldMetadata.get(Use) ?? [];
+      mergedEndpointMap.set(key, {
+        key: endpointMeta.key,
+        method: endpointMeta.method,
+        path: endpointMeta.path,
+        metadataMap: fieldMetadata,
+        useMiddlewares: [...mergedMiddlewares, ...endpointMiddlewares],
+        toArguments: fieldMetadata.get(ToArguments) ?? toArguments,
+        toResponse: fieldMetadata.get(ToResponse) ?? toResponse,
+      });
     }
   }
 
@@ -131,6 +131,7 @@ type ControllerMetaLink = {
   parentRoot: ControllerMetaLinkNode;
 };
 type EndpointApplyMeta = EndpointMeta & {
+  metadataMap: Map<any, any>;
   useMiddlewares?: MiddlewareHandler[];
 
   toArguments?: (ctx: Context) => any[] | Promise<any[]>;
@@ -155,12 +156,12 @@ export class ControllerContext {
 export class EndpointContext extends ControllerContext {
   constructor(
     controllerMetaLink: ControllerMetaLinkNode,
-    private readonly endpoint: Readonly<EndpointMeta>,
+    private readonly endpoint: Readonly<EndpointApplyMeta>,
   ) {
     super(controllerMetaLink);
   }
   getEndpointMetadata<T = unknown>(key: any): T | undefined {
-    return this.endpoint.metadata.get(key);
+    return this.endpoint.metadataMap.get(key);
   }
 }
 export function getEndpointContext(ctx: Context): EndpointContext {

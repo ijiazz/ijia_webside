@@ -2,13 +2,20 @@ import { test as viTest } from "vitest";
 import { createPgClient, createPgPool, DbConnectOption, DbPool, parserDbUrl, setDbPool } from "@ijia/data/yoursql";
 import { DbManage } from "@ijia/data/testlib";
 import process from "node:process";
+import { RedisClient, setRedis } from "@/redis/mod.ts";
+import { createClient, RedisFlushModes } from "@redis/client";
+
 export interface DbContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
   ijiaDbPool: DbPool;
   emptyDbPool: DbPool;
+  redis: RedisClient;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
 const IJIA_TEMPLATE_DBNAME = process.env.IJIA_TEMPLATE_DBNAME!; // global setup 创建
+
+const TEST_REDIS_RUL = process.env.TEST_LOGIN_REDIS!; // global setup 创建
+
 const templateDbInfo: DbConnectOption = parserDbUrl(process.env["TEST_LOGIN_DB"]!);
 export const test = viTest.extend<DbContext>({
   async ijiaDbPool({}, use) {
@@ -37,5 +44,13 @@ export const test = viTest.extend<DbContext>({
     await client.close();
 
     await manage.dropDb(dbName);
+  },
+  async redis({}, use) {
+    const client = createClient({ url: TEST_REDIS_RUL, database: VITEST_WORKER_ID });
+    await client.connect();
+    await client.flushDb(RedisFlushModes.SYNC);
+    setRedis(client);
+    //@ts-ignore
+    use(client);
   },
 });

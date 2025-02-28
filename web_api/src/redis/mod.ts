@@ -21,4 +21,7 @@ export function getRedis(): RedisClient {
   }
   return redis;
 }
+export function setRedis(redisClient: RedisClientType<any, any, any>) {
+  redis = redisClient;
+}
 export type RedisClient = RedisClientType;

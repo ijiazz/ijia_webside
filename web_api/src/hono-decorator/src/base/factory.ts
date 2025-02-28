@@ -46,13 +46,13 @@ export function createMetadataDecoratorFactory<
       const key = MetadataDecoratorFactory;
       const controllerMeta = privateControllerMeta.getMetadata(ctx.metadata);
       if (!controllerMeta) throw new DecorateNotEndpointError();
-      let metadataMap;
+      let metadataMap: Map<any, any>;
       if (ctx.kind === "class") {
         metadataMap = controllerMeta.metadata;
       } else {
-        const property = controllerMeta.endpointsField.get(ctx.name);
+        const property = controllerMeta.fieldMetadataMap.get(ctx.name);
         if (!property) throw new DecorateNotEndpointError();
-        metadataMap = property.metadata;
+        metadataMap = property;
       }
 
       const oldValue = metadataMap.get(key) as Meta | undefined;

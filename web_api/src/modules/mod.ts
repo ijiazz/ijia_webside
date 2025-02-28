@@ -1,4 +1,5 @@
-import * as stat from "./stat/mod.ts";
-import * as user from "./user/mod.ts";
+import { commentStatController } from "./stat/mod.ts";
+import { userController } from "./user/mod.ts";
+import { imageCaptchaController } from "./captcha/mod.ts";
 
-export const controllers: object[] = [...user.controllers, ...stat.controllers];
+export const controllers: object[] = [userController, commentStatController, imageCaptchaController];

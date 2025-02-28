@@ -17,7 +17,14 @@ export const test = viTest.extend<HonoContext>({
     await use(hono);
   },
   async api({ hono }, use) {
-    const hoFetch = new HoFetch({ fetch: async (req) => hono.fetch(req), defaultOrigin: "http://127.0.0.1" });
+    const hoFetch = new HoFetch({
+      fetch: async (req) => {
+        const result = await hono.fetch(req);
+        if (result instanceof Response) return result;
+        throw new Error("返回的不是 Response 对象");
+      },
+      defaultOrigin: "http://127.0.0.1",
+    });
     const api = createFetchSuite<ApiDefined>(hoFetch);
     return use(api);
   },

@@ -23,6 +23,22 @@ test("transform", async function () {
 
   await expect(hono.request("/transform?title=hi&number=12")).resolves.responseSuccessWith("text", "hi12");
 });
+test("ToResponse() Decorative controller", async function () {
+  @ToResponse(function (result, ctx) {
+    return ctx.text(result as string);
+  })
+  class Controller {
+    @Get("/transform")
+    method() {
+      return "ok";
+    }
+  }
+
+  const hono = new Hono();
+  applyController(hono, new Controller());
+
+  await expect(hono.request("/transform")).resolves.responseSuccessWith("text", "ok");
+});
 
 test("ToArguments() cannot be used twice on the same target", async function () {
   expect(() => {
@@ -71,6 +87,7 @@ test("ToResponse() cannot be used twice on the same target", async function () {
     }
   }).toThrowError();
 });
+
 test("The Endpoint decorator must be applied before ToResponse() can be applied", async function () {
   expect(() => {
     class Controller {

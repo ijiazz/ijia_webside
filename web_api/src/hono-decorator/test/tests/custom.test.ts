@@ -1,5 +1,12 @@
 import { test, expect } from "vitest";
-import { Post, Use, applyController, createMetadataDecoratorFactory, getEndpointContext } from "@asla/hono-decorator";
+import {
+  Get,
+  Post,
+  Use,
+  applyController,
+  createMetadataDecoratorFactory,
+  getEndpointContext,
+} from "@asla/hono-decorator";
 import { Context, Hono, MiddlewareHandler } from "hono";
 
 test("Use an Endpoint to set the GET route", async function () {
@@ -57,4 +64,26 @@ test("Use an Endpoint to set the GET route", async function () {
   await expect(hono.request("/create", { method: "POST", body: ADMIN })).resolves.responseStatus(403);
   await expect(hono.request("/create", { method: "POST", body: ROOT })).resolves.responseStatus(403);
   await expect(hono.request("/create", { method: "POST", body: ADMIN_AND_ROOT })).resolves.responseStatus(200);
+});
+test("A property gets the context of multiple endpoints", async function () {
+  const Custom = createMetadataDecoratorFactory<string, string[]>(function (args) {
+    return args[0];
+  });
+
+  class Controller {
+    @Custom("root")
+    @Post("/create")
+    @Get("/create")
+    create(ctx: Context) {
+      const endpointContext = getEndpointContext(ctx);
+      const value = endpointContext.getEndpointMetadata<string>(Custom) ?? "none";
+
+      return ctx.text(value);
+    }
+  }
+  const hono = new Hono();
+  applyController(hono, new Controller());
+
+  await expect(hono.request("/create", { method: "POST" })).resolves.responseSuccessWith("text", "root");
+  await expect(hono.request("/create", { method: "GET" })).resolves.responseSuccessWith("text", "root");
 });

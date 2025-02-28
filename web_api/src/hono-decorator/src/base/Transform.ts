@@ -1,20 +1,25 @@
 import { Context } from "hono";
 import type { EndpointDecorator } from "./Endpoint.ts";
 import { createMetadataDecoratorFactory } from "./factory.ts";
-import { DecorateReuseError } from "./errors.ts";
+import { DecorateReuseError, DecoratorKindError } from "./errors.ts";
 
 export type DataTransformer<Input, Output> = (input: Input) => Output;
 
 export type ResponseTransformer<T> = (result: T, ctx: Context) => Response | Promise<Response>;
 
+export type TransformerDecorator<T extends (...args: any) => any = (...args: any) => any> = (
+  input: T | (abstract new (...args: any) => any) | undefined,
+  context: ClassMethodDecoratorContext<unknown, T> | ClassFieldDecoratorContext<unknown, T> | ClassDecoratorContext,
+) => void;
+
 interface ResTransformDecoratorFactory {
-  <T>(handler: ResponseTransformer<Awaited<T>>): EndpointDecorator<(...args: any[]) => T | Promise<T>>;
+  <T>(handler: ResponseTransformer<Awaited<T>>): TransformerDecorator<(...args: any[]) => T | Promise<T>>;
 }
 
 export const ToResponse: ResTransformDecoratorFactory = createMetadataDecoratorFactory<
   Function,
   [ResponseTransformer<any>]
->(function (args, { metadata }) {
+>(function (args, { metadata, kind }) {
   if (metadata) throw new DecorateReuseError("PipeOutput");
   const handler = args[0];
   if (typeof handler !== "function") throw new Error("handler must be a function");
@@ -54,13 +59,13 @@ export function PipeOutput(...handlers: any[]) {
 export type RequestTransformer<Args, Input = unknown> = (input: Input) => Args | Promise<Args>;
 
 interface ReqTransformDecoratorFactory {
-  <Args extends any[]>(handler: RequestTransformer<Args, Context>): EndpointDecorator<(...data: Args) => any>;
+  <Args extends any[]>(handler: RequestTransformer<Args, Context>): TransformerDecorator<(...data: Args) => any>;
 }
 
 export const ToArguments: ReqTransformDecoratorFactory = createMetadataDecoratorFactory<
   Function,
   [RequestTransformer<any[], Context>]
->(function (args, { metadata }) {
+>(function (args, { metadata, kind }) {
   if (metadata) throw new DecorateReuseError("PipeInput");
   const handler = args[0];
   if (typeof handler !== "function") throw new Error("handler must be a function");

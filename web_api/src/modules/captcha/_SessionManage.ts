@@ -29,6 +29,12 @@ export class SessionManager<T extends object> {
       return sessionId!;
     }
   }
+  async take(key: string): Promise<T | undefined> {
+    const redis = getRedis();
+    const value = await redis.getDel(this.keyPrefix + ":" + key);
+    if (!value) return undefined;
+    return JSON.parse(value);
+  }
   async get(key: string): Promise<T | undefined> {
     const redis = getRedis();
     const value = await redis.get(this.keyPrefix + ":" + key);
