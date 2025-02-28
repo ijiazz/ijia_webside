@@ -31,3 +31,4 @@ export class CommentStat {
     return { list };
   }
 }
+export const commentStatController = new CommentStat();

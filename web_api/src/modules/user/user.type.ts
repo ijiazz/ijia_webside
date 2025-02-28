@@ -1,9 +1,9 @@
 import type { Platform } from "@ijia/data/db";
-import type { EmailVerificationReply } from "../verification_code/mod.ts";
+import type { EmailCaptchaReply } from "../captcha/mod.ts";
 
 export type CreateUserProfileParam = {
   email: string;
-  emailVerification: EmailVerificationReply;
+  emailVerification: EmailCaptchaReply;
   password?: string;
   /** 班级 id */
   classId?: number[];

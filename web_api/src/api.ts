@@ -6,6 +6,7 @@ import type {
   UserLoginParamDto,
   UserLoginResultDto,
   UserProfileDto,
+  ImageCaptchaQuestion,
 } from "./dto.ts";
 
 export * from "./dto.ts";
@@ -36,5 +37,15 @@ export interface ApiDefined {
   "POST /user/self/bind_platform": {
     response: null;
     body: BindPlatformParam;
+  };
+}
+
+export interface ApiDefined {
+  /** 绑定平台 */
+  "POST /captcha/image": {
+    response: ImageCaptchaQuestion;
+    params?: {
+      sessionId?: string;
+    };
   };
 }

@@ -1,3 +1,6 @@
-import { UserController } from "./user.controller.ts";
+import { userController } from "./user.controller.ts";
 
-export const controllers: (new () => any)[] = [UserController];
+export * from "./user.type.ts";
+export * from "./user.controller.ts";
+
+export const controllers: object[] = [userController];

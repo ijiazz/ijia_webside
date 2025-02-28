@@ -1,3 +1,4 @@
-import { CommentStat } from "./comment_stat.controller.ts";
+import { commentStatController } from "./comment_stat.controller.ts";
 
-export const controllers = [CommentStat];
+export const controllers = [commentStatController];
+export * from "./comment_stat.controller.ts";

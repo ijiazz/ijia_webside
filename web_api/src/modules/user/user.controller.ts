@@ -17,10 +17,12 @@ import { HonoContext } from "@/hono/type.ts";
 import { checkValue } from "@/global/check.ts";
 import { HTTPException } from "hono/http-exception";
 import {
-  ImgVerificationReply,
-  imgSelectionVerificationReplyChecker,
-  verificationCode,
-} from "../verification_code/mod.ts";
+  ImageCaptchaReply,
+  imageCaptchaReplyChecker,
+  imageCaptchaController,
+  emailCaptchaController,
+  emailCaptchaReplyChecker,
+} from "../captcha/mod.ts";
 import { toJson } from "@/global/pipe.ts";
 
 @Controller({})
@@ -33,10 +35,10 @@ export class UserController {
       email: "string",
       password: optional.string,
       classId: optional(array.number),
-      emailVerification: { session_id: "string", code: "string" },
+      emailCaptcha: emailCaptchaReplyChecker(),
     });
 
-    const pass = await verificationCode.emailVerify(param.emailVerification);
+    const pass = await emailCaptchaController.verify(param.emailCaptcha);
     if (!pass) throw new HTTPException(403);
     return param;
   })
@@ -157,15 +159,21 @@ export class UserController {
   @Post("/user/email/verification")
   @PipeInput(async function (ctx) {
     const body = await ctx.req.json();
-    return checkValue(body, { verificationCode: imgSelectionVerificationReplyChecker(), email: "string" });
+    return checkValue(body, { captchaReply: imageCaptchaReplyChecker(), email: "string" });
   })
-  async sendEmailVerificationCode(body: { email: string; verificationCode: ImgVerificationReply }) {
-    const pass = await verificationCode.imageVerify(body.verificationCode);
+  async sendEmailVerificationCode(body: { email: string; captchaReply: ImageCaptchaReply }) {
+    const pass = await imageCaptchaController.verify(body.captchaReply);
     if (!pass) throw new HTTPException(403, { cause: "验证码错误" });
     //TODO: 创建用户时邮件验证码内容
-    const sessionId = verificationCode.emailCreateSession({ email: body.email, content: ``, prefix: "createUser" });
+    const sessionId = emailCaptchaController.emailCreateSession({
+      email: body.email,
+      content: ``,
+      prefix: "createUser",
+    });
     return {
       sessionId,
     };
   }
 }
+
+export const userController = new UserController();
