@@ -1,4 +1,4 @@
-import { createHonoApp, createHono } from "@/modules/serve.ts";
+import { createHono } from "@/modules/serve.ts";
 import { Hono } from "hono";
 import { test as viTest, DbContext } from "./db_connect.ts";
 import { HoFetch, createFetchSuite, InferFetchSuite } from "@asla/hofetch";
@@ -7,14 +7,9 @@ interface HonoContext {
   hono: Hono;
   api: InferFetchSuite<ApiDefined>;
 }
-let honoApp: ReturnType<typeof createHonoApp> | undefined;
 export const test = viTest.extend<HonoContext>({
   async hono({ ijiaDbPool }, use) {
-    if (!honoApp) {
-      honoApp = createHono();
-    }
-    const hono = await honoApp;
-    await use(hono);
+    await use(createHono());
   },
   async api({ hono }, use) {
     const hoFetch = new HoFetch({

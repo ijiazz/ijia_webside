@@ -1,4 +1,4 @@
-import { dclass, user, user_class_bind } from "@ijia/data/db";
+import { dclass, pla_user, user, user_class_bind } from "@ijia/data/db";
 import v, { getDbPool } from "@ijia/data/yoursql";
 import {
   LoginType,
@@ -15,20 +15,24 @@ import { setCookie } from "hono/cookie";
 import { Controller, Get, PipeInput, PipeOutput, Post } from "@asla/hono-decorator";
 import { HonoContext } from "@/hono/type.ts";
 import { checkValue } from "@/global/check.ts";
+import { integer, stringMatch } from "evlib/validator";
 import { HTTPException } from "hono/http-exception";
 import {
-  ImageCaptchaReply,
   imageCaptchaReplyChecker,
   imageCaptchaController,
-  emailCaptchaController,
+  emailCaptchaService,
   emailCaptchaReplyChecker,
 } from "../captcha/mod.ts";
-import { toJson } from "@/global/pipe.ts";
+import { autoBody } from "@/global/pipe.ts";
+import { createEmailCodeHtmlContent } from "./template/sigup-email-code.ts";
+import { Context } from "hono";
+import { ENV } from "@/config/mod.ts";
 
+@autoBody
 @Controller({})
 export class UserController {
   constructor() {}
-  @PipeOutput(toJson)
+
   @PipeInput(async function (ctx) {
     const body = await ctx.req.json();
     const param = checkValue(body, {
@@ -38,11 +42,11 @@ export class UserController {
       emailCaptcha: emailCaptchaReplyChecker(),
     });
 
-    const pass = await emailCaptchaController.verify(param.emailCaptcha);
+    const pass = await emailCaptchaService.verify(param.emailCaptcha);
     if (!pass) throw new HTTPException(403);
     return param;
   })
-  @Post("/user/profile")
+  @Post("/user/signup")
   async createUser(body: Omit<CreateUserProfileParam, "emailVerification">): Promise<CreateUserProfileResult> {
     let password: string | undefined;
     let salt: string | undefined;
@@ -69,71 +73,84 @@ export class UserController {
 
     return { userId };
   }
-  // @Patch("/user/self/profile")
-  // updateUser(@Body() body: unknown) {}
-  @PipeInput(async function (ctx) {
-    return [await ctx.req.json()];
-  })
-  @Post("/user/self/bind_platform")
-  async bindPlatform(body: unknown) {}
 
-  @PipeOutput(toJson)
-  @PipeInput(async function (ctx: HonoContext) {
-    const userInfo = await ctx.get("userInfo");
-    const jwtInfo = await userInfo.getJwtInfo();
-    return +jwtInfo.userId;
+  @PipeInput(async function (ctx) {
+    const body = await ctx.req.json();
+    const param = checkValue(body, { captchaReply: imageCaptchaReplyChecker(), email: "string" });
+    const pass = await imageCaptchaController.verify(param.captchaReply);
+    if (!pass) throw new HTTPException(403, { cause: "验证码错误" });
+
+    return param.email;
   })
-  @Get("/user/self/profile")
-  async getUser(userId: number): Promise<UserProfileDto> {
-    const users = await user
-      .select<UserProfileDto>({ userId: "id", avatarUrl: "avatar", nickname: true })
-      .where(`id=${v(userId)}`)
-      .queryRows();
-    return users[0];
+  @Post("/user/signup/email_captcha")
+  async sendEmailCaptcha(email: string) {
+    const exists = await pla_user
+      .select({ email: true })
+      .where(`email=${v(email)}`)
+      .limit(1)
+      .queryCount();
+    if (exists) return;
+
+    const code = emailCaptchaService.genCode();
+    const expire = 5 * 60; // 5 分钟有效期
+    const htmlContent = createEmailCodeHtmlContent({
+      code,
+      time: expire,
+      title: `HI! 您正在使用 ${email} 注册 IJIA 学院账号`,
+    });
+    const sessionId = emailCaptchaService.sendEmailCaptcha({
+      expire,
+      code,
+      email: email,
+      title: `IJIA 学院验证码: ${code}`,
+      text: htmlContent,
+    });
+    return {
+      sessionId,
+    };
   }
 
   @PipeOutput(function (value, ctx) {
-    setCookie(ctx, "jwt-token", value.token);
+    if (value.success) setCookie(ctx, "jwt-token", value.token);
     return ctx.json(value, 200);
   })
-  @PipeInput(async function (ctx) {
-    const body = await ctx.req.json();
-    const method = body.method;
-    let params: UserLoginParamDto;
-    switch (method) {
-      case LoginType.id: {
-        let res = checkValue(body, { id: "string", password: "string", passwordNoHash: optional.boolean });
-        params = { ...res, method: LoginType.id };
-        break;
-      }
-      case LoginType.email: {
-        let res = checkValue(body, {
-          method: "string",
-          email: "string",
-          password: "string",
-          passwordNoHash: optional.boolean,
-        });
-        params = { ...res, method: LoginType.email };
-        break;
-      }
-      default:
-        throw new HTTPException(400, { cause: ctx.json({ success: false, message: "方法不允许" }, 400) });
+  @PipeInput(async function (ctx: Context) {
+    const body: UserLoginParamDto = await ctx.req.json();
+    if (ENV.SIGUP_VERIFY_EMAIL) {
+      let pass: boolean;
+      if (body.captcha) {
+        const captcha = checkValue(body.captcha, imageCaptchaReplyChecker());
+        pass = await imageCaptchaController.verify(captcha);
+      } else pass = false;
+      if (!pass) throw new HTTPException(200, { message: "验证码错误", res: ctx.json({ message: "验证码错误" }) });
     }
-    return params;
+    return body;
   })
   @Post("/user/login")
-  async login(params: UserLoginParamDto): Promise<UserLoginResultDto> {
+  async login(body: any): Promise<UserLoginResultDto> {
+    const method = body.method;
     let user: {
       userId?: number;
       message?: string;
     };
-    switch (params.method) {
+    switch (method) {
       case LoginType.id: {
+        const params = checkValue(body, {
+          id: integer({ acceptString: true }),
+          password: "string",
+          passwordNoHash: optional.boolean,
+        });
         if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
         user = await loginService.loginById(+params.id, params.password);
         break;
       }
       case LoginType.email: {
+        const params = checkValue(body, {
+          method: "string",
+          email: "string",
+          password: "string",
+          passwordNoHash: optional.boolean,
+        });
         if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
         user = await loginService.loginByEmail(params.email, params.password);
         break;
@@ -142,7 +159,7 @@ export class UserController {
         throw new HTTPException(400, { res: Response.json({ message: "方法不允许" }) });
     }
     if (user.userId === undefined) {
-      throw new HTTPException(403, { res: Response.json({ message: user.message }) });
+      return { message: user.message, success: false, token: "" };
     }
 
     const minute = 3 * 24 * 60; // 3 天后过期
@@ -155,24 +172,26 @@ export class UserController {
     };
   }
 
-  @PipeOutput(toJson)
+  // @Patch("/user/self/profile")
+  // updateUser(@Body() body: unknown) {}
   @PipeInput(async function (ctx) {
-    const body = await ctx.req.json();
-    return checkValue(body, { captchaReply: imageCaptchaReplyChecker(), email: "string" });
+    return [await ctx.req.json()];
   })
-  @Post("/user/email/captcha")
-  async sendEmailCaptcha(body: { email: string; captchaReply: ImageCaptchaReply }) {
-    const pass = await imageCaptchaController.verify(body.captchaReply);
-    if (!pass) throw new HTTPException(403, { cause: "验证码错误" });
-    //TODO: 创建用户时邮件验证码内容
-    const sessionId = emailCaptchaController.emailCreateSession({
-      email: body.email,
-      content: ``,
-      prefix: "createUser",
-    });
-    return {
-      sessionId,
-    };
+  @Post("/user/self/bind_platform")
+  async bindPlatform(body: unknown) {}
+
+  @PipeInput(async function (ctx: HonoContext) {
+    const userInfo = await ctx.get("userInfo");
+    const jwtInfo = await userInfo.getJwtInfo();
+    return +jwtInfo.userId;
+  })
+  @Get("/user/self/profile")
+  async getUser(userId: number): Promise<UserProfileDto> {
+    const users = await user
+      .select<UserProfileDto>({ userId: "id", avatarUrl: "avatar", nickname: true })
+      .where(`id=${v(userId)}`)
+      .queryRows();
+    return users[0];
   }
 }
 

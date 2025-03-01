@@ -17,7 +17,7 @@ export class LoginService {
         userId: "id",
         password: true,
         pwd_salt: true,
-        login_ban: "get_bit(0) ",
+        login_ban: "get_bit(status, 0) ",
       })
       .where(["is_deleted !=FALSE", where]);
   }

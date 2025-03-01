@@ -1,15 +1,16 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { LoginForm, ProFormCheckbox, ProFormText } from "@ant-design/pro-components";
+import { LoginForm, ProFormText } from "@ant-design/pro-components";
 import { Alert, Space, Tabs } from "antd";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { useState } from "react";
 import { Link } from "react-router";
-import { useAsyncFn } from "react-use";
 import { api } from "@/common/http.ts";
 import { UserLoginParamDto } from "@/api.ts";
 import { tryHashPassword } from "../util/pwd_hash.ts";
 import { antdStatic } from "@/hooks/antd-static.ts";
 import { IjiaLogo } from "@/components/ijia-logo.tsx";
+import styled from "@emotion/styled";
+import { useAsync } from "@/hooks/useAsync.ts";
 
 enum LoginType {
   id = "id",
@@ -20,9 +21,12 @@ export function LoginPage() {
   const [message, setMessage] = useState<string | undefined>();
   const { modal } = useContext(antdStatic);
 
-  const [loginState, postLogin] = useAsyncFn(async function (param: UserLoginParamDto) {
+  const { loading: loginLoading, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {
     const result = await api["/user/login"].post({ body: param });
-    if (result.message) setMessage(result.message);
+
+    if (!result.success) {
+      setMessage(result.message ?? "登录失败");
+    }
 
     if (result.tip) {
       await new Promise<void>((resolve, reject) => {
@@ -39,7 +43,8 @@ export function LoginPage() {
       return;
     }
     return result;
-  }, []);
+  });
+
   async function onLogin(param: EmailLoginParam | IdLoginParam) {
     let loginParam: UserLoginParamDto | undefined;
 
@@ -75,20 +80,12 @@ export function LoginPage() {
     await postLogin(loginParam);
   }
   return (
-    <div style={{ height: "100%", position: "relative" }}>
+    <StyledPage>
       <VideoBg />
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          height: "100%",
-          position: "relative",
-        }}
-      >
-        <div> {/* //TODO: 文案 */}</div>
+      <div className="main">
+        <div className="left-desc"> </div>
 
-        <div style={{ width: "400px", padding: "0 24px" }}>
+        <div className="login-form-container">
           <LoginForm
             logo={
               <Link to="/" title="首页">
@@ -98,14 +95,13 @@ export function LoginPage() {
             message={message && <Alert type="error" message={message} />}
             title="IJIA 学院"
             subTitle="IJIA 学院"
-            onAuxClick={() => console.log("d")}
             onFinish={onLogin}
             containerStyle={{
               backgroundColor: "#fff8",
               borderRadius: "4px",
               backdropFilter: "blur(6px)",
             }}
-            loading={loginState.loading}
+            loading={loginLoading}
           >
             <Tabs
               items={[
@@ -116,14 +112,14 @@ export function LoginPage() {
                     <>
                       <ProFormText
                         name="id"
-                        fieldProps={{ prefix: <UserOutlined className={"prefixIcon"} /> }}
-                        placeholder={"学号"}
-                        rules={[{ required: true }]}
+                        fieldProps={{ prefix: <UserOutlined /> }}
+                        placeholder="学号"
+                        rules={[{ required: true, pattern: /\d+/, message: "学号应该是正整数" }]}
                       />
                       <ProFormText.Password
                         name="password"
-                        fieldProps={{ prefix: <LockOutlined className={"prefixIcon"} /> }}
-                        placeholder={"密码"}
+                        fieldProps={{ prefix: <LockOutlined /> }}
+                        placeholder="密码"
                         rules={[{ required: true }]}
                       />
                     </>
@@ -136,14 +132,14 @@ export function LoginPage() {
                     <>
                       <ProFormText
                         name="email"
-                        fieldProps={{ prefix: <UserOutlined className={"prefixIcon"} /> }}
-                        placeholder={"邮箱"}
-                        rules={[{ required: true }]}
+                        fieldProps={{ prefix: <UserOutlined /> }}
+                        placeholder="邮箱"
+                        rules={[{ required: true, type: "email" }]}
                       />
                       <ProFormText.Password
                         name="password"
-                        fieldProps={{ prefix: <LockOutlined className={"prefixIcon"} /> }}
-                        placeholder={"密码"}
+                        fieldProps={{ prefix: <LockOutlined /> }}
+                        placeholder="密码"
                         rules={[{ required: true }]}
                       />
                     </>
@@ -155,13 +151,7 @@ export function LoginPage() {
               onChange={(activeKey) => setLoginType(activeKey as LoginType)}
             />
 
-            <div
-              style={{
-                marginBlockEnd: 24,
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
+            <div className="login-operation">
               {/* <ProFormCheckbox noStyle name="saveUser">
                 记住账号
               </ProFormCheckbox> */}
@@ -177,9 +167,36 @@ export function LoginPage() {
           </LoginForm>
         </div>
       </div>
-    </div>
+    </StyledPage>
   );
 }
+
+const StyledPage = styled.div`
+  height: 100%;
+  position: relative;
+
+  .main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    position: relative;
+    .left-desc {
+      color: #fff;
+      font-size: 48px;
+      font-weight: bold;
+    }
+    .login-form-container {
+      width: 400px;
+      padding: 0 24px;
+      .login-operation {
+        margin-block-end: 24px;
+        display: flex;
+        justify-content: space-between;
+      }
+    }
+  }
+`;
 function VideoBg() {
   return (
     <div

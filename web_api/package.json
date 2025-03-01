@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test-decorator": "vitest --root src/hono-decorator  run",
     "build": "rollup -c build/rollup.config.js",
+    "check-type-core": "tsc -p tsconfig.json",
+    "check-type-model": "tsc -p tsconfig.model.json",
     "check-type": "tsc -p tsconfig.json && tsc -p tsconfig.model.json",
     "start": "node --env-file=.env dist/main.js",
     "genApiDoc": "typedoc --tsconfig tsconfig.model.json"
@@ -24,11 +26,13 @@
     "@redis/client": "^1.6.0",
     "evlib": "^3.0.2",
     "hono": "^4.7.2",
+    "nodemailer": "^6.10.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@asla/hofetch": "workspace:^",
     "@types/node": "^22.7.6",
+    "@types/nodemailer": "^6.4.17",
     "typedoc": "^0.27.6",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.5"

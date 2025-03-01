@@ -90,7 +90,6 @@ export function PipeInput<
   ],
 >(...transformers: Pipes): EndpointDecorator<(data: P0) => any>;
 export function PipeInput(...handlers: any[]): EndpointDecorator<(...data: any[]) => any> {
-  if (handlers.length === 1) return ToArguments(handlers[0]);
   return ToArguments(function (ctx) {
     const result = useTransformers(handlers, ctx);
     if (result instanceof Promise) return result.then((args) => [args]);

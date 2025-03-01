@@ -1,5 +1,5 @@
 import type { Platform } from "@ijia/data/db";
-import type { EmailCaptchaReply } from "../captcha/mod.ts";
+import type { EmailCaptchaReply, ImageCaptchaReply } from "../captcha/Captcha.type.ts";
 
 export type CreateUserProfileParam = {
   email: string;
@@ -38,12 +38,16 @@ export type UserLoginResultDto = {
 };
 export type UserLoginByIdParam = {
   method: LoginType.id;
+  captcha?: ImageCaptchaReply;
+
   id: string;
   password: string;
   passwordNoHash?: boolean;
 };
 export type UserLoginByEmailParam = {
   method: LoginType.email;
+  captcha?: ImageCaptchaReply;
+
   email: string;
   password: string;
   passwordNoHash?: boolean;

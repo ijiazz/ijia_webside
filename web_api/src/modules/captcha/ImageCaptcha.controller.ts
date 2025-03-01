@@ -22,7 +22,7 @@ class ImageCaptchaController {
     //4 张确定值
     const certain = select.where(`is_true IS NOT NULL`).orderBy("RANDOM()").limit(4);
     //5 张不确定值
-    const equivocal = select.where(`is_true IS NOT NULL`).orderBy("RANDOM()").limit(5);
+    const equivocal = select.where(`is_true IS NULL`).orderBy("RANDOM()").limit(5);
 
     const sql = `${certain.toSelect()} UNION ${equivocal.toSelect()}`;
     const result = await getDbPool().queryRows<Pick<DbCaptchaPicture, "id" | "is_true" | "type">>(sql);
@@ -63,7 +63,7 @@ class ImageCaptchaController {
     const no: number[] = [];
     for (let i = 0; i < answers.length; i++) {
       if (answers[i] === null) unknown.push(i);
-      if (answers[i]) yes.push(i);
+      else if (answers[i]) yes.push(i);
       else no.push(i);
     }
     return {
@@ -127,10 +127,10 @@ class ImageCaptchaController {
       const assertCorrect = Array.from(pass.assertCorrect);
       const assertError = Array.from(pass.assertError);
       const add = captcha_picture
-        .update({ yes_count: "yes+1" })
+        .update({ yes_count: "yes_count + 1" })
         .where(`id in (${assertCorrect.map((value) => v(value)).join(",")})`);
       const sub = captcha_picture
-        .update({ no_count: "no+1" })
+        .update({ no_count: "no_count + 1" })
         .where(`id in (${assertError.map((value) => v(value)).join(",")})`);
 
       if (assertCorrect.length && assertError.length) {
@@ -141,7 +141,7 @@ class ImageCaptchaController {
       } else if (assertCorrect.length) {
         await add.query();
       } else if (assertError.length) {
-        await add.query();
+        await sub.query();
       }
     }
     return !!pass;

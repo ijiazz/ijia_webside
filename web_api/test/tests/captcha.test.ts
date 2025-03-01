@@ -53,14 +53,14 @@ test("允许选择不确定的选项", async function ({ api }) {
 
   const unknownItems = captcha_picture
     .select<{ yes_count: number; no_count: number; id: string }>({ id: true, yes_count: true, no_count: true })
-    .where(unknownId.map((id) => v(id)).join(", "))
+    .where(`id in (${unknownId.map((id) => v(id)).join(", ")})`)
     .orderBy("id");
 
   const old = await unknownItems.queryRows();
   expect(
     old.map((item) => ({ yes_count: item.yes_count, no_count: item.no_count })),
     "初始值为0",
-  ).toEqual(old.map(() => ({ no_count: 0, yse_count: 0 })));
+  ).toEqual(old.map(() => ({ no_count: 0, yes_count: 0 })));
 
   const isPass = await imageCaptchaController.verify({
     sessionId: result.sessionId,

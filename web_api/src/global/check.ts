@@ -10,4 +10,3 @@ export function checkValue<T extends ExpectType>(
   if (error) throw new HTTPException(400, { cause: error, res: Response.json(error) });
   return value;
 }
-export function int(min_max: number, max?: number) {}
