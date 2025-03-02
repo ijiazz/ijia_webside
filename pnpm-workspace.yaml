@@ -2,3 +2,4 @@ packages:
   - web_api
   - web
   - deps/*
+  - e2e

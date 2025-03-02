@@ -7,7 +7,11 @@ export type ListenOption = {
   hostname: string;
   https?: { key: string; cert: string };
 };
-export function listenUseNodeHttpServer(hono: Hono, option: ListenOption) {
+export type AppServer = {
+  close(force?: boolean): Promise<void>;
+};
+
+export function listenUseNodeHttpServer(hono: Hono, option: ListenOption): Promise<AppServer> {
   const { https: httpsOptions } = option;
   let server: ServerType;
   if (httpsOptions) {
@@ -23,21 +27,37 @@ export function listenUseNodeHttpServer(hono: Hono, option: ListenOption) {
     });
   }
   server.listen(option.port, option.hostname);
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<AppServer>((resolve, reject) => {
     server.once("listening", () => {
       server.removeAllListeners("error");
-      resolve();
+      const http: AppServer = {
+        close(force) {
+          return new Promise(function (resolve, reject) {
+            server.close((err) => (err ? reject(err) : resolve()));
+            if (force) server.unref();
+          });
+        },
+      };
+      resolve(http);
     });
     server.once("error", reject);
   });
 }
-export function listenUseDenoHttpServer(hono: Hono, option: ListenOption) {
-  return new Promise(function (resolve, reject) {
+export function listenUseDenoHttpServer(hono: Hono, option: ListenOption): Promise<AppServer> {
+  return new Promise<AppServer>(function (resolve, reject) {
     const { https: httpsOptions = { key: undefined, cert: undefined } } = option;
     //@ts-ignore
     const serve = Deno.serve(
       {
-        onListen: resolve,
+        onListen: () => {
+          const server: AppServer = {
+            close(force) {
+              if (force) serve.unref();
+              return serve.shutdown();
+            },
+          };
+          resolve(server);
+        },
         port: option.port,
         hostname: option.hostname,
         key: httpsOptions.key,

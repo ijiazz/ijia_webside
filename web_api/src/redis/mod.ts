@@ -12,7 +12,7 @@ export function getRedis(): RedisClient {
     redis = createClient({ url: ENV.REDIS_CONNECT_URL });
     redis.connect().then(
       () => {
-        console.error("redis已连接");
+        console.log("redis已连接");
       },
       (e) => {
         console.error("redis连接失败", e);
@@ -20,6 +20,9 @@ export function getRedis(): RedisClient {
     );
   }
   return redis;
+}
+export async function disconnectRedis() {
+  if (redis) return redis.disconnect();
 }
 export function setRedis(redisClient: RedisClientType<any, any, any>) {
   redis = redisClient;

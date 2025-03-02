@@ -10,13 +10,12 @@ export default {
   test: {
     env: {
       TEST_LOGIN_DB: PG_URL,
-      TEST_LOGIN_REDIS: REDIS_URL,
+      TEST_REDIS_RUL: REDIS_URL,
       IJIA_TEMPLATE_DBNAME: "test_ijia_template",
     },
 
     include: ["./test/**/*.test.ts"],
     setupFiles: ["../deps/ijia-data/test/setup/extend_yoursql.ts", "./test/asserts/asserts.ts"],
-    globalSetup: "../deps/ijia-data/test/setup/setup_pgsql.ts",
   },
   plugins: [tsconfigPaths({})],
 } satisfies ViteUserConfig;

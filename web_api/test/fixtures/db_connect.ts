@@ -1,6 +1,6 @@
 import { test as viTest } from "vitest";
-import { createPgClient, createPgPool, DbConnectOption, DbPool, parserDbUrl, setDbPool } from "@ijia/data/yoursql";
-import { DbManage } from "@ijia/data/testlib";
+import { createPgPool, DbPool, parserDbUrl, setDbPool } from "@ijia/data/yoursql";
+import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
 import process from "node:process";
 import { RedisClient, setRedis } from "@/redis/mod.ts";
 import { createClient, RedisFlushModes } from "@redis/client";
@@ -12,38 +12,33 @@ export interface DbContext {
   redis: RedisClient;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
-const IJIA_TEMPLATE_DBNAME = process.env.IJIA_TEMPLATE_DBNAME!; // global setup 创建
+const DB_NAME_PREFIX = "test_ijia_";
+const DB_CONNECT_INFO = getConfigEnv(process.env);
+const TEST_REDIS_RUL = process.env.TEST_REDIS_RUL!;
 
-const TEST_REDIS_RUL = process.env.TEST_LOGIN_REDIS!; // global setup 创建
-
-const templateDbInfo: DbConnectOption = parserDbUrl(process.env["TEST_LOGIN_DB"]!);
 export const test = viTest.extend<DbContext>({
   async ijiaDbPool({}, use) {
-    const dbName = IJIA_TEMPLATE_DBNAME + "_" + VITEST_WORKER_ID;
-    await using manage = new DbManage(await createPgClient(templateDbInfo));
-
-    await manage.copy(IJIA_TEMPLATE_DBNAME, dbName);
-    const connectOption: DbConnectOption = { ...templateDbInfo, database: dbName };
-
-    const dbPool = await createPgPool(connectOption);
+    const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
+    await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true, extra: true });
+    const dbPool = await createPgPool({ ...DB_CONNECT_INFO, database: dbName });
     setDbPool(dbPool);
     await use(dbPool);
     await dbPool.close(true);
 
-    await manage.dropDb(dbName);
+    await clearDropDb(dbName);
   },
   async emptyDbPool({}, use) {
     const dbName = "test_empty_" + VITEST_WORKER_ID;
 
-    await using manage = new DbManage(await createPgClient(templateDbInfo));
+    const manage = await getManage();
+    await manage.emptyDatabase(dbName);
+    await manage.close();
 
-    await manage.dropDb(dbName);
-    await manage.createDb(dbName);
-    const client = await createPgPool({ ...templateDbInfo, database: dbName });
-    await use(client);
-    await client.close();
+    const dbPool = await createPgPool({ ...DB_CONNECT_INFO, database: dbName });
+    await use(dbPool);
+    await dbPool.close();
 
-    await manage.dropDb(dbName);
+    await clearDropDb(dbName);
   },
   async redis({}, use) {
     const client = createClient({ url: TEST_REDIS_RUL, database: VITEST_WORKER_ID });
@@ -54,3 +49,21 @@ export const test = viTest.extend<DbContext>({
     use(client);
   },
 });
+function getConfigEnv(env: Record<string, string | undefined>) {
+  const url = env["TEST_LOGIN_DB"];
+  if (!url) throw new Error("缺少 TEST_LOGIN_DB 环境变量");
+  return parserDbUrl(url);
+}
+async function clearDropDb(dbName: string) {
+  try {
+    const manage = await getManage();
+    await manage.dropDb(dbName);
+    await manage.close();
+  } catch (error) {
+    console.error(`清理用于测试的数据库 ${dbName} 失败`, error);
+  }
+}
+
+function getManage() {
+  return DbManage.connect(DB_CONNECT_INFO);
+}
