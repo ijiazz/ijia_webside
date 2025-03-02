@@ -14,7 +14,7 @@
   },
   "imports": {
     "@/": "./src/",
-    "@asla/hono-decorator":"./src/hono-decorator/src/mod.ts"
+    "@asla/hono-decorator": "./src/hono-decorator/src/mod.ts"
   },
   "compilerOptions": {}
 }

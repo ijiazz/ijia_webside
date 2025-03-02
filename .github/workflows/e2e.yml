@@ -1,4 +1,4 @@
-name: CI
+name: E2E Test
 on:
   pull_request:
     branches:
@@ -10,6 +10,7 @@ on:
       - web_api/**
       - pnpm-lock.yaml
       - .gitmodules
+      - .github/workflows/**
 jobs:
   e2e:
     runs-on: ubuntu-22.04
@@ -20,9 +21,18 @@ jobs:
           ssh-key: ${{secrets.MOSS_SERVER_PKEY}}
       - name: Build
         run: docker compose build
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - uses: actions/cache@v4 #https://playwright.dev/docs/browsers#managing-browser-binaries
+        with:
+          path: /home/runner/.cache/ms-playwright
+          key: ${{ hashFiles('e2e/package.json') }}
       - name: Install browser
         run: pnpm playwright install chromium webkit firefox --with-deps
         working-directory: ./e2e
+
       - name: Start services
         run: docker compose up -d
       - name: E2E test

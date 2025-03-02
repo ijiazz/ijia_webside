@@ -5,7 +5,7 @@
     "init-ijia-data": "rollup -c deps/ijia-data/build/rollup.config.mjs",
     "init-hofetch": "rollup -c deps/hofetch/build/rollup.config.mjs",
     "check-type": "pnpm run -r check-type",
-    "check-fmt": "pnpm prettier --check  web_api web"
+    "check-fmt": "pnpm prettier --check web_api web e2e"
   },
   "engines": {
     "node": ">=22"

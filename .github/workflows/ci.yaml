@@ -22,8 +22,12 @@ jobs:
       POSTGRES_USER: ci_test
       POSTGRES_DB: postgres
     services:
+      redis:
+        image: redis:7.4.2-alpine
+        ports:
+          - 6379:6379
       postgres:
-        image: postgres
+        image: postgres:17-alpine
         env:
           POSTGRES_PASSWORD: ${{env.POSTGRES_PASSWORD}}
           POSTGRES_USER: ${{env.POSTGRES_USER}}
