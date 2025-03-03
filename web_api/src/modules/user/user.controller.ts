@@ -1,12 +1,12 @@
-import { dclass, pla_user, user, user_class_bind } from "@ijia/data/db";
-import v, { getDbPool } from "@ijia/data/yoursql";
+import { pla_user, user } from "@ijia/data/db";
+import v from "@ijia/data/yoursql";
 import {
   LoginType,
+  RequestSignupEmailCaptchaParam,
   UserLoginResultDto,
   UserProfileDto,
   type CreateUserProfileParam,
   type CreateUserProfileResult,
-  type UserLoginParamDto,
 } from "./user.type.ts";
 import { optional, array } from "evlib/validator";
 import { loginService } from "./services/Login.service.ts";
@@ -15,18 +15,21 @@ import { setCookie } from "hono/cookie";
 import { Controller, Get, PipeInput, PipeOutput, Post } from "@asla/hono-decorator";
 import { HonoContext } from "@/hono/type.ts";
 import { checkValue } from "@/global/check.ts";
-import { integer, stringMatch } from "evlib/validator";
-import { HTTPException } from "hono/http-exception";
+import { integer } from "evlib/validator";
 import {
   imageCaptchaReplyChecker,
   imageCaptchaController,
   emailCaptchaService,
   emailCaptchaReplyChecker,
+  CaptchaEmail,
+  EmailCaptchaQuestion,
 } from "../captcha/mod.ts";
 import { autoBody } from "@/global/pipe.ts";
 import { createEmailCodeHtmlContent } from "./template/sigup-email-code.ts";
 import { Context } from "hono";
-import { ENV } from "@/config/mod.ts";
+import { ENV } from "@/global/config.ts";
+import { APP_CONFIG } from "@/config.ts";
+import { createMessageResponseError } from "@/global/http_error.ts";
 
 @autoBody
 @Controller({})
@@ -42,92 +45,79 @@ export class UserController {
       emailCaptcha: emailCaptchaReplyChecker(),
     });
 
-    const pass = await emailCaptchaService.verify(param.emailCaptcha);
-    if (!pass) throw new HTTPException(403);
     return param;
   })
   @Post("/user/signup")
-  async createUser(body: Omit<CreateUserProfileParam, "emailVerification">): Promise<CreateUserProfileResult> {
-    let password: string | undefined;
-    let salt: string | undefined;
-    if (typeof body.password === "string") {
-      salt = crypto.randomUUID().replaceAll("-", "");
-      password = await hashPasswordBackEnd(body.password, salt);
+  async createUser(body: CreateUserProfileParam): Promise<CreateUserProfileResult> {
+    if (ENV.SIGNUP_VERIFY_EMAIL) {
+      const pass = await emailCaptchaService.verify(body.emailCaptcha!);
+      if (!pass) throw createMessageResponseError(403, "验证码错误");
     }
-    await using db = getDbPool().begin();
-    const createUserSql = user
-      .insert({ email: body.email, password: password, pwd_salt: salt })
-      .returning<{ userId: number }>({ userId: "id" });
-    const userId = await db.queryRows(createUserSql).then((item) => item[0].userId);
-    if (body.classId?.length) {
-      // 目前只能选择一个班级
-      const classId = body.classId[0];
-      const exists = await dclass.select({ id: true }).where(`id=${classId} AND is_public= TRUE`).queryCount();
-      if (!exists) throw new HTTPException(400, { cause: "班级不存在" });
-      const insertRoles = user_class_bind.insert(
-        body.classId.map((classId) => ({ class_id: classId, user_id: userId })),
-      );
-      await db.queryCount(insertRoles);
-    }
-    await db.commit();
+
+    const userId = await loginService.createUser(body.email, { classId: body.classId, password: body.password });
 
     return { userId };
   }
 
   @PipeInput(async function (ctx) {
     const body = await ctx.req.json();
-    const param = checkValue(body, { captchaReply: imageCaptchaReplyChecker(), email: "string" });
-    const pass = await imageCaptchaController.verify(param.captchaReply);
-    if (!pass) throw new HTTPException(403, { cause: "验证码错误" });
-
-    return param.email;
+    return checkValue(body, { captchaReply: imageCaptchaReplyChecker(), email: "string" });
   })
   @Post("/user/signup/email_captcha")
-  async sendEmailCaptcha(email: string) {
-    const exists = await pla_user
-      .select({ email: true })
-      .where(`email=${v(email)}`)
-      .limit(1)
-      .queryCount();
-    if (exists) return;
+  async sendEmailCaptcha({ captchaReply, email }: RequestSignupEmailCaptchaParam): Promise<EmailCaptchaQuestion> {
+    {
+      const pass = await imageCaptchaController.verify(captchaReply);
+      if (!pass) throw createMessageResponseError(403, "验证码错误");
+
+      const exists = await user
+        .select({ email: true })
+        .where(`email=${v(email)}`)
+        .limit(1)
+        .queryCount();
+      if (exists) throw createMessageResponseError(406, "邮件已被注册");
+    }
 
     const code = emailCaptchaService.genCode();
     const expire = 5 * 60; // 5 分钟有效期
     const htmlContent = createEmailCodeHtmlContent({
       code,
       time: expire,
-      title: `HI! 您正在使用 ${email} 注册 IJIA 学院账号`,
+      title: `HI! 您正在使用 ${email} 注册 ${APP_CONFIG.appName}账号`,
     });
-    const sessionId = emailCaptchaService.sendEmailCaptcha({
+    const captchaEmail: CaptchaEmail = {
       expire,
       code,
-      email: email,
-      title: `IJIA 学院验证码: ${code}`,
+      recipient: email,
+      title: `${APP_CONFIG.appName}验证码: ${code}`,
       text: htmlContent,
-    });
-    return {
-      sessionId,
     };
+    let emailCaptchaQuestion: EmailCaptchaQuestion;
+    if (ENV.IS_DEV) {
+      emailCaptchaQuestion = await emailCaptchaService.createSession(captchaEmail);
+    } else {
+      emailCaptchaQuestion = await emailCaptchaService.sendEmailCaptcha(captchaEmail);
+    }
+    return emailCaptchaQuestion;
   }
 
   @PipeOutput(function (value, ctx) {
     if (value.success) setCookie(ctx, "jwt-token", value.token);
     return ctx.json(value, 200);
   })
-  @PipeInput(async function (ctx: Context) {
-    const body: UserLoginParamDto = await ctx.req.json();
-    if (ENV.SIGUP_VERIFY_EMAIL) {
+  @PipeInput(function (ctx: Context) {
+    return ctx.req.json();
+  })
+  @Post("/user/login")
+  async login(body: any): Promise<UserLoginResultDto> {
+    {
       let pass: boolean;
       if (body.captcha) {
         const captcha = checkValue(body.captcha, imageCaptchaReplyChecker());
         pass = await imageCaptchaController.verify(captcha);
       } else pass = false;
-      if (!pass) throw new HTTPException(200, { message: "验证码错误", res: ctx.json({ message: "验证码错误" }) });
+      if (!pass) throw createMessageResponseError(403, "验证码错误");
     }
-    return body;
-  })
-  @Post("/user/login")
-  async login(body: any): Promise<UserLoginResultDto> {
+
     const method = body.method;
     let user: {
       userId?: number;
@@ -156,7 +146,7 @@ export class UserController {
         break;
       }
       default:
-        throw new HTTPException(400, { res: Response.json({ message: "方法不允许" }) });
+        throw createMessageResponseError(400, "方法不允许");
     }
     if (user.userId === undefined) {
       return { message: user.message, success: false, token: "" };

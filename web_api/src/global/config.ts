@@ -7,7 +7,7 @@ export const ENV = {
   CHECK_SERVER: env.CHECK_SERVER,
   JWT_KEY: env.JWT_KEY ?? crypto.randomUUID(),
 
-  SIGUP_VERIFY_EMAIL: !!env.SIGUP_VERIFY_EMAIL,
+  SIGNUP_VERIFY_EMAIL: !!env.SIGNUP_VERIFY_EMAIL,
   REDIS_CONNECT_URL: env.REDIS_CONNECT_URL,
   EMAIL_CONFIG: getEmailConfig(),
   ...getListen(),

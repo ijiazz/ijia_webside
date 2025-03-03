@@ -1,6 +1,6 @@
 import { SessionManager } from "./_SessionManage.ts";
-import { EmailCaptchaReply } from "./Captcha.type.ts";
-import { getEmailSender } from "@/lib/email.ts";
+import { EmailCaptchaQuestion, EmailCaptchaReply } from "./Captcha.type.ts";
+import { getEmailSender } from "@/services/email.ts";
 
 //TODO 邮件验证码服务
 class CaptchaService {
@@ -10,18 +10,24 @@ class CaptchaService {
     return code.toString();
   }
   readonly session = new SessionManager<EmailCaptchaSessionData>("Captcha:code", 5 * 60);
-  async sendEmailCaptcha(config: EmailConfig) {
+  async sendEmailCaptcha(config: CaptchaEmail) {
     await getEmailSender().sendEmail({
-      targetEmail: config.email,
+      targetEmail: config.recipient,
       title: config.title,
       html: config.html,
       text: config.text,
     });
-    const sessionId = await this.session.set({ code: config.code, email: config.email }, { EX: config.expire });
+    return this.createSession(config);
+  }
+  async createSession(config: CaptchaEmail): Promise<EmailCaptchaQuestion> {
+    const sessionId = await this.session.set({ code: config.code, email: config.recipient }, { EX: config.expire });
     return {
       sessionId,
       survivalTime: this.session.expire,
     };
+  }
+  async getAnswer(sessionId: string) {
+    return this.session.get(sessionId);
   }
   async verify(reply: EmailCaptchaReply): Promise<boolean> {
     const data = await this.session.take(reply.sessionId);
@@ -32,11 +38,11 @@ class CaptchaService {
 
 export const emailCaptchaService = new CaptchaService();
 
-type EmailConfig = {
+export type CaptchaEmail = {
   /** 过期时间 */
   expire: number;
   code: string;
-  email: string;
+  recipient: string;
   title?: string;
   text?: string;
   html?: string;

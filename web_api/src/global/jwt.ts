@@ -1,5 +1,5 @@
 import * as jwtLib from "hono/jwt";
-import { ENV } from "@/config/mod.ts";
+import { ENV } from "@/global/config.ts";
 export interface SignInfo {
   userId: string;
   exp?: number;

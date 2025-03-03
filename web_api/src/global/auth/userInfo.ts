@@ -1,4 +1,4 @@
-import { jwtManage, SignInfo } from "@/crypto/jwt.ts";
+import { jwtManage, SignInfo } from "@/global/jwt.ts";
 import { user_role_bind } from "@ijia/data/db";
 import { v } from "@ijia/data/yoursql";
 

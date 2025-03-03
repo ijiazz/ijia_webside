@@ -1,7 +1,7 @@
 import { MiddlewareHandler } from "hono";
 import { ServeStaticOptions } from "hono/serve-static";
 import { Hono } from "hono";
-import { ENV } from "@/config/mod.ts";
+import { ENV } from "@/global/config.ts";
 import path from "node:path";
 import { platform } from "node:os";
 

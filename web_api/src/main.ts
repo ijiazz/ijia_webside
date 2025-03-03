@@ -1,8 +1,8 @@
-import { ENV } from "@/config/mod.ts";
+import { ENV } from "@/global/config.ts";
 import { createHonoApp } from "./modules/serve.ts";
 import { getDbPool, setDbPool, createPgPool, DbPool } from "@ijia/data/yoursql";
 import { listenUseDenoHttpServer, listenUseNodeHttpServer, ListenOption, AppServer } from "@/hono/listen.ts";
-import { disconnectRedis, getRedis } from "./redis/mod.ts";
+import { disconnectRedis, getRedis } from "./services/redis.ts";
 import { toErrorStr } from "evlib";
 
 async function testDatabase() {

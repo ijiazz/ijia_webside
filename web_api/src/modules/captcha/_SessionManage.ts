@@ -1,4 +1,4 @@
-import { getRedis } from "@/redis/mod.ts";
+import { getRedis } from "@/services/redis.ts";
 
 export class SessionManager<T extends object> {
   constructor(

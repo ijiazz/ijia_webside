@@ -1,8 +1,9 @@
-import { user } from "@ijia/data/db";
-import v from "@ijia/data/yoursql";
-import { signJwt } from "@/crypto/jwt.ts";
-import { ENV } from "@/config/mod.ts";
+import { dclass, user, user_class_bind } from "@ijia/data/db";
+import v, { getDbPool } from "@ijia/data/yoursql";
+import { signJwt } from "@/global/jwt.ts";
+import { ENV } from "@/global/config.ts";
 import { hashPasswordBackEnd } from "./password.ts";
+import { createMessageResponseError } from "@/global/http_error.ts";
 
 type LoginUserInfo = {
   userId: number;
@@ -52,6 +53,31 @@ export class LoginService {
     const liveMs = minute * 60 * 1000;
     const exp = Date.now() + liveMs;
     return signJwt(userId.toString(), ENV.JWT_KEY, exp);
+  }
+  async createUser(email: string, userInfo: { password?: string; classId?: number[] }) {
+    let password: string | undefined;
+    let salt: string | undefined;
+    if (typeof userInfo.password === "string") {
+      salt = crypto.randomUUID().replaceAll("-", "");
+      password = await hashPasswordBackEnd(userInfo.password, salt);
+    }
+    await using db = getDbPool().begin();
+    const createUserSql = user
+      .insert({ email, password: password, pwd_salt: salt })
+      .returning<{ userId: number }>({ userId: "id" });
+    const userId = await db.queryRows(createUserSql).then((item) => item[0].userId);
+    // if (userInfo.classId?.length) {
+    //   // 目前只能选择一个班级
+    //   const classId = userInfo.classId[0];
+    //   const exists = await dclass.select({ id: true }).where(`id=${classId} AND is_public= TRUE`).queryCount();
+    //   if (!exists) throw createMessageResponseError(406, "班级不存在");
+    //   const insertRoles = user_class_bind.insert(
+    //     userInfo.classId.map((classId) => ({ class_id: classId, user_id: userId })),
+    //   );
+    //   await db.queryCount(insertRoles);
+    // }
+    await db.commit();
+    return userId;
   }
 }
 export const loginService = new LoginService();

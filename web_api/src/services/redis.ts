@@ -1,5 +1,5 @@
 import { createClient, RedisClientType } from "@redis/client";
-import { ENV } from "@/config/mod.ts";
+import { ENV } from "@/global/config.ts";
 
 let redis: RedisClient | undefined;
 export function getRedis(): RedisClient {

@@ -1,7 +1,7 @@
 import { resolve } from "node:path/posix";
 import { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import { ENV } from "@/config/mod.ts";
+import { ENV } from "@/global/config.ts";
 import { HTTPException } from "hono/http-exception";
 
 const pkgRoot = new URL(import.meta.url);
@@ -47,4 +47,7 @@ function createErrorHtmlText(error: any, stack?: StackOption) {
   } else {
     return String(error);
   }
+}
+export function createMessageResponseError(code: ContentfulStatusCode, message: string) {
+  return new HTTPException(code, { message, res: Response.json({ message }) });
 }

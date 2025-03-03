@@ -1,3 +1,5 @@
+import { APP_CONFIG } from "@/config.ts";
+
 type GenOption = {
   title: string;
   code: string;
@@ -12,7 +14,7 @@ export function createEmailCodeHtmlContent(option: GenOption) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IJIA 学院验证码</title>
+    <title>${APP_CONFIG.appName}验证码</title>
     <style>
       html,
       body {

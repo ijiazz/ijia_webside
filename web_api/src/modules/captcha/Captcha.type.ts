@@ -16,5 +16,7 @@ export type EmailCaptchaReply = {
   sessionId: string;
   code: string;
 };
-
+export type EmailCaptchaQuestion = CaptchaOption & {
+  sessionId: string;
+};
 export type VerificationCodeResult = {};

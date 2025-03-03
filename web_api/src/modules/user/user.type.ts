@@ -3,8 +3,9 @@ import type { EmailCaptchaReply, ImageCaptchaReply } from "../captcha/Captcha.ty
 
 export type CreateUserProfileParam = {
   email: string;
-  emailVerification: EmailCaptchaReply;
+  emailCaptcha?: EmailCaptchaReply;
   password?: string;
+  passwordNoHash?: boolean;
   /** 班级 id */
   classId?: number[];
 };
@@ -59,6 +60,7 @@ export enum LoginType {
   email = "email",
 }
 
-export type SendEmailVerificationCodeParam = {
+export type RequestSignupEmailCaptchaParam = {
+  captchaReply: ImageCaptchaReply;
   email: string;
 };

@@ -7,6 +7,9 @@ import type {
   UserLoginResultDto,
   UserProfileDto,
   ImageCaptchaQuestion,
+  EmailCaptchaQuestion,
+  ImageCaptchaReply,
+  RequestSignupEmailCaptchaParam,
 } from "./dto.ts";
 
 export * from "./dto.ts";
@@ -31,8 +34,8 @@ export interface ApiDefined {
   };
   /** 注册用户发送邮箱验证码 */
   "POST /user/signup/email_captcha": {
-    response: CreateUserProfileResult;
-    body: CreateUserProfileParam;
+    response: EmailCaptchaQuestion;
+    body: RequestSignupEmailCaptchaParam;
   };
 
   /** 绑定平台 */

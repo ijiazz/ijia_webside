@@ -3,9 +3,11 @@ import { Hono } from "hono";
 import { test as viTest, DbContext } from "./db_connect.ts";
 import { HoFetch, createFetchSuite, InferFetchSuite } from "@asla/hofetch";
 import { ApiDefined } from "@/api.ts";
+
+export type Api = InferFetchSuite<ApiDefined>;
 interface HonoContext {
   hono: Hono;
-  api: InferFetchSuite<ApiDefined>;
+  api: Api;
 }
 export const test = viTest.extend<HonoContext>({
   async hono({ ijiaDbPool }, use) {

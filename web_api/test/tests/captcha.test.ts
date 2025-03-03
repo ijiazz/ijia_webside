@@ -3,19 +3,12 @@ import { test, Context } from "../fixtures/hono.ts";
 import { imageCaptchaController } from "@/modules/captcha/mod.ts";
 import { applyController } from "@/hono-decorator/src/apply.ts";
 import { captcha_picture } from "@ijia/data/db";
-import { createCaptcha } from "../__mocks__/captcha.ts";
+import { initCaptcha } from "../__mocks__/captcha.ts";
 import v from "@ijia/data/yoursql";
-async function init() {
-  const captcha = createCaptcha(20);
-  let i = 0;
-  for (; i < 3; i++) captcha[i].is_true = true;
-  for (; i < 6; i++) captcha[i].is_true = false;
 
-  await captcha_picture.insert(captcha).query(); // 前 6 张图片的真假值被确定
-}
 beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
   applyController(hono, imageCaptchaController);
-  await init();
+  await initCaptcha();
 });
 
 test("创建验证码会话并验证", async function ({ api }) {

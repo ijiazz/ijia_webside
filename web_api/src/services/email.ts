@@ -1,5 +1,5 @@
 import { createTransport, Transporter } from "nodemailer";
-import { EmailConfig, ENV } from "@/config/mod.ts";
+import { EmailConfig, ENV } from "@/global/config.ts";
 
 class EmailSender {
   private readonly emailSender: Transporter;
