@@ -11,6 +11,7 @@ import { antdStatic } from "@/hooks/antd-static.ts";
 import { IjiaLogo } from "@/components/ijia-logo.tsx";
 import styled from "@emotion/styled";
 import { useAsync } from "@/hooks/useAsync.ts";
+import { ImageCaptchaModal } from "@/common/ImageCaptcha.tsx";
 
 enum LoginType {
   id = "id",
@@ -19,10 +20,11 @@ enum LoginType {
 export function LoginPage() {
   const [loginType, setLoginType] = useState<LoginType>(LoginType.id);
   const [message, setMessage] = useState<string | undefined>();
+  const [loginParam, setLoginParam] = useState<UserLoginParamDto | undefined>();
   const { modal } = useContext(antdStatic);
-
+  const [captchaModalOpen, setCaptchaModalOpen] = useState(false);
   const { loading: loginLoading, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {
-    const result = await api["/user/login"].post({ body: param });
+    const result = await api["/user/login"].post({ body: param, allowFailed: true });
 
     if (!result.success) {
       setMessage(result.message ?? "登录失败");
@@ -45,28 +47,8 @@ export function LoginPage() {
     return result;
   });
 
-  async function onLogin(param: EmailLoginParam | IdLoginParam) {
-    let loginParam: UserLoginParamDto | undefined;
-
-    switch (loginType) {
-      case LoginType.id: {
-        loginParam = {
-          method: LoginType.id,
-          id: (param as IdLoginParam).id,
-          ...(await tryHashPassword(param.password)),
-        };
-        break;
-      }
-      case LoginType.email: {
-        loginParam = {
-          method: LoginType.email,
-          email: (param as EmailLoginParam).email,
-          ...(await tryHashPassword(param.password)),
-        };
-      }
-      default:
-        throw new Error("登录方法不支持：" + loginType);
-    }
+  const onClickLoinBtn = async (param: EmailLoginParam | IdLoginParam) => {
+    const loginParam = await getLoinParam(loginType, param);
     if (loginParam.passwordNoHash) {
       await new Promise<void>((resolve, reject) => {
         modal.warning({
@@ -76,9 +58,9 @@ export function LoginPage() {
         });
       });
     }
-
-    await postLogin(loginParam);
-  }
+    setLoginParam(loginParam);
+    setCaptchaModalOpen(true);
+  };
   return (
     <StyledPage>
       <VideoBg />
@@ -95,7 +77,7 @@ export function LoginPage() {
             message={message && <Alert type="error" message={message} />}
             title="IJIA 学院"
             subTitle="IJIA 学院"
-            onFinish={onLogin}
+            onFinish={onClickLoinBtn}
             containerStyle={{
               backgroundColor: "#fff8",
               borderRadius: "4px",
@@ -165,6 +147,13 @@ export function LoginPage() {
               </Space>
             </div>
           </LoginForm>
+          <ImageCaptchaModal
+            open={captchaModalOpen}
+            onSubmit={async (sessionId: string, selectedIndex: number[]) => {
+              await postLogin({ ...loginParam!, captcha: { sessionId, selectedIndex } });
+            }}
+            onCancel={() => setCaptchaModalOpen(false)}
+          />
         </div>
       </div>
     </StyledPage>
@@ -240,3 +229,28 @@ type IdLoginParam = {
   id: string;
   password: string;
 };
+async function getLoinParam(loginType: LoginType, param: EmailLoginParam | IdLoginParam) {
+  let loginParam: UserLoginParamDto | undefined;
+
+  switch (loginType) {
+    case LoginType.id: {
+      loginParam = {
+        method: LoginType.id,
+        id: (param as IdLoginParam).id,
+        ...(await tryHashPassword(param.password)),
+      };
+      break;
+    }
+    case LoginType.email: {
+      loginParam = {
+        method: LoginType.email,
+        email: (param as EmailLoginParam).email,
+        ...(await tryHashPassword(param.password)),
+      };
+    }
+    default:
+      throw new Error("登录方法不支持：" + loginType);
+  }
+
+  return loginParam;
+}
