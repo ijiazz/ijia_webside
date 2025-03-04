@@ -12,6 +12,7 @@ export default {
       TEST_LOGIN_DB: PG_URL,
       TEST_REDIS_RUL: REDIS_URL,
       IJIA_TEMPLATE_DBNAME: "test_ijia_template",
+      SIGNUP_VERIFY_EMAIL: "true",
     },
 
     include: ["./test/**/*.test.ts"],

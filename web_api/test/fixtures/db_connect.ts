@@ -1,4 +1,4 @@
-import { test as viTest } from "vitest";
+import { test as viTest, afterAll } from "vitest";
 import { createPgPool, DbPool, parserDbUrl, setDbPool } from "@ijia/data/yoursql";
 import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
 import process from "node:process";
@@ -8,6 +8,8 @@ import { createClient, RedisFlushModes } from "@redis/client";
 export interface DbContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
   ijiaDbPool: DbPool;
+  /** 初始化一个空的数据库（初始表和初始数据），需要注意，不同测试之间会共享同一个实例和数据库, 以优化测试速度，如果需要一个全新的数据库，请使用 ijiaDbPool */
+  publicDbPool: DbPool;
   emptyDbPool: DbPool;
   redis: RedisClient;
 }
@@ -16,6 +18,16 @@ const DB_NAME_PREFIX = "test_ijia_";
 const DB_CONNECT_INFO = getConfigEnv(process.env);
 const TEST_REDIS_RUL = process.env.TEST_REDIS_RUL!;
 
+const pubDbName = DB_NAME_PREFIX + "pub_" + VITEST_WORKER_ID;
+let publicDbPool: DbPool | Promise<DbPool> | undefined;
+
+afterAll(async function () {
+  if (publicDbPool) {
+    const pool = await publicDbPool;
+    await pool.close(true);
+    await clearDropDb(pubDbName);
+  }
+});
 export const test = viTest.extend<DbContext>({
   async ijiaDbPool({}, use) {
     const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
@@ -26,6 +38,19 @@ export const test = viTest.extend<DbContext>({
     await dbPool.close(true);
 
     await clearDropDb(dbName);
+  },
+  async publicDbPool({}, use) {
+    if (!publicDbPool) {
+      publicDbPool = Promise.resolve().then(async () => {
+        await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true, extra: true });
+        const dbPool = await createPgPool({ ...DB_CONNECT_INFO, database: pubDbName });
+        setDbPool(dbPool);
+        publicDbPool = dbPool;
+        return dbPool;
+      });
+    }
+    const pool = await publicDbPool;
+    await use(pool);
   },
   async emptyDbPool({}, use) {
     const dbName = "test_empty_" + VITEST_WORKER_ID;

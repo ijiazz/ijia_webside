@@ -3,7 +3,7 @@ import { EmailCaptchaQuestion, EmailCaptchaReply } from "./Captcha.type.ts";
 import { getEmailSender } from "@/services/email.ts";
 
 //TODO 邮件验证码服务
-class CaptchaService {
+class EmailCaptchaService {
   constructor() {}
   genCode() {
     const code = Math.floor(Math.random() * 1000000); // 6 位数字
@@ -30,13 +30,14 @@ class CaptchaService {
     return this.session.get(sessionId);
   }
   async verify(reply: EmailCaptchaReply): Promise<boolean> {
-    const data = await this.session.take(reply.sessionId);
+    const data = await this.session.get(reply.sessionId);
     if (!data) return false;
+    await this.session.delete(reply.sessionId);
     return data.code === reply.code;
   }
 }
 
-export const emailCaptchaService = new CaptchaService();
+export const emailCaptchaService = new EmailCaptchaService();
 
 export type CaptchaEmail = {
   /** 过期时间 */

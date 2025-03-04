@@ -5,39 +5,44 @@ import { LoginType, userController } from "@/modules/user/mod.ts";
 import { applyController } from "@/hono-decorator/src/apply.ts";
 import { emailCaptchaService } from "@/modules/captcha/mod.ts";
 
-import v, { createPgPool } from "@ijia/data/yoursql";
+import v from "@ijia/data/yoursql";
 import { createCaptchaSession, initCaptcha } from "../__mocks__/captcha.ts";
 import { loginService } from "@/modules/user/services/Login.service.ts";
 
-beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
-  ijiaDbPool; // 初始化数据库
+let isFist = true;
+beforeEach<Context>(async ({ hono, publicDbPool }) => {
+  publicDbPool; // 初始化数据库
+  if (isFist) {
+    await loginService.createUser("abc@qq.com", { classId: [], password: "123" });
+    await initCaptcha();
+    isFist = false;
+  }
   applyController(hono, userController);
-  await initCaptcha();
 });
 
 describe("注册用户", function () {
   test("注册用户", async function ({ api }) {
-    const emailAnswer = await sendEmailCaptcha(api);
+    const emailAnswer = await mockSendEmailCaptcha(api);
     const result = await api["/user/signup"].post({
       body: { email: "test@ijiazz.cn", password: "123", emailCaptcha: emailAnswer },
     });
     await expect(user.select({ email: true }).where(`id=${result.userId}`).queryCount()).resolves.toBe(1);
   });
-  test("注册用户，必须传正确的邮件验证码", async function ({ api }) {
+  test("必须传正确的邮件验证码", async function ({ api }) {
     await expect(
       api["/user/signup"].post({
         body: { email: "test@ijiazz.cn", password: "123", emailCaptcha: { code: "123", sessionId: "111" } },
       }),
-    ).rejects.throwErrorEqualBody(403, { message: "验证码错误" });
+    ).rejects.throwErrorMatchBody(403, { message: "验证码错误" });
 
-    const emailAnswer = await sendEmailCaptcha(api);
+    const emailAnswer = await mockSendEmailCaptcha(api);
     await expect(
       api["/user/signup"].post({
         body: { email: "@qq.com", password: "123", emailCaptcha: { code: "123", sessionId: emailAnswer.sessionId } },
       }),
-    ).rejects.throwErrorEqualBody(403, { message: "验证码错误" });
+    ).rejects.throwErrorMatchBody(403, { message: "验证码错误" });
   });
-  test("注册用户，不允许传错误的邮箱", async function ({ api }) {
+  test("不允许传错误的邮箱", async function ({ api }) {
     await expect(
       api["/user/signup"].post({
         body: { email: "@qq.com", password: "123" },
@@ -45,7 +50,7 @@ describe("注册用户", function () {
       "邮箱不正确",
     ).rejects.responseStatus(400);
   });
-  test("注册用户，只能选择公共班级", async function ({ api }) {
+  test("只能选择公共班级", async function ({ api }) {
     await dclass
       .insert([
         { class_name: "1", is_public: true },
@@ -53,27 +58,25 @@ describe("注册用户", function () {
       ])
       .query();
 
-    const emailAnswer = await sendEmailCaptcha(api);
+    let emailAnswer = await mockSendEmailCaptcha(api);
     await expect(
-      api["/user/signup"].post({ body: { email: "test@ijiazz.cn", classId: [3] } }),
+      api["/user/signup"].post({ body: { email: "test@ijiazz.cn", classId: [3], emailCaptcha: emailAnswer } }),
       "不允许选择非公共班级",
     ).rejects.throwErrorEqualBody(403, { message: "班级不存在" });
 
+    emailAnswer = await mockSendEmailCaptcha(api);
     const userInfo = await api["/user/signup"].post({
       body: { email: "test@ijiazz.cn", classId: [1], emailCaptcha: emailAnswer },
     });
 
     const recordCount = await user_class_bind
-      .select({})
+      .select("*")
       .where([`user_id=${v(userInfo.userId)}`, `class_id=${1}`])
       .queryCount();
     expect(recordCount).toBe(1);
   });
 });
 describe("登录", function () {
-  beforeEach<Context>(async ({ ijiaDbPool }) => {
-    await loginService.createUser("abc@qq.com", { classId: [], password: "123" });
-  });
   test("登录需要验证码", async function ({ api }) {
     await expect(
       api["/user/login"].post({
@@ -100,7 +103,7 @@ describe("登录", function () {
   });
 });
 
-async function sendEmailCaptcha(api: Api) {
+async function mockSendEmailCaptcha(api: Api) {
   const captchaReply = await createCaptchaSession();
   const { sessionId } = await api["/user/signup/email_captcha"].post({
     body: { captchaReply, email: "abc.qq.com" },

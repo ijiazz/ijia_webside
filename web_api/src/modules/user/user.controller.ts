@@ -1,4 +1,4 @@
-import { pla_user, user } from "@ijia/data/db";
+import { user } from "@ijia/data/db";
 import v from "@ijia/data/yoursql";
 import {
   LoginType,
@@ -10,7 +10,7 @@ import {
 } from "./user.type.ts";
 import { optional, array } from "evlib/validator";
 import { loginService } from "./services/Login.service.ts";
-import { hashPasswordBackEnd, hashPasswordFrontEnd } from "./services/password.ts";
+import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
 import { Controller, Get, PipeInput, PipeOutput, Post } from "@asla/hono-decorator";
 import { HonoContext } from "@/hono/type.ts";
@@ -27,7 +27,7 @@ import {
 import { autoBody } from "@/global/pipe.ts";
 import { createEmailCodeHtmlContent } from "./template/sigup-email-code.ts";
 import { Context } from "hono";
-import { ENV } from "@/global/config.ts";
+import { ENV, Mode } from "@/global/config.ts";
 import { APP_CONFIG } from "@/config.ts";
 import { createMessageResponseError } from "@/global/http_error.ts";
 
@@ -92,10 +92,10 @@ export class UserController {
       text: htmlContent,
     };
     let emailCaptchaQuestion: EmailCaptchaQuestion;
-    if (ENV.IS_DEV) {
-      emailCaptchaQuestion = await emailCaptchaService.createSession(captchaEmail);
-    } else {
+    if (ENV.MODE == Mode.Prod) {
       emailCaptchaQuestion = await emailCaptchaService.sendEmailCaptcha(captchaEmail);
+    } else {
+      emailCaptchaQuestion = await emailCaptchaService.createSession(captchaEmail);
     }
     return emailCaptchaQuestion;
   }
@@ -149,7 +149,7 @@ export class UserController {
         throw createMessageResponseError(400, "方法不允许");
     }
     if (user.userId === undefined) {
-      return { message: user.message, success: false, token: "" };
+      throw createMessageResponseError(403, user.message!);
     }
 
     const minute = 3 * 24 * 60; // 3 天后过期

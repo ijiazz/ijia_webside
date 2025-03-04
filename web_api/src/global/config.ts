@@ -1,8 +1,14 @@
 import process from "node:process";
 
 const env = process.env;
+
+export enum Mode {
+  Test,
+  Dev,
+  Prod,
+}
 export const ENV = {
-  IS_DEV: env.MODE === "DEV" || Boolean(env.VITEST),
+  MODE: Boolean(env.VITEST) ? Mode.Test : env.MODE === "PROD" ? Mode.Prod : Mode.Dev,
   OOS_DIR: env.OOS_DIR,
   CHECK_SERVER: env.CHECK_SERVER,
   JWT_KEY: env.JWT_KEY ?? crypto.randomUUID(),

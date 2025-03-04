@@ -1,7 +1,7 @@
 import { resolve } from "node:path/posix";
 import { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import { ENV } from "@/global/config.ts";
+import { ENV, Mode } from "@/global/config.ts";
 import { HTTPException } from "hono/http-exception";
 
 const pkgRoot = new URL(import.meta.url);
@@ -14,9 +14,10 @@ export function errorHandler(error: unknown, ctx: Context): Response | Promise<R
   } else {
     let html: string;
     let status = 500;
-    if (ENV.IS_DEV) console.error(error);
+    const isPROD = ENV.MODE == Mode.Prod;
+    if (!isPROD) console.error(error);
     if (error instanceof Error) {
-      const stackInfo: StackOption | undefined = ENV.IS_DEV ? { info: error.stack, baseDir: baseDir } : undefined;
+      const stackInfo: StackOption | undefined = isPROD ? undefined : { info: error.stack, baseDir: baseDir };
       html = createErrorHtmlText(error, stackInfo);
     } else {
       html = String(error);

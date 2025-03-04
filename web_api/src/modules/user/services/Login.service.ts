@@ -64,18 +64,19 @@ export class LoginService {
     await using db = getDbPool().begin();
     const createUserSql = user
       .insert({ email, password: password, pwd_salt: salt })
-      .returning<{ userId: number }>({ userId: "id" });
-    const userId = await db.queryRows(createUserSql).then((item) => item[0].userId);
-    // if (userInfo.classId?.length) {
-    //   // 目前只能选择一个班级
-    //   const classId = userInfo.classId[0];
-    //   const exists = await dclass.select({ id: true }).where(`id=${classId} AND is_public= TRUE`).queryCount();
-    //   if (!exists) throw createMessageResponseError(406, "班级不存在");
-    //   const insertRoles = user_class_bind.insert(
-    //     userInfo.classId.map((classId) => ({ class_id: classId, user_id: userId })),
-    //   );
-    //   await db.queryCount(insertRoles);
-    // }
+      .returning<{ user_id: number }>({ user_id: "id" });
+
+    const userId = await db.queryRows(createUserSql).then((item) => item[0].user_id);
+    if (userInfo.classId?.length) {
+      // 目前只能选择一个班级
+      const classId = userInfo.classId[0];
+      const exists = await dclass.select({ id: true }).where(`id=${classId} AND is_public= TRUE`).queryCount();
+      if (!exists) throw createMessageResponseError(406, "班级不存在");
+      const insertRoles = user_class_bind.insert(
+        userInfo.classId.map((classId) => ({ class_id: classId, user_id: userId })),
+      );
+      await db.queryCount(insertRoles);
+    }
     await db.commit();
     return userId;
   }

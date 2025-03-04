@@ -10,7 +10,7 @@ interface HonoContext {
   api: Api;
 }
 export const test = viTest.extend<HonoContext>({
-  async hono({ ijiaDbPool }, use) {
+  async hono({}, use) {
     await use(createHono());
   },
   async api({ hono }, use) {
