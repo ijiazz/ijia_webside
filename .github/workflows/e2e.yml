@@ -37,9 +37,14 @@ jobs:
         run: docker compose up -d
       - name: E2E test
         continue-on-error: true
-        run: pnpm run ci:e2e
+        run: pnpm run e2e:ci
         id: e2e
         working-directory: ./e2e
+      - name: E2E Benchmark
+        if: ${{steps.e2e.outcome!='failure'}}
+        run: pnpm run e2e:bench
+        working-directory: ./e2e
+
       - uses: actions/upload-artifact@v4
         if: ${{steps.e2e.outcome=='failure'}}
         with:
