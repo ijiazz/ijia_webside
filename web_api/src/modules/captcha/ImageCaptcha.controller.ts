@@ -1,12 +1,15 @@
 import { ImageCaptchaQuestion, ImageCaptchaReply } from "./Captcha.type.ts";
 import { captcha_picture, DbCaptchaPicture } from "@ijia/data/db";
 import { getDbPool, v } from "@ijia/data/yoursql";
-import fs from "node:fs/promises";
 import { Get, Post } from "@/hono-decorator/src/Router.ts";
-import { PipeInput } from "@/hono-decorator/src/base.ts";
+import { PipeInput, PipeOutput } from "@/hono-decorator/src/base.ts";
 import { HTTPException } from "hono/http-exception";
 import { SessionManager } from "./_SessionManage.ts";
 import { autoBody } from "@/global/pipe.ts";
+import { getOOS, getBucket } from "@ijia/data/oos";
+import { contentType } from "@std/media-types";
+import path from "node:path";
+const BUCKET = getBucket();
 
 @autoBody
 class ImageCaptchaController {
@@ -22,10 +25,13 @@ class ImageCaptchaController {
     //4 张确定值
     const certain = select.where(`is_true IS NOT NULL`).orderBy("RANDOM()").limit(4);
     //5 张不确定值
-    const equivocal = select.where(`is_true IS NULL`).orderBy("RANDOM()").limit(5);
+    const equivocal = select.where(`is_true IS NULL`).orderBy("RANDOM()").limit(9); // limit 9 避免 certain 数量不足
 
-    const sql = `${certain.toSelect()} UNION ${equivocal.toSelect()}`;
-    const result = await getDbPool().queryRows<Pick<DbCaptchaPicture, "id" | "is_true" | "type">>(sql);
+    const sql = `(${certain.toSelect()} UNION ALL ${equivocal.toSelect()}) LIMIT 9`;
+    const result = await getDbPool()
+      .queryRows<Pick<DbCaptchaPicture, "id" | "is_true" | "type">>(sql)
+      .then((item) => item.sort(() => Math.random() - 0.5));
+
     const answer: (boolean | null)[] = new Array(result.length);
     const allIdList: string[] = new Array(result.length);
     for (let i = 0; i < result.length; i++) {
@@ -81,7 +87,7 @@ class ImageCaptchaController {
     sessionId = await this.imageCaptcha.set(data, { sessionId });
     return {
       sessionId,
-      imageUrlList: data.allIdList.map((imageId) => sessionId + "-" + imageId),
+      imageUrlList: data.allIdList.map((imageId, index) => "/captcha/image/" + sessionId + "-" + index),
       survivalTime: this.imageCaptcha.expire,
     };
   }
@@ -148,15 +154,20 @@ class ImageCaptchaController {
   }
 
   @PipeInput(function (ctx) {
-    return ctx.req.param("url");
+    return ctx.req.param("filepath");
   })
-  @Get("/captcha/image/:url")
-  async getCaptchaImageStream(imageUrl: string) {
-    const imageId = await this.imageUrlToId(imageUrl).catch(() => null);
+  @PipeOutput(function ({ stream, mime }, ctx) {
+    ctx.header("Content-Type", mime);
+    return ctx.body(stream, 200);
+  })
+  @Get("/captcha/image/:filepath")
+  async getCaptchaImageStream(imageUri: string) {
+    const imageId = await this.imageUrlToId(imageUri).catch(() => null);
     if (!imageId) throw new HTTPException(404);
-
-    const fd = await fs.open(imageId);
-    return fd.readableWebStream({ type: "bytes" });
+    const bucket = getOOS().getBucket(BUCKET.CAPTCHA_PICTURE);
+    const stream = await bucket.getObjectStream(imageId);
+    const mime = contentType(path.parse(imageId).ext);
+    return { mime, stream };
   }
 }
 export const imageCaptchaController = new ImageCaptchaController();

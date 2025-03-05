@@ -18,7 +18,7 @@ async function createRuntimeServeStatic(options: ServeStaticOptions): Promise<Mi
 
 export async function addServeStatic(hono: Hono) {
   //TODO 控制 OOS 访问
-  let rootDir = path.resolve(ENV.OOS_DIR!);
+  let rootDir = path.resolve(ENV.OOS_ROOT_DIR!);
   if (platform() === "win32") rootDir = path.relative(".", rootDir); // hono@4.617 的 serveStatic 在 Windows 上存在bug (https://github.com/honojs/hono/issues/3475)
   console.log("useStatic", rootDir);
   hono.use(
