@@ -1,4 +1,4 @@
-import { getRedis } from "@/services/redis.ts";
+import { redisPool } from "@/services/redis.ts";
 
 export class SessionManager<T extends object> {
   constructor(
@@ -10,7 +10,7 @@ export class SessionManager<T extends object> {
   }
   async set(value: T, option: { sessionId?: string; EX?: number } = {}): Promise<string> {
     const { EX = this.expire, sessionId } = option;
-    const redis = getRedis();
+    using redis = await redisPool.connect();
     const data = JSON.stringify(value);
 
     if (sessionId) {
@@ -30,19 +30,20 @@ export class SessionManager<T extends object> {
     }
   }
   async take(key: string): Promise<T | undefined> {
-    const redis = getRedis();
+    using redis = await redisPool.connect();
     const value = await redis.getDel(this.keyPrefix + ":" + key);
     if (!value) return undefined;
     return JSON.parse(value);
   }
   async get(key: string): Promise<T | undefined> {
-    const redis = getRedis();
+    using redis = await redisPool.connect();
     const value = await redis.get(this.keyPrefix + ":" + key);
     if (!value) return undefined;
     return JSON.parse(value);
   }
   async delete(key: string): Promise<boolean> {
-    const num = await getRedis().del(this.keyPrefix + ":" + key);
+    using redis = await redisPool.connect();
+    const num = await redis.del(this.keyPrefix + ":" + key);
     return num > 0;
   }
 }

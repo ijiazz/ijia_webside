@@ -2,7 +2,7 @@ import { ENV } from "@/global/config.ts";
 import { createHonoApp } from "./modules/serve.ts";
 import { getDbPool, setDbPool, createPgPool, DbPool } from "@ijia/data/yoursql";
 import { listenUseDenoHttpServer, listenUseNodeHttpServer, ListenOption, AppServer } from "@/hono/listen.ts";
-import { disconnectRedis, getRedis } from "./services/redis.ts";
+import { redisPool } from "./services/redis.ts";
 import { toErrorStr } from "evlib";
 
 async function testDatabase() {
@@ -53,7 +53,7 @@ async function bootstrap() {
         .then(() => {
           console.log("数据连接已关闭");
         }),
-      disconnectRedis().then(() => {
+      redisPool.close().then(() => {
         console.log("Redis 连接已关闭");
       }),
       ,

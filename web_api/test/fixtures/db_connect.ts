@@ -2,8 +2,8 @@ import { test as viTest, afterAll } from "vitest";
 import { createPgPool, DbPool, parserDbUrl, setDbPool } from "@ijia/data/yoursql";
 import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
 import process from "node:process";
-import { RedisClient, setRedis } from "@/services/redis.ts";
-import { createClient, RedisFlushModes } from "@redis/client";
+import { redisPool, RedisPool } from "@/services/redis.ts";
+import { RedisFlushModes } from "@redis/client";
 
 export interface DbContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
@@ -11,7 +11,7 @@ export interface DbContext {
   /** 初始化一个空的数据库（初始表和初始数据），需要注意，不同测试之间会共享同一个实例和数据库, 以优化测试速度，如果需要一个全新的数据库，请使用 ijiaDbPool */
   publicDbPool: DbPool;
   emptyDbPool: DbPool;
-  redis: RedisClient;
+  redis: RedisPool;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
 const DB_NAME_PREFIX = "test_ijia_";
@@ -24,8 +24,7 @@ let publicDbPool: DbPool | Promise<DbPool> | undefined;
 afterAll(async function () {
   if (publicDbPool) {
     const pool = await publicDbPool;
-    await pool.close(true);
-    await clearDropDb(pubDbName);
+    await clearDropDb(pool, pubDbName);
   }
 });
 export const test = viTest.extend<DbContext>({
@@ -35,9 +34,7 @@ export const test = viTest.extend<DbContext>({
     const dbPool = await createPgPool({ ...DB_CONNECT_INFO, database: dbName });
     setDbPool(dbPool);
     await use(dbPool);
-    await dbPool.close(true);
-
-    await clearDropDb(dbName);
+    await clearDropDb(dbPool, dbName);
   },
   async publicDbPool({}, use) {
     if (!publicDbPool) {
@@ -61,17 +58,21 @@ export const test = viTest.extend<DbContext>({
 
     const dbPool = await createPgPool({ ...DB_CONNECT_INFO, database: dbName });
     await use(dbPool);
-    await dbPool.close();
-
-    await clearDropDb(dbName);
+    await clearDropDb(dbPool, dbName);
   },
   async redis({}, use) {
-    const client = createClient({ url: TEST_REDIS_RUL, database: VITEST_WORKER_ID });
-    await client.connect();
-    await client.flushDb(RedisFlushModes.SYNC);
-    setRedis(client);
-    //@ts-ignore
-    use(client);
+    const url = new URL(TEST_REDIS_RUL);
+    url.pathname = VITEST_WORKER_ID.toString();
+    redisPool.url = url;
+    const conn = await redisPool.connect();
+    await conn.flushDb(RedisFlushModes.SYNC);
+    conn.release();
+    use(redisPool);
+    const used = redisPool.totalCount - redisPool.idleCount;
+    await redisPool.close(true);
+    if (used !== 0) {
+      throw new Error("存在未释放的 Redis 连接");
+    }
   },
 });
 function getConfigEnv(env: Record<string, string | undefined>) {
@@ -79,7 +80,9 @@ function getConfigEnv(env: Record<string, string | undefined>) {
   if (!url) throw new Error("缺少 TEST_LOGIN_DB 环境变量");
   return parserDbUrl(url);
 }
-async function clearDropDb(dbName: string) {
+async function clearDropDb(pool: DbPool, dbName: string) {
+  await pool.close(true);
+  const useCount = pool.totalCount - pool.idleCount;
   try {
     const manage = await getManage();
     await manage.dropDb(dbName);
@@ -87,6 +90,7 @@ async function clearDropDb(dbName: string) {
   } catch (error) {
     console.error(`清理用于测试的数据库 ${dbName} 失败`, error);
   }
+  if (useCount !== 0) throw new Error("存在未释放的数据库连接");
 }
 
 function getManage() {
