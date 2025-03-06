@@ -43,11 +43,11 @@ importers:
   deps/ijia-data:
     dependencies:
       '@asla/yoursql':
-        specifier: ^0.8.1
-        version: 0.8.1
+        specifier: ^0.8.3
+        version: 0.8.3
       evlib:
-        specifier: ^3.0.3
-        version: 3.0.3
+        specifier: ^3.1.0
+        version: 3.1.0
       pg:
         specifier: ^8.13.1
         version: 8.13.1
@@ -156,8 +156,8 @@ importers:
         specifier: npm:@jsr/std__media-types@^1.1.0
         version: '@jsr/std__media-types@1.1.0'
       evlib:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.1.0
+        version: 3.1.0
       hono:
         specifier: ^4.7.2
         version: 4.7.2
@@ -303,8 +303,8 @@ packages:
     peerDependencies:
       react: '>=16.9.0'
 
-  '@asla/yoursql@0.8.1':
-    resolution: {integrity: sha512-QD2q7ElVhHIA8/jfkaTr8xRD9r0Al0hhYSB050tmV/XyLYK6TIcRAmsY3+wNKrF+lnnVFqFmPNZmUj2EjIqf1Q==}
+  '@asla/yoursql@0.8.3':
+    resolution: {integrity: sha512-pVUFpS5qTDlX2PNIoIN1oS9vw0Aff1mpc2GTj+v4ZFQR+NG9ITS4RG9/NrPkdGZcj7C4ruFAJ6/F7XkGS5sYDQ==}
     engines: {node: '>=18'}
 
   '@babel/code-frame@7.26.2':
@@ -1792,8 +1792,8 @@ packages:
   evlib@3.0.2:
     resolution: {integrity: sha512-wuWXp67/Vrmmz6UZ3+tc34hM96Fmx/ycbIfRtMoCubzbQvmJFEAjt7wv75nJIISWY6EVAqhag2tsUjajgipv/A==}
 
-  evlib@3.0.3:
-    resolution: {integrity: sha512-NUlFB2y2rbddSutXsGxwzViGm7XOCDhjsf9+/5dYnVWJRfMu6T5ibJdG67jozhdNCCOGGc4BH+nNsF6DhILPrg==}
+  evlib@3.1.0:
+    resolution: {integrity: sha512-VDEiSmwrQZXTiYD/a0Ss4/KuRbDS2c7+1t0CdoojHgzidb1WLvtbfgao3I9IAEH2p4Anl7mGinOPvEsC/zlz2Q==}
 
   expect-type@1.1.0:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
@@ -3099,7 +3099,7 @@ snapshots:
       resize-observer-polyfill: 1.5.1
       throttle-debounce: 5.0.2
 
-  '@asla/yoursql@0.8.1': {}
+  '@asla/yoursql@0.8.3': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:
@@ -4753,7 +4753,7 @@ snapshots:
 
   evlib@3.0.2: {}
 
-  evlib@3.0.3: {}
+  evlib@3.1.0: {}
 
   expect-type@1.1.0: {}
 
