@@ -9,25 +9,23 @@ export class SessionManager<T extends object> {
     return crypto.randomUUID().replaceAll("-", "");
   }
   async set(value: T, option: { sessionId?: string; EX?: number } = {}): Promise<string> {
-    const { EX = this.expire, sessionId } = option;
+    const { EX = this.expire } = option;
     using redis = await redisPool.connect();
     const data = JSON.stringify(value);
 
-    if (sessionId) {
-      await redis.set(this.keyPrefix + ":" + sessionId, data, { EX });
-      return sessionId;
-    } else {
-      let sessionId: string;
-      for (let i = 0; i < 2; i++) {
-        sessionId = this.createSessionId();
-        const OK = await redis.set(this.keyPrefix + ":" + sessionId, data, { EX, NX: true });
-        if (OK === "OK") {
-          return sessionId;
-        }
-        console.warn("Captcha sessionId 重复");
-      }
-      return sessionId!;
+    if (option.sessionId) {
+      await redis.del(this.keyPrefix + ":" + option.sessionId);
     }
+    let sessionId: string;
+    for (let i = 0; i < 2; i++) {
+      sessionId = this.createSessionId();
+      const OK = await redis.set(this.keyPrefix + ":" + sessionId, data, { EX, NX: true });
+      if (OK === "OK") {
+        return sessionId;
+      }
+      console.warn("Captcha sessionId 重复");
+    }
+    return sessionId!;
   }
   async take(key: string): Promise<T | undefined> {
     using redis = await redisPool.connect();

@@ -1,45 +1,53 @@
-import { Button } from "antd";
+import { Button, Spin, Image, Space } from "antd";
 import { useMemo, useState } from "react";
 import styled from "@emotion/styled";
 
 export type CaptchaPanelProps = {
   imageList: string[];
-  confirmLoading?: boolean;
+  value?: number[];
   onChange: (selected: number[]) => void;
-  loading?: boolean;
 };
 export function CaptchaPanel(props: CaptchaPanelProps) {
-  const { onChange, loading, imageList, confirmLoading } = props;
-
-  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const { onChange, imageList, value } = props;
+  const selected = useMemo(() => new Set(value ?? []), [value]);
   const onCheck = (index: number) => {
     if (selected.has(index)) {
       selected.delete(index);
     } else {
       selected.add(index);
     }
-    setSelected(new Set(selected));
+    onChange(Array.from(selected));
   };
   return (
-    <div>
-      <StyledDiv>
+    <StyledCaptchaPanel>
+      <div className="grid">
         {imageList.map((src, index) => {
           const checked = selected.has(index);
           return (
-            <div className={checked ? "checked" : undefined}>
-              <img key={src + index} src={src} onClick={() => onCheck(index)} />
+            <div key={src + index} className={checked ? "checked" : undefined}>
+              <img className="captcha-img" src={src} onClick={() => onCheck(index)} />
               {checked ? <div></div> : undefined}
             </div>
           );
         })}
-      </StyledDiv>
-      <Button loading={confirmLoading} onClick={() => onChange(Array.from(selected))}>
-        确定
-      </Button>
-    </div>
+      </div>
+    </StyledCaptchaPanel>
   );
 }
-const StyledDiv = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 100px);
+const StyledCaptchaPanel = styled.div`
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    grid-gap: 8px;
+    .captcha-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+
+      .checked {
+        opacity: 0.5;
+      }
+    }
+  }
 `;

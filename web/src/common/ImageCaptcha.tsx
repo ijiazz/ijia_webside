@@ -1,8 +1,8 @@
 import { CaptchaPanel } from "@/components/captcha.tsx";
-import { Modal, Popover } from "antd";
-import { api } from "./http.ts";
+import { Button, Modal, Popover, Space, Spin } from "antd";
+import { api, API_PREFIX } from "./http.ts";
 import { useAsync } from "@/hooks/useAsync.ts";
-import { PropsWithChildren, useContext, useEffect } from "react";
+import { PropsWithChildren, useContext, useEffect, useState } from "react";
 import { antdStatic } from "@/hooks/antd-static.ts";
 function useImageCaptcha(config: { onSubmit: (sessionId: string, selected: number[]) => Promise<void> }) {
   const { message } = useContext(antdStatic);
@@ -11,36 +11,37 @@ function useImageCaptcha(config: { onSubmit: (sessionId: string, selected: numbe
     run: refresh,
     error,
     result,
-  } = useAsync(async () => {
-    return api["/captcha/image"].post();
+  } = useAsync(async (sessionId?: string) => {
+    return api["/captcha/image"]
+      .post({ params: { sessionId } })
+      .then((res) => ({ ...res, imageUrlList: res.imageUrlList.map((item) => API_PREFIX + item) }));
   });
   const { loading: submitLoading, run: submit } = useAsync(async (selected: number[]) => {
+    const sessionId = result!.sessionId;
     try {
-      await config.onSubmit(result!.sessionId, selected);
+      await config.onSubmit(sessionId, selected);
     } catch (error) {
       message.error("验证码错误");
       await refresh();
     }
   });
-  useEffect(() => {
-    if (!result) refresh();
-  }, [open]);
 
-  return { captchaQuestion: result, loading, submitLoading, submit, refresh };
+  return { captchaQuestion: result, loading, submitLoading, submit, refresh: () => refresh(result?.sessionId) };
 }
 export function ImageCaptchaPopover(props: PropsWithChildren<CaptchaPanelProps>) {
   const { open } = props;
-  const { loading, submit, submitLoading, captchaQuestion } = useImageCaptcha(props);
+  const { loading, submit, submitLoading, captchaQuestion, refresh } = useImageCaptcha(props);
+
+  useEffect(() => {
+    if (open && !captchaQuestion) refresh();
+  }, [open]);
   return (
     <Popover
       open={open}
       content={
-        <CaptchaPanel
-          loading={loading}
-          imageList={captchaQuestion?.imageUrlList ?? []}
-          confirmLoading={submitLoading}
-          onChange={submit}
-        />
+        <Spin spinning={loading}>
+          <CaptchaPanel imageList={captchaQuestion?.imageUrlList ?? []} onChange={submit} />
+        </Spin>
       }
     >
       {props.children}
@@ -54,15 +55,26 @@ type CaptchaPanelProps = {
 };
 export function ImageCaptchaModal(props: PropsWithChildren<CaptchaPanelProps>) {
   const { open } = props;
-  const { loading, submit, submitLoading, captchaQuestion } = useImageCaptcha(props);
+  const { loading, submit, submitLoading, captchaQuestion, refresh } = useImageCaptcha(props);
+  const [selected, setSelected] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (open && !captchaQuestion) refresh();
+  }, [open]);
   return (
-    <Modal open={open} onCancel={props.onCancel} onOk={() => {}}>
-      <CaptchaPanel
-        loading={loading}
-        imageList={captchaQuestion?.imageUrlList ?? []}
-        confirmLoading={submitLoading}
-        onChange={submit}
-      />
+    <Modal maskClosable={false} title="验证码" open={open} onCancel={props.onCancel} width={"400px"} footer={false}>
+      <h4>请选择包含佳佳子的图片</h4>
+      <Spin spinning={loading}>
+        <CaptchaPanel imageList={captchaQuestion?.imageUrlList ?? []} value={selected} onChange={setSelected} />
+        <Space align="center">
+          <Button onClick={refresh} disabled={submitLoading}>
+            刷新
+          </Button>
+          <Button type="primary" onClick={() => submit(selected)} loading={submitLoading}>
+            确定
+          </Button>
+        </Space>
+      </Spin>
     </Modal>
   );
 }
