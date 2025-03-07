@@ -100,6 +100,9 @@ importers:
       antd:
         specifier: ^5.23.3
         version: 5.23.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      classnames:
+        specifier: ^2.5.1
+        version: 2.5.1
       react:
         specifier: ^19.0.0
         version: 19.0.0

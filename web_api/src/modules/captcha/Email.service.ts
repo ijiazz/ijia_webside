@@ -2,7 +2,6 @@ import { SessionManager } from "./_SessionManage.ts";
 import { EmailCaptchaQuestion, EmailCaptchaReply } from "./Captcha.type.ts";
 import { getEmailSender } from "@/services/email.ts";
 
-//TODO 邮件验证码服务
 class EmailCaptchaService {
   constructor() {}
   genCode() {
@@ -22,6 +21,7 @@ class EmailCaptchaService {
   async createSession(config: CaptchaEmail): Promise<EmailCaptchaQuestion> {
     const sessionId = await this.session.set({ code: config.code, email: config.recipient }, { EX: config.expire });
     return {
+      title: "请输入邮箱验证码",
       sessionId,
       survivalTime: this.session.expire,
     };

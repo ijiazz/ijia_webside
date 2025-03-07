@@ -1,12 +1,14 @@
 import { useCallback, useRef, useState } from "react";
 
-export type UseAsyncResult<T, A extends any[]> = AsyncInfo<T> & {
+export type UseAsyncResult<T, A extends any[]> = {
   run(...args: A): Promise<T>;
-  loading: boolean;
+  reset(result?: T, error?: any): void;
+  result: AsyncResult<T>;
 };
-type AsyncInfo<T> = {
-  error?: unknown;
-  result?: T;
+type AsyncResult<T> = {
+  loading: boolean;
+  error?: any;
+  value?: T;
 };
 export function useAsync<T, A extends any[] = []>(
   fn: (...args: A) => Promise<T> | T,
@@ -16,10 +18,10 @@ export function useAsync<T, A extends any[] = []>(
     defaultResult?: T;
   } = {},
 ): UseAsyncResult<T, A> {
-  const [loading, setLoading] = useState(option.defaultLoading ?? false);
-  const [responseData, setResponseData] = useState<AsyncInfo<T>>({
+  const [result, setResult] = useState<AsyncResult<T>>({
     error: option.defaultError,
-    result: option.defaultResult,
+    value: option.defaultResult,
+    loading: option.defaultLoading ?? false,
   });
   const fnRef = useRef(fn);
   fnRef.current = fn;
@@ -28,37 +30,37 @@ export function useAsync<T, A extends any[] = []>(
   const run = useCallback((...args: A) => {
     const promise = fnRef.current(...args);
     if (promise instanceof Promise) {
-      setLoading(true);
+      setResult((res) => ({ ...res, loading: true }));
       loadingPromise.current = promise;
       promise
         .then(
-          (res) => {
-            return { result: res, error: undefined };
+          (res): AsyncResult<T> => {
+            return { value: res, error: undefined, loading: false };
           },
-          (error) => {
-            return { error, result: undefined };
+          (error): AsyncResult<T> => {
+            return { error, value: undefined, loading: false };
           },
         )
         .then((result) => {
           const symbol = loadingPromise.current;
           if (symbol === promise || symbol === undefined) {
-            setResponseData(result);
-            setLoading(false);
+            setResult(result);
             loadingPromise.current = undefined;
           }
         });
       return promise;
     } else {
       loadingPromise.current = undefined;
-      setLoading(false);
-      setResponseData({ result: promise });
+      setResult({ value: promise, loading: false });
     }
     return Promise.resolve(promise);
   }, []);
   return {
+    reset: (result, error) => {
+      loadingPromise.current = undefined;
+      setResult({ error, loading: false, value: result });
+    },
     run,
-    loading: loading,
-    error: responseData.error,
-    result: responseData.result,
+    result,
   };
 }

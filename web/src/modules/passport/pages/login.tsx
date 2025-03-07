@@ -1,33 +1,44 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { LoginForm, ProFormText } from "@ant-design/pro-components";
 import { Alert, Space, Tabs } from "antd";
-import { useContext, useMemo } from "react";
+import { useContext } from "react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { api } from "@/common/http.ts";
 import { UserLoginParamDto } from "@/api.ts";
-import { tryHashPassword } from "../util/pwd_hash.ts";
-import { antdStatic } from "@/hooks/antd-static.ts";
-import { IjiaLogo } from "@/components/ijia-logo.tsx";
+import { CAN_HASH_PASSWORD, tryHashPassword } from "../util/pwd_hash.ts";
+import { antdStatic } from "@/hooks/antd.ts";
+import { IjiaLogo } from "@/common/site-logo.tsx";
 import styled from "@emotion/styled";
-import { useAsync } from "@/hooks/useAsync.ts";
-import { ImageCaptchaModal } from "@/common/ImageCaptcha.tsx";
+import { useAsync } from "@/hooks/async.ts";
+import { ImageCaptchaModal } from "@/common/capthca/ImageCaptcha.tsx";
+import classNames from "classnames";
+import { useWindowResize } from "@/hooks/window.ts";
 
 enum LoginType {
   id = "id",
   email = "email",
 }
+type Msg = {
+  type?: "info" | "success" | "error" | "warning";
+  title: string;
+};
+const defaultMessage: Msg | undefined = CAN_HASH_PASSWORD
+  ? undefined
+  : {
+      type: "warning",
+      title: "当前环境无法对密码进行加密，你的密码将以明文发送到服务器！",
+    };
 export function LoginPage() {
   const [loginType, setLoginType] = useState<LoginType>(LoginType.id);
-  const [message, setMessage] = useState<string | undefined>();
+  const [message, setMessage] = useState<Msg | undefined>(defaultMessage);
   const [loginParam, setLoginParam] = useState<UserLoginParamDto | undefined>();
-  const { modal } = useContext(antdStatic);
   const [captchaModalOpen, setCaptchaModalOpen] = useState(false);
-  const { loading: loginLoading, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {
+  const { result: value, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {
     const result = await api["/user/login"].post({ body: param, allowFailed: true });
 
     if (!result.success) {
-      setMessage(result.message ?? "登录失败");
+      setMessage({ title: result.message ?? "登录失败" });
     }
 
     if (result.tip) {
@@ -46,25 +57,22 @@ export function LoginPage() {
     }
     return result;
   });
+  const loginLoading = value.loading;
 
+  const windowSize = useWindowResize();
+
+  const { modal } = useContext(antdStatic);
   const onClickLoinBtn = async (param: EmailLoginParam | IdLoginParam) => {
+    setMessage(defaultMessage);
     const loginParam = await getLoinParam(loginType, param);
-    if (loginParam.passwordNoHash) {
-      await new Promise<void>((resolve, reject) => {
-        modal.warning({
-          title: "当前环境无法对密码进行加密，你的密码将以明文发送到服务器！是否继续登录？",
-          onCancel: reject,
-          onOk: resolve,
-        });
-      });
-    }
     setLoginParam(loginParam);
     setCaptchaModalOpen(true);
   };
+
   return (
     <StyledPage>
       <VideoBg />
-      <div className="main">
+      <div className={classNames("main", { center: windowSize.height * 1.2 > windowSize.width })}>
         <div className="left-desc"> </div>
 
         <div className="login-form-container">
@@ -74,7 +82,7 @@ export function LoginPage() {
                 <IjiaLogo size={44} />
               </Link>
             }
-            message={message && <Alert type="error" message={message} />}
+            message={message && <Alert type={message.type} message={message.title} />}
             title="IJIA 学院"
             subTitle="IJIA 学院"
             onFinish={onClickLoinBtn}
@@ -149,8 +157,9 @@ export function LoginPage() {
           </LoginForm>
           <ImageCaptchaModal
             open={captchaModalOpen}
-            onSubmit={async (sessionId: string, selectedIndex: number[]) => {
-              await postLogin({ ...loginParam!, captcha: { sessionId, selectedIndex } });
+            onSubmit={(sessionId: string, selectedIndex: number[]) => {
+              setCaptchaModalOpen(false);
+              postLogin({ ...loginParam!, captcha: { sessionId, selectedIndex } });
             }}
             onCancel={() => setCaptchaModalOpen(false)}
           />
@@ -178,11 +187,20 @@ const StyledPage = styled.div`
     .login-form-container {
       width: 400px;
       padding: 0 24px;
+      > * {
+        box-shadow: 0 0 2px #9b9b9b;
+      }
       .login-operation {
         margin-block-end: 24px;
         display: flex;
         justify-content: space-between;
       }
+    }
+  }
+  .main.center {
+    justify-content: center;
+    .left-desc {
+      display: none;
     }
   }
 `;
@@ -209,14 +227,14 @@ function VideoBg() {
         loop
       >
         <source src="/main/bg-login.mp4" type="video/mp4" />
-        {/* <img
-      src="/main/bg-login.jpg"
-      style={{
-        height: "100%",
-        width: "100%",
-        objectFit: "cover",
-      }}
-    /> */}
+        <img
+          src="/main/bg-login.jpg"
+          style={{
+            height: "100%",
+            width: "100%",
+            objectFit: "cover",
+          }}
+        />
       </video>
     </div>
   );

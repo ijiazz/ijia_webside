@@ -16,6 +16,7 @@
     "@asla/hofetch": "workspace:^",
     "@emotion/styled": "^11.14.0",
     "antd": "^5.23.3",
+    "classnames": "^2.5.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.1.5",

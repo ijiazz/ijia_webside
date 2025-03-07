@@ -1,6 +1,6 @@
 import { ConfigProvider, theme, message, notification, Modal } from "antd";
 import { PropsWithChildren } from "react";
-import { antdStatic } from "@/hooks/antd-static.ts";
+import { antdStatic } from "@/hooks/antd.ts";
 export const useToken = theme.useToken;
 
 export function AntdGlobal(props: PropsWithChildren<{}>) {

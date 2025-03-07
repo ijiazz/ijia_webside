@@ -4,6 +4,7 @@ export type CaptchaOption = {
 };
 
 export type ImageCaptchaQuestion = CaptchaOption & {
+  title: string;
   sessionId: string;
   imageUrlList: string[];
 };
@@ -17,6 +18,7 @@ export type EmailCaptchaReply = {
   code: string;
 };
 export type EmailCaptchaQuestion = CaptchaOption & {
+  title: string;
   sessionId: string;
 };
 export type VerificationCodeResult = {};

@@ -13,7 +13,7 @@ const BUCKET = getBucket();
 
 @autoBody
 class ImageCaptchaController {
-  readonly imageCaptcha = new SessionManager<ImageCaptchaSession>("Captcha:image", 5 * 60);
+  readonly imageCaptcha = new SessionManager<ImageCaptchaSession>("Captcha:image", 3 * 60);
 
   private async imageCreateSessionData(): Promise<ImageCaptchaSession> {
     const select = captcha_picture.select({
@@ -86,12 +86,13 @@ class ImageCaptchaController {
     const data = await this.imageCreateSessionData();
     sessionId = await this.imageCaptcha.set(data, { sessionId });
     return {
+      title: "请选择包含校长的图片",
       sessionId,
       imageUrlList: data.allIdList.map((imageId, index) => "/captcha/image/" + sessionId + "-" + index),
       survivalTime: this.imageCaptcha.expire,
     };
   }
-  private async imageVerifyOnly(sessionId: string, selectedIndex: number[], notDelete?: boolean) {
+  private async imageVerifyOnly(sessionId: string, selectedIndex: number[]) {
     const cache = await this.imageCaptcha.take(sessionId);
     if (!cache) return false;
     const { allIdList, answers } = cache;
@@ -127,6 +128,7 @@ class ImageCaptchaController {
       assertError,
     };
   }
+  /** 确认验证码是否通过，如果通过，则更新未知图片的选择情况 */
   async verify(reply: ImageCaptchaReply): Promise<boolean> {
     const pass = await this.imageVerifyOnly(reply.sessionId, reply.selectedIndex);
     if (pass) {
