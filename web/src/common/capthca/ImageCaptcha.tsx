@@ -1,9 +1,11 @@
 import { CaptchaPanel } from "@/common/capthca/captcha.tsx";
-import { Modal, Popover, Spin } from "antd";
+import { Modal, Popover, Space, Spin, Button } from "antd";
 import { api, API_PREFIX } from "../http.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { PropsWithChildren, useEffect, useState } from "react";
-function useImageCaptcha(config: { onSubmit: (sessionId: string, selected: number[]) => void | Promise<void> }) {
+import styled from "@emotion/styled";
+
+function useImageCaptcha(config: { onSubmit?: (sessionId: string, selected: number[]) => void | Promise<void> }) {
   const {
     result: captchaResult,
     run: refresh,
@@ -17,10 +19,10 @@ function useImageCaptcha(config: { onSubmit: (sessionId: string, selected: numbe
     const sessionId = captchaResult.value!.sessionId;
 
     try {
-      await config.onSubmit(sessionId, selected);
+      await config.onSubmit?.(sessionId, selected);
       reset();
     } catch (error) {
-      refresh();
+      refresh(sessionId);
     }
   });
 
@@ -31,33 +33,89 @@ function useImageCaptcha(config: { onSubmit: (sessionId: string, selected: numbe
     refresh: () => refresh(captchaResult.value?.sessionId),
   };
 }
-export function ImageCaptchaPopover(props: PropsWithChildren<CaptchaPanelProps>) {
-  const { open } = props;
-  const { captchaResult, submit, refresh } = useImageCaptcha(props);
+export type ImageCaptchaPopoverProps = PropsWithChildren<{
+  onCancel?: () => void;
+  onSubmit?: (sessionId: string, selected: number[]) => void | Promise<void>;
+  disabled?: boolean;
+}>;
+export function ImageCaptchaPopover(props: ImageCaptchaPopoverProps) {
+  const { disabled } = props;
+  const { captchaResult, submitResult, submit, refresh } = useImageCaptcha({
+    async onSubmit(sessionId, selected) {
+      await props.onSubmit?.(sessionId, selected);
+      setOpen(false);
+    },
+  });
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<number[]>([]);
   const captchaQuestion = captchaResult.value;
 
+  const isError = captchaResult.error && !captchaResult.loading;
   useEffect(() => {
     if (open && !captchaQuestion) refresh();
   }, [open]);
   return (
     <Popover
+      trigger="click"
       open={open}
+      onOpenChange={(open) => {
+        setOpen(open);
+        if (open === false) props.onCancel?.();
+      }}
       content={
-        <Spin spinning={captchaResult.loading}>
-          <CaptchaPanel imageList={captchaQuestion?.imageUrlList ?? []} onChange={submit} />
-        </Spin>
+        <CssImageCaptchaPopover>
+          <Spin spinning={captchaResult.loading}>
+            <CaptchaPanel
+              value={selected}
+              title={captchaQuestion?.title}
+              imageList={captchaQuestion?.imageUrlList ?? []}
+              onChange={setSelected}
+              isError={isError}
+            />
+            <div className="footer" style={{ display: "flex", gap: 12, justifyContent: "end" }}>
+              <Button
+                disabled={disabled || submitResult.loading}
+                onClick={() => {
+                  refresh();
+                  setSelected([]);
+                }}
+                size="small"
+              >
+                刷新
+              </Button>
+              <Button
+                disabled={disabled}
+                loading={submitResult.loading}
+                type="primary"
+                size="small"
+                onClick={() => {
+                  submit(selected);
+                  setSelected([]);
+                }}
+              >
+                确定
+              </Button>
+            </div>
+          </Spin>
+        </CssImageCaptchaPopover>
       }
     >
       {props.children}
     </Popover>
   );
 }
-type CaptchaPanelProps = {
-  open: boolean;
-  onCancel: () => void;
-  onSubmit: (sessionId: string, selected: number[]) => void | Promise<void>;
+
+const CssImageCaptchaPopover = styled.div`
+  .footer {
+    margin-top: 12px;
+  }
+`;
+type ImageCaptchaModal = {
+  open?: boolean;
+  onCancel?: () => void;
+  onSubmit?: (sessionId: string, selected: number[]) => void | Promise<void>;
 };
-export function ImageCaptchaModal(props: PropsWithChildren<CaptchaPanelProps>) {
+export function ImageCaptchaModal(props: PropsWithChildren<ImageCaptchaModal>) {
   const { open } = props;
   const { captchaResult, submitResult, submit, refresh } = useImageCaptcha(props);
   const [selected, setSelected] = useState<number[]>([]);
@@ -93,9 +151,8 @@ export function ImageCaptchaModal(props: PropsWithChildren<CaptchaPanelProps>) {
       okButtonProps={{ disabled: isError || captchaResult.loading }}
     >
       <Spin spinning={captchaResult.loading}>
-        <h4>{captchaQuestion?.title}</h4>
-
         <CaptchaPanel
+          title={captchaQuestion?.title}
           imageList={imageList}
           value={selected}
           onChange={setSelected}

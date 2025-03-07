@@ -1,17 +1,21 @@
 import React from "react";
 
-type LazyComponent<T> = T extends React.ComponentType<any> ? React.LazyExoticComponent<T> : never;
+export function lazyComponent<T extends React.ComponentType<any>>(
+  mod: () => Promise<{ default: T }>,
+): React.LazyExoticComponent<T>;
+export function lazyComponent<T extends React.ComponentType<any>, C>(
+  mod: () => Promise<C>,
+  pick: (mod: C) => T,
+): React.LazyExoticComponent<T>;
+export function lazyComponent(
+  load: () => Promise<any>,
+  pick?: (mod: any) => React.ComponentType<any>,
+): React.LazyExoticComponent<any> {
+  if (!pick) return React.lazy(load);
 
-export function lazyComponent<T, K extends keyof T>(mod: () => Promise<T>): LazyComponent<T[K]>;
-export function lazyComponent<T, K extends keyof T>(mod: () => Promise<T>, key: K): LazyComponent<T[K]>;
-export function lazyComponent<T extends { default: any }, K extends keyof T>(
-  mod: () => Promise<T>,
-  key?: K,
-): LazyComponent<T[K]> | LazyComponent<T["default"]>;
-export function lazyComponent(load: () => Promise<any>, key: string = "default"): LazyComponent<any> {
   return React.lazy(() => {
     return load().then((res) => {
-      return { default: res[key] };
+      return { default: pick(res) };
     });
   });
 }

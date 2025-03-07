@@ -1,8 +1,14 @@
 import { Route, Routes } from "react-router";
 import { lazyComponent } from "@/lib/lazy_component.ts";
 
-const LoginPage = lazyComponent(() => import("./pages/login.tsx"), "LoginPage");
-const SignupPage = lazyComponent(() => import("./pages/signup.tsx"), "Signup");
+const LoginPage = lazyComponent(
+  () => import("./pages/login.tsx"),
+  (mod) => mod.LoginPage,
+);
+const SignupPage = lazyComponent(
+  () => import("./pages/signup.tsx"),
+  (mod) => mod.Signup,
+);
 
 export function Passport() {
   return (

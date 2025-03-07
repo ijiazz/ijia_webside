@@ -6,6 +6,7 @@ import classnames from "classnames";
 import { useThemeToken } from "@/hooks/antd.ts";
 
 export type CaptchaPanelProps = {
+  title?: string;
   imageList: string[];
   value?: number[];
   onChange: (selected: number[]) => void;
@@ -13,7 +14,7 @@ export type CaptchaPanelProps = {
   isError?: boolean;
 };
 export function CaptchaPanel(props: CaptchaPanelProps) {
-  const { onChange, imageList, value, errorMessage, isError } = props;
+  const { onChange, imageList, value, errorMessage, isError, title } = props;
   const theme = useThemeToken();
   const selected = useMemo(() => new Set(value ?? []), [value]);
   const onCheck = (index: number) => {
@@ -26,6 +27,7 @@ export function CaptchaPanel(props: CaptchaPanelProps) {
   };
   return (
     <StyledCaptchaPanel>
+      <h4>{title}</h4>
       {isError ? (
         <Result status="error" title={errorMessage} style={{ minHeight: 316 }} />
       ) : (

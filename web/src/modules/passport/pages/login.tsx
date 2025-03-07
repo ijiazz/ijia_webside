@@ -14,6 +14,7 @@ import { useAsync } from "@/hooks/async.ts";
 import { ImageCaptchaModal } from "@/common/capthca/ImageCaptcha.tsx";
 import classNames from "classnames";
 import { useWindowResize } from "@/hooks/window.ts";
+import { VideoBg } from "../components/VideoBg.tsx";
 
 enum LoginType {
   id = "id",
@@ -204,41 +205,7 @@ const StyledPage = styled.div`
     }
   }
 `;
-function VideoBg() {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        height: "100%",
-        top: 0,
-        left: 0,
-        overflow: "hidden",
-        zIndex: -1,
-      }}
-    >
-      <video
-        style={{
-          height: "100%",
-          width: "100vw",
-          objectFit: "cover",
-        }}
-        muted
-        autoPlay
-        loop
-      >
-        <source src="/main/bg-login.mp4" type="video/mp4" />
-        <img
-          src="/main/bg-login.jpg"
-          style={{
-            height: "100%",
-            width: "100%",
-            objectFit: "cover",
-          }}
-        />
-      </video>
-    </div>
-  );
-}
+
 type EmailLoginParam = {
   email: string;
   password: string;

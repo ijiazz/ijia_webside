@@ -1,3 +1,165 @@
-export function Signup() {
-  return <div>signup</div>;
+import { QuestionCircleOutlined } from "@ant-design/icons";
+import styled from "@emotion/styled";
+import { Button, Checkbox, Form, Input, Space, Tooltip, Steps } from "antd";
+import { useContext, useRef, useState } from "react";
+import { api } from "@/common/http.ts";
+import { tryHashPassword } from "../util/pwd_hash.ts";
+import { ImageCaptchaPopover } from "@/common/capthca/ImageCaptcha.tsx";
+import { useAsync } from "@/hooks/async.ts";
+import { antdStatic } from "@/hooks/antd.ts";
+import { IjiaLogo } from "@/common/site-logo.tsx";
+function useCooling(coolingTime = 60) {
+  const [time, settime] = useState<number>(0);
+  const ref = useRef<null | number>(null);
+
+  const start = () => {
+    if (ref.current) clearInterval(ref.current);
+    settime(coolingTime);
+    const id = setInterval(() => {
+      settime((time) => {
+        if (time - 1 === 0) clearInterval(id);
+        return time - 1;
+      });
+    }, 1000);
+    ref.current = id;
+  };
+  return {
+    time,
+    start,
+  };
 }
+
+export function Signup() {
+  return (
+    <StyledPage>
+      <div className="main">
+        <div className="header">
+          <Space>
+            <IjiaLogo />
+            <h2>注册</h2>
+          </Space>
+        </div>
+        <BasicInfo />
+      </div>
+    </StyledPage>
+  );
+}
+
+function BasicInfo() {
+  const [form] = Form.useForm<FormValues>();
+  const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>
+    api["/user/signup/email_captcha"].post({ body: { email, captchaReply: { sessionId, selectedIndex: selected } } }),
+  );
+  const { result: submitState, run: onSubmit } = useAsync(async function (value: FormValues) {
+    const pwd = await tryHashPassword(value.password);
+    await api["/user/signup"].post({
+      body: {
+        email: value.email,
+        password: pwd.password,
+        passwordNoHash: pwd.passwordNoHash,
+        emailCaptcha: { code: value.email_code, sessionId: result.value!.sessionId },
+      },
+    });
+  });
+  const { message } = useContext(antdStatic);
+  return (
+    <div style={{ padding: 32 }}>
+      <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }} form={form} onFinish={onSubmit}>
+        <Form.Item label="电子邮箱" name="email" rules={[{ required: true, type: "email" }]}>
+          <EmailInput
+            onCaptchaSubmit={async (email, sessionId, selected) => {
+              try {
+                await sendEmailCaptcha(email, sessionId, selected);
+                message.success("已发送");
+              } catch (error) {
+                message.error("验证码错误");
+                throw error;
+              }
+            }}
+          />
+        </Form.Item>
+        <Form.Item label="邮件验证码" name="email_code" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
+        <Form.Item label="密码" name="password" rules={[{ required: true }]}>
+          <Input.Password />
+        </Form.Item>
+        <Form.Item
+          label="确认密码"
+          name="password-confirm"
+          rules={[
+            { required: true },
+            {
+              validator: async (rule, value, callback) => {
+                if (value !== form.getFieldValue("password")) throw new Error("密码不一致");
+              },
+            },
+          ]}
+        >
+          <Input.Password />
+        </Form.Item>
+        <Form.Item label={null} name="option" valuePropName="checked">
+          <Checkbox>
+            <Space>
+              接收直播通知
+              <Tooltip title="校长直播时，将通过邮件发送通知">
+                <QuestionCircleOutlined />
+              </Tooltip>
+            </Space>
+          </Checkbox>
+        </Form.Item>
+      </Form>
+      <div style={{ display: "flex", justifyContent: "end" }}>
+        <Button loading={submitState.loading} type="primary" htmlType="submit" onClick={() => form.submit()}>
+          提交
+        </Button>
+      </div>
+    </div>
+  );
+}
+function EmailInput(props: {
+  value?: string;
+  onChange?(value: string): void;
+  onCaptchaSubmit: (email: string, sessionId: string, selected: number[]) => Promise<void>;
+}) {
+  const cooling = useCooling();
+  const form = Form.useFormInstance();
+  const email: string | undefined = Form.useWatch("email", form);
+  const emailIsValid = /[^@]+?@[^@]+/.test(email ?? "");
+  return (
+    <div style={{ display: "flex", gap: 12 }}>
+      <Input {...props} onChange={(e) => props.onChange?.(e.currentTarget.value)} />
+      <ImageCaptchaPopover
+        disabled={!emailIsValid}
+        onSubmit={(sessionId, select) => props.onCaptchaSubmit?.(email!, sessionId, select)}
+      >
+        <Button disabled={!emailIsValid}>发送验证码{cooling.time > 0 ? `${cooling.time}` : undefined}</Button>
+      </ImageCaptchaPopover>
+    </div>
+  );
+}
+type FormValues = {
+  email: string;
+  email_code: string;
+  password: string;
+};
+const StyledPage = styled.div`
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .header {
+    display: flex;
+    justify-content: center;
+  }
+  .main {
+    max-width: 600px;
+    border-radius: 6px;
+    box-shadow: 0 0 4px #d7d7d7;
+    padding: 32px;
+    .form-container {
+      margin: 32px;
+    }
+  }
+`;
