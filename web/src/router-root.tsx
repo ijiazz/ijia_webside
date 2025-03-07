@@ -1,5 +1,6 @@
 import { Route, HashRouter, Routes } from "react-router";
 import { Passport } from "./modules/passport/router.tsx";
+import { ProfileRouter } from "./modules/profile/router.tsx";
 
 function RouterRoot() {
   return (
@@ -7,6 +8,7 @@ function RouterRoot() {
       <Route index element={<div>home</div>} />
       <Route path="test" element={<div>test</div>} />
       <Route path="passport/*" Component={Passport} />
+      <Route path="profile/*" Component={ProfileRouter} />
     </Routes>
   );
 }
