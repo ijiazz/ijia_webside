@@ -1,4 +1,4 @@
-import { redisPool } from "@/services/redis.ts";
+import { redisPool } from "@ijia/data/cache";
 
 export class SessionManager<T extends object> {
   constructor(

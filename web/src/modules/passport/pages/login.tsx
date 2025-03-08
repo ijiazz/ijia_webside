@@ -4,10 +4,9 @@ import { Alert, Space, Tabs } from "antd";
 import { useContext } from "react";
 import { useState } from "react";
 import { Link } from "react-router";
-import { api } from "@/common/http.ts";
-import { UserLoginParamDto } from "@/api.ts";
+import { LoginType, UserLoginParamDto } from "@/api.ts";
 import { CAN_HASH_PASSWORD, tryHashPassword } from "../util/pwd_hash.ts";
-import { antdStatic } from "@/hooks/antd.ts";
+import { AndContext } from "@/hooks/antd.ts";
 import { IjiaLogo } from "@/common/site-logo.tsx";
 import styled from "@emotion/styled";
 import { useAsync } from "@/hooks/async.ts";
@@ -15,11 +14,9 @@ import { ImageCaptchaModal } from "@/common/capthca/ImageCaptcha.tsx";
 import classNames from "classnames";
 import { useWindowResize } from "@/hooks/window.ts";
 import { VideoBg } from "../components/VideoBg.tsx";
+import { IGNORE_ERROR_MSG, useHoFetch } from "@/hooks/http.ts";
+import { useRouterRedirect } from "@/hooks/redirect.ts";
 
-enum LoginType {
-  id = "id",
-  email = "email",
-}
 type Msg = {
   type?: "info" | "success" | "error" | "warning";
   title: string;
@@ -31,15 +28,17 @@ const defaultMessage: Msg | undefined = CAN_HASH_PASSWORD
       title: "当前环境无法对密码进行加密，你的密码将以明文发送到服务器！",
     };
 export function LoginPage() {
+  const go = useRouterRedirect({ defaultPath: "/profile/basic" });
   const [loginType, setLoginType] = useState<LoginType>(LoginType.id);
   const [message, setMessage] = useState<Msg | undefined>(defaultMessage);
+  const { api } = useHoFetch();
   const [loginParam, setLoginParam] = useState<UserLoginParamDto | undefined>();
   const [captchaModalOpen, setCaptchaModalOpen] = useState(false);
   const { result: value, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {
-    const result = await api["/user/login"].post({ body: param, allowFailed: true });
+    const result = await api["/user/login"].post({ body: param, allowFailed: true, [IGNORE_ERROR_MSG]: true });
 
     if (!result.success) {
-      setMessage({ title: result.message ?? "登录失败" });
+      setMessage({ title: result.message ?? "登录失败", type: "error" });
     }
 
     if (result.tip) {
@@ -56,17 +55,23 @@ export function LoginPage() {
       location.replace(result.redirect);
       return;
     }
+    go();
     return result;
   });
   const loginLoading = value.loading;
 
   const windowSize = useWindowResize();
 
-  const { modal } = useContext(antdStatic);
-  const onClickLoinBtn = async (param: EmailLoginParam | IdLoginParam) => {
+  const { modal } = useContext(AndContext);
+  const onClickLoinBtn = async (param: IdLoginParam) => {
     setMessage(defaultMessage);
-    const loginParam = await getLoinParam(loginType, param);
-    setLoginParam(loginParam);
+
+    try {
+      const loginParam = await getLoinParam(loginType, param);
+      setLoginParam(loginParam);
+    } catch (error) {
+      throw error;
+    }
     setCaptchaModalOpen(true);
   };
 
@@ -87,11 +92,6 @@ export function LoginPage() {
             title="IJIA 学院"
             subTitle="IJIA 学院"
             onFinish={onClickLoinBtn}
-            containerStyle={{
-              backgroundColor: "#fff8",
-              borderRadius: "4px",
-              backdropFilter: "blur(6px)",
-            }}
             loading={loginLoading}
           >
             <Tabs
@@ -104,28 +104,14 @@ export function LoginPage() {
                       <ProFormText
                         name="id"
                         fieldProps={{ prefix: <UserOutlined /> }}
-                        placeholder="学号"
-                        rules={[{ required: true, pattern: /\d+/, message: "学号应该是正整数" }]}
-                      />
-                      <ProFormText.Password
-                        name="password"
-                        fieldProps={{ prefix: <LockOutlined /> }}
-                        placeholder="密码"
-                        rules={[{ required: true }]}
-                      />
-                    </>
-                  ),
-                },
-                {
-                  key: LoginType.email,
-                  label: "邮箱登陆",
-                  children: (
-                    <>
-                      <ProFormText
-                        name="email"
-                        fieldProps={{ prefix: <UserOutlined /> }}
-                        placeholder="邮箱"
-                        rules={[{ required: true, type: "email" }]}
+                        placeholder="学号或邮箱"
+                        rules={[
+                          {
+                            required: true,
+                            pattern: /^((\d+)|([^@]+@.+?\..+))$/,
+                            message: "请输入正确的学号或邮箱",
+                          },
+                        ]}
                       />
                       <ProFormText.Password
                         name="password"
@@ -150,7 +136,7 @@ export function LoginPage() {
                 <Link to="../find-account" style={{ float: "right" }}>
                   忘记密码
                 </Link>
-                <Link to="../signin" style={{ float: "right" }}>
+                <Link to="../signup" style={{ float: "right" }}>
                   注册账号
                 </Link>
               </Space>
@@ -197,6 +183,11 @@ const StyledPage = styled.div`
         justify-content: space-between;
       }
     }
+    .ant-pro-form-login-container {
+      background-color: #fff8;
+      backdrop-filter: blur(6px);
+      border-radius: 4px;
+    }
   }
   .main.center {
     justify-content: center;
@@ -214,27 +205,21 @@ type IdLoginParam = {
   id: string;
   password: string;
 };
-async function getLoinParam(loginType: LoginType, param: EmailLoginParam | IdLoginParam) {
+async function getLoinParam(loginType: LoginType, param: IdLoginParam) {
   let loginParam: UserLoginParamDto | undefined;
-
-  switch (loginType) {
-    case LoginType.id: {
-      loginParam = {
-        method: LoginType.id,
-        id: (param as IdLoginParam).id,
-        ...(await tryHashPassword(param.password)),
-      };
-      break;
-    }
-    case LoginType.email: {
-      loginParam = {
-        method: LoginType.email,
-        email: (param as EmailLoginParam).email,
-        ...(await tryHashPassword(param.password)),
-      };
-    }
-    default:
-      throw new Error("登录方法不支持：" + loginType);
+  const id = param.id;
+  if (/\d+/.test(id)) {
+    loginParam = {
+      method: LoginType.id,
+      id: (param as IdLoginParam).id,
+      ...(await tryHashPassword(param.password)),
+    };
+  } else {
+    loginParam = {
+      method: LoginType.email,
+      email: id,
+      ...(await tryHashPassword(param.password)),
+    };
   }
 
   return loginParam;

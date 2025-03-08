@@ -1,8 +1,13 @@
 /// <reference types="vite/client" />
+import "@ant-design/v5-patch-for-react-19";
 import "./styles/global.css";
 
 import { createRoot } from "react-dom/client";
 import { createRouterRoot } from "./router-root.tsx";
-import { AntdGlobal } from "./antd-global.tsx";
+import { HoFetchProvider, AntdProvider } from "./global-provider.tsx";
 
-createRoot(document.getElementById("app")!).render(<AntdGlobal>{createRouterRoot()}</AntdGlobal>);
+createRoot(document.getElementById("app")!).render(
+  <AntdProvider>
+    <HoFetchProvider>{createRouterRoot()}</HoFetchProvider>
+  </AntdProvider>,
+);

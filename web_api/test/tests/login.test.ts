@@ -60,13 +60,13 @@ describe("注册用户", function () {
 
     let emailAnswer = await mockSendEmailCaptcha(api);
     await expect(
-      api["/user/signup"].post({ body: { email: "test@ijiazz.cn", classId: [3], emailCaptcha: emailAnswer } }),
+      api["/user/signup"].post({ body: { email: "test123@ijiazz.cn", classId: [3], emailCaptcha: emailAnswer } }),
       "不允许选择非公共班级",
     ).rejects.throwErrorEqualBody(403, { message: "班级不存在" });
 
     emailAnswer = await mockSendEmailCaptcha(api);
     const userInfo = await api["/user/signup"].post({
-      body: { email: "test@ijiazz.cn", classId: [1], emailCaptcha: emailAnswer },
+      body: { email: "test124@ijiazz.cn", classId: [1], emailCaptcha: emailAnswer },
     });
 
     const recordCount = await user_class_bind
@@ -82,7 +82,7 @@ describe("登录", function () {
       api["/user/login"].post({
         body: { email: "abc@qq.com", method: LoginType.email, password: "123" },
       }),
-    ).rejects.throwErrorEqualBody(403, { message: "验证码错误" });
+    ).rejects.throwErrorMatchBody(403, { code: "CAPTCHA_ERROR" });
   });
   test("密码错误，应返回提示", async function ({ api }) {
     const captcha = await createCaptchaSession();

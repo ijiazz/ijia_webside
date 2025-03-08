@@ -43,8 +43,11 @@ importers:
   deps/ijia-data:
     dependencies:
       '@asla/yoursql':
-        specifier: ^0.8.3
-        version: 0.8.3
+        specifier: ^0.8.4
+        version: 0.8.4
+      '@redis/client':
+        specifier: ^1.6.0
+        version: 1.6.0
       evlib:
         specifier: ^3.1.0
         version: 3.1.0
@@ -91,6 +94,9 @@ importers:
       '@ant-design/pro-components':
         specifier: ^2.8.5
         version: 2.8.5(antd@5.23.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(rc-field-form@2.7.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@ant-design/v5-patch-for-react-19':
+        specifier: ^1.0.3
+        version: 1.0.3(antd@5.23.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@asla/hofetch':
         specifier: workspace:^
         version: link:../deps/hofetch
@@ -306,8 +312,16 @@ packages:
     peerDependencies:
       react: '>=16.9.0'
 
-  '@asla/yoursql@0.8.3':
-    resolution: {integrity: sha512-pVUFpS5qTDlX2PNIoIN1oS9vw0Aff1mpc2GTj+v4ZFQR+NG9ITS4RG9/NrPkdGZcj7C4ruFAJ6/F7XkGS5sYDQ==}
+  '@ant-design/v5-patch-for-react-19@1.0.3':
+    resolution: {integrity: sha512-iWfZuSUl5kuhqLUw7jJXUQFMMkM7XpW7apmKzQBQHU0cpifYW4A79xIBt9YVO5IBajKpPG5UKP87Ft7Yrw1p/w==}
+    engines: {node: '>=12.x'}
+    peerDependencies:
+      antd: '>=5.22.6'
+      react: '>=19.0.0'
+      react-dom: '>=19.0.0'
+
+  '@asla/yoursql@0.8.4':
+    resolution: {integrity: sha512-m++5qje/9m3VmbJsnaLGwpjf+4Xvb/w8FPmIaUliNbiYronfkWa7US/l9ltaqFt58pefL9yvbyoQFdkr4m7tuw==}
     engines: {node: '>=18'}
 
   '@babel/code-frame@7.26.2':
@@ -3102,7 +3116,13 @@ snapshots:
       resize-observer-polyfill: 1.5.1
       throttle-debounce: 5.0.2
 
-  '@asla/yoursql@0.8.3': {}
+  '@ant-design/v5-patch-for-react-19@1.0.3(antd@5.23.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      antd: 5.23.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
+  '@asla/yoursql@0.8.4': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:

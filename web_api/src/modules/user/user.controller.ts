@@ -29,7 +29,7 @@ import { createEmailCodeHtmlContent } from "./template/sigup-email-code.ts";
 import { Context } from "hono";
 import { ENV, Mode } from "@/global/config.ts";
 import { APP_CONFIG } from "@/config.ts";
-import { createMessageResponseError } from "@/global/http_error.ts";
+import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/errors.ts";
 
 @autoBody
 @Controller({})
@@ -41,6 +41,7 @@ export class UserController {
     const param = checkValue(body, {
       email: "string",
       password: optional.string,
+      passwordNoHash: optional.boolean,
       classId: optional(array.number),
       emailCaptcha: emailCaptchaReplyChecker(),
     });
@@ -51,7 +52,13 @@ export class UserController {
   async createUser(body: CreateUserProfileParam): Promise<CreateUserProfileResult> {
     if (ENV.SIGNUP_VERIFY_EMAIL) {
       const pass = await emailCaptchaService.verify(body.emailCaptcha!);
-      if (!pass) throw createMessageResponseError(403, "验证码错误");
+      if (!pass) throw new HttpCaptchaError();
+    }
+    if (body.password) {
+      if (body.passwordNoHash) body.password = await hashPasswordFrontEnd(body.password);
+      else if (!/[0-9a-f]{128}/.test(body.password!)) {
+        throw new HttpParamsCheckError("密码哈希错误");
+      }
     }
 
     const userId = await loginService.createUser(body.email, { classId: body.classId, password: body.password });
@@ -67,17 +74,18 @@ export class UserController {
   async sendEmailCaptcha({ captchaReply, email }: RequestSignupEmailCaptchaParam): Promise<EmailCaptchaQuestion> {
     {
       const pass = await imageCaptchaController.verify(captchaReply);
-      if (!pass) throw createMessageResponseError(403, "验证码错误");
+      if (!pass) throw new HttpCaptchaError();
 
       const exists = await user
         .select({ email: true })
         .where(`email=${v(email)}`)
         .limit(1)
         .queryCount();
-      if (exists) throw createMessageResponseError(406, "邮件已被注册");
+      if (exists) throw new HttpError(406, { message: "邮件已被注册" });
     }
 
-    const code = emailCaptchaService.genCode();
+    const isProd = ENV.MODE === Mode.Prod;
+    const code = isProd ? "1234" : emailCaptchaService.genCode();
     const expire = 5 * 60; // 5 分钟有效期
     const htmlContent = createEmailCodeHtmlContent({
       code,
@@ -92,9 +100,10 @@ export class UserController {
       text: htmlContent,
     };
     let emailCaptchaQuestion: EmailCaptchaQuestion;
-    if (ENV.MODE == Mode.Prod) {
+    if (isProd) {
       emailCaptchaQuestion = await emailCaptchaService.sendEmailCaptcha(captchaEmail);
     } else {
+      if (ENV.MODE === Mode.Dev) console.log("模拟发送邮件验证码：" + code, captchaEmail);
       emailCaptchaQuestion = await emailCaptchaService.createSession(captchaEmail);
     }
     return emailCaptchaQuestion;
@@ -115,7 +124,7 @@ export class UserController {
         const captcha = checkValue(body.captcha, imageCaptchaReplyChecker());
         pass = await imageCaptchaController.verify(captcha);
       } else pass = false;
-      if (!pass) throw createMessageResponseError(403, "验证码错误");
+      if (!pass) throw new HttpCaptchaError();
     }
 
     const method = body.method;
@@ -146,10 +155,10 @@ export class UserController {
         break;
       }
       default:
-        throw createMessageResponseError(400, "方法不允许");
+        throw new HttpError(400, { message: "方法不允许" });
     }
     if (user.userId === undefined) {
-      throw createMessageResponseError(403, user.message!);
+      throw new HttpError(403, { message: user.message! });
     }
 
     const minute = 3 * 24 * 60; // 3 天后过期

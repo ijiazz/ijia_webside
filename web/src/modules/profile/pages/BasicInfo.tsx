@@ -1,4 +1,3 @@
-import { api } from "@/common/http.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Avatar, Button, Form, Input, Select, Tooltip } from "antd";

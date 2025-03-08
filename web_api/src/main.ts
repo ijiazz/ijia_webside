@@ -1,30 +1,12 @@
 import { ENV } from "@/global/config.ts";
 import { createHonoApp } from "./modules/serve.ts";
-import { getDbPool, setDbPool, createPgPool, DbPool } from "@ijia/data/yoursql";
+import { dbPool } from "@ijia/data/yoursql";
 import { listenUseDenoHttpServer, listenUseNodeHttpServer, ListenOption, AppServer } from "@/hono/listen.ts";
-import { redisPool } from "./services/redis.ts";
-import { toErrorStr } from "evlib";
+import { redisPool } from "@ijia/data/cache";
 
-async function testDatabase() {
-  let pool: DbPool;
-  try {
-    pool = getDbPool();
-  } catch (error) {
-    console.warn("未设置 DATABASE_URL 环境变量, 将使用默认数据库地址");
-    pool = createPgPool({ database: "ijia" });
-    setDbPool(pool);
-  }
-  try {
-    const conn = await pool.connect();
-    conn.release();
-  } catch (error) {
-    console.error("数据库连接失败", toErrorStr(error));
-  }
-}
 async function bootstrap() {
-  console.log("正测试数据库连接");
-  await testDatabase();
   console.log(`Server listen: ${ENV.LISTEN_ADDR}:${ENV.LISTEN_PORT}`);
+  console.log(`Mode: ${ENV.MODE}`);
 
   const hono = createHonoApp({});
   const listenOption: ListenOption = {
@@ -48,11 +30,9 @@ async function bootstrap() {
     }
     isClosed = true;
     return Promise.all([
-      getDbPool()
-        .close()
-        .then(() => {
-          console.log("数据连接已关闭");
-        }),
+      dbPool.close().then(() => {
+        console.log("数据连接已关闭");
+      }),
       redisPool.close().then(() => {
         console.log("Redis 连接已关闭");
       }),

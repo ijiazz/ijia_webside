@@ -1,8 +1,8 @@
 import { test as viTest, afterAll } from "vitest";
-import { createPgPool, DbPool, parserDbUrl, setDbPool } from "@ijia/data/yoursql";
+import { DbPool, parserDbUrl, dbPool } from "@ijia/data/yoursql";
 import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
 import process from "node:process";
-import { redisPool, RedisPool } from "@/services/redis.ts";
+import { redisPool, RedisPool } from "@ijia/data/cache";
 import { RedisFlushModes } from "@redis/client";
 
 export interface DbContext {
@@ -31,8 +31,8 @@ export const test = viTest.extend<DbContext>({
   async ijiaDbPool({}, use) {
     const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
     await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true, extra: true });
-    const dbPool = await createPgPool({ ...DB_CONNECT_INFO, database: dbName });
-    setDbPool(dbPool);
+    dbPool.connectOption = { ...DB_CONNECT_INFO, database: dbName };
+    dbPool.open();
     await use(dbPool);
     await clearDropDb(dbPool, dbName);
   },
@@ -40,8 +40,8 @@ export const test = viTest.extend<DbContext>({
     if (!publicDbPool) {
       publicDbPool = Promise.resolve().then(async () => {
         await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true, extra: true });
-        const dbPool = await createPgPool({ ...DB_CONNECT_INFO, database: pubDbName });
-        setDbPool(dbPool);
+        dbPool.connectOption = { ...DB_CONNECT_INFO, database: pubDbName };
+        dbPool.open();
         publicDbPool = dbPool;
         return dbPool;
       });
@@ -55,8 +55,8 @@ export const test = viTest.extend<DbContext>({
     const manage = await getManage();
     await manage.emptyDatabase(dbName);
     await manage.close();
-
-    const dbPool = await createPgPool({ ...DB_CONNECT_INFO, database: dbName });
+    dbPool.connectOption = { ...DB_CONNECT_INFO, database: dbName };
+    dbPool.open();
     await use(dbPool);
     await clearDropDb(dbPool, dbName);
   },

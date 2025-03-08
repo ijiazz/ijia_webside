@@ -31,6 +31,7 @@ services:
       REDIS_CONNECT_URL: "redis://redis:6379"
       OOS_DIR: "/data/oos"
       CHECK_SERVER: "host-gateway:9000"
+      MODE: E2E
       JWT_KEY: 123
     links:
       - redis

@@ -1,5 +1,5 @@
 import { checkType, ExpectType, InferExpect, TypeCheckOptions } from "evlib/validator";
-import { HTTPException } from "hono/http-exception";
+import { HttpParamsCheckError } from "./errors.ts";
 
 export function checkValue<T extends ExpectType>(
   input: unknown,
@@ -7,6 +7,6 @@ export function checkValue<T extends ExpectType>(
   option?: TypeCheckOptions,
 ): InferExpect<T> {
   const { value, error } = checkType(input, expectType, { ...option, policy: "delete" });
-  if (error) throw new HTTPException(400, { cause: error, res: Response.json(error) });
+  if (error) throw new HttpParamsCheckError(error);
   return value;
 }

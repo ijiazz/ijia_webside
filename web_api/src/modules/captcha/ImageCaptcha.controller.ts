@@ -1,6 +1,6 @@
 import { ImageCaptchaQuestion, ImageCaptchaReply } from "./Captcha.type.ts";
 import { captcha_picture, DbCaptchaPicture } from "@ijia/data/db";
-import { getDbPool, v } from "@ijia/data/yoursql";
+import { dbPool, v } from "@ijia/data/yoursql";
 import { Get, Post } from "@/hono-decorator/src/Router.ts";
 import { PipeInput, PipeOutput } from "@/hono-decorator/src/base.ts";
 import { HTTPException } from "hono/http-exception";
@@ -9,10 +9,16 @@ import { autoBody } from "@/global/pipe.ts";
 import { getOOS, getBucket } from "@ijia/data/oos";
 import { contentType } from "@std/media-types";
 import path from "node:path";
+import { ENV, Mode } from "@/global/config.ts";
 const BUCKET = getBucket();
 
 @autoBody
 class ImageCaptchaController {
+  constructor() {
+    if (ENV.MODE === Mode.E2E) {
+      console.log("E2E测试模式，验证码总是选择前 3 个图片");
+    }
+  }
   readonly imageCaptcha = new SessionManager<ImageCaptchaSession>("Captcha:image", 3 * 60);
 
   private async imageCreateSessionData(): Promise<ImageCaptchaSession> {
@@ -28,7 +34,7 @@ class ImageCaptchaController {
     const equivocal = select.where(`is_true IS NULL`).orderBy("RANDOM()").limit(9); // limit 9 避免 certain 数量不足
 
     const sql = `(${certain.toSelect()} UNION ALL ${equivocal.toSelect()}) LIMIT 9`;
-    const result = await getDbPool()
+    const result = await dbPool
       .queryRows<Pick<DbCaptchaPicture, "id" | "is_true" | "type">>(sql)
       .then((item) => item.sort(() => Math.random() - 0.5));
 
@@ -38,6 +44,12 @@ class ImageCaptchaController {
       const item = result[i];
       allIdList[i] = item.id;
       answer[i] = item.is_true;
+    }
+    if (ENV.MODE === Mode.E2E) {
+      for (let i = 0; i < result.length; i++) {
+        if (i < 3) answer[i] = true;
+        else answer[i] = false;
+      }
     }
     return {
       answers: answer,
@@ -131,7 +143,7 @@ class ImageCaptchaController {
   /** 确认验证码是否通过，如果通过，则更新未知图片的选择情况 */
   async verify(reply: ImageCaptchaReply): Promise<boolean> {
     const pass = await this.imageVerifyOnly(reply.sessionId, reply.selectedIndex);
-    if (pass) {
+    if (pass && ENV.MODE !== Mode.E2E) {
       const assertCorrect = Array.from(pass.assertCorrect);
       const assertError = Array.from(pass.assertError);
       const add = captcha_picture
@@ -142,7 +154,7 @@ class ImageCaptchaController {
         .where(`id in (${assertError.map((value) => v(value)).join(",")})`);
 
       if (assertCorrect.length && assertError.length) {
-        await using q = getDbPool().begin();
+        await using q = dbPool.begin();
         await q.query(add);
         await q.query(sub);
         await q.commit();
@@ -167,9 +179,13 @@ class ImageCaptchaController {
     const imageId = await this.imageUrlToId(imageUri).catch(() => null);
     if (!imageId) throw new HTTPException(404);
     const bucket = getOOS().getBucket(BUCKET.CAPTCHA_PICTURE);
-    const stream = await bucket.getObjectStream(imageId);
     const mime = contentType(path.parse(imageId).ext);
-    return { mime, stream };
+    try {
+      const stream = await bucket.getObjectStream(imageId);
+      return { mime, stream };
+    } catch (error) {
+      throw new HTTPException(404, { cause: error });
+    }
   }
 }
 export const imageCaptchaController = new ImageCaptchaController();

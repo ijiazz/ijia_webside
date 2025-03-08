@@ -1,13 +1,16 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import styled from "@emotion/styled";
-import { Button, Checkbox, Form, Input, Space, Tooltip, Steps } from "antd";
+import { Button, Checkbox, Form, Input, Space, Tooltip } from "antd";
 import { useContext, useRef, useState } from "react";
-import { api } from "@/common/http.ts";
 import { tryHashPassword } from "../util/pwd_hash.ts";
 import { ImageCaptchaPopover } from "@/common/capthca/ImageCaptcha.tsx";
 import { useAsync } from "@/hooks/async.ts";
-import { antdStatic } from "@/hooks/antd.ts";
+import { AndContext } from "@/hooks/antd.ts";
 import { IjiaLogo } from "@/common/site-logo.tsx";
+import { VideoBg } from "../components/VideoBg.tsx";
+import { useRouterRedirect } from "@/hooks/redirect.ts";
+import { useHoFetch } from "@/hooks/http.ts";
+import { isHttpErrorCode } from "@/common/http.ts";
 function useCooling(coolingTime = 60) {
   const [time, settime] = useState<number>(0);
   const ref = useRef<null | number>(null);
@@ -32,6 +35,7 @@ function useCooling(coolingTime = 60) {
 export function Signup() {
   return (
     <StyledPage>
+      <VideoBg />
       <div className="main">
         <div className="header">
           <Space>
@@ -47,6 +51,8 @@ export function Signup() {
 
 function BasicInfo() {
   const [form] = Form.useForm<FormValues>();
+  const { api } = useHoFetch();
+  const go = useRouterRedirect({ defaultPath: "/profile/basic" });
   const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>
     api["/user/signup/email_captcha"].post({ body: { email, captchaReply: { sessionId, selectedIndex: selected } } }),
   );
@@ -57,11 +63,12 @@ function BasicInfo() {
         email: value.email,
         password: pwd.password,
         passwordNoHash: pwd.passwordNoHash,
-        emailCaptcha: { code: value.email_code, sessionId: result.value!.sessionId },
+        emailCaptcha: { code: value.email_code, sessionId: result.value?.sessionId! },
       },
     });
+    go();
   });
-  const { message } = useContext(antdStatic);
+  const { message } = useContext(AndContext);
   return (
     <div style={{ padding: 32 }}>
       <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }} form={form} onFinish={onSubmit}>
@@ -72,7 +79,7 @@ function BasicInfo() {
                 await sendEmailCaptcha(email, sessionId, selected);
                 message.success("已发送");
               } catch (error) {
-                message.error("验证码错误");
+                if (isHttpErrorCode(error, "CAPTCHA_ERROR")) message.error("验证码错误");
                 throw error;
               }
             }}
@@ -156,10 +163,10 @@ const StyledPage = styled.div`
   .main {
     max-width: 600px;
     border-radius: 6px;
-    box-shadow: 0 0 4px #d7d7d7;
+    box-shadow: 0 0 2px #d7d7d7;
     padding: 32px;
-    .form-container {
-      margin: 32px;
-    }
+
+    background-color: #fff8;
+    backdrop-filter: blur(6px);
   }
 `;

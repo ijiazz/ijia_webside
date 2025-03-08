@@ -1,15 +1,5 @@
-import { DbPool, createPgPool } from "@ijia/data/yoursql";
-import { initIjiaDb } from "@ijia/data/testlib";
+import { DbPool } from "@ijia/data/yoursql";
 import { spawn, ChildProcess } from "node:child_process";
-
-export async function runContainer() {
-  const ps = spawn("docker", ["compose", "up"], { cwd: "..", stdio: [null, "pipe", "inherit"] });
-
-  const pool = await createPgPool({ database: "ijia" });
-  await initIjiaDb(pool);
-  //TODO
-  return new ServerHandle(ps, new URL("pg://localhost:5173/ijia"), "");
-}
 
 function dockerRun() {
   const ps = spawn("docker", ["run", "--rm", "up"], { cwd: "..", stdio: [null, "pipe", "inherit"] });
@@ -33,7 +23,5 @@ class ServerHandle {
       });
     });
   }
-  connectDb(): DbPool {
-    return createPgPool(this.dbUrl);
-  }
+  connectDb() {}
 }

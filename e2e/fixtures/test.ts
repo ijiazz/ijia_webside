@@ -1,26 +1,29 @@
-import { Page, test } from "@playwright/test";
+import { Page, test, Response } from "@playwright/test";
 import process from "node:process";
-import { createPgPool, setDbPool, DbPool } from "@ijia/data/yoursql";
+import { dbPool, DbPool } from "@ijia/data/yoursql";
 import { env } from "@/playwright.config.ts";
 
 export interface Context {
   dbPool: DbPool;
   appPage: Page;
-  webUrl: string;
+  webInfo: typeof env;
+  getAppUrlByRouter(router: string): string;
 }
 const PROCESS_PORT_NUMBER = 10;
 const VIO_SERVER_BASE_PORT = 7001;
 
 export const vioServerTest = test.extend<Context>({
   async dbPool({}, use) {
-    const pool = createPgPool(env.pg_url);
-    setDbPool(pool);
-    await use(pool);
-    await pool.close(true);
+    dbPool.connectOption = env.pgUrl;
+    await use(dbPool);
+    await dbPool.close(true);
   },
   async appPage({}, use) {},
-  webUrl({}, use) {
-    return use(env.web_url);
+  webInfo({}, use) {
+    return use(env);
+  },
+  getAppUrlByRouter({ webInfo }, use) {
+    return use((router) => webInfo.webUrl + webInfo.basePath + router);
   },
 });
 

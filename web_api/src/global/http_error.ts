@@ -49,6 +49,3 @@ function createErrorHtmlText(error: any, stack?: StackOption) {
     return String(error);
   }
 }
-export function createMessageResponseError(code: ContentfulStatusCode, message: string) {
-  return new HTTPException(code, { message, res: Response.json({ message }) });
-}

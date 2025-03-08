@@ -11,9 +11,9 @@ beforeEach(async function ({ page, context }) {
     latency: 180,
   });
 });
-test("首页", async function ({ page, context, webUrl }) {
-  await page.goto(webUrl, { waitUntil: "networkidle" });
+test("首页", async function ({ page, getAppUrlByRouter }) {
+  await page.goto(getAppUrlByRouter("/"), { waitUntil: "networkidle" });
 });
-test("登录", async function ({ page, context, webUrl }) {
-  await page.goto(webUrl + "/#/passport/login", { waitUntil: "networkidle" });
+test("登录", async function ({ page, getAppUrlByRouter }) {
+  await page.goto(getAppUrlByRouter("/passport/login"), { waitUntil: "networkidle" });
 });

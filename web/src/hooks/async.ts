@@ -12,17 +12,9 @@ type AsyncResult<T> = {
 };
 export function useAsync<T, A extends any[] = []>(
   fn: (...args: A) => Promise<T> | T,
-  option: {
-    defaultLoading?: boolean;
-    defaultError?: boolean;
-    defaultResult?: T;
-  } = {},
+  defaultState: AsyncResult<T> = { loading: false },
 ): UseAsyncResult<T, A> {
-  const [result, setResult] = useState<AsyncResult<T>>({
-    error: option.defaultError,
-    value: option.defaultResult,
-    loading: option.defaultLoading ?? false,
-  });
+  const [result, setResult] = useState<AsyncResult<T>>(defaultState);
   const fnRef = useRef(fn);
   fnRef.current = fn;
   const loadingPromise = useRef<Promise<any>>(undefined);
@@ -47,6 +39,7 @@ export function useAsync<T, A extends any[] = []>(
             setResult(result);
             loadingPromise.current = undefined;
           }
+          if (result.error) throw result.error;
         });
       return promise;
     } else {

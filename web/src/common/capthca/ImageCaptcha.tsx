@@ -1,11 +1,12 @@
 import { CaptchaPanel } from "@/common/capthca/captcha.tsx";
-import { Modal, Popover, Space, Spin, Button } from "antd";
-import { api, API_PREFIX } from "../http.ts";
+import { Modal, Popover, Spin, Button } from "antd";
 import { useAsync } from "@/hooks/async.ts";
 import { PropsWithChildren, useEffect, useState } from "react";
 import styled from "@emotion/styled";
+import { useHoFetch } from "@/hooks/http.ts";
 
 function useImageCaptcha(config: { onSubmit?: (sessionId: string, selected: number[]) => void | Promise<void> }) {
+  const { api, API_PREFIX } = useHoFetch();
   const {
     result: captchaResult,
     run: refresh,

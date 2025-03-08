@@ -13,6 +13,23 @@
       "sourceMaps": true,
       "runtimeArgs": ["run", "--no-lock", "-c", "deno.json", "--env"],
       "runtimeExecutable": "deno"
+    },
+    {
+      "name": "e2e:web api",
+      "request": "launch",
+      "type": "node",
+      "presentation": {
+        "hidden": false,
+        "group": "deno"
+      },
+      "env": {
+        "MODE": "E2E"
+      },
+      "program": "src/main.ts",
+      "cwd": "${workspaceFolder}/web_api",
+      "sourceMaps": true,
+      "runtimeArgs": ["run", "--no-lock", "-c", "deno.json", "--env"],
+      "runtimeExecutable": "deno"
     }
   ]
 }

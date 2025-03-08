@@ -3,12 +3,13 @@ import process from "node:process";
 const env = process.env;
 
 export enum Mode {
-  Test,
-  Dev,
-  Prod,
+  Test = "TEST",
+  E2E = "E2E",
+  Dev = "DEV",
+  Prod = "PROD",
 }
 export const ENV = {
-  MODE: Boolean(env.VITEST) ? Mode.Test : env.MODE === "PROD" ? Mode.Prod : Mode.Dev,
+  MODE: Boolean(env.VITEST) ? Mode.Test : (env.MODE ?? Mode.Dev),
   OOS_ROOT_DIR: env.OOS_ROOT_DIR,
   CHECK_SERVER: env.CHECK_SERVER,
   JWT_KEY: env.JWT_KEY ?? crypto.randomUUID(),

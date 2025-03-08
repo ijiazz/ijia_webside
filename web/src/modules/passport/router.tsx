@@ -14,7 +14,7 @@ export function Passport() {
   return (
     <Routes>
       <Route path="login" Component={LoginPage}></Route>
-      <Route path="signin" Component={SignupPage}></Route>
+      <Route path="signup" Component={SignupPage}></Route>
     </Routes>
   );
 }

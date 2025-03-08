@@ -1,4 +1,4 @@
-import { type DbPool, getDbPool } from "@ijia/data/yoursql";
+import { type DbPool, dbPool } from "@ijia/data/yoursql";
 import * as q from "@ijia/data/query";
 import { Get, PipeInput } from "@asla/hono-decorator";
 
@@ -7,7 +7,7 @@ interface DebugOption {
 }
 
 export class BsQuery {
-  constructor(private client: DbPool = getDbPool()) {}
+  constructor(private client: DbPool = dbPool) {}
 
   @Get("published")
   async getAssetList(
