@@ -22,6 +22,10 @@ ADD ./web/tsconfig.json ./web/vite.config.ts ./web/index.html ./web/
 ADD ./web/build ./web/build 
 ADD ./web/src ./web/src
 ADD ./web/public ./web/public
+
+ADD ./web_api/src ./web_api/src
+ADD ./web_api/_api.ts ./web_api/_api.ts
+
 RUN pnpm run --filter=@ijia/web build
 
 
