@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type UseAsyncResult<T, A extends any[]> = {
   run(...args: A): Promise<T>;
@@ -18,7 +18,12 @@ export function useAsync<T, A extends any[] = []>(
   const fnRef = useRef(fn);
   fnRef.current = fn;
   const loadingPromise = useRef<Promise<any>>(undefined);
-
+  useEffect(
+    () => () => {
+      loadingPromise.current = undefined;
+    },
+    [],
+  );
   const run = useCallback((...args: A) => {
     const promise = fnRef.current(...args);
     if (promise instanceof Promise) {

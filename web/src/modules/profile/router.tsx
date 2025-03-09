@@ -9,7 +9,7 @@ const BasicInfoPage = lazyComponent(
 export function ProfileRouter() {
   return (
     <Routes>
-      <Route path="basic" Component={BasicInfoPage}></Route>
+      <Route path="center" Component={BasicInfoPage}></Route>
     </Routes>
   );
 }

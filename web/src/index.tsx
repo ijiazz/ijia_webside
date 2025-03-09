@@ -3,11 +3,16 @@ import "@ant-design/v5-patch-for-react-19";
 import "./styles/global.css";
 
 import { createRoot } from "react-dom/client";
-import { createRouterRoot } from "./router-root.tsx";
+import { RouterRoot } from "./router-root.tsx";
 import { HoFetchProvider, AntdProvider } from "./global-provider.tsx";
+import { HashRouter } from "react-router";
 
 createRoot(document.getElementById("app")!).render(
   <AntdProvider>
-    <HoFetchProvider>{createRouterRoot()}</HoFetchProvider>
+    <HashRouter>
+      <HoFetchProvider>
+        <RouterRoot />
+      </HoFetchProvider>
+    </HashRouter>
   </AntdProvider>,
 );

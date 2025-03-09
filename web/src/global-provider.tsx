@@ -3,6 +3,7 @@ import { PropsWithChildren, useContext, useMemo } from "react";
 import { AndContext } from "@/hooks/antd.ts";
 import { ApiContext, IGNORE_ERROR_MSG } from "@/hooks/http.ts";
 import { createHoFetch } from "@/common/http.ts";
+import { useLocation, useNavigate } from "react-router";
 export const useToken = theme.useToken;
 
 export function AntdProvider(props: PropsWithChildren<{}>) {
@@ -28,6 +29,7 @@ export function AntdProvider(props: PropsWithChildren<{}>) {
 }
 function useCreateHoFetch() {
   const { message } = useContext(AndContext);
+  const navigate = useNavigate();
   return useMemo(() => {
     const hoFetch = createHoFetch();
     hoFetch.http.use(async function (ctx, next) {
@@ -46,6 +48,20 @@ function useCreateHoFetch() {
       else message.error(res.status);
       return res;
     });
+
+    hoFetch.http.use(async function (ctx, next) {
+      const res = await next();
+
+      if (res.status === 401) {
+        const s = new URLSearchParams();
+        const url = new URL(location.href);
+        s.set("redirect", url.pathname + url.search + url.hash);
+        navigate("/passport/login?" + s.toString(), {});
+      }
+
+      return res;
+    });
+
     return hoFetch;
   }, [message]);
 }

@@ -8,7 +8,7 @@ import { useAsync } from "@/hooks/async.ts";
 import { AndContext } from "@/hooks/antd.ts";
 import { IjiaLogo } from "@/common/site-logo.tsx";
 import { VideoBg } from "../components/VideoBg.tsx";
-import { useRouterRedirect } from "@/hooks/redirect.ts";
+import { useRedirect } from "@/hooks/redirect.ts";
 import { useHoFetch } from "@/hooks/http.ts";
 import { isHttpErrorCode } from "@/common/http.ts";
 function useCooling(coolingTime = 60) {
@@ -52,7 +52,7 @@ export function Signup() {
 function BasicInfo() {
   const [form] = Form.useForm<FormValues>();
   const { api } = useHoFetch();
-  const go = useRouterRedirect({ defaultPath: "/profile/basic" });
+  const go = useRedirect({ defaultPath: "/profile/basic" });
   const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>
     api["/passport/signup/email_captcha"].post({
       body: { email, captchaReply: { sessionId, selectedIndex: selected } },

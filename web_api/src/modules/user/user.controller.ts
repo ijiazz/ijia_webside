@@ -2,11 +2,13 @@ import { user, enumPlatform } from "@ijia/data/db";
 import v from "@ijia/data/yoursql";
 import { BindPlatformParam, UserProfileDto } from "./user.dto.ts";
 import { optional, array, enumType } from "evlib/validator";
-import { Controller, Get, PipeInput, Post, ToArguments } from "@asla/hono-decorator";
+import { Controller, Get, PipeInput, Post, ToArguments, Use } from "@asla/hono-decorator";
 import { HonoContext } from "@/hono/type.ts";
 import { checkValue } from "@/global/check.ts";
 import { autoBody } from "@/global/pipe.ts";
+import { rolesGuard } from "@/global/auth.ts";
 
+@Use(rolesGuard)
 @autoBody
 @Controller({})
 export class UserController {

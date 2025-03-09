@@ -1,9 +1,10 @@
 import { Avatar, Card } from "antd";
+import { useCurrentUser } from "./user.ts";
 
 export type StudentIdCardInfo = {
-  avatarUrl: string;
-  id: number;
-  name: string;
+  avatarUrl?: string;
+  id?: string;
+  name?: string;
 };
 
 export function StudentIdCard(props: StudentIdCardInfo) {
@@ -14,4 +15,10 @@ export function StudentIdCard(props: StudentIdCardInfo) {
       <span>{studentInfo.id}</span>
     </Card>
   );
+}
+
+export function CurrentIdCard() {
+  const { loading, value } = useCurrentUser();
+  const info = value ?? { user_id: undefined, avatar_url: undefined, nickname: "", userIdStr: undefined };
+  return <StudentIdCard avatarUrl={info.avatar_url} id={info.userIdStr?.padStart(6)} name={info.nickname} />;
 }

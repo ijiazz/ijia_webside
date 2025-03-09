@@ -20,8 +20,7 @@ async function checkRoles(ctx: HonoContext, requiredAnyRoles?: Set<string>) {
   }
 }
 export async function rolesGuard(ctx: HonoContext, next: () => Promise<void>): Promise<void | Response> {
-  const token = getCookie(ctx, "jwtToken");
-  if (token) ctx.set("userInfo", new UserInfo(token));
+  ctx.set("userInfo", new UserInfo(getCookie(ctx, "jwt-token")));
 
   const endpointCtx = getEndpointContext(ctx);
   const controllerRoles = endpointCtx.getControllerMetadata<Set<string>>(Roles);

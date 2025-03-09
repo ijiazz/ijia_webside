@@ -1,21 +1,25 @@
-import { Route, HashRouter, Routes } from "react-router";
+import { Route, Routes, Outlet } from "react-router";
 import { Passport } from "./modules/passport/router.tsx";
 import { ProfileRouter } from "./modules/profile/router.tsx";
+import { TabHeader } from "./common/layout/header.tsx";
 
-function RouterRoot() {
+export function RouterRoot() {
   return (
     <Routes>
       <Route index element={<div>home</div>} />
-      <Route path="test" element={<div>test</div>} />
       <Route path="passport/*" Component={Passport} />
-      <Route path="profile/*" Component={ProfileRouter} />
+      <Route
+        element={
+          <TabHeader>
+            <Outlet />
+          </TabHeader>
+        }
+        errorElement={<div>页面不存在</div>}
+      >
+        <Route path="live/*" element={<div>examination</div>} />
+        <Route path="profile/*" Component={ProfileRouter} />
+        <Route path="examination/*" element={<div>examination</div>} />
+      </Route>
     </Routes>
-  );
-}
-export function createRouterRoot() {
-  return (
-    <HashRouter>
-      <RouterRoot />
-    </HashRouter>
   );
 }

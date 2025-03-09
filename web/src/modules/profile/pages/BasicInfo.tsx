@@ -1,3 +1,4 @@
+import { CurrentIdCard } from "@/common/StudentIdCard.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Avatar, Button, Form, Input, Select, Tooltip } from "antd";
@@ -17,6 +18,7 @@ function Tk() {
   const accounts: ThirdPartAccountBind[] = [];
   return (
     <div>
+      <CurrentIdCard />
       {accounts.map((account) => {
         return (
           <div>
@@ -63,8 +65,6 @@ function BasicForm() {
 }
 function ClassSelect(props: { value?: number; onChange?(value: number): void }) {
   const { result, run } = useAsync(async function (search?: string) {
-    console.log(search);
-
     return [];
   });
   const getOption = useThrottle(run, 800);
