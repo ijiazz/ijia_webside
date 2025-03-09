@@ -1,7 +1,7 @@
 import { pla_comment, pla_user } from "@ijia/data/db";
 import { Selection } from "@ijia/data/yoursql";
 import { Controller, Get, PipeInput } from "@asla/hono-decorator";
-import { CommentStatByCount } from "./stat.type.ts";
+import { CommentStatByCount } from "./stat.dto.ts";
 import { optional } from "evlib/validator";
 import { checkValue } from "@/global/check.ts";
 

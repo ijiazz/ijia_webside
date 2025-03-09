@@ -54,11 +54,13 @@ function BasicInfo() {
   const { api } = useHoFetch();
   const go = useRouterRedirect({ defaultPath: "/profile/basic" });
   const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>
-    api["/user/signup/email_captcha"].post({ body: { email, captchaReply: { sessionId, selectedIndex: selected } } }),
+    api["/passport/signup/email_captcha"].post({
+      body: { email, captchaReply: { sessionId, selectedIndex: selected } },
+    }),
   );
   const { result: submitState, run: onSubmit } = useAsync(async function (value: FormValues) {
     const pwd = await tryHashPassword(value.password);
-    await api["/user/signup"].post({
+    await api["/passport/signup"].post({
       body: {
         email: value.email,
         password: pwd.password,

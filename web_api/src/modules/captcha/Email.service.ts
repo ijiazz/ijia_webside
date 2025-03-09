@@ -1,5 +1,5 @@
 import { SessionManager } from "./_SessionManage.ts";
-import { EmailCaptchaQuestion, EmailCaptchaReply } from "./Captcha.type.ts";
+import { EmailCaptchaQuestion, EmailCaptchaReply } from "./Captcha.dto.ts";
 import { getEmailSender } from "@/services/email.ts";
 
 class EmailCaptchaService {

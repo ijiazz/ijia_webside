@@ -10,9 +10,12 @@ import type {
   EmailCaptchaQuestion,
   ImageCaptchaReply,
   RequestSignupEmailCaptchaParam,
-} from "./dto.ts";
+  ListDto,
+  Option,
+  ClassOption,
+} from "./modules/dto.ts";
 
-export * from "./dto.ts";
+export * from "./modules/dto.ts";
 
 export interface ApiDefined {
   /** 获取根评论数量排行榜 */
@@ -21,23 +24,25 @@ export interface ApiDefined {
     query: { page?: number; pageSize?: number };
   };
 }
+
 export interface ApiDefined {
   /** 登录 */
-  "POST /user/login": {
+  "POST /passport/login": {
     response: UserLoginResultDto;
     body: UserLoginParamDto;
   };
   /** 注册用户 */
-  "POST /user/signup": {
+  "POST /passport/signup": {
     response: CreateUserProfileResult;
     body: CreateUserProfileParam;
   };
   /** 注册用户发送邮箱验证码 */
-  "POST /user/signup/email_captcha": {
+  "POST /passport/signup/email_captcha": {
     response: EmailCaptchaQuestion;
     body: RequestSignupEmailCaptchaParam;
   };
-
+}
+export interface ApiDefined {
   /** 绑定平台 */
   "POST /user/self/bind_platform": {
     response: null;
@@ -47,6 +52,13 @@ export interface ApiDefined {
   /** 获取用户基本信息 */
   "GET /user/self/profile": {
     response: UserProfileDto;
+  };
+}
+
+export interface ApiDefined {
+  /** 获取公共班级列表 */
+  "GET /class/public": {
+    response: ListDto<ClassOption>;
   };
 }
 

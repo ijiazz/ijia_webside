@@ -35,7 +35,7 @@ export function LoginPage() {
   const [loginParam, setLoginParam] = useState<UserLoginParamDto | undefined>();
   const [captchaModalOpen, setCaptchaModalOpen] = useState(false);
   const { result: value, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {
-    const result = await api["/user/login"].post({ body: param, allowFailed: true, [IGNORE_ERROR_MSG]: true });
+    const result = await api["/passport/login"].post({ body: param, allowFailed: true, [IGNORE_ERROR_MSG]: true });
 
     if (!result.success) {
       setMessage({ title: result.message ?? "登录失败", type: "error" });

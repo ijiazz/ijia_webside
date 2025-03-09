@@ -1,4 +1,4 @@
-import { ImageCaptchaQuestion, ImageCaptchaReply } from "./Captcha.type.ts";
+import { ImageCaptchaQuestion, ImageCaptchaReply } from "./Captcha.dto.ts";
 import { captcha_picture, DbCaptchaPicture } from "@ijia/data/db";
 import { dbPool, v } from "@ijia/data/yoursql";
 import { Get, Post } from "@/hono-decorator/src/Router.ts";

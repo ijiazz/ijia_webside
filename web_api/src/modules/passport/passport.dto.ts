@@ -1,5 +1,4 @@
-import type { Platform } from "@ijia/data/db";
-import type { EmailCaptchaReply, ImageCaptchaReply } from "../captcha/Captcha.type.ts";
+import type { EmailCaptchaReply, ImageCaptchaReply } from "../captcha/Captcha.dto.ts";
 
 export type CreateUserProfileParam = {
   email: string;
@@ -11,20 +10,6 @@ export type CreateUserProfileParam = {
 };
 export type CreateUserProfileResult = {
   userId: number;
-};
-
-export type UserProfileDto = {
-  userId: number;
-  nickname?: string;
-  avatarUrl?: string;
-};
-export type BindPlatformParam = {
-  userId: string;
-  platformList: {
-    platform: Platform;
-    userHomeLink?: string;
-    pla_uid?: string;
-  }[];
 };
 
 export type UserLoginResultDto = {

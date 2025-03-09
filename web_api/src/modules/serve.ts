@@ -1,14 +1,21 @@
 import { Hono } from "hono";
 import { addServeStatic } from "../hono/serve_static.ts";
 import { applyController } from "@asla/hono-decorator";
-import { controllers } from "./mod.ts";
 import { errorHandler } from "../global/http_error.ts";
+
+import { commentStatController } from "./stat/mod.ts";
+import { userController } from "./user/mod.ts";
+import { passportController } from "./passport/mod.ts";
+import { classController } from "./class/mod.ts";
+import { imageCaptchaController } from "./captcha/mod.ts";
 
 export function createHonoApp(option: { static?: boolean } = {}) {
   const hono = createHono(option);
-  for (const controller of controllers) {
-    applyController(hono, controller);
-  }
+  applyController(hono, passportController);
+  applyController(hono, imageCaptchaController);
+  applyController(hono, userController);
+  applyController(hono, classController);
+  applyController(hono, commentStatController);
   return hono;
 }
 

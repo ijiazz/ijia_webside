@@ -1,6 +1,8 @@
+import { CheckServer } from "@/services/douyin.ts";
+
 const NO_LIVE_INTERNAL = 1000 * 60;
 const LIVE_INTERNAL = 1000 * 60 * 5;
-export class UserLive {
+class UserLive {
   constructor(private onTick: () => Promise<0 | 1>) {}
   #id: any;
   #waitTime = NO_LIVE_INTERNAL;
@@ -35,4 +37,20 @@ export class UserLive {
   };
   onError(err: any) {}
   onChange(status: 0 | 1): void | Promise<void> {}
+}
+
+export class IjiaWatch extends UserLive {
+  readonly uid = "MS4wLjABAAAA0AiK9Q4FlkTxKHo-b6Vi1ckA2Ybq-WNgJ-b5xXlULtI";
+  constructor(cookie: string) {
+    const checkServer = new CheckServer(cookie);
+    super(() => checkServer.userIsLive(this.uid));
+  }
+  override onChange(status: 0 | 1): void | Promise<void> {
+    if (status) {
+    } else {
+    }
+  }
+  override onError(err: any): void {
+    console.error(err);
+  }
 }

@@ -1,2 +1,2 @@
-export * from "./user.type.ts";
+export * from "./user.dto.ts";
 export * from "./user.controller.ts";
