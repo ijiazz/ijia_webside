@@ -10,3 +10,10 @@ export function checkValue<T extends ExpectType>(
   if (error) throw new HttpParamsCheckError(error);
   return value;
 }
+export function checkValueAsync<T extends ExpectType>(
+  input: Promise<unknown>,
+  expectType: T,
+  option?: TypeCheckOptions,
+): Promise<InferExpect<T>> {
+  return input.then((data) => checkValue(data, expectType, option));
+}

@@ -1,5 +1,5 @@
 import type {
-  BindPlatformParam,
+  BindPlatformCheckParam,
   CommentStatByCount,
   CreateUserProfileParam,
   CreateUserProfileResult,
@@ -8,11 +8,12 @@ import type {
   UserProfileDto,
   ImageCaptchaQuestion,
   EmailCaptchaQuestion,
-  ImageCaptchaReply,
   RequestSignupEmailCaptchaParam,
   ListDto,
-  Option,
   ClassOption,
+  BIndPlatformCheckDto,
+  BindPlatformParam,
+  UpdateUserProfileParam,
 } from "./modules/dto.ts";
 
 export * from "./modules/dto.ts";
@@ -44,14 +45,24 @@ export interface ApiDefined {
 }
 export interface ApiDefined {
   /** 绑定平台 */
-  "POST /user/self/bind_platform": {
+  "POST /user/bind_platform": {
     response: null;
     body: BindPlatformParam;
   };
+  /** 绑定平台前检测是否能够绑定 */
+  "GET /user/bind_platform/check": {
+    response: BIndPlatformCheckDto;
+    params: BindPlatformCheckParam;
+  };
 
   /** 获取用户基本信息 */
-  "GET /user/self/profile": {
+  "GET /user/profile": {
     response: UserProfileDto;
+  };
+  /** 修改用户信息 */
+  "PATCH /user/profile": {
+    response: null;
+    body: UpdateUserProfileParam;
   };
 }
 

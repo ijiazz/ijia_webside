@@ -29,11 +29,11 @@ class EmailCaptchaService {
   async getAnswer(sessionId: string) {
     return this.session.get(sessionId);
   }
-  async verify(reply: EmailCaptchaReply): Promise<boolean> {
+  async verify(reply: EmailCaptchaReply, email: string): Promise<boolean> {
     const data = await this.session.get(reply.sessionId);
     if (!data) return false;
     await this.session.delete(reply.sessionId);
-    return data.code === reply.code;
+    return data.code === reply.code && data.email === email;
   }
 }
 

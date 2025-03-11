@@ -29,7 +29,6 @@ test("注册账号", async function ({ page, getAppUrlByRouter, webInfo }) {
   await page.getByRole("textbox", { name: "* 密码 :" }).fill("123");
   await page.getByRole("textbox", { name: "* 确认密码 :" }).click();
   await page.getByRole("textbox", { name: "* 确认密码 :" }).fill("123");
-  await page.getByRole("checkbox", { name: "接收直播通知 question-circle" }).check();
   await page.getByRole("button", { name: "提 交" }).click();
 
   await expect(page, "注册成功后导航到个人配置页").toHaveURL(/profile/, {});

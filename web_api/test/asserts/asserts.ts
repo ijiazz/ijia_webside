@@ -74,7 +74,8 @@ expect.extend({
     return responseSuccessWith(received, type, expectedBody);
   },
   async throwErrorEqualBody(received: HoFetchStatusError, status: number, expectedBody) {
-    isError(received, status);
+    const res = isError(received, status);
+    if (res) return res;
     let body = received.body;
     try {
       expect(body).toEqual(expectedBody);

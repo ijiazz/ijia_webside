@@ -17,20 +17,26 @@ export async function getUerSecIdFromShareUrl(urlStr: string) {
 }
 export class CheckServer {
   private checkerServer: string;
-  constructor(private token: string) {
-    if (!ENV.CHECK_SERVER) throw new Error("需要 CHECK_SERVER 环境变量");
-    this.checkerServer = ENV.CHECK_SERVER;
+  constructor(
+    private token: string,
+    serverUrl: string,
+  ) {
+    this.checkerServer = serverUrl;
   }
-  async getDouYinUserInfo(secUid: string): Promise<UserBasicInfo> {
+  async getDouYinUserInfo(secUid: string): Promise<PlatformUserBasicInfo> {
     const url = new URL(`${this.checkerServer}/user_info/${Platform.douYin}`);
     url.searchParams.set("uid", secUid);
     const res = await fetch(url);
     return res.json() as Promise<any>;
   }
-  async fetchResource(path: string) {
-    const res = await fetch(`${this.checkerServer + path}`);
+  async checkUserBind(pla_uid: string, id: string) {
+    const url = new URL(`${this.checkerServer}/check_user_bind/${Platform.douYin}`);
+    url.searchParams.set("pla_uid", pla_uid);
+    url.searchParams.set("uer_id", id);
+    const res = await fetch(url);
     if (res.status !== 200) throw new Error(`无效的 status`);
-    return { body: res.body, headers: res.headers, contentType: res.headers.get("content-type") };
+
+    return res.json() as Promise<PlatformUserBasicInfo & { pass: boolean; reason?: string }>;
   }
 
   async userIsLive(secUid: string): Promise<0 | 1> {
@@ -41,9 +47,21 @@ export class CheckServer {
     return res.live_status;
   }
 }
-export type UserBasicInfo = {
+let checkServer: CheckServer | undefined;
+export function getCheckerServer() {
+  if (!checkServer) {
+    if (!ENV.CHECK_SERVER) throw new Error("需要 CHECK_SERVER 环境变量");
+    const url = new URL(ENV.CHECK_SERVER);
+    checkServer = new CheckServer(url.password, url.origin);
+  }
+  return checkServer;
+}
+export function setCheckerServer(server: CheckServer) {
+  checkServer = server;
+}
+export type PlatformUserBasicInfo = {
   pla_uid: string;
-  userName: string;
+  username: string;
   description: string;
   avatarPath: string;
 };

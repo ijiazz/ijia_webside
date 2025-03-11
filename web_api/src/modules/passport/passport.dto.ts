@@ -5,8 +5,6 @@ export type CreateUserProfileParam = {
   emailCaptcha?: EmailCaptchaReply;
   password?: string;
   passwordNoHash?: boolean;
-  /** 班级 id */
-  classId?: number[];
 };
 export type CreateUserProfileResult = {
   userId: number;
@@ -48,4 +46,9 @@ export enum LoginType {
 export type RequestSignupEmailCaptchaParam = {
   captchaReply: ImageCaptchaReply;
   email: string;
+};
+export type ChangePasswordParam = {
+  newPassword: string;
+  oldPassword: string;
+  userId?: string;
 };

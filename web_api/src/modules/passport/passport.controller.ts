@@ -8,10 +8,10 @@ import {
   type CreateUserProfileResult,
 } from "./passport.dto.ts";
 import { optional, array } from "evlib/validator";
-import { loginService } from "./services/Login.service.ts";
+import { loginService } from "./services/passport.service.ts";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
-import { Controller, PipeInput, PipeOutput, Post } from "@asla/hono-decorator";
+import { Controller, PipeInput, PipeOutput, Post, ToArguments, ToResponse, Use } from "@asla/hono-decorator";
 import { checkValue } from "@/global/check.ts";
 import { integer } from "evlib/validator";
 import {
@@ -28,6 +28,8 @@ import { Context } from "hono";
 import { ENV, Mode } from "@/global/config.ts";
 import { APP_CONFIG } from "@/config.ts";
 import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/errors.ts";
+import { rolesGuard } from "@/global/auth.ts";
+import { HonoContext } from "@/hono/type.ts";
 
 @autoBody
 @Controller({})
@@ -49,7 +51,7 @@ export class PassportController {
   @Post("/passport/signup")
   async createUser(body: CreateUserProfileParam): Promise<CreateUserProfileResult> {
     if (ENV.SIGNUP_VERIFY_EMAIL) {
-      const pass = await emailCaptchaService.verify(body.emailCaptcha!);
+      const pass = await emailCaptchaService.verify(body.emailCaptcha!, body.email);
       if (!pass) throw new HttpCaptchaError();
     }
     if (body.password) {
@@ -59,7 +61,7 @@ export class PassportController {
       }
     }
 
-    const userId = await loginService.createUser(body.email, { classId: body.classId, password: body.password });
+    const userId = await loginService.createUser(body.email, { password: body.password });
 
     return { userId };
   }
@@ -127,7 +129,7 @@ export class PassportController {
 
     const method = body.method;
     let user: {
-      userId?: number;
+      userId: number;
       message?: string;
     };
     switch (method) {
@@ -138,7 +140,8 @@ export class PassportController {
           passwordNoHash: optional.boolean,
         });
         if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
-        user = await loginService.loginById(+params.id, params.password);
+        const uid = await loginService.loginById(+params.id, params.password);
+        user = { userId: uid };
         break;
       }
       case LoginType.email: {
@@ -149,14 +152,12 @@ export class PassportController {
           passwordNoHash: optional.boolean,
         });
         if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
-        user = await loginService.loginByEmail(params.email, params.password);
+        const uid = await loginService.loginByEmail(params.email, params.password);
+        user = { userId: uid };
         break;
       }
       default:
         throw new HttpError(400, { message: "方法不允许" });
-    }
-    if (user.userId === undefined) {
-      throw new HttpError(403, { message: user.message! });
     }
 
     const minute = 3 * 24 * 60; // 3 天后过期
@@ -167,6 +168,19 @@ export class PassportController {
       message: "登录成功",
       token: jwtKey,
     };
+  }
+
+  @Use(rolesGuard)
+  @ToArguments(async function (ctx: HonoContext) {
+    const body = await ctx.req.json();
+    const param = checkValue(body, { newPassword: "string", oldPassword: "string", userId: optional.string });
+    const userInfo = ctx.get("userInfo");
+    const userId: string = await userInfo.getJwtInfo().then((res) => res.userId);
+    return [userId, param.oldPassword, param.newPassword];
+  })
+  @Post("/passport/change_password")
+  async changePassword(userId: string, oldPwd: string, newPwd: string) {
+    await loginService.changePassword(+userId, oldPwd, newPwd);
   }
 }
 

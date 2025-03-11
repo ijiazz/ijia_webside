@@ -1,6 +1,5 @@
-import { QuestionCircleOutlined } from "@ant-design/icons";
 import styled from "@emotion/styled";
-import { Button, Checkbox, Form, Input, Space, Tooltip } from "antd";
+import { Button, Form, Input, Space } from "antd";
 import { useContext, useRef, useState } from "react";
 import { tryHashPassword } from "../util/pwd_hash.ts";
 import { ImageCaptchaPopover } from "@/common/capthca/ImageCaptcha.tsx";
@@ -106,16 +105,6 @@ function BasicInfo() {
           ]}
         >
           <Input.Password />
-        </Form.Item>
-        <Form.Item label={null} name="option" valuePropName="checked">
-          <Checkbox>
-            <Space>
-              接收直播通知
-              <Tooltip title="校长直播时，将通过邮件发送通知">
-                <QuestionCircleOutlined />
-              </Tooltip>
-            </Space>
-          </Checkbox>
         </Form.Item>
       </Form>
       <div style={{ display: "flex", justifyContent: "end" }}>

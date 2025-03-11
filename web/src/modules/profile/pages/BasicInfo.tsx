@@ -1,7 +1,7 @@
 import { CurrentIdCard } from "@/common/StudentIdCard.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import { Avatar, Button, Form, Input, Select, Tooltip } from "antd";
+import { Avatar, Button, Checkbox, Form, Input, Select, Space, Tooltip } from "antd";
 
 import { useThrottle } from "react-use";
 export function BasicInfoPage() {
@@ -59,6 +59,16 @@ function BasicForm() {
           <ClassSelect />
         </Form.Item>
         <Form.Item></Form.Item>
+        <Form.Item label={null} name="option" valuePropName="checked">
+          <Checkbox>
+            <Space>
+              接收直播通知
+              <Tooltip title="校长直播时，将通过邮件发送通知">
+                <QuestionCircleOutlined />
+              </Tooltip>
+            </Space>
+          </Checkbox>
+        </Form.Item>
       </Form>
     </div>
   );

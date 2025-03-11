@@ -10,7 +10,7 @@ let user: Promise<UserProfileBasic> | UserProfileBasic | undefined;
 export function useCurrentUser() {
   const { api } = useHoFetch();
   const { result, run } = useAsync(() => {
-    if (!user) user = api["/user/self/profile"].get().then((res) => ({ ...res, userIdStr: res.user_id.toString() }));
+    if (!user) user = api["/user/profile"].get().then((res) => ({ ...res, userIdStr: res.user_id.toString() }));
     return user;
   });
   useEffect(() => {

@@ -5,10 +5,37 @@ export type UserProfileDto = {
   nickname?: string;
   avatar_url?: string;
 };
-export type BindPlatformParam = {
+export type BindPlatformCheckParam = {
   platformList: {
     platform: Platform;
     userHomeLink?: string;
     pla_uid?: string;
   }[];
+};
+
+export type BIndPlatformCheckDto = {
+  platformUser: {
+    pla_uid: string;
+    username: string;
+    description: string;
+    avatarPath: string;
+  };
+  /** 如果存在，说明改账号已经被绑定 */
+  bind?: {
+    user_id: number;
+    platform: Platform;
+    pla_uid: string;
+  };
+};
+export type BindPlatformParam = {
+  platformList: { platform: Platform; pla_uid: string }[];
+};
+export type UpdateUserProfileParam = {
+  /** 班级 */
+  publicClassId?: number | null;
+
+  notice?: {
+    /** 是否接收直播通知 */
+    live?: boolean;
+  };
 };

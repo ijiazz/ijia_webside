@@ -17,6 +17,10 @@ export const autoBody = ToResponse(function (result, ctx): Response {
 
       return ctx.json(result);
     }
+    case "number":
+      return ctx.text(result.toString());
+    case "undefined":
+      return ctx.body(null);
     default:
       throw new HTTPException(500, { message: "无效的 Body" });
   }
