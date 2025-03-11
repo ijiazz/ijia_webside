@@ -23,7 +23,7 @@ export const vioServerTest = test.extend<Context>({
     return use(env);
   },
   getAppUrlByRouter({ webInfo }, use) {
-    return use((router) => webInfo.webUrl + webInfo.basePath + router);
+    return use((router) => webInfo.webUrl + "/x/#" + router);
   },
 });
 

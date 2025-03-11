@@ -75,7 +75,7 @@ importers:
     devDependencies:
       '@ijia/data':
         specifier: workspace:^
-        version: link:../deps/ijia-data
+        version: file:deps/ijia-data
       '@playwright/test':
         specifier: ^1.44.1
         version: 1.50.1
@@ -163,7 +163,7 @@ importers:
         version: 1.13.8(hono@4.7.2)
       '@ijia/data':
         specifier: workspace:^
-        version: link:../deps/ijia-data
+        version: file:deps/ijia-data
       '@redis/client':
         specifier: ^1.6.0
         version: 1.6.0
@@ -171,8 +171,8 @@ importers:
         specifier: npm:@jsr/std__media-types@^1.1.0
         version: '@jsr/std__media-types@1.1.0'
       evlib:
-        specifier: ^3.1.0
-        version: 3.1.0
+        specifier: ^3.1.1
+        version: 3.1.1
       hono:
         specifier: ^4.7.2
         version: 4.7.2
@@ -1083,6 +1083,9 @@ packages:
     peerDependencies:
       hono: ^4
 
+  '@ijia/data@file:deps/ijia-data':
+    resolution: {directory: deps/ijia-data, type: directory}
+
   '@inquirer/checkbox@4.1.1':
     resolution: {integrity: sha512-os5kFd/52gZTl/W6xqMfhaKVJHQM8V/U1P8jcSaQJ/C4Qhdrf2jEXdA/HaxfQs9iiUA/0yzYhk5d3oRHTxGDDQ==}
     engines: {node: '>=18'}
@@ -1820,6 +1823,9 @@ packages:
 
   evlib@3.1.0:
     resolution: {integrity: sha512-VDEiSmwrQZXTiYD/a0Ss4/KuRbDS2c7+1t0CdoojHgzidb1WLvtbfgao3I9IAEH2p4Anl7mGinOPvEsC/zlz2Q==}
+
+  evlib@3.1.1:
+    resolution: {integrity: sha512-shu8/CUz1SvulKeGxt7rrF2mamoeWZa5iFibhmEr+yFspiOUCdFejlKxlAcorD24Ug5WJJZ6Gy1eYQZmOkGbXA==}
 
   expect-type@1.1.0:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
@@ -3998,6 +4004,16 @@ snapshots:
     dependencies:
       hono: 4.7.2
 
+  '@ijia/data@file:deps/ijia-data':
+    dependencies:
+      '@asla/yoursql': 0.8.4
+      '@redis/client': 1.6.0
+      evlib: 3.1.1
+      pg: 8.13.1
+      pg-cursor: 2.12.1(pg@8.13.1)
+    transitivePeerDependencies:
+      - pg-native
+
   '@inquirer/checkbox@4.1.1(@types/node@22.13.8)':
     dependencies:
       '@inquirer/core': 10.1.6(@types/node@22.13.8)
@@ -4792,6 +4808,8 @@ snapshots:
   evlib@3.0.2: {}
 
   evlib@3.1.0: {}
+
+  evlib@3.1.1: {}
 
   expect-type@1.1.0: {}
 

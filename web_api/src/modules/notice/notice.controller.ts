@@ -4,7 +4,5 @@ import { Get, Post } from "@/hono-decorator/src/Router.ts";
 @autoBody
 export class NoticeController {
   @Post("/notice/switchLiveWatch")
-  switchLiveWatch() {
-    
-  }
+  switchLiveWatch() {}
 }

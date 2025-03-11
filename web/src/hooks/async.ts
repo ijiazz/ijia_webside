@@ -5,26 +5,25 @@ export type UseAsyncResult<T, A extends any[]> = {
   reset(result?: T, error?: any): void;
   result: AsyncResult<T>;
 };
+export type UserAsyncOption<T, Args extends any[] = []> = {
+  autoRunArgs?: Args;
+  defaultState?: AsyncResult<T>;
+};
 type AsyncResult<T> = {
   loading: boolean;
   error?: any;
   value?: T;
 };
-export function useAsync<T, A extends any[] = []>(
-  fn: (...args: A) => Promise<T> | T,
-  defaultState: AsyncResult<T> = { loading: false },
-): UseAsyncResult<T, A> {
+export function useAsync<T, Args extends any[] = []>(
+  fn: (...args: Args) => Promise<T> | T,
+  option: UserAsyncOption<T, Args> = {},
+): UseAsyncResult<T, Args> {
+  const { defaultState = { loading: false }, autoRunArgs } = option;
   const [result, setResult] = useState<AsyncResult<T>>(defaultState);
   const fnRef = useRef(fn);
   fnRef.current = fn;
   const loadingPromise = useRef<Promise<any>>(undefined);
-  useEffect(
-    () => () => {
-      loadingPromise.current = undefined;
-    },
-    [],
-  );
-  const run = useCallback((...args: A) => {
+  const run = useCallback((...args: Args) => {
     const promise = fnRef.current(...args);
     if (promise instanceof Promise) {
       setResult((res) => ({ ...res, loading: true }));
@@ -52,6 +51,13 @@ export function useAsync<T, A extends any[] = []>(
       setResult({ value: promise, loading: false });
     }
     return Promise.resolve(promise);
+  }, []);
+
+  useEffect(() => {
+    if (autoRunArgs) run.apply(undefined, autoRunArgs);
+    return () => {
+      loadingPromise.current = undefined;
+    };
   }, []);
   return {
     reset: (result, error) => {

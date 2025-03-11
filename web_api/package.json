@@ -25,7 +25,7 @@
     "@ijia/data": "workspace:^",
     "@redis/client": "^1.6.0",
     "@std/media-types": "npm:@jsr/std__media-types@^1.1.0",
-    "evlib": "^3.1.0",
+    "evlib": "^3.1.1",
     "hono": "^4.7.2",
     "nodemailer": "^6.10.0",
     "tslib": "^2.8.1"

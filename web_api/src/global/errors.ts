@@ -25,3 +25,8 @@ export class HttpParamsCheckError extends HttpError {
     super(400, { message: "参数校验不通过", code: "PARAMS_CHECK_ERROR", cause });
   }
 }
+export class RequiredLoginError extends HttpError {
+  constructor(message: string = "需要登录") {
+    super(401, { code: "REQUIRED_LOGIN", message });
+  }
+}

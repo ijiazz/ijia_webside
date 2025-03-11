@@ -2,8 +2,8 @@ import { ConfigProvider, theme, message, notification, Modal } from "antd";
 import { PropsWithChildren, useContext, useMemo } from "react";
 import { AndContext } from "@/hooks/antd.ts";
 import { ApiContext, IGNORE_ERROR_MSG } from "@/hooks/http.ts";
-import { createHoFetch } from "@/common/http.ts";
-import { useLocation, useNavigate } from "react-router";
+import { createHoFetch, getResponseErrorInfo } from "@/common/http.ts";
+import { useNavigate } from "react-router";
 export const useToken = theme.useToken;
 
 export function AntdProvider(props: PropsWithChildren<{}>) {
@@ -39,20 +39,13 @@ function useCreateHoFetch() {
       if (ctx.allowFailed instanceof Array && ctx.allowFailed.includes(res.status)) return res;
 
       const body = await res.parseBody();
-      let msg: string | undefined;
-      if (typeof body === "string") msg = body;
-      else if (typeof body === "object" && typeof (body as any).message === "string") {
-        msg = (body as any).message;
+      const err = getResponseErrorInfo(body);
+      if (err) {
+        if (err.message) message.error(`(${res.status}) ${err.message}`);
+        else message.error(res.status);
       }
-      if (msg) message.error(`(${res.status}) ${msg}`);
-      else message.error(res.status);
-      return res;
-    });
 
-    hoFetch.http.use(async function (ctx, next) {
-      const res = await next();
-
-      if (res.status === 401) {
+      if (res.status === 401 && err?.code === "REQUIRED_LOGIN") {
         const s = new URLSearchParams();
         const url = new URL(location.href);
         s.set("redirect", url.pathname + url.search + url.hash);
@@ -65,6 +58,7 @@ function useCreateHoFetch() {
     return hoFetch;
   }, [message]);
 }
+
 export function HoFetchProvider(props: PropsWithChildren<{}>) {
   const hoFetch = useCreateHoFetch();
   return <ApiContext value={hoFetch}>{props.children}</ApiContext>;

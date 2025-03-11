@@ -16,6 +16,7 @@ import { useWindowResize } from "@/hooks/window.ts";
 import { VideoBg } from "../components/VideoBg.tsx";
 import { IGNORE_ERROR_MSG, useHoFetch } from "@/hooks/http.ts";
 import { useRedirect } from "@/hooks/redirect.ts";
+import { getPathByRouter } from "@/common/nav.ts";
 
 type Msg = {
   type?: "info" | "success" | "error" | "warning";
@@ -28,7 +29,7 @@ const defaultMessage: Msg | undefined = CAN_HASH_PASSWORD
       title: "当前环境无法对密码进行加密，你的密码将以明文发送到服务器！",
     };
 export function LoginPage() {
-  const go = useRedirect({ defaultPath: "/profile/basic" });
+  const go = useRedirect({ defaultPath: () => getPathByRouter("/profile/basic") });
   const [loginType, setLoginType] = useState<LoginType>(LoginType.id);
   const [message, setMessage] = useState<Msg | undefined>(defaultMessage);
   const { api } = useHoFetch();

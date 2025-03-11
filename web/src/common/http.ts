@@ -18,3 +18,16 @@ export { http, API_PREFIX, api };
 export function isHttpErrorCode(err: any, code: string | number) {
   return typeof err === "object" && err.code === code;
 }
+export function getResponseErrorInfo(body: unknown): { message?: string; code?: string } | undefined {
+  switch (typeof body) {
+    case "string":
+      return { message: body };
+    case "object": {
+      if (body === null) return;
+      return body;
+    }
+    default:
+      break;
+  }
+  return;
+}

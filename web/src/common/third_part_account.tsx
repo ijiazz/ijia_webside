@@ -1,17 +1,33 @@
-import { Select, Space } from "antd";
+import { Select, SelectProps, Space } from "antd";
 import { TikTokOutlined, BilibiliOutlined, WeiboOutlined } from "@ant-design/icons";
 import { ReactNode } from "react";
+export enum Platform {
+  /** 抖音 */
+  douYin = "douyin",
+  /** bilibili */
+  bilibili = "bilibili",
+  /** 小红书 */
+  xiaoHongShu = "xiaohonshu",
+  /** 微博 */
+  weibo = "weibo",
+  /** 5Sing 音乐 */
+  v5sing = "v5sing",
+  /** 网易云音乐 */
+  wangYiMusic = "wangyiyun",
+}
 
-export type ThirdPartSelectProps<T extends Platform | Platform[] = Platform | Platform[]> = {
-  value: T;
-  onChange(value: T): void;
+export type ThirdPartSelectProps<T extends Platform | Platform[] = Platform | Platform[]> = Omit<
+  SelectProps<T>,
+  "mode" | "value" | "onChange"
+> & {
+  value?: T;
+  onChange?(value: T): void;
 };
 
 export function ThirdPartSelect(props: ThirdPartSelectProps<Platform> & { mode?: undefined }): ReactNode;
 export function ThirdPartSelect(props: ThirdPartSelectProps<Platform[]> & { mode: "multiple" }): ReactNode;
 export function ThirdPartSelect(props: ThirdPartSelectProps & { mode?: "multiple" }) {
-  const { onChange, value, mode } = props;
-  return <Select mode={mode} value={value} onChange={onChange} options={THIRD_PART_OPTION} />;
+  return <Select {...props} options={THIRD_PART_OPTION} />;
 }
 export const THIRD_PART: Record<Platform, { iconOutline?: ReactNode; name: string }> = {
   [Platform.douYin]: {
@@ -45,18 +61,3 @@ const THIRD_PART_OPTION = Object.entries(THIRD_PART).map(([key, info]) => ({
   ),
   value: key,
 }));
-
-export declare enum Platform {
-  /** 抖音 */
-  douYin = "douyin",
-  /** bilibili */
-  bilibili = "bilibili",
-  /** 小红书 */
-  xiaoHongShu = "xiaohonshu",
-  /** 微博 */
-  weibo = "weibo",
-  /** 5Sing 音乐 */
-  v5sing = "v5sing",
-  /** 网易云音乐 */
-  wangYiMusic = "wangyiyun",
-}

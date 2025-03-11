@@ -8,11 +8,11 @@ import {
 import { HTTPException } from "hono/http-exception";
 import { getCookie } from "hono/cookie";
 import { UserInfo } from "./userInfo.ts";
+import { RequiredLoginError } from "../errors.ts";
 
-async function checkRoles(ctx: HonoContext, requiredAnyRoles?: Set<string>) {
+async function checkRoles(userInfo: UserInfo, requiredAnyRoles?: Set<string>) {
   if (!requiredAnyRoles) return;
-  const userInfo = ctx.get("userInfo");
-  if (!userInfo) throw new HTTPException(401);
+  if (!userInfo) throw new RequiredLoginError();
 
   const userRoles = await userInfo.getRoles();
   if (!userRoles.some((role) => requiredAnyRoles.has(role))) {
@@ -20,14 +20,15 @@ async function checkRoles(ctx: HonoContext, requiredAnyRoles?: Set<string>) {
   }
 }
 export async function rolesGuard(ctx: HonoContext, next: () => Promise<void>): Promise<void | Response> {
-  ctx.set("userInfo", new UserInfo(getCookie(ctx, "jwt-token")));
+  const userInfo = new UserInfo(getCookie(ctx, "jwt-token"));
+  ctx.set("userInfo", userInfo);
 
   const endpointCtx = getEndpointContext(ctx);
   const controllerRoles = endpointCtx.getControllerMetadata<Set<string>>(Roles);
-  if (!controllerRoles) await checkRoles(ctx, controllerRoles);
+  if (!controllerRoles) await checkRoles(userInfo, controllerRoles);
 
   const endpointRoles = endpointCtx.getEndpointMetadata<Set<string>>(Roles);
-  if (!endpointRoles) await checkRoles(ctx, endpointRoles);
+  if (!endpointRoles) await checkRoles(userInfo, endpointRoles);
   return next();
 }
 /** 装饰后，需要包含指定角色的用户才有权限访问接口 */

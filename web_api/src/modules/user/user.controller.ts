@@ -1,21 +1,22 @@
 import { user, enumPlatform, Platform, pla_user, user_platform_bind } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import {
-  BIndPlatformCheckDto,
+  BindPlatformCheckDto,
   BindPlatformCheckParam,
   BindPlatformParam,
   UpdateUserProfileParam,
   UserProfileDto,
 } from "./user.dto.ts";
-import { array, checkType, enumType, optional } from "evlib/validator";
+import { array, enumType, optional, stringMatch } from "evlib/validator";
 import { Controller, Get, Patch, PipeInput, Post, ToArguments, Use } from "@asla/hono-decorator";
 import { HonoContext } from "@/hono/type.ts";
-import { checkValue, checkValueAsync } from "@/global/check.ts";
+import { checkValueAsync } from "@/global/check.ts";
 import { autoBody } from "@/global/pipe.ts";
 import { rolesGuard } from "@/global/auth.ts";
 import { HttpError } from "@/global/errors.ts";
 import { getCheckerServer, getUerSecIdFromShareUrl } from "@/services/douyin.ts";
 import { deletePublicClass, setPublicClass } from "./user.service.ts";
+import { toErrorStr } from "evlib";
 
 @Use(rolesGuard)
 @autoBody
@@ -44,6 +45,7 @@ export class UserController {
       .select<{ signature?: string }>({ signature: true })
       .where(`platform=${v(bind.platform)} AND pla_uid=${v(bind.pla_uid)}`)
       .queryRows();
+    if (!plaUser) throw new HttpError(400, { message: "平台账号不存在" });
     if (!checkSignatureStudentId(userId, plaUser.signature)) {
       throw new HttpError(403, { message: "审核不通过。没有从账号检测到学号" });
     }
@@ -57,31 +59,36 @@ export class UserController {
 
   @ToArguments(async function (ctx) {
     const { userId } = await ctx.get("userInfo").getJwtInfo();
-    const param = checkValue(ctx.req.queries(), {
-      platformList: array((item) => {
-        const { value, error } = checkType(JSON.parse(item), {
-          platform: enumType(Array.from(enumPlatform)),
-          userHomeLink: optional.string,
-          pla_uid: optional.string,
-        });
-        if (error) return { error };
-        return { replace: true, value };
+    const param = await checkValueAsync(ctx.req.json(), {
+      platformList: array({
+        platform: enumType(Array.from(enumPlatform)),
+        userHomeLink: stringMatch(/https?:\/\/.+/),
+        pla_uid: optional.string,
       }),
     });
     return [userId, param];
   })
-  @Get("/user/bind_platform/check")
-  async checkPlatformBind(userId: string, body: BindPlatformCheckParam): Promise<BIndPlatformCheckDto> {
+  @Post("/user/bind_platform/check")
+  async checkPlatformBind(userId: string, body: BindPlatformCheckParam): Promise<BindPlatformCheckDto> {
     const bind = body.platformList[0];
     if (bind.platform !== Platform.douYin) throw new HttpError(409, { message: "暂不支持绑定该平台" });
 
     let pla_uid = bind.pla_uid;
     if (!pla_uid) {
       if (!bind.userHomeLink) throw new HttpError(400, { message: "userHomeLink 是必须的" });
-      pla_uid = await getUerSecIdFromShareUrl(bind.userHomeLink);
+      try {
+        pla_uid = await getUerSecIdFromShareUrl(bind.userHomeLink);
+      } catch (error) {
+        throw new HttpError(502, { message: toErrorStr(error) });
+      }
     }
     const checkServer = getCheckerServer();
-    const userInfo = await checkServer.checkUserBind(pla_uid, userId);
+    let userInfo: Awaited<ReturnType<typeof checkServer.checkUserBind>>;
+    try {
+      userInfo = await checkServer.checkUserBind(pla_uid, userId);
+    } catch (error) {
+      throw new HttpError(502, { message: toErrorStr(error) });
+    }
     if (!userInfo.pass) throw new HttpError(403, { message: userInfo.reason ?? "检测失败" });
 
     const [bindInfo] = await user_platform_bind

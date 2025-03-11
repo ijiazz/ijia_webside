@@ -11,7 +11,7 @@ import type {
   RequestSignupEmailCaptchaParam,
   ListDto,
   ClassOption,
-  BIndPlatformCheckDto,
+  BindPlatformCheckDto,
   BindPlatformParam,
   UpdateUserProfileParam,
 } from "./modules/dto.ts";
@@ -50,9 +50,9 @@ export interface ApiDefined {
     body: BindPlatformParam;
   };
   /** 绑定平台前检测是否能够绑定 */
-  "GET /user/bind_platform/check": {
-    response: BIndPlatformCheckDto;
-    params: BindPlatformCheckParam;
+  "POST /user/bind_platform/check": {
+    response: BindPlatformCheckDto;
+    body: BindPlatformCheckParam;
   };
 
   /** 获取用户基本信息 */

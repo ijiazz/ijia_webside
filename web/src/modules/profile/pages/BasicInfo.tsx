@@ -1,64 +1,40 @@
 import { CurrentIdCard } from "@/common/StudentIdCard.tsx";
 import { useAsync } from "@/hooks/async.ts";
+import { useHoFetch } from "@/hooks/http.ts";
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import { Avatar, Button, Checkbox, Form, Input, Select, Space, Tooltip } from "antd";
-
-import { useThrottle } from "react-use";
+import { Button, Checkbox, Form, Select, Space, Tooltip } from "antd";
+import { useState } from "react";
+import { PlatformBind } from "../components/PlatformBind.tsx";
 export function BasicInfoPage() {
   return (
     <div>
-      <Tk />
+      <PlatformAccount />
       <BasicForm />
     </div>
   );
 }
 
-function Tk() {
+function BasicForm() {
   const [form] = Form.useForm();
   const accounts: ThirdPartAccountBind[] = [];
   return (
     <div>
-      <CurrentIdCard />
-      {accounts.map((account) => {
-        return (
-          <div>
-            {account.platformIcon}
-            {account.userName}
-            <Button>解除关联</Button>
-          </div>
-        );
-      })}
-      <Form form={form}>
-        <Form.Item label="关联账号">
-          <Input></Input>
-        </Form.Item>
-      </Form>
-    </div>
-  );
-}
-function BasicForm() {
-  const [form] = Form.useForm();
-  return (
-    <div>
-      基础信息
-      <Avatar />
-      <Form form={form}>
-        <Form.Item>
-          <Input></Input>
+      <Form form={form} disabled={accounts.length === 0}>
+        <Form.Item label="切换主账号">
+          <Select disabled={accounts.length <= 1}></Select>
         </Form.Item>
         <Form.Item
           label={
-            <>
+            <Space>
               班级
               <Tooltip title="">
                 <QuestionCircleOutlined />
               </Tooltip>
-            </>
+            </Space>
           }
         >
-          <ClassSelect />
+          <PublicClassSelect />
         </Form.Item>
-        <Form.Item></Form.Item>
         <Form.Item label={null} name="option" valuePropName="checked">
           <Checkbox>
             <Space>
@@ -73,24 +49,37 @@ function BasicForm() {
     </div>
   );
 }
-function ClassSelect(props: { value?: number; onChange?(value: number): void }) {
-  const { result, run } = useAsync(async function (search?: string) {
-    return [];
-  });
-  const getOption = useThrottle(run, 800);
-
+function PlatformAccount() {
+  const accounts: ThirdPartAccountBind[] = [];
+  const isBind = accounts.length > 0;
+  const [isAddBind, setIsAddBind] = useState(false);
   return (
-    <Select
-      value={props.value}
-      onChange={props.onChange}
-      allowClear
-      showSearch
-      options={result.value}
-      loading={result.loading}
-      onSearch={(value) => getOption(value)}
-      filterOption={false}
-    />
+    <div>
+      <CurrentIdCard isBind={isBind} />
+      {accounts.map((account) => {
+        return (
+          <div>
+            {account.platformIcon}
+            {account.userName}
+            <Button>解除关联</Button>
+          </div>
+        );
+      })}
+      {isBind || "部分信息需要绑定平台账号后才能修改"}
+      {(!isBind || isAddBind) && <PlatformBind onBindSuccess={() => setIsAddBind(false)} />}
+    </div>
   );
+}
+function PublicClassSelect(props: { value?: number; onChange?(value: number): void }) {
+  const api = useHoFetch().api;
+  const { result } = useAsync(
+    async function (search?: string) {
+      const { items } = await api["/class/public"].get();
+      return items.map((item) => ({ label: item.class_name, value: item.class_id }));
+    },
+    { autoRunArgs: [] },
+  );
+  return <Select {...props} style={{ minWidth: 100, maxWidth: 200 }} allowClear options={result.value} />;
 }
 type ThirdPartAccountBind = {
   platformName: string;

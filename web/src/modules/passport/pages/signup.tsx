@@ -10,6 +10,7 @@ import { VideoBg } from "../components/VideoBg.tsx";
 import { useRedirect } from "@/hooks/redirect.ts";
 import { useHoFetch } from "@/hooks/http.ts";
 import { isHttpErrorCode } from "@/common/http.ts";
+import { getPathByRouter } from "@/common/nav.ts";
 function useCooling(coolingTime = 60) {
   const [time, settime] = useState<number>(0);
   const ref = useRef<null | number>(null);
@@ -51,7 +52,7 @@ export function Signup() {
 function BasicInfo() {
   const [form] = Form.useForm<FormValues>();
   const { api } = useHoFetch();
-  const go = useRedirect({ defaultPath: "/profile/basic" });
+  const go = useRedirect({ defaultPath: () => getPathByRouter("/profile/basic") });
   const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>
     api["/passport/signup/email_captcha"].post({
       body: { email, captchaReply: { sessionId, selectedIndex: selected } },

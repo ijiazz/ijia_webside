@@ -13,7 +13,7 @@ export type BindPlatformCheckParam = {
   }[];
 };
 
-export type BIndPlatformCheckDto = {
+export type BindPlatformCheckDto = {
   platformUser: {
     pla_uid: string;
     username: string;

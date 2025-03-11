@@ -23,9 +23,8 @@ export const test = viTest.extend<HonoContext>({
       },
       defaultOrigin: "http://127.0.0.1",
       createStatusError(hoResponse) {
-        const body = hoResponse.bodyData;
-        if (typeof body === "object" && !(body instanceof ReadableStream) && typeof (body as any).message === "string")
-          return new HoFetchStatusError(hoResponse, hoResponse.status + ": " + (body as any).message);
+        const body = getResponseErrorInfo(hoResponse.bodyData);
+        if (body) return new HoFetchStatusError(hoResponse, hoResponse.status + ": " + (body as any).message);
       },
     });
     return use(hoFetch);
@@ -36,3 +35,18 @@ export const test = viTest.extend<HonoContext>({
 });
 
 export type Context = DbContext & HonoContext;
+
+function getResponseErrorInfo(body: unknown): { message?: string; code?: string } | undefined {
+  switch (typeof body) {
+    case "string":
+      return { message: body };
+    case "object": {
+      if (body === null) return;
+      if (body instanceof ReadableStream) return { message: "Unknown response: ReadableStream" };
+      return body;
+    }
+    default:
+      break;
+  }
+  return;
+}

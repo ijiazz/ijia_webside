@@ -2,7 +2,6 @@ import { defineConfig } from "@playwright/test";
 
 export const env = {
   webUrl: "http://localhost:5173",
-  basePath: "/#",
   pgUrl: "pg://postgres@localhost:5432/ijia_test",
 };
 
