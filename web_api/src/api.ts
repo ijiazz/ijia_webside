@@ -14,6 +14,7 @@ import type {
   BindPlatformCheckDto,
   BindPlatformParam,
   UpdateUserProfileParam,
+  DeleteBindPlatformParam,
 } from "./modules/dto.ts";
 
 export * from "./modules/dto.ts";
@@ -48,6 +49,11 @@ export interface ApiDefined {
   "POST /user/bind_platform": {
     response: null;
     body: BindPlatformParam;
+  };
+  /** 解除平台绑定 */
+  "DELETE /user/bind_platform": {
+    response: null;
+    body: DeleteBindPlatformParam;
   };
   /** 绑定平台前检测是否能够绑定 */
   "POST /user/bind_platform/check": {

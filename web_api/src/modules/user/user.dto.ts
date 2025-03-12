@@ -30,6 +30,9 @@ export type BindPlatformCheckDto = {
 export type BindPlatformParam = {
   platformList: { platform: Platform; pla_uid: string }[];
 };
+export type DeleteBindPlatformParam = {
+  bindKeyList: string[];
+};
 export type UpdateUserProfileParam = {
   /** 班级 */
   publicClassId?: number | null;

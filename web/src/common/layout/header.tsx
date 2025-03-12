@@ -5,6 +5,7 @@ import { MenuProps } from "antd";
 import { useLocation, useNavigate } from "react-router";
 import { menus } from "./menus.ts";
 import { avatarDropdownRender } from "./avatar.tsx";
+import { useCurrentUser } from "@/common/user.ts";
 
 export function TabHeader(props: PropsWithChildren<{}>) {
   const { pathname } = useLocation();
@@ -13,6 +14,7 @@ export function TabHeader(props: PropsWithChildren<{}>) {
     let path = item.key;
     if (path) navigate(path);
   }
+  const user = useCurrentUser();
   return (
     <ProLayout
       logo={<IjiaLogo />}
@@ -22,9 +24,9 @@ export function TabHeader(props: PropsWithChildren<{}>) {
         pathname: pathname,
       }}
       avatarProps={{
-        src: "https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg",
+        src: user.value?.avatar_url,
         size: "small",
-        title: "Name",
+        title: user.value?.nickname,
         render: (props, dom) => {
           return avatarDropdownRender(dom, navigate);
         },
