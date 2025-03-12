@@ -101,7 +101,7 @@ describe("bind", function () {
       .queryCount();
   }
 });
-describe("update profile", function () {
+describe("profile", function () {
   const JWT_KEY = Symbol("jwtToken");
   let AliceId: number;
   let AliceToken: string;
@@ -121,6 +121,7 @@ describe("update profile", function () {
         { class_name: "1", is_public: true },
         { class_name: "2", is_public: true },
         { class_name: "3", is_public: false },
+        { class_name: "4" },
       ])
       .returning("*")
       .queryRows()
@@ -133,6 +134,28 @@ describe("update profile", function () {
 
     await updateProfile(api, { publicClassId: classes[1] });
     await expect(getUserPublicClassId(1), "已更新").resolves.toEqual([2]);
+  });
+  test("获取用户信息", async function ({ api }) {
+    const classes = await dclass
+      .insert([
+        { class_name: "1", is_public: true },
+        { class_name: "2", is_public: null },
+        { class_name: "3", is_public: false },
+      ])
+      .returning("*")
+      .queryRows()
+      .then((res) => res.map((item) => item.id));
+
+    await user_class_bind.insert(classes.map((class_id) => ({ class_id, user_id: AliceId }))).queryCount();
+
+    await expect(api["/user/profile"].get({ [JWT_KEY]: AliceToken })).resolves.toMatchObject({
+      user_id: AliceId,
+      is_official: true,
+      primary_class: {
+        class_id: classes[0],
+        class_name: "1",
+      },
+    });
   });
   function updateProfile(api: Api, body: UpdateUserProfileParam) {
     return api["/user/profile"].patch({ body: body, [JWT_KEY]: AliceToken });

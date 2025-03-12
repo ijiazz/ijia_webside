@@ -1,4 +1,4 @@
-import { user, enumPlatform, Platform, pla_user, user_platform_bind } from "@ijia/data/db";
+import { user, enumPlatform, Platform, pla_user, user_platform_bind, dclass, user_class_bind } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import {
   BindPlatformCheckDto,
@@ -116,11 +116,33 @@ export class UserController {
   })
   @Get("/user/profile")
   async getUser(userId: number): Promise<UserProfileDto> {
+    const isOfficial = user_class_bind //in user
+      .fromAs("bind_class")
+      .innerJoin(dclass, "class", [
+        `bind_class.user_id=${v(userId)}`,
+        "bind_class.class_id=class.id",
+        "class.parent_class_id IS NULL",
+        "class.is_public",
+      ])
+      .select(["bind_class.class_id", "class.class_name"])
+      .limit(1);
+
     const users = await user
-      .select<UserProfileDto>({ user_id: "id", avatar_url: "avatar", nickname: true })
-      .where(`id=${v(userId)}`)
+      .fromAs("u")
+      .from(isOfficial, "pub_class")
+      .select<UserProfileDto>({
+        user_id: "id",
+        avatar_url: "avatar",
+        nickname: true,
+        primary_class: `row_to_json(pub_class)`,
+      })
+      .where(`u.id=${v(userId)}`)
+      .limit(1)
       .queryRows();
-    return users[0];
+    if (!users.length) throw new HttpError(400, { message: "用户不存在" });
+    const userInfo = users[0];
+    userInfo.is_official = !!userInfo.primary_class;
+    return userInfo;
   }
   @ToArguments(async function (ctx: HonoContext) {
     const jwtInfo = await ctx.get("userInfo").getJwtInfo();

@@ -51,7 +51,7 @@ export function PlatformBind(props: { userId?: number | string; onBindSuccess?()
           placeholder="输入抖音个人首页连接"
         ></Input>
         <Button
-          disabled={!inputText}
+          disabled={!inputText || userId === undefined}
           onClick={() => {
             const url = inputText!.match(/https?:\/\/.+/)?.[0];
             if (url) {
@@ -59,7 +59,7 @@ export function PlatformBind(props: { userId?: number | string; onBindSuccess?()
               run(platform, url.trim()).then(onBindSuccess);
             }
           }}
-          loading={result.loading || userId === undefined}
+          loading={result.loading}
         >
           检测
         </Button>

@@ -78,10 +78,11 @@ export function CurrentIdCard() {
     <StudentIdCard
       {...value}
       loading={loading}
+      className={info.primary_class?.class_name}
       avatarUrl={info.avatar_url}
       id={info.userIdStr}
       name={info.nickname}
-      isOfficial={info.isOfficial}
+      isOfficial={info.is_official}
     />
   );
 }

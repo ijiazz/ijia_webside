@@ -4,6 +4,12 @@ export type UserProfileDto = {
   user_id: number;
   nickname?: string;
   avatar_url?: string;
+  /** 是否已认证 */
+  is_official?: boolean;
+  primary_class?: {
+    class_id: number;
+    class_name: string;
+  };
 };
 export type BindPlatformCheckParam = {
   platformList: {

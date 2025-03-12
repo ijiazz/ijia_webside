@@ -5,12 +5,13 @@ import { PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { Avatar, Button, Checkbox, Form, message, Modal, Popover, Select, Space, Tooltip, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { PlatformBind } from "../components/PlatformBind.tsx";
-import { UserProfileBasic } from "@/common/user.ts";
+import { useCurrentUser, UserProfileBasic } from "@/common/user.ts";
 import { Platform } from "@/common/third_part_account.tsx";
 import styled from "@emotion/styled";
 import { Meta } from "@/lib/components/Meta.tsx";
 
 export function BasicInfoPage() {
+  const { refresh } = useCurrentUser();
   const accounts: ThirdPartAccountBind[] = [
     {
       key: "1",
@@ -35,15 +36,19 @@ export function BasicInfoPage() {
     <div>
       <CurrentIdCard />
       <BindAccountList accounts={accounts} />
-      <BasicForm accounts={accounts} />
+      <BasicForm accounts={accounts} afterUpdate={() => refresh()} />
     </div>
   );
 }
 
+type BasicFormData = {
+  received_live: boolean | null;
+  publicClassId: number | null;
+};
 function BasicForm(props: { accounts: ThirdPartAccountBind[]; afterUpdate?(): void }) {
   const { accounts, afterUpdate } = props;
-  const [form] = Form.useForm<{ received_live?: boolean; publicClassId?: number }>();
-  const defaultData = useMemo(() => {}, []);
+  const [form] = Form.useForm<BasicFormData>();
+  const [defaultData, setDefaultData] = useState<BasicFormData>({ publicClassId: null, received_live: null });
   const [isChanged, setIsChanged] = useState(false);
   const { api } = useHoFetch();
   const accountOption = useMemo(() => {
@@ -62,12 +67,16 @@ function BasicForm(props: { accounts: ThirdPartAccountBind[]; afterUpdate?(): vo
     await api["/user/profile"].patch({
       body: {
         notice: {
-          live: formData.received_live,
+          live: formData.received_live ?? undefined,
         },
         publicClassId: formData.publicClassId,
       },
     });
     message.success("已修改");
+    console.log("已修改");
+    setDefaultData(formData);
+    setIsChanged(false);
+    afterUpdate?.();
   });
 
   return (
@@ -76,7 +85,15 @@ function BasicForm(props: { accounts: ThirdPartAccountBind[]; afterUpdate?(): vo
         <Typography.Title level={5}>基础设置</Typography.Title>
         {isChanged && (
           <Space>
-            <Button size="small">取消</Button>
+            <Button
+              size="small"
+              onClick={() => {
+                form.setFieldsValue(defaultData);
+                setIsChanged(false);
+              }}
+            >
+              取消
+            </Button>
             <Button size="small" onClick={onUpdate} type="primary">
               保存
             </Button>
@@ -84,7 +101,13 @@ function BasicForm(props: { accounts: ThirdPartAccountBind[]; afterUpdate?(): vo
         )}
       </Space>
       {accounts.length > 0 || <div>部分信息需要绑定平台账号后才能修改</div>}
-      <Form form={form} disabled={accounts.length === 0} onValuesChange={(value, values) => {}}>
+      <Form
+        form={form}
+        disabled={accounts.length === 0}
+        onValuesChange={(value, values) => {
+          setIsChanged(!isEqual(values, defaultData));
+        }}
+      >
         <Form.Item label="切换主账号">
           <Select disabled={accounts.length <= 1} options={accountOption}></Select>
         </Form.Item>
@@ -116,12 +139,26 @@ function BasicForm(props: { accounts: ThirdPartAccountBind[]; afterUpdate?(): vo
   );
 }
 
-function BindAccountList(props: {
-  accounts?: ThirdPartAccountBind[];
-  user?: UserProfileBasic;
-  onAccountChange?(): void;
-}) {
-  const { accounts, user, onAccountChange } = props;
+function isEqual(obj1: any, obj2: any) {
+  if (typeof obj1 !== typeof obj2) return false;
+  if (typeof obj1 !== "object" || obj1 === null || obj2 === null) return obj1 === obj2;
+  const key1 = Object.keys(obj1);
+  const key2 = Object.keys(obj2);
+  if (key2 !== key1) return false;
+  const key2Set = new Set(key2);
+  for (const key of key1) {
+    if (!key2Set.has(key)) {
+      if (key === undefined) continue;
+      return false;
+    }
+    if (!isEqual(obj1[key], obj2[key])) return false;
+    key2Set.delete(key);
+  }
+  if (key2Set.size) return false;
+  return true;
+}
+function BindAccountList(props: { accounts?: ThirdPartAccountBind[]; user?: UserProfileBasic; afterChange?(): void }) {
+  const { accounts, user, afterChange: onAccountChange } = props;
   const { api } = useHoFetch();
   const { run: onRemoveBind, result: removeBindResult } = useAsync(async (item: ThirdPartAccountBind) => {
     await api["/user/bind_platform"].delete({ body: { bindKeyList: [item.key] } });
