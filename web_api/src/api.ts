@@ -15,6 +15,7 @@ import type {
   BindPlatformParam,
   UpdateUserProfileParam,
   DeleteBindPlatformParam,
+  ProfileSyncParam,
 } from "./modules/dto.ts";
 
 export * from "./modules/dto.ts";
@@ -64,6 +65,11 @@ export interface ApiDefined {
   /** 获取用户基本信息 */
   "GET /user/profile": {
     response: UserProfileDto;
+  };
+  /** 获取用户基本信息 */
+  "POST /user/profile/sync": {
+    response: null;
+    body: ProfileSyncParam;
   };
   /** 修改用户信息 */
   "PATCH /user/profile": {

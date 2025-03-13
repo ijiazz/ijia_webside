@@ -6,19 +6,36 @@ export type UserProfileDto = {
   avatar_url?: string;
   /** 是否已认证 */
   is_official?: boolean;
+  bind_accounts: BindAccountDto[];
   primary_class?: {
     class_id: number;
     class_name: string;
   };
 };
+export type BindAccountDto = {
+  platform: Platform;
+  pla_uid: string;
+  user_name?: string | null;
+  avatar_url?: string | null;
+  create_time: string;
+  last_update_time: string;
+  key: string;
+};
 export type BindPlatformCheckParam = {
   platformList: {
     platform: Platform;
     userHomeLink?: string;
-    pla_uid?: string;
+    platformUseId?: string;
   }[];
 };
-
+export type ProfileSyncParam = {
+  bindKey:
+    | string
+    | {
+        platform: Platform;
+        pla_uid: string;
+      };
+};
 export type BindPlatformCheckDto = {
   platformUser: {
     pla_uid: string;
@@ -34,10 +51,10 @@ export type BindPlatformCheckDto = {
   };
 };
 export type BindPlatformParam = {
-  platformList: { platform: Platform; pla_uid: string }[];
+  account: { platform: Platform; pla_uid: string };
 };
 export type DeleteBindPlatformParam = {
-  bindKeyList: string[];
+  bindKey: string;
 };
 export type UpdateUserProfileParam = {
   /** 班级 */

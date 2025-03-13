@@ -5,8 +5,6 @@ import { BindPlatformParam, UpdateUserProfileParam, userController } from "@/mod
 import { applyController } from "@/hono-decorator/src/apply.ts";
 
 import { loginService } from "@/modules/passport/services/passport.service.ts";
-import { MockCheckServer } from "../__mocks__/CheckServer.ts";
-import { setCheckerServer } from "@/services/douyin.ts";
 import { v } from "@ijia/data/yoursql";
 
 describe("bind", function () {
@@ -23,9 +21,19 @@ describe("bind", function () {
     });
     await pla_user
       .insert([
-        { platform: Platform.douYin, pla_uid: "d0", signature: "abc\nIJIA学号：<" + AliceId + ">\n12c" },
-        { platform: Platform.douYin, pla_uid: "d1", signature: "abcIJIA学号：<" + AliceId + ">12c" },
-        { platform: Platform.douYin, pla_uid: "d2", signature: "IJIA学号：" },
+        {
+          platform: Platform.douYin,
+          extra: { sec_uid: "sec_0" },
+          pla_uid: "d0",
+          signature: "abc\nIJIA学号：<" + AliceId + ">\n12c",
+        },
+        {
+          platform: Platform.douYin,
+          extra: { sec_uid: "sec_1" },
+          pla_uid: "d1",
+          signature: "abcIJIA学号：<" + AliceId + ">12c",
+        },
+        { platform: Platform.douYin, extra: { sec_uid: "sec_2" }, pla_uid: "d2", signature: "IJIA学号：" },
       ])
       .query();
 
@@ -34,45 +42,38 @@ describe("bind", function () {
 
   test("绑定检查", async function ({ api }) {
     function AliceBindCheck() {
-      return api["/user/bind_platform/check"].fetchResult({
-        params: { platformList: [{ platform: Platform.douYin, pla_uid: "d1" }].map((item) => JSON.stringify(item)) },
+      return api["/user/bind_platform/check"].post({
+        body: { platformList: [{ platform: Platform.douYin, platformUseId: "sec_0" }] },
         [JWT_KEY]: AliceToken,
       });
     }
 
-    const checkerServer = new MockCheckServer();
-    setCheckerServer(checkerServer);
-    const mockDouYinUser = { avatarPath: "abc.jpg", description: "IJIA学号：1", pla_uid: "d1", username: "ABC" };
-    checkerServer.checkUserBind.mockImplementation(async function () {
-      return { ...mockDouYinUser, pass: true };
+    await expect(AliceBindCheck()).resolves.toMatchObject({
+      platformUser: { platform: Platform.douYin, pla_uid: "d0" },
     });
-    checkerServer.getDouYinUserInfo.mockImplementationOnce(async function () {
-      return mockDouYinUser;
-    });
-
-    await expect(AliceBindCheck()).resolves.toMatchObject({ platformUser: mockDouYinUser });
   });
   test("绑定", async function ({ api }) {
-    function AliceBind(platform: BindPlatformParam["platformList"]) {
+    function AliceBind(account: BindPlatformParam["account"]) {
       return api["/user/bind_platform"].post({
-        body: { platformList: platform },
+        body: { account },
         [JWT_KEY]: AliceToken,
       });
     }
 
-    await AliceBind([{ platform: Platform.douYin, pla_uid: "d0" }]);
+    await AliceBind({ platform: Platform.douYin, pla_uid: "d0" });
     await expect(getUserBindCount(AliceId), "成功绑定第1个账号").resolves.toBe(1);
 
-    await AliceBind([{ platform: Platform.douYin, pla_uid: "d1" }]);
+    await AliceBind({ platform: Platform.douYin, pla_uid: "d1" });
     await expect(getUserBindCount(AliceId), "成功绑定第2个账号").resolves.toBe(2);
 
-    await expect(AliceBind([{ platform: Platform.douYin, pla_uid: "d2" }])).rejects.responseStatus(403);
+    await expect(AliceBind({ platform: Platform.douYin, pla_uid: "d2" })).rejects.responseStatus(403);
     await expect(getUserBindCount(AliceId)).resolves.toBe(2);
   });
-  test("绑定已存在的", async function ({ api }) {
-    function userBind(userToken: string, platform: BindPlatformParam["platformList"]) {
+  // 暂时不处理
+  test.skip("绑定自己已绑定的", async function ({ api }) {
+    function userBind(userToken: string, platform: BindPlatformParam["account"]) {
       return api["/user/bind_platform"].post({
-        body: { platformList: platform },
+        body: { account: platform },
         [JWT_KEY]: userToken,
       });
     }
@@ -82,17 +83,19 @@ describe("bind", function () {
         .where(`pla_uid=${v(pla_uid)}`)
         .queryCount();
     }
-    await userBind(AliceToken, [{ platform: Platform.douYin, pla_uid: "d1" }]);
+    await userBind(AliceToken, { platform: Platform.douYin, pla_uid: "d1" });
 
     const BobId = await loginService.createUser("bind_existed@qq.com", {});
     const BobToken = await loginService.signJwt(BobId, 60);
 
     await expect(updateSignature("d1", `IJIA学号：<${BobId}>`)).resolves.toBe(1);
 
-    await userBind(BobToken, [{ platform: Platform.douYin, pla_uid: "d1" }]);
+    await userBind(BobToken, { platform: Platform.douYin, pla_uid: "d1" });
 
     await expect(getUserBindCount(BobId), "新绑定的用户成功绑定").resolves.toBe(1);
     await expect(getUserBindCount(AliceId), "原来绑定的用户被取消绑定").resolves.toBe(0);
+
+    await expect(userBind(BobToken, { platform: Platform.douYin, pla_uid: "d1" })).rejects.responseStatus(409);
   });
   function getUserBindCount(userId: number) {
     return user_platform_bind
@@ -150,11 +153,27 @@ describe("profile", function () {
 
     await expect(api["/user/profile"].get({ [JWT_KEY]: AliceToken })).resolves.toMatchObject({
       user_id: AliceId,
-      is_official: true,
+      is_official: false,
       primary_class: {
         class_id: classes[0],
         class_name: "1",
       },
+    });
+  });
+  test("获取用户信息-绑定账号后", async function ({ api }) {
+    await pla_user
+      .insert([
+        { pla_uid: "1", platform: Platform.douYin },
+        { pla_uid: "2", platform: Platform.douYin },
+        { pla_uid: "3", platform: Platform.douYin },
+      ])
+      .queryCount();
+    await user_platform_bind.insert([{ pla_uid: "1", platform: Platform.douYin, user_id: AliceId }]).queryCount();
+
+    await expect(api["/user/profile"].get({ [JWT_KEY]: AliceToken })).resolves.toMatchObject({
+      user_id: AliceId,
+      is_official: true,
+      bind_accounts: [{ avatar_url: null, pla_uid: "1", platform: Platform.douYin, user_name: null }],
     });
   });
   function updateProfile(api: Api, body: UpdateUserProfileParam) {

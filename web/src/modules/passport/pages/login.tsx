@@ -52,12 +52,7 @@ export function LoginPage() {
         });
       });
     }
-    if (result.redirect) {
-      location.replace(result.redirect);
-      return;
-    }
-    go();
-    return result;
+    if (result.success) go();
   });
   const loginLoading = value.loading;
 

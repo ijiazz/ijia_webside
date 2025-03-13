@@ -7,7 +7,7 @@ export class MockCheckServer extends CheckServer {
   constructor() {
     super("12", "http://127.0.0.1");
   }
-  override checkUserBind = vi.fn<CheckServer["checkUserBind"]>(noImpl);
-  override getDouYinUserInfo = vi.fn<CheckServer["getDouYinUserInfo"]>(noImpl);
+  override checkPlatformUserInfo = vi.fn<CheckServer["checkPlatformUserInfo"]>(noImpl);
+  override getUserInfo = vi.fn<CheckServer["getUserInfo"]>(noImpl);
   override userIsLive = vi.fn<CheckServer["userIsLive"]>(noImpl);
 }

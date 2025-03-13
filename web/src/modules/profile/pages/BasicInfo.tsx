@@ -5,38 +5,28 @@ import { PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { Avatar, Button, Checkbox, Form, message, Modal, Popover, Select, Space, Tooltip, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { PlatformBind } from "../components/PlatformBind.tsx";
-import { useCurrentUser, UserProfileBasic } from "@/common/user.ts";
-import { Platform } from "@/common/third_part_account.tsx";
+import { useCurrentUser } from "@/common/user.ts";
 import styled from "@emotion/styled";
 import { Meta } from "@/lib/components/Meta.tsx";
+import { isEqual } from "@/lib/object.ts";
+import { BindAccountDto } from "@/api.ts";
 
 export function BasicInfoPage() {
-  const { refresh } = useCurrentUser();
-  const accounts: ThirdPartAccountBind[] = [
-    {
-      key: "1",
-      lastUpdate: new Date().toString(),
-      pla_uid: "plauid",
-      platform: Platform.douYin,
-      user_id: 1,
-      platformIcon: "",
-      userName: "ABC",
-    },
-    {
-      key: "2",
-      lastUpdate: new Date().toString(),
-      pla_uid: "plauid",
-      platform: Platform.douYin,
-      user_id: 1,
-      platformIcon: "",
-      userName: "ABC",
-    },
-  ];
+  const { refresh: afterUpdate, value } = useCurrentUser();
+  const accounts = useMemo((): ThirdPartAccountBind[] => {
+    if (!value?.bind_accounts) return [];
+
+    return value.bind_accounts.map((item) => {
+      return {
+        ...item,
+      };
+    });
+  }, [value?.bind_accounts]);
   return (
     <div>
       <CurrentIdCard />
       <BindAccountList accounts={accounts} />
-      <BasicForm accounts={accounts} afterUpdate={() => refresh()} />
+      <BasicForm accounts={accounts} />
     </div>
   );
 }
@@ -45,18 +35,21 @@ type BasicFormData = {
   received_live: boolean | null;
   publicClassId: number | null;
 };
-function BasicForm(props: { accounts: ThirdPartAccountBind[]; afterUpdate?(): void }) {
-  const { accounts, afterUpdate } = props;
+function BasicForm(props: { accounts: ThirdPartAccountBind[] }) {
+  const { accounts } = props;
+
+  const { refresh: afterUpdate } = useCurrentUser();
   const [form] = Form.useForm<BasicFormData>();
   const [defaultData, setDefaultData] = useState<BasicFormData>({ publicClassId: null, received_live: null });
   const [isChanged, setIsChanged] = useState(false);
   const { api } = useHoFetch();
+
   const accountOption = useMemo(() => {
     return accounts.map((item) => ({
       label: (
         <Space>
           {item.platformIcon}
-          {item.userName}
+          {item.user_name}
         </Space>
       ),
       value: item.key,
@@ -139,33 +132,22 @@ function BasicForm(props: { accounts: ThirdPartAccountBind[]; afterUpdate?(): vo
   );
 }
 
-function isEqual(obj1: any, obj2: any) {
-  if (typeof obj1 !== typeof obj2) return false;
-  if (typeof obj1 !== "object" || obj1 === null || obj2 === null) return obj1 === obj2;
-  const key1 = Object.keys(obj1);
-  const key2 = Object.keys(obj2);
-  if (key2 !== key1) return false;
-  const key2Set = new Set(key2);
-  for (const key of key1) {
-    if (!key2Set.has(key)) {
-      if (key === undefined) continue;
-      return false;
-    }
-    if (!isEqual(obj1[key], obj2[key])) return false;
-    key2Set.delete(key);
-  }
-  if (key2Set.size) return false;
-  return true;
-}
-function BindAccountList(props: { accounts?: ThirdPartAccountBind[]; user?: UserProfileBasic; afterChange?(): void }) {
-  const { accounts, user, afterChange: onAccountChange } = props;
+function BindAccountList(props: { accounts?: ThirdPartAccountBind[] }) {
+  const { accounts } = props;
+
+  const { refresh: onAccountChange, value: user } = useCurrentUser();
   const { api } = useHoFetch();
-  const { run: onRemoveBind, result: removeBindResult } = useAsync(async (item: ThirdPartAccountBind) => {
-    await api["/user/bind_platform"].delete({ body: { bindKeyList: [item.key] } });
+  const { run: onRemoveBind, result: removeBindResult } = useAsync(async (item: BindAccountDto) => {
+    await api["/user/bind_platform"].delete({ body: { bindKey: item.key } });
     message.success("已解除");
     onAccountChange?.();
   });
-  const [confirmOpen, setConfirmOpen] = useState<{ title: string; item: ThirdPartAccountBind } | undefined>();
+  const { run: refreshAccount, result: refreshAccountResult } = useAsync(async (item: BindAccountDto) => {
+    await api["/user/profile/sync"].post({ body: { bindKey: item.key } });
+    message.success("已更新");
+    onAccountChange?.();
+  });
+  const [confirmOpen, setConfirmOpen] = useState<{ title: string; item: BindAccountDto } | undefined>();
   const [isAddBind, setIsAddBind] = useState(false);
   return (
     <BindAccountListCSS>
@@ -173,24 +155,33 @@ function BindAccountList(props: { accounts?: ThirdPartAccountBind[]; user?: User
       <div className="bind-list">
         <Avatar.Group>
           {accounts?.map((account) => {
+            const key = account.key;
             return (
               <Popover
-                key={account.key}
+                key={key}
                 content={
                   <div>
-                    <Meta icon={account.platformIcon} title={account.userName}></Meta>
-                    <Button
-                      loading={removeBindResult.loading}
-                      disabled={account.isPrimary}
-                      size="small"
-                      onClick={() => setConfirmOpen({ title: "确认解除关联？", item: account })}
-                    >
-                      解除关联
-                    </Button>
+                    <Meta icon={account.avatar_url} title={account.user_name}></Meta>
+                    <Space>
+                      <Button
+                        size="small"
+                        loading={refreshAccountResult.loading}
+                        onClick={() => refreshAccount(account)}
+                      >
+                        更新信息
+                      </Button>
+                      <Button
+                        loading={removeBindResult.loading}
+                        size="small"
+                        onClick={() => setConfirmOpen({ title: "确认解除关联？", item: account })}
+                      >
+                        解除关联
+                      </Button>
+                    </Space>
                   </div>
                 }
               >
-                <Avatar key={account.key} alt={account.userName} src={account.userAvatarUrl}></Avatar>
+                <Avatar key={key} alt={account.user_name ?? ""} src={account.avatar_url}></Avatar>
               </Popover>
             );
           })}
@@ -264,15 +255,6 @@ function PublicClassSelect(props: { value?: number; onChange?(value: number): vo
     />
   );
 }
-type ThirdPartAccountBind = {
-  platform: Platform;
-  pla_uid: string;
-  user_id: number;
-  key: string;
-  isPrimary?: boolean;
+type ThirdPartAccountBind = BindAccountDto & {
   platformIcon?: string;
-  userName: string;
-  userAvatarUrl?: string | null;
-
-  lastUpdate?: string;
 };

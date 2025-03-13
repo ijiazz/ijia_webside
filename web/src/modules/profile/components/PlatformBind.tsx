@@ -11,11 +11,11 @@ import step2Path from "@asset/profile/douyin-step-2.jpg";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Meta } from "@/lib/components/Meta.tsx";
 
-export function PlatformBind(props: { userId?: number | string; onBindSuccess?(): void }) {
+export function PlatformBind(props: { userId?: number; onBindSuccess?(): void }) {
   const { onBindSuccess, userId } = props;
   const { api } = useHoFetch();
   const { message } = useContext(AndContext);
-  const { result, run } = useAsync(function (platform: Platform, url: string) {
+  const { result, run, reset } = useAsync(function (platform: Platform, url: string) {
     return api["/user/bind_platform/check"].post({
       body: { platformList: [{ platform, userHomeLink: url }] },
     });
@@ -24,8 +24,10 @@ export function PlatformBind(props: { userId?: number | string; onBindSuccess?()
     platform: Platform;
     pla_uid: string;
   }) {
-    await api["/user/bind_platform"].post({ body: { platformList: [account] } });
+    await api["/user/bind_platform"].post({ body: { account } });
     message.success("绑定成功");
+    onBindSuccess?.();
+    reset();
   });
   const [platform, setPlatform] = useState<Platform>(Platform.douYin);
   const [inputText, setInputText] = useState<string>();
@@ -56,7 +58,7 @@ export function PlatformBind(props: { userId?: number | string; onBindSuccess?()
             const url = inputText!.match(/https?:\/\/.+/)?.[0];
             if (url) {
               setInputText(url.trim());
-              run(platform, url.trim()).then(onBindSuccess);
+              run(platform, url.trim());
             }
           }}
           loading={result.loading}
@@ -70,8 +72,11 @@ export function PlatformBind(props: { userId?: number | string; onBindSuccess?()
       {checkResult && (
         <BindCheckResult
           {...checkResult}
+          currentUserId={userId}
           bindLoading={bindResult.loading}
-          onBind={() => onBind({ pla_uid: checkResult.platformUser.pla_uid, platform: platform })}
+          onBind={() => {
+            onBind({ pla_uid: checkResult.platformUser.pla_uid, platform: platform });
+          }}
         ></BindCheckResult>
       )}
     </PlatformBindCSS>
@@ -92,9 +97,12 @@ const PlatformBindCSS = styled.div`
   }
 `;
 
-function BindCheckResult(props: BindPlatformCheckDto & { onBind?: () => void; bindLoading?: boolean }) {
-  const { onBind, platformUser, bind, bindLoading } = props;
+function BindCheckResult(
+  props: BindPlatformCheckDto & { currentUserId?: number; onBind?: () => void; bindLoading?: boolean },
+) {
+  const { onBind, platformUser, bind, bindLoading, currentUserId } = props;
   const token = useThemeToken();
+  const selfIsBind = bind?.user_id === currentUserId;
   return (
     <BindCheckResultCSS style={{ backgroundColor: token.colorBgBase }}>
       <Meta
@@ -103,15 +111,15 @@ function BindCheckResult(props: BindPlatformCheckDto & { onBind?: () => void; bi
         description={platformUser.description}
       />
       <Divider />
-      {bind && (
+      {bind && !selfIsBind && (
         <div style={{ color: token.colorError }}>
           该账号已被学号为 <span className="student-id">{bind.user_id}</span> 的用户绑定，如果再次绑定，学号为{" "}
           <span className="student-id">{bind.user_id}</span> 的用户将会与之解除绑定关系
         </div>
       )}
       <div className="footer">
-        <Button type="primary" onClick={onBind} loading={bindLoading}>
-          绑定
+        <Button type="primary" disabled={selfIsBind} onClick={onBind} loading={bindLoading}>
+          {selfIsBind ? "已绑定" : "绑定"}
         </Button>
       </div>
     </BindCheckResultCSS>
