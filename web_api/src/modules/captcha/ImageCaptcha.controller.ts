@@ -1,8 +1,7 @@
 import { ImageCaptchaQuestion, ImageCaptchaReply } from "./Captcha.dto.ts";
 import { captcha_picture, DbCaptchaPicture } from "@ijia/data/db";
 import { dbPool, v } from "@ijia/data/yoursql";
-import { Get, Post } from "@/hono-decorator/src/Router.ts";
-import { PipeInput, PipeOutput } from "@/hono-decorator/src/base.ts";
+import { PipeInput, PipeOutput, Get, Post } from "@asla/hono-decorator";
 import { HTTPException } from "hono/http-exception";
 import { SessionManager } from "./_SessionManage.ts";
 import { autoBody } from "@/global/pipe.ts";

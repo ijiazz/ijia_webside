@@ -1,4 +1,4 @@
-import { ToResponse } from "@/hono-decorator/src/base.ts";
+import { ToResponse } from "@asla/hono-decorator";
 import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 

@@ -5,3 +5,6 @@
 [submodule "deps/hofetch"]
 	path = deps/hofetch
 	url = git@github.com:asnowc/hofetch.git
+[submodule "deps/hono-decorator"]
+	path = deps/hono-decorator
+	url = git@github.com:asnowc/hono-decorator.git

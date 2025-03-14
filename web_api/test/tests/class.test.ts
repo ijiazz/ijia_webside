@@ -1,7 +1,7 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context } from "../fixtures/hono.ts";
 import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
-import { applyController } from "@/hono-decorator/src/apply.ts";
+import { applyController } from "@asla/hono-decorator";
 
 import { classController } from "@/modules/class/class.controller.ts";
 

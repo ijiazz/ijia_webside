@@ -1,4 +1,4 @@
-import { Get } from "@/hono-decorator/src/Router.ts";
+import { Get } from "@asla/hono-decorator";
 import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { ListDto } from "../dto_common.ts";
 import { autoBody } from "@/global/pipe.ts";

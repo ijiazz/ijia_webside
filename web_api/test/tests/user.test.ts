@@ -2,7 +2,7 @@ import { expect, beforeEach, describe } from "vitest";
 import { test, Context, Api } from "../fixtures/hono.ts";
 import { dclass, pla_user, Platform, PUBLIC_CLASS_ROOT_ID, user_class_bind, user_platform_bind } from "@ijia/data/db";
 import { BindPlatformParam, UpdateUserProfileParam, userController } from "@/modules/user/mod.ts";
-import { applyController } from "@/hono-decorator/src/apply.ts";
+import { applyController } from "@asla/hono-decorator";
 
 import { loginService } from "@/modules/passport/services/passport.service.ts";
 import { v } from "@ijia/data/yoursql";

@@ -9,7 +9,6 @@ import { HTTPException } from "hono/http-exception";
 import { getCookie } from "hono/cookie";
 import { UserInfo } from "./userInfo.ts";
 import { RequiredLoginError } from "../errors.ts";
-
 async function checkRoles(userInfo: UserInfo, requiredAnyRoles?: Set<string>) {
   if (!requiredAnyRoles) return;
   if (!userInfo) throw new RequiredLoginError();

@@ -8,7 +8,6 @@
   },
   "scripts": {
     "test": "vitest run",
-    "test-decorator": "vitest --root src/hono-decorator  run",
     "build": "rollup -c build/rollup.config.js",
     "check-type-core": "tsc -p tsconfig.json",
     "check-type-model": "tsc -p tsconfig.model.json",
@@ -28,7 +27,8 @@
     "evlib": "^3.1.1",
     "hono": "^4.7.2",
     "nodemailer": "^6.10.0",
-    "tslib": "^2.8.1"
+    "tslib": "^2.8.1",
+    "@asla/hono-decorator": "workspace:^"
   },
   "devDependencies": {
     "@asla/hofetch": "workspace:^",
@@ -36,7 +36,7 @@
     "@types/nodemailer": "^6.4.17",
     "typedoc": "^0.27.6",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.8"
   },
   "files": [
     "dist/**"

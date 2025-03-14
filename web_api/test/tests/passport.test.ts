@@ -2,7 +2,7 @@ import { expect, beforeEach, describe } from "vitest";
 import { test, Context, Api } from "../fixtures/hono.ts";
 import { user } from "@ijia/data/db";
 import { CreateUserProfileParam, LoginType, passportController, UserLoginParamDto } from "@/modules/passport/mod.ts";
-import { applyController } from "@/hono-decorator/src/apply.ts";
+import { applyController } from "@asla/hono-decorator";
 import { emailCaptchaService } from "@/modules/captcha/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../__mocks__/captcha.ts";
