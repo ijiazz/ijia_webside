@@ -1,4 +1,13 @@
-import { user, enumPlatform, Platform, pla_user, user_platform_bind, dclass, user_class_bind } from "@ijia/data/db";
+import {
+  user,
+  enumPlatform,
+  Platform,
+  pla_user,
+  user_platform_bind,
+  dclass,
+  user_class_bind,
+  PUBLIC_CLASS_ROOT_ID,
+} from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import {
   BindPlatformCheckDto,
@@ -15,7 +24,7 @@ import { autoBody } from "@/global/pipe.ts";
 import { rolesGuard } from "@/global/auth.ts";
 import { HttpError } from "@/global/errors.ts";
 import { getCheckerServer, getUerSecIdFromShareUrl, PlatformUserBasicInfoCheckResult } from "@/services/douyin.ts";
-import { deletePublicClass, setPublicClass } from "./user.service.ts";
+import { deletePublicClassOfUser, setUserPublicClass } from "./user.service.ts";
 import { toErrorStr } from "evlib";
 import { ENV, Mode } from "@/global/config.ts";
 
@@ -181,9 +190,9 @@ export class UserController {
   async updateUserProfile(userId: number, body: UpdateUserProfileParam): Promise<void> {
     await using db = dbPool.begin();
     if (body.publicClassId !== undefined) {
-      const count = await db.queryCount(deletePublicClass(userId));
+      const count = await db.queryCount(deletePublicClassOfUser(userId));
       if (body.publicClassId !== null) {
-        const count = await db.queryCount(setPublicClass(userId, body.publicClassId));
+        const count = await db.queryCount(setUserPublicClass(userId, body.publicClassId));
         if (count === 0) throw new HttpError(409, { message: "班级不存在" });
       }
     }
@@ -203,8 +212,7 @@ function getUserPublicClass(userId: number) {
     .innerJoin(dclass, "class", [
       `bind_class.user_id=${v(userId)}`,
       "bind_class.class_id=class.id",
-      "class.parent_class_id IS NULL",
-      "class.is_public",
+      `class.parent_class_id=${PUBLIC_CLASS_ROOT_ID}`,
     ])
     .select(["bind_class.class_id", "class.class_name"])
     .limit(1);

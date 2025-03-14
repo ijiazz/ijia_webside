@@ -1,6 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context } from "../fixtures/hono.ts";
-import { dclass } from "@ijia/data/db";
+import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { applyController } from "@/hono-decorator/src/apply.ts";
 
 import { classController } from "@/modules/class/class.controller.ts";
@@ -12,11 +12,13 @@ beforeEach<Context>(async ({ hono, hoFetch, ijiaDbPool }) => {
 test("获取公共班级", async function ({ api }) {
   const created = await dclass
     .insert([
-      { class_name: "1", is_public: true },
-      { class_name: "2", is_public: true },
-      { class_name: "3", is_public: false },
-      { class_name: "4", is_public: null },
+      { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+      { class_name: "2", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+      { class_name: "3", parent_class_id: null },
+      { class_name: "4", parent_class_id: null },
     ])
+    .onConflict("id")
+    .doNotThing()
     .returning("*")
     .queryRows()
     .then((res) => res.map((item) => item.id));

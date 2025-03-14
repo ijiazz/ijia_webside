@@ -1,5 +1,5 @@
 import { Get } from "@/hono-decorator/src/Router.ts";
-import { dclass } from "@ijia/data/db";
+import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { ListDto } from "../dto_common.ts";
 import { autoBody } from "@/global/pipe.ts";
 
@@ -9,7 +9,7 @@ export class ClassController {
   async getPublicClass(): Promise<ListDto<ClassOption>> {
     const items = await dclass
       .select<ClassOption>({ class_id: "id", class_name: true })
-      .where("is_public AND parent_class_id IS NULL")
+      .where(`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`)
       .queryRows();
 
     return {

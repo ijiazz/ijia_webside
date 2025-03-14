@@ -1,6 +1,6 @@
 import { expect, beforeEach, describe } from "vitest";
 import { test, Context, Api } from "../fixtures/hono.ts";
-import { dclass, pla_user, Platform, user_class_bind, user_platform_bind } from "@ijia/data/db";
+import { dclass, pla_user, Platform, PUBLIC_CLASS_ROOT_ID, user_class_bind, user_platform_bind } from "@ijia/data/db";
 import { BindPlatformParam, UpdateUserProfileParam, userController } from "@/modules/user/mod.ts";
 import { applyController } from "@/hono-decorator/src/apply.ts";
 
@@ -121,9 +121,9 @@ describe("profile", function () {
   test("只能选择公共班级，且公共班级只能选一个", async function ({ api }) {
     const classes = await dclass
       .insert([
-        { class_name: "1", is_public: true },
-        { class_name: "2", is_public: true },
-        { class_name: "3", is_public: false },
+        { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+        { class_name: "2", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+        { class_name: "3" },
         { class_name: "4" },
       ])
       .returning("*")
@@ -140,11 +140,7 @@ describe("profile", function () {
   });
   test("获取用户信息", async function ({ api }) {
     const classes = await dclass
-      .insert([
-        { class_name: "1", is_public: true },
-        { class_name: "2", is_public: null },
-        { class_name: "3", is_public: false },
-      ])
+      .insert([{ class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID }, { class_name: "2" }, { class_name: "3" }])
       .returning("*")
       .queryRows()
       .then((res) => res.map((item) => item.id));
@@ -182,7 +178,11 @@ describe("profile", function () {
   function getUserPublicClassId(user_id: number): Promise<number[]> {
     return user_class_bind
       .fromAs("bind")
-      .innerJoin(dclass, "class", [`bind.user_id=${v(user_id)}`, "class.is_public=TRUE", "class.id=bind.class_id"])
+      .innerJoin(dclass, "class", [
+        `bind.user_id=${v(user_id)}`,
+        `class.parent_class_id=${PUBLIC_CLASS_ROOT_ID}`,
+        "class.id=bind.class_id",
+      ])
       .select("bind.*")
       .queryRows()
       .then((res) => res.map((item) => item.class_id));
