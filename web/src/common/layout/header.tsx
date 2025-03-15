@@ -25,11 +25,13 @@ export function TabHeader(props: PropsWithChildren<{}>) {
       }}
       avatarProps={{
         src: user.value?.avatar_url,
+        className: "e2e-avatar",
         size: "small",
         title: user.value?.nickname,
         render: (props, dom) => {
-          return avatarDropdownRender(dom, navigate);
+          return avatarDropdownRender(dom, { navigate, onLogout: user.logout });
         },
+        children: user.value?.nickname ?? " ",
       }}
       layout="mix"
       splitMenus

@@ -11,6 +11,7 @@ import { useRedirect } from "@/hooks/redirect.ts";
 import { useHoFetch } from "@/hooks/http.ts";
 import { isHttpErrorCode } from "@/common/http.ts";
 import { getPathByRouter } from "@/common/nav.ts";
+import { useCurrentUser } from "@/common/user.ts";
 function useCooling(coolingTime = 60) {
   const [time, settime] = useState<number>(0);
   const ref = useRef<null | number>(null);
@@ -52,6 +53,7 @@ export function Signup() {
 function BasicInfo() {
   const [form] = Form.useForm<FormValues>();
   const { api } = useHoFetch();
+  const { refresh } = useCurrentUser({ manual: true });
   const go = useRedirect({ defaultPath: () => getPathByRouter("/profile/basic") });
   const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>
     api["/passport/signup/email_captcha"].post({
@@ -69,6 +71,7 @@ function BasicInfo() {
       },
     });
     go();
+    refresh();
   });
   const { message } = useContext(AndContext);
   return (

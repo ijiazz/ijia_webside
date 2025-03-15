@@ -30,7 +30,7 @@ const defaultMessage: Msg | undefined = CAN_HASH_PASSWORD
       title: "当前环境无法对密码进行加密，你的密码将以明文发送到服务器！",
     };
 export function LoginPage() {
-  const go = useRedirect({ defaultPath: () => getPathByRouter("/profile/basic") });
+  const go = useRedirect({ defaultPath: () => getPathByRouter("/live") });
   const [loginType, setLoginType] = useState<LoginType>(LoginType.id);
   const [message, setMessage] = useState<Msg | undefined>(defaultMessage);
   const { api } = useHoFetch();
@@ -209,7 +209,8 @@ type IdLoginParam = {
 async function getLoinParam(loginType: LoginType, param: IdLoginParam) {
   let loginParam: UserLoginParamDto | undefined;
   const id = param.id;
-  if (/\d+/.test(id)) {
+
+  if (/^\d+$/.test(id)) {
     loginParam = {
       method: LoginType.id,
       id: (param as IdLoginParam).id,

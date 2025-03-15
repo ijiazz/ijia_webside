@@ -1,14 +1,22 @@
 import { DbUserCreate, user } from "@ijia/data/db";
 import { v, dbPool } from "@ijia/data/yoursql";
-
-export async function initUser() {
+import { api } from "@/__mocks__/fetch.ts";
+import { LoginType } from "@/api.ts";
+export const E2E_PASSWORD = {
+  saved:
+    "7bb09a5da06c0db9593efcc439f9c289ac446c084d57b6035e2b8b4d3b1b5d3034091ca9a58ab83d695974a67301df687e7db252d17e57c0089c589155f1676e",
+  salt: "3a150d2378a64a49b7ca8d7e80bb51ab",
+  raw: "123",
+};
+export async function createOverwriteUser(uid: number, email: string, option: { name?: string } = {}) {
   const userData: DbUserCreate = {
     //@ts-ignore
-    id: 100,
-    email: "e2e_login@ijiazz.cn",
-    password:
-      "e37d861e94d33c79b2b201280ad3ce78cca10b8b715abd637262db63d6fc41e43f13e03bf72878e12586a8d0937d12b34c2dd6847f8d369bb2e0511081cea0bc",
-    pwd_salt: "3a150d2378a64a49b7ca8d7e80bb51ab",
+    id: uid,
+    email: email,
+    //123
+    password: E2E_PASSWORD.saved,
+    pwd_salt: E2E_PASSWORD.salt,
+    nickname: option.name,
   };
   await using q = dbPool.begin();
 
@@ -27,6 +35,27 @@ export async function initUser() {
   return {
     id: 100,
     email: userData.email,
-    password: "e2e_login@ijiazz.cn",
+    password: E2E_PASSWORD.raw,
   };
+}
+
+export function initAlice() {
+  return createOverwriteUser(100, "alice@ijiazz.cn");
+}
+export function initBob() {
+  return createOverwriteUser(101, "bob@ijiazz.cn");
+}
+
+export async function loginGetToken(email: string, pwd: string) {
+  const { sessionId } = await api["/captcha/image"].post();
+  const { token } = await api["/passport/login"].post({
+    body: {
+      method: LoginType.email,
+      email,
+      password: pwd,
+      passwordNoHash: true,
+      captcha: { selectedIndex: [0, 1, 2], sessionId },
+    },
+  });
+  return token;
 }

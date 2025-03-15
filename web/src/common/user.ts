@@ -3,6 +3,8 @@ import { useHoFetch } from "@/hooks/http.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { useEffect, useMemo } from "react";
 import { toFileUrl } from "./http.ts";
+import Cookie from "js-cookie";
+import { getUrlByRouter } from "./nav.ts";
 
 export type UserProfileBasic = UserBasicDto & {
   userIdStr: string;
@@ -38,6 +40,19 @@ export function useCurrentUser(option: { manual?: boolean } = {}) {
     return {
       ...result,
       refresh: () => run(true).then(() => userEvent.dispatchEvent(new Event("refresh"))),
+      logout() {
+        reset();
+        user = undefined;
+        userLogout();
+      },
     };
   }, [result]);
+}
+
+export function userLogout() {
+  Cookie.remove("jwt-token");
+  location.href = getUrlByRouter("/passport/login");
+}
+export function loginByAccessToken(jwtToken: string) {
+  Cookie.set("jwt-token", jwtToken);
 }

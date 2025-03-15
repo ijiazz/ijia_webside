@@ -2,7 +2,7 @@ import { user, user_profile } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import { signJwt } from "@/global/jwt.ts";
 import { ENV } from "@/global/config.ts";
-import { digestSha512ToHex } from "./password.ts";
+import { hashPasswordBackEnd } from "./password.ts";
 import { HttpError } from "@/global/errors.ts";
 
 type LoginUserInfo = {
@@ -26,7 +26,7 @@ export class LoginService {
     if (!user) throw new HttpError(401, { message: "账号或密码错误" });
 
     if (user.pwd_salt && user.password) {
-      inputPassword = await digestSha512ToHex(inputPassword + user.pwd_salt);
+      inputPassword = await hashPasswordBackEnd(inputPassword, user.pwd_salt);
     }
     if (typeof inputPassword !== "string" || user.password !== inputPassword)
       throw new HttpError(401, { message: "账号或密码错误" });
@@ -57,7 +57,7 @@ export class LoginService {
     let salt: string | undefined;
     if (typeof userInfo.password === "string") {
       salt = crypto.randomUUID().replaceAll("-", ""); //16byte
-      password = await digestSha512ToHex(userInfo.password + salt);
+      password = await hashPasswordBackEnd(userInfo.password, salt);
     }
     await using conn = await dbPool.begin();
     const userId = await conn
@@ -71,7 +71,7 @@ export class LoginService {
   }
   async changePassword(uid: number, oldPwd: string, newPwd: string) {
     const salt = crypto.randomUUID().replaceAll("-", ""); //16byte
-    const password = await digestSha512ToHex(newPwd + salt);
+    const password = await hashPasswordBackEnd(newPwd, salt);
 
     await using conn = dbPool.begin("REPEATABLE READ");
     const userInfo: LoginUserInfo | undefined = await conn
