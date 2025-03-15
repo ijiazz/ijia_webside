@@ -17,7 +17,6 @@ async function createRuntimeServeStatic(options: ServeStaticOptions): Promise<Mi
 }
 
 export async function addServeStatic(hono: Hono) {
-  //TODO 控制 OOS 访问
   let rootDir = path.resolve(ENV.OOS_ROOT_DIR!);
   if (platform() === "win32") rootDir = path.relative(".", rootDir); // hono@4.617 的 serveStatic 在 Windows 上存在bug (https://github.com/honojs/hono/issues/3475)
   console.log("useStatic", rootDir);
@@ -25,7 +24,11 @@ export async function addServeStatic(hono: Hono) {
     "/file/*",
     await createRuntimeServeStatic({
       rewriteRequestPath(path) {
-        return path.replace(/^\/file\//, "/");
+        const file = path.replace(/^\/file\//, "/");
+        if (/^\/avatar\//.test(file)) return file;
+        //TODO 需要检测 cookie
+        //TODO 控制 OOS 访问
+        return file;
       },
       root: rootDir,
     }),

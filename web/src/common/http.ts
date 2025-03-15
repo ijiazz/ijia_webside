@@ -31,3 +31,12 @@ export function getResponseErrorInfo(body: unknown): { message?: string; code?: 
   }
   return;
 }
+
+export function toFileUrl(path?: undefined | null): undefined;
+export function toFileUrl(path: string): string;
+export function toFileUrl(path?: string | null): string | undefined;
+export function toFileUrl(path?: string | null): string | undefined {
+  if (!path) return;
+  if (path.startsWith("/")) path = path.slice(1);
+  return `${location.origin}/file/${path}`;
+}

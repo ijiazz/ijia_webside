@@ -21,7 +21,9 @@ export function StudentIdCard(props: StudentIdCardInfo & { loading?: boolean }) 
       <div className="student-card-header">{studentInfo.isOfficial ? "IJIA 学院" : "未认证"}</div>
       <div className="student-card-body">
         <div className="student-card-content">
-          <Avatar size={80} alt={props.name} src={props.avatarUrl}></Avatar>
+          <Avatar size={80} src={props.avatarUrl}>
+            {props.name}
+          </Avatar>
           <div className="student-card-info-core">
             <div className="student-card-name">{studentInfo.name ?? "--"}</div>
             <div className="student-card-id">学号：{studentInfo.id ?? "--"}</div>

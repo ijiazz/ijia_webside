@@ -8,11 +8,21 @@ export enum Mode {
   Dev = "DEV",
   Prod = "PROD",
 }
+const MODE = Boolean(env.VITEST) ? Mode.Test : (env.MODE ?? Mode.Dev);
+function getJwtKey() {
+  if (env.JWT_KEY) return env.JWT_KEY;
+
+  if (MODE === Mode.Dev) {
+    console.warn("DEV 模式下未设置 JWT_KEY, 将使用固定值");
+    return "123";
+  }
+  return crypto.randomUUID();
+}
 export const ENV = {
-  MODE: Boolean(env.VITEST) ? Mode.Test : (env.MODE ?? Mode.Dev),
+  MODE,
   OOS_ROOT_DIR: env.OOS_ROOT_DIR,
   CHECK_SERVER: env.CHECK_SERVER,
-  JWT_KEY: env.JWT_KEY ?? crypto.randomUUID(),
+  JWT_KEY: getJwtKey(),
 
   SIGNUP_VERIFY_EMAIL: !!env.SIGNUP_VERIFY_EMAIL,
   REDIS_CONNECT_URL: env.REDIS_CONNECT_URL,

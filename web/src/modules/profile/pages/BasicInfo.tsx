@@ -22,10 +22,19 @@ import { useCurrentUser } from "@/common/user.ts";
 import styled from "@emotion/styled";
 import { Meta } from "@/lib/components/Meta.tsx";
 import { BindAccountDto, UserProfileDto } from "@/api.ts";
+import { toFileUrl } from "@/common/http.ts";
 
 export function BasicInfoPage() {
   const { api } = useHoFetch();
-  const { result, run } = useAsync(() => api["/user/profile"].get(), { autoRunArgs: [] });
+  const { result, run } = useAsync(
+    () => {
+      return api["/user/profile"].get().then((res) => ({
+        ...res,
+        bind_accounts: res.bind_accounts.map((item) => ({ ...item, avatar_url: toFileUrl(item.avatar_url) })),
+      }));
+    },
+    { autoRunArgs: [] },
+  );
 
   return (
     <div>
@@ -171,7 +180,10 @@ function BindAccountList(props: { profileResult: UseAsyncResult<UserProfileDto>;
                   key={key}
                   content={
                     <div>
-                      <Meta icon={account.avatar_url} title={account.user_name}></Meta>
+                      <Meta
+                        icon={<Avatar src={account.avatar_url}>{account.user_name}</Avatar>}
+                        title={account.user_name}
+                      ></Meta>
                       <Space>
                         <Button
                           size="small"
@@ -191,7 +203,9 @@ function BindAccountList(props: { profileResult: UseAsyncResult<UserProfileDto>;
                     </div>
                   }
                 >
-                  <Avatar key={key} alt={account.user_name ?? ""} src={account.avatar_url}></Avatar>
+                  <Avatar key={key} src={account.avatar_url}>
+                    {account.user_name}
+                  </Avatar>
                 </Popover>
               );
             })}

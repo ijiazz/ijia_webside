@@ -52,7 +52,7 @@ export async function getUserProfile(userId: number): Promise<UserProfileDto> {
     .fromAs("u")
     .select<UserProfileDto>({
       user_id: "id",
-      avatar_url: "avatar",
+      avatar_url: "'avatar/'||avatar",
       nickname: true,
       primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,
       bind_accounts: `(SELECT json_agg(row_to_json(accounts)) FROM ${getUserBindAccount(userId).toSelect()} AS accounts)`,
@@ -91,7 +91,7 @@ function getUserBindAccount(userId: number) {
       pla_uid: "bind.pla_uid",
       user_id: "bind.user_id",
       user_name: "pla_user.user_name",
-      avatar_url: "pla_user.avatar",
+      avatar_url: "'avatar/'||pla_user.avatar",
       create_time: "bind.create_time",
       key: "bind.platform||'-'||bind.pla_uid",
     });
