@@ -1,16 +1,24 @@
 import type { Platform } from "@ijia/data/db";
 
-export type UserProfileDto = {
+export type UserBasicDto = {
   user_id: number;
   nickname?: string;
   avatar_url?: string;
   /** 是否已认证 */
   is_official?: boolean;
-  bind_accounts: BindAccountDto[];
   primary_class?: {
     class_id: number;
     class_name: string;
   };
+};
+export type UserProfileDto = UserBasicDto & {
+  bind_accounts: BindAccountDto[];
+  notice_setting?: UserNoticeSettingDto;
+};
+
+export type UserNoticeSettingDto = {
+  /** 是否接收直播通知 */
+  live?: boolean | null;
 };
 export type BindAccountDto = {
   platform: Platform;
@@ -58,10 +66,7 @@ export type DeleteBindPlatformParam = {
 };
 export type UpdateUserProfileParam = {
   /** 班级 */
-  publicClassId?: number | null;
+  primary_class_id?: number | null;
 
-  notice?: {
-    /** 是否接收直播通知 */
-    live?: boolean;
-  };
+  notice_setting?: UserNoticeSettingDto;
 };

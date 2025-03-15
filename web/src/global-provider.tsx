@@ -4,6 +4,7 @@ import { AndContext } from "@/hooks/antd.ts";
 import { ApiContext, IGNORE_ERROR_MSG } from "@/hooks/http.ts";
 import { createHoFetch, getResponseErrorInfo } from "@/common/http.ts";
 import { useNavigate } from "react-router";
+import { getUrlByRouter } from "./common/nav.ts";
 export const useToken = theme.useToken;
 
 export function AntdProvider(props: PropsWithChildren<{}>) {
@@ -48,8 +49,12 @@ function useCreateHoFetch() {
       if (res.status === 401 && err?.code === "REQUIRED_LOGIN") {
         const s = new URLSearchParams();
         const url = new URL(location.href);
-        s.set("redirect", url.pathname + url.search + url.hash);
-        navigate("/passport/login?" + s.toString(), {});
+        const target = url.pathname + url.search + url.hash;
+        const isLoginPage = location.href.startsWith(getUrlByRouter("/passport/login"));
+        if (!isLoginPage) {
+          s.set("redirect", target);
+          navigate("/passport/login?" + s.toString(), {});
+        }
       }
 
       return res;

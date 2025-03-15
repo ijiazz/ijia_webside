@@ -6,9 +6,14 @@ export type RedirectOption = {
   /** 如果无法通过 key 从 URLSearchParam 获取到地址，则使用 defaultPath  */
   defaultPath?: string | (() => string);
 };
+
+/**
+ * 返回一个函数，调用后根据 searchParams 中的 key 跳转到指定地址，redirect 地址只能是路径，不能是完整 URL
+ */
 export function useRedirect(option: RedirectOption = {}) {
   const { defaultPath, key = "redirect" } = option;
   const [searchParams] = useSearchParams();
+
   return function () {
     let path = searchParams.get(key);
 
@@ -18,7 +23,7 @@ export function useRedirect(option: RedirectOption = {}) {
     }
 
     if (path && /^[\.\/]/.test(path)) {
-      location.href = location.origin + path;
+      location.href = path;
     }
   };
 }

@@ -11,7 +11,7 @@ import { optional, array } from "evlib/validator";
 import { loginService } from "./services/passport.service.ts";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
-import { Controller, PipeInput, PipeOutput, Post, ToArguments, ToResponse, Use } from "@asla/hono-decorator";
+import { Controller, PipeInput, PipeOutput, Post, ToArguments, Use } from "@asla/hono-decorator";
 import { checkValue } from "@/global/check.ts";
 import { integer } from "evlib/validator";
 import {
@@ -36,7 +36,7 @@ import { HonoContext } from "@/hono/type.ts";
 export class PassportController {
   constructor() {}
 
-  @PipeInput(async function (ctx) {
+  @ToArguments(async function (ctx) {
     const body = await ctx.req.json();
     const param = checkValue(body, {
       email: "string",
@@ -46,11 +46,11 @@ export class PassportController {
       emailCaptcha: emailCaptchaReplyChecker(),
     });
 
-    return param;
+    return [param, ENV.SIGNUP_VERIFY_EMAIL];
   })
   @Post("/passport/signup")
-  async createUser(body: CreateUserProfileParam): Promise<CreateUserProfileResult> {
-    if (ENV.SIGNUP_VERIFY_EMAIL) {
+  async createUser(body: CreateUserProfileParam, verifyEmail?: boolean): Promise<CreateUserProfileResult> {
+    if (verifyEmail) {
       const pass = await emailCaptchaService.verify(body.emailCaptcha!, body.email);
       if (!pass) throw new HttpCaptchaError();
     }

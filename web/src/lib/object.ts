@@ -14,7 +14,7 @@ export function isEqual(obj1: any, obj2: any) {
   } else {
     const key1 = Object.keys(obj1);
     const key2 = Object.keys(obj2);
-    if (key2 !== key1) return false;
+    if (key2.length !== key1.length) return false;
     const key2Set = new Set(key2);
     for (const key of key1) {
       if (!key2Set.has(key)) {

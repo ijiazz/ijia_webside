@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type UseAsyncResult<T, A extends any[]> = {
+export type UseAsync<T, A extends any[]> = {
   run(...args: A): Promise<T>;
   reset(result?: T, error?: any): void;
-  result: AsyncResult<T>;
+  result: UseAsyncResult<T>;
 };
 export type UserAsyncOption<T, Args extends any[] = []> = {
   autoRunArgs?: Args;
-  defaultState?: AsyncResult<T>;
+  defaultState?: UseAsyncResult<T>;
 };
-type AsyncResult<T> = {
+export type UseAsyncResult<T> = {
   loading: boolean;
   error?: any;
   value?: T;
@@ -17,9 +17,9 @@ type AsyncResult<T> = {
 export function useAsync<T, Args extends any[] = []>(
   fn: (...args: Args) => Promise<T> | T,
   option: UserAsyncOption<T, Args> = {},
-): UseAsyncResult<T, Args> {
+): UseAsync<T, Args> {
   const { defaultState = { loading: false }, autoRunArgs } = option;
-  const [result, setResult] = useState<AsyncResult<T>>(defaultState);
+  const [result, setResult] = useState<UseAsyncResult<T>>(defaultState);
   const fnRef = useRef(fn);
   fnRef.current = fn;
   const loadingPromise = useRef<Promise<any>>(undefined);
@@ -30,10 +30,10 @@ export function useAsync<T, Args extends any[] = []>(
       loadingPromise.current = promise;
       promise
         .then(
-          (res): AsyncResult<T> => {
+          (res): UseAsyncResult<T> => {
             return { value: res, error: undefined, loading: false };
           },
-          (error): AsyncResult<T> => {
+          (error): UseAsyncResult<T> => {
             return { error, value: undefined, loading: false };
           },
         )

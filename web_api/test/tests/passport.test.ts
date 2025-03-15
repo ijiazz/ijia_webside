@@ -71,6 +71,12 @@ describe("登录", function () {
       loginUseCaptcha(api, { id: "2022", method: LoginType.id, password: password_123 }),
     ).rejects.throwErrorEqualBody(401, { message: "账号或密码错误" });
   });
+  test("已删除的用户不能登录", async function ({ api }) {
+    await user.update({ is_deleted: "true" }).where(`id=2022`).query();
+    await expect(
+      loginUseCaptcha(api, { id: "2022", method: LoginType.id, password: password_123 }),
+    ).rejects.throwErrorEqualBody(401, { message: "账号或密码错误" });
+  });
   async function loginUseCaptcha(api: Api, body: UserLoginParamDto) {
     const captcha = await createCaptchaSession();
     return api["/passport/login"].post({ body: { ...body, captcha } });

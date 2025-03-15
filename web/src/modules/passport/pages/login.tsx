@@ -17,6 +17,7 @@ import { VideoBg } from "../components/VideoBg.tsx";
 import { IGNORE_ERROR_MSG, useHoFetch } from "@/hooks/http.ts";
 import { useRedirect } from "@/hooks/redirect.ts";
 import { getPathByRouter } from "@/common/nav.ts";
+import { useCurrentUser } from "@/common/user.ts";
 
 type Msg = {
   type?: "info" | "success" | "error" | "warning";
@@ -52,8 +53,12 @@ export function LoginPage() {
         });
       });
     }
-    if (result.success) go();
+    if (result.success) {
+      refresh();
+      go();
+    }
   });
+  const { refresh } = useCurrentUser({ manual: true });
   const loginLoading = value.loading;
 
   const windowSize = useWindowResize();

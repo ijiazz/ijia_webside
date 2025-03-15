@@ -1,4 +1,4 @@
-import { user } from "@ijia/data/db";
+import { user, user_profile } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import { signJwt } from "@/global/jwt.ts";
 import { ENV } from "@/global/config.ts";
@@ -59,12 +59,14 @@ export class LoginService {
       salt = crypto.randomUUID().replaceAll("-", ""); //16byte
       password = await digestSha512ToHex(userInfo.password + salt);
     }
-    const userId = user
-      .insert({ email, password: password, pwd_salt: salt })
-      .returning<{ user_id: number }>({ user_id: "id" })
-      .queryRows()
-      .then((item) => item[0].user_id);
-
+    await using conn = await dbPool.begin();
+    const userId = await conn
+      .queryRows(
+        user.insert({ email, password: password, pwd_salt: salt }).returning<{ user_id: number }>({ user_id: "id" }),
+      )
+      .then((rows) => rows[0].user_id);
+    await conn.queryCount(user_profile.insert({ user_id: userId }));
+    await conn.commit();
     return userId;
   }
   async changePassword(uid: number, oldPwd: string, newPwd: string) {

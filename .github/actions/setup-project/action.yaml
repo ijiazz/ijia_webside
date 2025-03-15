@@ -14,5 +14,3 @@ runs:
       shell: bash
     - run: pnpm init-deps
       shell: bash
-    - run: pnpm install
-      shell: bash

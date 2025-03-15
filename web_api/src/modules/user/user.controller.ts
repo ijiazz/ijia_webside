@@ -1,30 +1,22 @@
-import {
-  user,
-  enumPlatform,
-  Platform,
-  pla_user,
-  user_platform_bind,
-  dclass,
-  user_class_bind,
-  PUBLIC_CLASS_ROOT_ID,
-} from "@ijia/data/db";
+import { enumPlatform, Platform, pla_user, user_platform_bind, user_profile } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import {
   BindPlatformCheckDto,
   BindPlatformCheckParam,
   BindPlatformParam,
   UpdateUserProfileParam,
+  UserBasicDto,
   UserProfileDto,
 } from "./user.dto.ts";
 import { array, enumType, optional, stringMatch } from "evlib/validator";
 import { Controller, Delete, Get, Patch, PipeInput, Post, ToArguments, Use } from "@asla/hono-decorator";
 import { HonoContext } from "@/hono/type.ts";
-import { checkValueAsync } from "@/global/check.ts";
+import { checkValue, checkValueAsync } from "@/global/check.ts";
 import { autoBody } from "@/global/pipe.ts";
 import { rolesGuard } from "@/global/auth.ts";
 import { HttpError } from "@/global/errors.ts";
 import { getCheckerServer, getUerSecIdFromShareUrl, PlatformUserBasicInfoCheckResult } from "@/services/douyin.ts";
-import { deletePublicClassOfUser, setUserPublicClass } from "./user.service.ts";
+import { deletePublicClassOfUser, getUserBasic, getUserProfile, setUserPublicClass } from "./user.service.ts";
 import { toErrorStr } from "evlib";
 import { ENV, Mode } from "@/global/config.ts";
 
@@ -144,27 +136,46 @@ export class UserController {
       bind: bindInfo,
     };
   }
+  @PipeInput(getUserId)
+  @Get("/user/basic_info")
+  async getUserBasic(userId: number): Promise<UserBasicDto> {
+    return getUserBasic(userId);
+  }
 
   @PipeInput(getUserId)
   @Get("/user/profile")
-  async getUser(userId: number): Promise<UserProfileDto> {
-    const users = await user
-      .fromAs("u")
-      .select<UserProfileDto>({
-        user_id: "id",
-        avatar_url: "avatar",
-        nickname: true,
-        primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,
-        bind_accounts: `(SELECT json_agg(row_to_json(accounts)) FROM ${getUserBindAccount(userId).toSelect()} AS accounts)`,
-      })
-      .where(`u.id=${v(userId)}`)
-      .limit(1)
-      .queryRows();
-    if (!users.length) throw new HttpError(400, { message: "用户不存在" });
-    const userInfo = users[0];
-    if (!userInfo.bind_accounts) userInfo.bind_accounts = [];
-    userInfo.is_official = userInfo.bind_accounts.length > 0;
-    return userInfo;
+  async getUserProfile(userId: number): Promise<UserProfileDto> {
+    return getUserProfile(userId);
+  }
+
+  @ToArguments(async function (ctx: HonoContext) {
+    const jwtInfo = await ctx.get("userInfo").getJwtInfo();
+    const body = await checkValueAsync(ctx.req.json(), "object");
+    return [+jwtInfo.userId, body];
+  })
+  @Patch("/user/profile")
+  async updateUserProfile(userId: number, body: UpdateUserProfileParam): Promise<void> {
+    const { notice_setting, primary_class_id } = body;
+    await using db = dbPool.begin();
+    if (primary_class_id !== undefined) {
+      const classId = checkValue(primary_class_id, optional("number", null)) as number | null;
+      const count = await db.queryCount(deletePublicClassOfUser(userId));
+      if (body.primary_class_id !== null) {
+        const count = await db.queryCount(setUserPublicClass(userId, classId));
+        if (count === 0) throw new HttpError(409, { message: "班级不存在" });
+      }
+    }
+    if (notice_setting) {
+      if (notice_setting.live !== undefined) {
+        const sql = user_profile
+          .insert({ user_id: userId, live_notice: notice_setting.live })
+          .onConflict("user_id")
+          .doUpdate({ live_notice: v(notice_setting.live) });
+
+        await db.queryCount(sql);
+      }
+    }
+    await db.commit();
   }
 
   @ToArguments(async function (ctx) {
@@ -180,61 +191,13 @@ export class UserController {
   async syncPlatformAccount(userId: number, param: { platform: Platform; pla_uid: string }): Promise<void> {
     //TODO
   }
-
-  @ToArguments(async function (ctx: HonoContext) {
-    const jwtInfo = await ctx.get("userInfo").getJwtInfo();
-    const body = await checkValueAsync(ctx.req.json(), "object");
-    return [+jwtInfo.userId, body];
-  })
-  @Patch("/user/profile")
-  async updateUserProfile(userId: number, body: UpdateUserProfileParam): Promise<void> {
-    await using db = dbPool.begin();
-    if (body.publicClassId !== undefined) {
-      const count = await db.queryCount(deletePublicClassOfUser(userId));
-      if (body.publicClassId !== null) {
-        const count = await db.queryCount(setUserPublicClass(userId, body.publicClassId));
-        if (count === 0) throw new HttpError(409, { message: "班级不存在" });
-      }
-    }
-    if (body.notice) {
-    }
-    await db.commit();
-  }
 }
 
 async function getUserId(ctx: HonoContext) {
   const jwtInfo = await ctx.get("userInfo").getJwtInfo();
   return +jwtInfo.userId;
 }
-function getUserPublicClass(userId: number) {
-  return user_class_bind
-    .fromAs("bind_class")
-    .innerJoin(dclass, "class", [
-      `bind_class.user_id=${v(userId)}`,
-      "bind_class.class_id=class.id",
-      `class.parent_class_id=${PUBLIC_CLASS_ROOT_ID}`,
-    ])
-    .select(["bind_class.class_id", "class.class_name"])
-    .limit(1);
-}
-function getUserBindAccount(userId: number) {
-  return user_platform_bind
-    .fromAs("bind")
-    .innerJoin(pla_user, "pla_user", [
-      "bind.platform=pla_user.platform",
-      `bind.user_id=${v(userId)}`,
-      "bind.pla_uid=pla_user.pla_uid",
-    ])
-    .select({
-      platform: "bind.platform",
-      pla_uid: "bind.pla_uid",
-      user_id: "bind.user_id",
-      user_name: "pla_user.user_name",
-      avatar_url: "pla_user.avatar",
-      create_time: "bind.create_time",
-      key: "bind.platform||'-'||bind.pla_uid",
-    });
-}
+
 function checkSignatureStudentId(userId: number | string, signature?: string) {
   if (typeof signature !== "string") return false;
   return signature.includes(`IJIA学号：<${userId}>`);

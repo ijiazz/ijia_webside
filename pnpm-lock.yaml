@@ -122,6 +122,9 @@ importers:
       classnames:
         specifier: ^2.5.1
         version: 2.5.1
+      evlib:
+        specifier: ^3.1.1
+        version: 3.1.1
       js-cookie:
         specifier: ^3.0.5
         version: 3.0.5

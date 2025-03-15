@@ -13,8 +13,7 @@
     "lineWidth": 120
   },
   "imports": {
-    "@/": "./src/",
-    "@asla/hono-decorator": "./src/hono-decorator/src/mod.ts"
+    "@/": "./src/"
   },
   "compilerOptions": {}
 }

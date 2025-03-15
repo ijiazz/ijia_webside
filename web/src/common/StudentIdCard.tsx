@@ -10,11 +10,14 @@ export type StudentIdCardInfo = {
   isOfficial?: boolean;
 };
 
+const WIDTH_HEIGHT = 85.6 / 53.98;
 export function StudentIdCard(props: StudentIdCardInfo & { loading?: boolean }) {
   const studentInfo = props;
   const token = useThemeToken();
+  const HEIGHT = 220;
+  const WIDTH = HEIGHT * WIDTH_HEIGHT;
   return (
-    <StudentIdCardCss style={{ backgroundColor: token.colorBgBase }}>
+    <StudentIdCardCSS style={{ height: HEIGHT, width: WIDTH, backgroundColor: token.colorBgBase }}>
       <div className="student-card-header">{studentInfo.isOfficial ? "IJIA 学院" : "未认证"}</div>
       <div className="student-card-body">
         <div className="student-card-content">
@@ -26,16 +29,14 @@ export function StudentIdCard(props: StudentIdCardInfo & { loading?: boolean }) 
           </div>
         </div>
       </div>
-    </StudentIdCardCss>
+    </StudentIdCardCSS>
   );
 }
-const StudentIdCardCss = styled.div`
+const StudentIdCardCSS = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  width: 85.6mm;
-  height: 53.98mm;
   border-radius: 8px;
   padding: 16px;
   margin: 8px;
