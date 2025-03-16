@@ -6,22 +6,35 @@ RUN corepack enable && corepack prepare pnpm@10.4.0 --activate
 WORKDIR /build
 ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
 
-
-FROM prepare AS build
+FROM prepare AS install
 ADD ./deps/ijia-data/package.json ./deps/ijia-data/package.json
 ADD ./deps/hono-decorator/package.json ./deps/hono-decorator/package.json
 ADD ./web_api/package.json ./web_api/package.json
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
+FROM install as ijia-data
 ADD ./deps/ijia-data/tsconfig.json ./deps/ijia-data/
 ADD ./deps/ijia-data/build ./deps/ijia-data/build
 ADD ./deps/ijia-data/src ./deps/ijia-data/src
 RUN pnpm run init-ijia-data
 
+FROM install as hono-decorator
 ADD ./deps/hono-decorator/tsconfig.json ./deps/hono-decorator/
 ADD ./deps/hono-decorator/build ./deps/hono-decorator/build
 ADD ./deps/hono-decorator/src ./deps/hono-decorator/src
 RUN pnpm run init-hono-decorator
+
+FROM install as hofetch
+ADD ./deps/hofetch/tsconfig.json ./deps/hofetch/package.json ./deps/hofetch/
+ADD ./deps/hofetch/build ./deps/hofetch/build
+ADD ./deps/hofetch/src ./deps/hofetch/src
+RUN pnpm run init-hofetch
+
+FROM install AS build
+
+COPY --from=ijia-data /build/deps/ijia-data ./deps/ijia-data
+COPY --from=hono-decorator /build/deps/hono-decorator ./deps/hono-decorator
+COPY --from=hofetch /build/deps/hofetch ./deps/hofetch
 
 ADD ./web_api/tsconfig.json ./web_api/
 ADD ./web_api/build ./web_api/build
