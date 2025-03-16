@@ -1,8 +1,18 @@
 import { expect, beforeEach, describe } from "vitest";
 import { test, Context, Api } from "../fixtures/hono.ts";
-import { dclass, pla_user, Platform, PUBLIC_CLASS_ROOT_ID, user_class_bind, user_platform_bind } from "@ijia/data/db";
+import {
+  dclass,
+  pla_user,
+  Platform,
+  PUBLIC_CLASS_ROOT_ID,
+  user,
+  user_avatar,
+  user_class_bind,
+  user_platform_bind,
+} from "@ijia/data/db";
 import { BindPlatformParam, UpdateUserProfileParam, userController } from "@/modules/user/mod.ts";
 import { applyController } from "@asla/hono-decorator";
+import { bindPlatformAccount } from "@/modules/user/user.service.ts";
 
 import { loginService } from "@/modules/passport/services/passport.service.ts";
 import { v } from "@ijia/data/yoursql";
@@ -53,20 +63,19 @@ describe("bind", function () {
     });
   });
   test("绑定", async function ({ api }) {
-    function AliceBind(account: BindPlatformParam["account"]) {
+    function AliceBind(api: Api, account: BindPlatformParam["account"]) {
       return api["/user/bind_platform"].post({
         body: { account },
         [JWT_KEY]: AliceToken,
       });
     }
-
-    await AliceBind({ platform: Platform.douYin, pla_uid: "d0" });
+    await AliceBind(api, { platform: Platform.douYin, pla_uid: "d0" });
     await expect(getUserBindCount(AliceId), "成功绑定第1个账号").resolves.toBe(1);
 
-    await AliceBind({ platform: Platform.douYin, pla_uid: "d1" });
+    await AliceBind(api, { platform: Platform.douYin, pla_uid: "d1" });
     await expect(getUserBindCount(AliceId), "成功绑定第2个账号").resolves.toBe(2);
 
-    await expect(AliceBind({ platform: Platform.douYin, pla_uid: "d2" })).rejects.responseStatus(403);
+    await expect(AliceBind(api, { platform: Platform.douYin, pla_uid: "d2" })).rejects.responseStatus(403);
     await expect(getUserBindCount(AliceId)).resolves.toBe(2);
   });
   // 暂时不处理
@@ -96,6 +105,42 @@ describe("bind", function () {
     await expect(getUserBindCount(AliceId), "原来绑定的用户被取消绑定").resolves.toBe(0);
 
     await expect(userBind(BobToken, { platform: Platform.douYin, pla_uid: "d1" })).rejects.responseStatus(409);
+  });
+  test("同步信息", async function ({ api, ijiaDbPool }) {
+    await pla_user
+      .insert([
+        { pla_uid: "alice", platform: Platform.douYin, user_name: "Alice" },
+        { pla_uid: "bob", platform: Platform.douYin, user_name: "Bob" },
+      ])
+      .queryCount();
+    await bindPlatformAccount(AliceId, Platform.douYin, "alice", true);
+
+    await api["/user/profile/sync"].post({
+      body: { bindKey: `${Platform.douYin}-alice` },
+      [JWT_KEY]: AliceToken,
+    });
+
+    await expect(getUserInfo(AliceId), "成功同步平台账号").resolves.toMatchObject({
+      nickname: "Alice",
+    });
+
+    await expect(
+      api["/user/profile/sync"].post({
+        body: { bindKey: `${Platform.douYin}-bob` },
+        [JWT_KEY]: AliceToken,
+      }),
+      "不允许同步自己没绑定的账号",
+    ).rejects.responseStatus(403);
+    await expect(getUserInfo(AliceId), "仍然使用之前的印象").resolves.toMatchObject({
+      nickname: "Alice",
+    });
+    function getUserInfo(uid: number) {
+      return user
+        .select({ avatar: true, nickname: true })
+        .where(`id=${v(uid)}`)
+        .queryRows()
+        .then((res) => res[0]);
+    }
   });
   function getUserBindCount(userId: number) {
     return user_platform_bind

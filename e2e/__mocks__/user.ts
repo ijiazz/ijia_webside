@@ -8,7 +8,16 @@ export const E2E_PASSWORD = {
   salt: "3a150d2378a64a49b7ca8d7e80bb51ab",
   raw: "123",
 };
-export async function createOverwriteUser(uid: number, email: string, option: { name?: string } = {}) {
+export type AccountInfo = {
+  id: number;
+  email: string;
+  password: string;
+};
+export async function createOverwriteUser(
+  uid: number,
+  email: string,
+  option: { name?: string } = {},
+): Promise<AccountInfo> {
   const userData: DbUserCreate = {
     //@ts-ignore
     id: uid,

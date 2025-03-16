@@ -29,14 +29,23 @@ export class CheckServer {
   ) {
     this.checkerServer = serverUrl;
   }
-  async getUserInfo(platform: Platform, secUid: string, option: { save?: boolean }): Promise<PlatformUserBasicInfo> {
+  /**
+   * 获取平台用户信息
+   * @param pla_uid 抖音是 sec_id
+   */
+  async getUserInfo(
+    platform: Platform,
+    pla_uid: string,
+    option: { save?: boolean } = {},
+  ): Promise<PlatformUserBasicInfo> {
     const url = new URL(`${this.checkerServer}/user_info/${platform}`);
-    url.searchParams.set("uid", secUid);
+    url.searchParams.set("uid", pla_uid);
     if (option.save) url.searchParams.set("save", "true");
     const res = await fetch(url);
     return res.json() as Promise<any>;
   }
   /**
+   * 查看平台用户是否按要求添加了属于 id 的认证信息
    * @param pla_uid 抖音是 sec_id
    */
   async checkPlatformUserInfo(pla_uid: string, id: string | number) {
@@ -49,6 +58,7 @@ export class CheckServer {
     return res.json() as Promise<PlatformUserBasicInfoCheckResult>;
   }
 
+  /** 查看平台用户是否正在直播 */
   async userIsLive(secUid: string): Promise<0 | 1> {
     const url = new URL(`${this.checkerServer}/user_is_live/${Platform.douYin}`);
     url.searchParams.set("uid", secUid);
@@ -65,9 +75,6 @@ export function getCheckerServer() {
     checkServer = new CheckServer(url.password, url.origin);
   }
   return checkServer;
-}
-export function setCheckerServer(server: CheckServer) {
-  checkServer = server;
 }
 export type PlatformUserBasicInfo = {
   pla_uid: string;

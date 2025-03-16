@@ -20,7 +20,7 @@ export class LoginService {
         pwd_salt: true,
         login_ban: "get_bit(status, 0) ",
       })
-      .where(["is_deleted !=FALSE OR is_deleted is NULL", where]);
+      .where(["NOT is_deleted", where]);
   }
   private async expectPasswordIsEqual(user: LoginUserInfo | undefined, inputPassword: string): Promise<number> {
     if (!user) throw new HttpError(401, { message: "账号或密码错误" });

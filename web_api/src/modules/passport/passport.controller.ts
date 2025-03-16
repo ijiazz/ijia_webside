@@ -62,8 +62,8 @@ export class PassportController {
     }
 
     const userId = await loginService.createUser(body.email, { password: body.password });
-
-    return { userId };
+    const { token } = await this.signToken(userId);
+    return { userId, jwtKey: token };
   }
 
   @PipeInput(async function (ctx) {
@@ -160,12 +160,19 @@ export class PassportController {
         throw new HttpError(400, { message: "方法不允许" });
     }
 
-    const minute = 3 * 24 * 60; // 3 天后过期
-    const jwtKey = await loginService.signJwt(user.userId, minute);
+    const jwtKey = await this.signToken(user.userId);
 
     return {
       success: true,
       message: "登录成功",
+      token: jwtKey.token,
+    };
+  }
+  private async signToken(userId: number) {
+    const minute = 3 * 24 * 60; // 3 天后过期
+    const jwtKey = await loginService.signJwt(userId, minute);
+
+    return {
       token: jwtKey,
     };
   }

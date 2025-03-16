@@ -123,7 +123,7 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserProfileDto>; onPro
             label={
               <Space>
                 班级
-                <Tooltip title="一个学期只能修改一次">
+                <Tooltip title="选择班级后，可代表班级参加 IJIA 学院的考试，并可以生成班级头像大合照">
                   <QuestionCircleOutlined />
                 </Tooltip>
               </Space>
@@ -157,7 +157,7 @@ function BindAccountList(props: { profileResult: UseAsyncResult<UserProfileDto>;
   const { run: onRemoveBind, result: removeBindResult } = useAsync(async (item: BindAccountDto) => {
     await api["/user/bind_platform"].delete({ body: { bindKey: item.key } });
     message.success("已解除");
-    onAccountChange?.();
+    onAccountChange();
     onProfileChange?.();
   });
   const { run: refreshAccount, result: refreshAccountResult } = useAsync(async (item: BindAccountDto) => {
@@ -232,6 +232,7 @@ function BindAccountList(props: { profileResult: UseAsyncResult<UserProfileDto>;
           userId={user?.user_id}
           onBindSuccess={() => {
             setIsAddBind(false);
+            onAccountChange();
             onProfileChange?.();
           }}
         />
@@ -277,6 +278,7 @@ function PublicClassSelect(props: { value?: number; onChange?(value: number): vo
         if (!option) return false;
         return option.class_name.toUpperCase().includes(value.toUpperCase());
       }}
+      placeholder="选择班级"
     />
   );
 }

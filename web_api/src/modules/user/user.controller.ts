@@ -1,4 +1,4 @@
-import { enumPlatform, Platform, pla_user, user_platform_bind, user_profile } from "@ijia/data/db";
+import { enumPlatform, Platform, pla_user, user_platform_bind, user_profile, user } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import {
   BindPlatformCheckDto,
@@ -16,7 +16,14 @@ import { autoBody } from "@/global/pipe.ts";
 import { rolesGuard } from "@/global/auth.ts";
 import { HttpError } from "@/global/errors.ts";
 import { getCheckerServer, getUerSecIdFromShareUrl, PlatformUserBasicInfoCheckResult } from "@/services/douyin.ts";
-import { deletePublicClassOfUser, getUserBasic, getUserProfile, setUserPublicClass } from "./user.service.ts";
+import {
+  bindPlatformAccount,
+  checkSignatureStudentId,
+  deletePublicClassOfUser,
+  getUserBasic,
+  getUserProfile,
+  setUserPublicClass,
+} from "./user.service.ts";
 import { toErrorStr } from "evlib";
 import { ENV, Mode } from "@/global/config.ts";
 
@@ -41,25 +48,20 @@ export class UserController {
       },
     });
 
-    return [userId, value.account];
+    return [+userId, value.account];
   })
   @Post("/user/bind_platform")
-  async bindPlatform(userId: string, bind: BindPlatformParam["account"]) {
+  async bindPlatform(userId: number, bind: BindPlatformParam["account"]) {
     if (bind.platform !== Platform.douYin) throw new HttpError(409, { message: "暂不支持绑定该平台" });
-    const [plaUser] = await pla_user
-      .select<{ signature?: string }>({ signature: true })
-      .where(`platform=${v(bind.platform)} AND pla_uid=${v(bind.pla_uid)}`)
+    const [{ count }] = await user_platform_bind
+      .select("count(*) ::INT")
+      .where(`user_id=${v(userId)}`)
       .queryRows();
-    if (!plaUser) throw new HttpError(400, { message: "平台账号不存在" });
-    if (!checkSignatureStudentId(userId, plaUser.signature)) {
-      throw new HttpError(403, { message: "审核不通过。没有从账号检测到学号" });
+    if (count > 5) throw new HttpError(409, { message: "最多绑定5个平台账号" });
+    await bindPlatformAccount(userId, bind.platform, bind.pla_uid);
+    if (count === 0) {
+      await this.syncPlatformAccount(userId, bind);
     }
-    await using q = dbPool.begin();
-    await q.query(user_platform_bind.delete({ where: `platform=${v(bind.platform)} AND pla_uid=${v(bind.pla_uid)}` }));
-    await q.queryCount(
-      user_platform_bind.insert([{ pla_uid: bind.pla_uid, platform: bind.platform, user_id: +userId }]),
-    );
-    await q.commit();
   }
   @ToArguments(async function (ctx) {
     const { userId } = await ctx.get("userInfo").getJwtInfo();
@@ -189,7 +191,28 @@ export class UserController {
   })
   @Post("/user/profile/sync")
   async syncPlatformAccount(userId: number, param: { platform: Platform; pla_uid: string }): Promise<void> {
-    //TODO
+    if (ENV.MODE === Mode.Prod) await getCheckerServer().getUserInfo(param.platform, param.pla_uid, { save: true });
+
+    const targetData = user_platform_bind
+      .fromAs("bind")
+      .innerJoin(pla_user, "p_u", [`bind.platform=p_u.platform`, `bind.pla_uid=p_u.pla_uid`])
+      .select({
+        user_id: "bind.user_id",
+        platform: "p_u.platform",
+        pla_uid: "p_u.pla_uid",
+        user_name: "p_u.user_name",
+        avatar: "p_u.avatar",
+      })
+      .where([`bind.platform=${v(param.platform)}`, `bind.pla_uid=${v(param.pla_uid)}`, `bind.user_id=${v(userId)}`]);
+
+    const update = user.update({
+      avatar: "target.avatar",
+      nickname: "target.user_name",
+    });
+    const sql = `${update.toString()} FROM ${targetData.toSelect()} AS target WHERE public.user.id=target.user_id`;
+    const count = await dbPool.queryCount(sql);
+    if (count === 0) throw new HttpError(403, { message: "账号不存在" });
+    if (count !== 1) throw new Error("修改超过一个账号" + sql);
   }
 }
 
@@ -198,10 +221,6 @@ async function getUserId(ctx: HonoContext) {
   return +jwtInfo.userId;
 }
 
-function checkSignatureStudentId(userId: number | string, signature?: string) {
-  if (typeof signature !== "string") return false;
-  return signature.includes(`IJIA学号：<${userId}>`);
-}
 export const userController = new UserController();
 
 async function getPlatformUserInfo(

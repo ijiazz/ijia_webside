@@ -21,14 +21,6 @@ export function VideoBg() {
         loop
       >
         <source src="/main/bg-login.mp4" type="video/mp4" />
-        <img
-          src="/main/bg-login.jpg"
-          style={{
-            height: "100%",
-            width: "100%",
-            objectFit: "cover",
-          }}
-        />
       </video>
     </div>
   );

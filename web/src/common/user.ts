@@ -39,7 +39,10 @@ export function useCurrentUser(option: { manual?: boolean } = {}) {
   return useMemo(() => {
     return {
       ...result,
-      refresh: () => run(true).then(() => userEvent.dispatchEvent(new Event("refresh"))),
+      refresh: (token?: string) => {
+        if (token) loginByAccessToken(token);
+        return run(true).then(() => userEvent.dispatchEvent(new Event("refresh")));
+      },
       logout() {
         reset();
         user = undefined;

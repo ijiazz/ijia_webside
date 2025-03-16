@@ -6,8 +6,9 @@ import {
   user_platform_bind,
   pla_user,
   user_profile,
+  Platform,
 } from "@ijia/data/db";
-import v, { ChainInsert, Selection } from "@ijia/data/yoursql";
+import v, { ChainInsert, dbPool, Selection } from "@ijia/data/yoursql";
 import { UserBasicDto, UserProfileDto } from "./user.dto.ts";
 import { HttpError } from "@/global/errors.ts";
 
@@ -67,6 +68,23 @@ export async function getUserProfile(userId: number): Promise<UserProfileDto> {
   userInfo.is_official = userInfo.bind_accounts.length > 0;
   return userInfo;
 }
+export async function bindPlatformAccount(userId: number, platform: Platform, pla_uid: string, skipCheck?: boolean) {
+  const [plaUser] = await pla_user
+    .select<{ signature?: string }>({ signature: true })
+    .where(`platform=${v(platform)} AND pla_uid=${v(pla_uid)}`)
+    .queryRows();
+  if (!plaUser) throw new HttpError(400, { message: "平台账号不存在" });
+  if (!skipCheck) {
+    if (!checkSignatureStudentId(userId, plaUser.signature)) {
+      throw new HttpError(403, { message: "审核不通过。没有从账号检测到学号" });
+    }
+  }
+  await using q = dbPool.begin();
+  await q.query(user_platform_bind.delete({ where: `platform=${v(platform)} AND pla_uid=${v(pla_uid)}` }));
+  await q.queryCount(user_platform_bind.insert([{ pla_uid, platform, user_id: userId }]));
+  await q.commit();
+}
+
 function getUserPublicClass(userId: number) {
   return user_class_bind
     .fromAs("bind_class")
@@ -95,4 +113,8 @@ function getUserBindAccount(userId: number) {
       create_time: "bind.create_time",
       key: "bind.platform||'-'||bind.pla_uid",
     });
+}
+export function checkSignatureStudentId(userId: number | string, signature?: string) {
+  if (typeof signature !== "string") return false;
+  return signature.includes(`IJIA学号：<${userId}>`);
 }

@@ -54,7 +54,7 @@ function BasicInfo() {
   const [form] = Form.useForm<FormValues>();
   const { api } = useHoFetch();
   const { refresh } = useCurrentUser({ manual: true });
-  const go = useRedirect({ defaultPath: () => getPathByRouter("/profile/basic") });
+  const go = useRedirect({ defaultPath: () => getPathByRouter("/profile/center") });
   const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>
     api["/passport/signup/email_captcha"].post({
       body: { email, captchaReply: { sessionId, selectedIndex: selected } },
@@ -62,7 +62,7 @@ function BasicInfo() {
   );
   const { result: submitState, run: onSubmit } = useAsync(async function (value: FormValues) {
     const pwd = await tryHashPassword(value.password);
-    await api["/passport/signup"].post({
+    const { userId, jwtKey } = await api["/passport/signup"].post({
       body: {
         email: value.email,
         password: pwd.password,
@@ -70,8 +70,8 @@ function BasicInfo() {
         emailCaptcha: { code: value.email_code, sessionId: result.value?.sessionId! },
       },
     });
+    refresh(jwtKey);
     go();
-    refresh();
   });
   const { message } = useContext(AndContext);
   return (
