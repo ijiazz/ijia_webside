@@ -16,6 +16,7 @@ export function StudentIdCard(props: StudentIdCardInfo & { loading?: boolean }) 
   const token = useThemeToken();
   const HEIGHT = 220;
   const WIDTH = HEIGHT * WIDTH_HEIGHT;
+
   return (
     <StudentIdCardCSS style={{ height: HEIGHT, width: WIDTH, backgroundColor: token.colorBgBase }}>
       <div className="student-card-header">{studentInfo.isOfficial ? "IJIA 学院" : "未认证"}</div>

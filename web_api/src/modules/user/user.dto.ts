@@ -47,9 +47,9 @@ export type ProfileSyncParam = {
 export type BindPlatformCheckDto = {
   platformUser: {
     pla_uid: string;
-    username: string;
-    description: string;
-    avatarPath: string;
+    username?: string | null;
+    description?: string | null;
+    avatarPath?: string | null;
   };
   /** 如果存在，说明改账号已经被绑定 */
   bind?: {

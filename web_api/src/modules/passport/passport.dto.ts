@@ -8,7 +8,7 @@ export type CreateUserProfileParam = {
 };
 export type CreateUserProfileResult = {
   userId: number;
-  jwtKey:string
+  jwtKey: string;
 };
 
 export type UserLoginResultDto = {

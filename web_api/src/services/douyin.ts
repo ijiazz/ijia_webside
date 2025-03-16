@@ -1,5 +1,9 @@
 import { ENV } from "@/global/config.ts";
 import { Platform } from "@ijia/data/db";
+import { HoFetch, HoFetchStatusError } from "@asla/hofetch";
+import { HttpError } from "@/global/errors.ts";
+import { toErrorStr } from "evlib";
+import { HTTPException } from "hono/http-exception";
 
 export async function getUerSecIdFromShareUrl(urlStr: string) {
   const checkUrl = new URL(urlStr);
@@ -21,66 +25,83 @@ export async function getUerSecIdFromShareUrl(urlStr: string) {
   if (!secUid) throw new Error("获取 secUid 失败");
   return secUid;
 }
+function createCheckServer(token: string, serverUrl: string) {
+  const hoFetch = new HoFetch({ defaultOrigin: new URL(serverUrl).origin });
+  hoFetch.use(function (ctx, next) {
+    ctx.headers.set("cookie", "jwt_token=" + token);
+    return next();
+  });
+  return hoFetch;
+}
 export class CheckServer {
-  private checkerServer: string;
-  constructor(
-    private token: string,
-    serverUrl: string,
-  ) {
-    this.checkerServer = serverUrl;
+  private hoFetch: HoFetch;
+  constructor(token: string, serverUrl: string) {
+    this.hoFetch = createCheckServer(token, serverUrl);
   }
   /**
    * 获取平台用户信息
-   * @param pla_uid 抖音是 sec_id
+   * @param uid 抖音是 sec_id
    */
-  async getUserInfo(
-    platform: Platform,
-    pla_uid: string,
-    option: { save?: boolean } = {},
-  ): Promise<PlatformUserBasicInfo> {
-    const url = new URL(`${this.checkerServer}/user_info/${platform}`);
-    url.searchParams.set("uid", pla_uid);
-    if (option.save) url.searchParams.set("save", "true");
-    const res = await fetch(url);
-    return res.json() as Promise<any>;
+  async syncUserInfo(platform: Platform, uid: string): Promise<PlatformUserBasicInfo> {
+    try {
+      const res = await this.hoFetch.fetch<PlatformUserBasicInfo>(`/p/${platform}/user/sync`, {
+        method: "POST",
+        params: { uid: uid },
+      });
+      return res.bodyData;
+    } catch (error) {
+      throw getError(error);
+    }
   }
   /**
    * 查看平台用户是否按要求添加了属于 id 的认证信息
-   * @param pla_uid 抖音是 sec_id
+   * @param uid 抖音是 sec_id
    */
-  async checkPlatformUserInfo(pla_uid: string, id: string | number) {
-    const url = new URL(`${this.checkerServer}/check_user_bind/${Platform.douYin}`);
-    url.searchParams.set("pla_uid", pla_uid);
-    url.searchParams.set("uer_id", id.toString());
-    const res = await fetch(url);
-    if (res.status !== 200) throw new Error(`无效的 status`);
-
-    return res.json() as Promise<PlatformUserBasicInfoCheckResult>;
+  async checkPlatformUserInfo(uid: string, ijia_id: string | number): Promise<PlatformUserBasicInfoCheckResult> {
+    try {
+      const { bodyData } = await this.hoFetch.fetch<PlatformUserBasicInfoCheckResult>(
+        `/p/${Platform.douYin}/user/check_bind`,
+        {
+          method: "POST",
+          params: { uid: uid, ijia_id: ijia_id },
+        },
+      );
+      return bodyData;
+    } catch (error) {
+      throw getError(error);
+    }
   }
 
   /** 查看平台用户是否正在直播 */
-  async userIsLive(secUid: string): Promise<0 | 1> {
-    const url = new URL(`${this.checkerServer}/user_is_live/${Platform.douYin}`);
-    url.searchParams.set("uid", secUid);
-    const resp = await fetch(url, { headers: { cookie: "jwt_token=" + this.token } });
-    let res = (await resp.json()) as { live_status: 0 | 1 };
-    return res.live_status;
+  async userIsLive(uid: string): Promise<0 | 1> {
+    const { bodyData } = await this.hoFetch.fetch<{ live_status: 0 | 1 }>(`/p/${Platform.douYin}/user/is_live`, {
+      params: { uid: uid },
+    });
+    return bodyData.live_status;
   }
+}
+
+function getError(error: unknown): HttpError {
+  if (error instanceof HoFetchStatusError) {
+    const body = error.body instanceof ReadableStream ? error.body : JSON.stringify(error.body);
+    return new HTTPException(502, { res: new Response(body, { headers: error.headers }) });
+  }
+  return new HttpError(502, { message: toErrorStr(error) });
 }
 let checkServer: CheckServer | undefined;
 export function getCheckerServer() {
   if (!checkServer) {
     if (!ENV.CHECK_SERVER) throw new Error("需要 CHECK_SERVER 环境变量");
     const url = new URL(ENV.CHECK_SERVER);
-    checkServer = new CheckServer(url.password, url.origin);
+    checkServer = new CheckServer(url.username, url.origin);
   }
   return checkServer;
 }
 export type PlatformUserBasicInfo = {
   pla_uid: string;
-  username: string;
-  description: string;
-  avatarPath: string;
+  username?: string | null;
+  description?: string | null;
+  avatarPath?: string | null;
   platform: Platform;
 };
-export type PlatformUserBasicInfoCheckResult = PlatformUserBasicInfo & { pass: boolean; reason?: string };
+export type PlatformUserBasicInfoCheckResult = PlatformUserBasicInfo & { pass: boolean };

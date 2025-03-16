@@ -15,7 +15,7 @@ export function errorHandler(error: unknown, ctx: Context): Response | Promise<R
     let html: string;
     let status = 500;
     const isPROD = ENV.MODE == Mode.Prod;
-    if (!isPROD) console.error(error);
+    console.error(error);
     if (error instanceof Error) {
       const stackInfo: StackOption | undefined = isPROD ? undefined : { info: error.stack, baseDir: baseDir };
       html = createErrorHtmlText(error, stackInfo);

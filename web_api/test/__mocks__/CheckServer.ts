@@ -8,6 +8,6 @@ export class MockCheckServer extends CheckServer {
     super("12", "http://127.0.0.1");
   }
   override checkPlatformUserInfo = vi.fn<CheckServer["checkPlatformUserInfo"]>(noImpl);
-  override getUserInfo = vi.fn<CheckServer["getUserInfo"]>(noImpl);
+  override syncUserInfo = vi.fn<CheckServer["syncUserInfo"]>(noImpl);
   override userIsLive = vi.fn<CheckServer["userIsLive"]>(noImpl);
 }

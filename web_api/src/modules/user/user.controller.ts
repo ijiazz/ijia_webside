@@ -60,7 +60,7 @@ export class UserController {
     if (count > 5) throw new HttpError(409, { message: "最多绑定5个平台账号" });
     await bindPlatformAccount(userId, bind.platform, bind.pla_uid);
     if (count === 0) {
-      await this.syncPlatformAccount(userId, bind);
+      await this.syncPlatformAccountFromDb(userId, bind);
     }
   }
   @ToArguments(async function (ctx) {
@@ -110,15 +110,17 @@ export class UserController {
     let userInfo: PlatformUserBasicInfoCheckResult;
     if (ENV.MODE === Mode.Prod) {
       const checkServer = getCheckerServer();
-      try {
-        userInfo = await checkServer.checkPlatformUserInfo(platformUseId, userId);
-      } catch (error) {
-        throw new HttpError(502, { message: toErrorStr(error) });
-      }
+      userInfo = await checkServer.checkPlatformUserInfo(platformUseId, userId);
+      const [user] = await pla_user
+        .select({ avatar: true })
+        .where(`platform=${v(userInfo.platform)} AND pla_uid=${v(userInfo.pla_uid)}`)
+        .limit(1)
+        .queryRows();
+      if (user?.avatar) userInfo.avatarPath = `/file/avatar/${user.avatar}`;
     } else {
       userInfo = await getPlatformUserInfo(bind.platform, platformUseId, userId);
     }
-    if (!userInfo.pass) throw new HttpError(403, { message: userInfo.reason ?? "检测失败" });
+    if (!userInfo.pass) throw new HttpError(403, { message: "检测不通过" });
 
     const [bindInfo] = await user_platform_bind
       .select<{
@@ -191,8 +193,21 @@ export class UserController {
   })
   @Post("/user/profile/sync")
   async syncPlatformAccount(userId: number, param: { platform: Platform; pla_uid: string }): Promise<void> {
-    if (ENV.MODE === Mode.Prod) await getCheckerServer().getUserInfo(param.platform, param.pla_uid, { save: true });
-
+    if (ENV.MODE === Mode.Prod) {
+      if (param.platform === Platform.douYin) {
+        const [info] = await pla_user
+          .select({ sec_uid: "(extra->>'sec_uid')" })
+          .where(`platform=${v(param.platform)} AND pla_uid=${v(param.pla_uid)}`)
+          .queryRows();
+        if (info) await getCheckerServer().syncUserInfo(param.platform, info.sec_uid);
+        else throw new HttpError(404, { message: "账号不存在" });
+      } else {
+        await getCheckerServer().syncUserInfo(param.platform, param.pla_uid);
+      }
+    }
+    await this.syncPlatformAccountFromDb(userId, param);
+  }
+  private async syncPlatformAccountFromDb(userId: number, param: { platform: Platform; pla_uid: string }) {
     const targetData = user_platform_bind
       .fromAs("bind")
       .innerJoin(pla_user, "p_u", [`bind.platform=p_u.platform`, `bind.pla_uid=p_u.pla_uid`])

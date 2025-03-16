@@ -28,10 +28,10 @@
     "hono": "^4.7.2",
     "nodemailer": "^6.10.0",
     "tslib": "^2.8.1",
-    "@asla/hono-decorator": "workspace:^"
+    "@asla/hono-decorator": "workspace:^",
+    "@asla/hofetch": "workspace:^"
   },
   "devDependencies": {
-    "@asla/hofetch": "workspace:^",
     "@types/node": "^22.7.6",
     "@types/nodemailer": "^6.4.17",
     "typedoc": "^0.27.6",

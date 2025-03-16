@@ -1,4 +1,4 @@
-import { vioServerTest as test } from "@/fixtures/test.ts";
+import { getAppUrlByRouter, vioServerTest as test } from "@/fixtures/test.ts";
 const { expect, beforeEach } = test;
 
 beforeEach(async function ({ page, context }) {
@@ -11,9 +11,9 @@ beforeEach(async function ({ page, context }) {
     latency: 180,
   });
 });
-test("首页", async function ({ page, getAppUrlByRouter }) {
+test("首页", async function ({ page }) {
   await page.goto(getAppUrlByRouter("/"), { waitUntil: "networkidle" });
 });
-test("登录", async function ({ page, getAppUrlByRouter }) {
+test("登录", async function ({ page }) {
   await page.goto(getAppUrlByRouter("/passport/login"), { waitUntil: "networkidle" });
 });

@@ -38,5 +38,5 @@ export function toFileUrl(path?: string | null): string | undefined;
 export function toFileUrl(path?: string | null): string | undefined {
   if (!path) return;
   if (path.startsWith("/")) path = path.slice(1);
-  return `${location.origin}/file/${path}`;
+  return `${location.origin}/${path}`;
 }
