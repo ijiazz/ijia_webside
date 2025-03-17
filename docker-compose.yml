@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust # 测试用
       POSTGRES_DB: ijia
-      # POSTGRES_USER: xx
+      POSTGRES_USER: postgres
       # POSTGRES_PASSWORD: xxx
     ports:
       - 5432:5432 # e2e测试时 需要连接

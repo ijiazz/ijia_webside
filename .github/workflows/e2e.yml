@@ -31,6 +31,8 @@ jobs:
       - name: E2E test
         continue-on-error: true
         run: pnpm run e2e:ci
+        env:
+          DATABASE_URL: "postgresql://postgres@localhost:5432/ijia"
         id: e2e
         working-directory: ./e2e
 
@@ -41,4 +43,4 @@ jobs:
           path: e2e/playwright-report/
       - name: Result
         if: ${{steps.e2e.outcome=='failure'}}
-        run: exit
+        run: exit 1
