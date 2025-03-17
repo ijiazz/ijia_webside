@@ -94,9 +94,12 @@ export interface ApiDefined {
   /** 创建或刷新验证码会话 */
   "POST /captcha/image": {
     response: ImageCaptchaQuestion;
-    params?: {
+    query?: {
       sessionId?: string;
     };
-  } /** 获取图像验证码文件流 */;
-  "POST /captcha/image/:url": {};
+  };
+  /** 获取图像验证码文件流 */
+  "GET /captcha/image/:url": {
+    response: ReadableStream<Uint8Array>;
+  };
 }

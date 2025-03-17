@@ -46,7 +46,7 @@ export class CheckServer {
     try {
       const res = await this.hoFetch.fetch<PlatformUserBasicInfo>(`/p/${platform}/user/sync`, {
         method: "POST",
-        params: { uid: uid },
+        query: { uid: uid },
       });
       return res.bodyData;
     } catch (error) {
@@ -63,7 +63,7 @@ export class CheckServer {
         `/p/${Platform.douYin}/user/check_bind`,
         {
           method: "POST",
-          params: { uid: uid, ijia_id: ijia_id },
+          query: { uid: uid, ijia_id: ijia_id },
         },
       );
       return bodyData;
@@ -75,7 +75,7 @@ export class CheckServer {
   /** 查看平台用户是否正在直播 */
   async userIsLive(uid: string): Promise<0 | 1> {
     const { bodyData } = await this.hoFetch.fetch<{ live_status: 0 | 1 }>(`/p/${Platform.douYin}/user/is_live`, {
-      params: { uid: uid },
+      query: { uid: uid },
     });
     return bodyData.live_status;
   }

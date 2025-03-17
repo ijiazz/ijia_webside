@@ -3,9 +3,7 @@ import { http } from "@/common/http.ts";
 async function fetchImages(page: number, pageSize: number): Promise<{ list: CommentStatByCount[]; hasMore: boolean }> {
   const { bodyData } = await http.fetch<{ list: CommentStatByCount[]; hasMore: boolean }>(
     "/api/stat/comment/count_by_user",
-    {
-      params: { page, pageSize },
-    },
+    { query: { page, pageSize } },
   );
   return bodyData;
 }
