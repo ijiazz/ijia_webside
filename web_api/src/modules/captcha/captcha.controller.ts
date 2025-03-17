@@ -45,6 +45,12 @@ class ImageCaptchaController {
       answer[i] = item.is_true;
     }
     if (ENV.MODE === Mode.E2E) {
+      if (result.length < 9) {
+        for (let i = result.length; i < 9; i++) {
+          allIdList[i] = "null";
+        }
+        result.length = 9;
+      }
       for (let i = 0; i < result.length; i++) {
         if (i < 3) answer[i] = true;
         else answer[i] = false;

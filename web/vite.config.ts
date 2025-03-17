@@ -34,6 +34,10 @@ export default {
       output: {
         manualChunks: createManualChunks(),
       },
+      input: {
+        index: import.meta.dirname + "/index.html",
+        "x/index": import.meta.dirname + "/x/index.html",
+      },
     },
   },
 } satisfies UserConfig;

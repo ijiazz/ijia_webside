@@ -6,23 +6,27 @@ RUN corepack enable && corepack prepare pnpm@10.4.0 --activate
 WORKDIR /build
 ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
 
-
-FROM prepare AS build
-ADD ./deps/hofetch/package.json ./deps/hofetch/package.json
-ADD ./web/package.json ./web/package.json
+ADD ./deps/hofetch/package.json ./deps/hofetch/
+ADD ./web/package.json ./web/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
+
+FROM prepare as hofetch
 ADD ./deps/hofetch/tsconfig.json ./deps/hofetch/
 ADD ./deps/hofetch/build ./deps/hofetch/build
 ADD ./deps/hofetch/src ./deps/hofetch/src
 RUN pnpm run init-hofetch
 
-ADD tsconfig.json ./
-ADD ./web/tsconfig.json ./web/vite.config.ts ./web/index.html ./web/
-ADD ./web/build ./web/build 
+
+FROM prepare AS build
+COPY --from=hofetch /build/deps/hofetch ./deps/hofetch
+
+ADD tsconfig.json  ./
 ADD ./web/src ./web/src
 ADD ./web/public ./web/public
-
+ADD ./web/build ./web/build
+ADD ./web/x ./web/x
+ADD ./web/index.html ./web/vite.config.ts ./web/tsconfig.json ./web/
 ADD ./web_api/src ./web_api/src
 ADD ./web_api/_api.ts ./web_api/_api.ts
 
