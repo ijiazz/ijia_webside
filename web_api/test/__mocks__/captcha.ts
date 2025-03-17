@@ -1,5 +1,5 @@
 import { ImageCaptchaReply } from "@/api.ts";
-import { imageCaptchaController } from "@/modules/captcha/ImageCaptcha.controller.ts";
+import { imageCaptchaController } from "@/modules/captcha/captcha.controller.ts";
 import { captcha_picture, DbCaptchaPictureCreate } from "@ijia/data/db";
 
 export function createCaptcha(max: number): DbCaptchaPictureCreate[] {

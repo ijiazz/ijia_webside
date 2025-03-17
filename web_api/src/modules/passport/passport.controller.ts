@@ -12,7 +12,7 @@ import { loginService } from "./services/passport.service.ts";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
 import { Controller, PipeInput, PipeOutput, Post, ToArguments, Use } from "@asla/hono-decorator";
-import { checkValue } from "@/global/check.ts";
+import { checkValue, checkValueAsync } from "@/global/check.ts";
 import { integer } from "evlib/validator";
 import {
   imageCaptchaReplyChecker,
@@ -179,10 +179,12 @@ export class PassportController {
 
   @Use(rolesGuard)
   @ToArguments(async function (ctx: HonoContext) {
-    const body = await ctx.req.json();
-    const param = checkValue(body, { newPassword: "string", oldPassword: "string", userId: optional.string });
     const userInfo = ctx.get("userInfo");
     const userId: string = await userInfo.getJwtInfo().then((res) => res.userId);
+    const param = await checkValueAsync(ctx.req.json(), {
+      newPassword: "string",
+      oldPassword: "string",
+    });
     return [userId, param.oldPassword, param.newPassword];
   })
   @Post("/passport/change_password")

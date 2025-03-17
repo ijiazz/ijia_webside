@@ -1,4 +1,4 @@
-import type { EmailCaptchaReply, ImageCaptchaReply } from "../captcha/Captcha.dto.ts";
+import type { EmailCaptchaReply, ImageCaptchaReply } from "../captcha/captcha.dto.ts";
 
 export type CreateUserProfileParam = {
   email: string;
@@ -51,5 +51,5 @@ export type RequestSignupEmailCaptchaParam = {
 export type ChangePasswordParam = {
   newPassword: string;
   oldPassword: string;
-  userId?: string;
+  // userId?: string;
 };
