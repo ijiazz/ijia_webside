@@ -11,7 +11,7 @@ type LoginUserInfo = {
   pwd_salt?: string;
   login_ban: boolean;
 };
-export class LoginService {
+export class PassportService {
   private selectUser(where: string) {
     return user
       .select<LoginUserInfo>({
@@ -83,4 +83,4 @@ export class LoginService {
     await conn.commit();
   }
 }
-export const loginService = new LoginService();
+export const passportService = new PassportService();

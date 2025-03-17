@@ -14,7 +14,7 @@ import { BindPlatformParam, UpdateUserProfileParam, userController } from "@/mod
 import { applyController } from "@asla/hono-decorator";
 import { bindPlatformAccount } from "@/modules/user/user.service.ts";
 
-import { loginService } from "@/modules/passport/services/passport.service.ts";
+import { passportService } from "@/modules/passport/services/passport.service.ts";
 import { v } from "@ijia/data/yoursql";
 
 describe("bind", function () {
@@ -22,8 +22,8 @@ describe("bind", function () {
   let AliceId: number;
   let AliceToken: string;
   beforeEach<Context>(async ({ hono, hoFetch, ijiaDbPool }) => {
-    AliceId = await loginService.createUser("abc@qq.com", {});
-    AliceToken = await loginService.signJwt(AliceId, 60 * 100);
+    AliceId = await passportService.createUser("abc@qq.com", {});
+    AliceToken = await passportService.signJwt(AliceId, 60 * 100);
     hoFetch.use(async function (ctx, next) {
       const token = ctx[JWT_KEY];
       if (token) ctx.headers.set("cookie", "jwt-token=" + token);
@@ -75,7 +75,7 @@ describe("bind", function () {
     await AliceBind(api, { platform: Platform.douYin, pla_uid: "d1" });
     await expect(getUserBindCount(AliceId), "成功绑定第2个账号").resolves.toBe(2);
 
-    await expect(AliceBind(api, { platform: Platform.douYin, pla_uid: "d2" })).rejects.responseStatus(403);
+    await expect(AliceBind(api, { platform: Platform.douYin, pla_uid: "d2" })).responseStatus(403);
     await expect(getUserBindCount(AliceId)).resolves.toBe(2);
   });
   // 暂时不处理
@@ -94,8 +94,8 @@ describe("bind", function () {
     }
     await userBind(AliceToken, { platform: Platform.douYin, pla_uid: "d1" });
 
-    const BobId = await loginService.createUser("bind_existed@qq.com", {});
-    const BobToken = await loginService.signJwt(BobId, 60);
+    const BobId = await passportService.createUser("bind_existed@qq.com", {});
+    const BobToken = await passportService.signJwt(BobId, 60);
 
     await expect(updateSignature("d1", `IJIA学号：<${BobId}>`)).resolves.toBe(1);
 
@@ -104,7 +104,7 @@ describe("bind", function () {
     await expect(getUserBindCount(BobId), "新绑定的用户成功绑定").resolves.toBe(1);
     await expect(getUserBindCount(AliceId), "原来绑定的用户被取消绑定").resolves.toBe(0);
 
-    await expect(userBind(BobToken, { platform: Platform.douYin, pla_uid: "d1" })).rejects.responseStatus(409);
+    await expect(userBind(BobToken, { platform: Platform.douYin, pla_uid: "d1" })).responseStatus(409);
   });
   test("同步信息", async function ({ api, ijiaDbPool }) {
     await pla_user
@@ -130,7 +130,7 @@ describe("bind", function () {
         [JWT_KEY]: AliceToken,
       }),
       "不允许同步自己没绑定的账号",
-    ).rejects.responseStatus(403);
+    ).responseStatus(403);
     await expect(getUserInfo(AliceId), "仍然使用之前的印象").resolves.toMatchObject({
       nickname: "Alice",
     });
@@ -154,8 +154,8 @@ describe("用户信息", function () {
   let AliceId: number;
   let AliceToken: string;
   beforeEach<Context>(async ({ hono, hoFetch, ijiaDbPool }) => {
-    AliceId = await loginService.createUser("abc@qq.com", {});
-    AliceToken = await loginService.signJwt(AliceId, 60 * 100);
+    AliceId = await passportService.createUser("abc@qq.com", {});
+    AliceToken = await passportService.signJwt(AliceId, 60 * 100);
     hoFetch.use(async function (ctx, next) {
       const token = ctx[JWT_KEY];
       if (token) ctx.headers.set("cookie", "jwt-token=" + token);
@@ -222,7 +222,7 @@ describe("用户信息", function () {
       .queryRows()
       .then((res) => res.map((item) => item.id));
 
-    await expect(updateProfile(api, { primary_class_id: classes[2] }), "只能选择公共班级").rejects.responseStatus(409);
+    await expect(updateProfile(api, { primary_class_id: classes[2] }), "只能选择公共班级").responseStatus(409);
 
     await updateProfile(api, { primary_class_id: classes[0] });
     await expect(getUserPublicClassId(1), "成功绑定").resolves.toEqual([1]);

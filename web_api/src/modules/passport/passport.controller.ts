@@ -8,7 +8,7 @@ import {
   type CreateUserProfileResult,
 } from "./passport.dto.ts";
 import { optional, array } from "evlib/validator";
-import { loginService } from "./services/passport.service.ts";
+import { passportService } from "./services/passport.service.ts";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
 import { Controller, PipeInput, PipeOutput, Post, ToArguments, Use } from "@asla/hono-decorator";
@@ -61,7 +61,7 @@ export class PassportController {
       }
     }
 
-    const userId = await loginService.createUser(body.email, { password: body.password });
+    const userId = await passportService.createUser(body.email, { password: body.password });
     const { token } = await this.signToken(userId);
     return { userId, jwtKey: token };
   }
@@ -140,7 +140,7 @@ export class PassportController {
           passwordNoHash: optional.boolean,
         });
         if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
-        const uid = await loginService.loginById(+params.id, params.password);
+        const uid = await passportService.loginById(+params.id, params.password);
         user = { userId: uid };
         break;
       }
@@ -152,7 +152,7 @@ export class PassportController {
           passwordNoHash: optional.boolean,
         });
         if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
-        const uid = await loginService.loginByEmail(params.email, params.password);
+        const uid = await passportService.loginByEmail(params.email, params.password);
         user = { userId: uid };
         break;
       }
@@ -170,7 +170,7 @@ export class PassportController {
   }
   private async signToken(userId: number) {
     const minute = 3 * 24 * 60; // 3 天后过期
-    const jwtKey = await loginService.signJwt(userId, minute);
+    const jwtKey = await passportService.signJwt(userId, minute);
 
     return {
       token: jwtKey,
@@ -189,7 +189,7 @@ export class PassportController {
   })
   @Post("/passport/change_password")
   async changePassword(userId: string, oldPwd: string, newPwd: string) {
-    await loginService.changePassword(+userId, oldPwd, newPwd);
+    await passportService.changePassword(+userId, oldPwd, newPwd);
   }
 }
 

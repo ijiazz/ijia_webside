@@ -10,6 +10,7 @@ interface HonoContext {
   hoFetch: HoFetch;
   api: Api;
 }
+export const JWT_TOKEN_KEY = Symbol("jwt_token");
 export const test = viTest.extend<HonoContext>({
   async hono({}, use) {
     await use(createHono());
@@ -26,6 +27,12 @@ export const test = viTest.extend<HonoContext>({
         const body = getResponseErrorInfo(hoResponse.bodyData);
         if (body) return new HoFetchStatusError(hoResponse, hoResponse.status + ": " + (body as any).message);
       },
+    });
+    hoFetch.use(async function (ctx, next) {
+      if (ctx[JWT_TOKEN_KEY]) {
+        ctx.headers.set("cookie", "jwt-token=" + ctx[JWT_TOKEN_KEY]);
+      }
+      return next();
     });
     return use(hoFetch);
   },
