@@ -1,7 +1,5 @@
 import { defineConfig } from "@playwright/test";
-import config, { env } from "./playwright.config.ts";
-
-env.webUrl = "http://localhost:9002";
+import config from "./playwright.config.ts";
 
 export default defineConfig({
   ...config,

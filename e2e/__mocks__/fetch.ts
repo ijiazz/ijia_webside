@@ -9,7 +9,7 @@ function createHoFetch() {
   const API_PREFIX = "/api";
   const http = new HoFetch({
     bodyParser: {},
-    defaultOrigin: new URL(env.webUrl).origin,
+    defaultOrigin: new URL(env.WEB_URL).origin,
     createStatusError(hoResponse) {
       const body = getResponseErrorInfo(hoResponse.bodyData);
       if (body) return new HoFetchStatusError(hoResponse, hoResponse.status + ": " + (body as any).message);

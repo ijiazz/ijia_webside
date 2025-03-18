@@ -10,7 +10,7 @@ export interface Context {
 }
 const PROCESS_PORT_NUMBER = 10;
 const VIO_SERVER_BASE_PORT = 7001;
-if (!process.env.DATABASE_URL) dbPool.connectOption = env.pgUrl;
+if (!process.env.DATABASE_URL) dbPool.connectOption = env.DATABASE_URL;
 
 export const vioServerTest = test.extend<Context>({
   async dbPool({}, use) {
@@ -24,7 +24,7 @@ export const vioServerTest = test.extend<Context>({
 });
 
 export function getAppUrlByRouter(router: string, token?: string): string {
-  const base = new URL(env.webUrl + "/x/");
+  const base = new URL(env.WEB_URL + "/x/");
   if (token) {
     base.searchParams.append("access_token", token);
   }

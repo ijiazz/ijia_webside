@@ -33,6 +33,7 @@ jobs:
         run: pnpm run e2e:ci
         env:
           DATABASE_URL: "postgresql://postgres@localhost:5432/ijia"
+          WEB_URL: "http://localhost:9002"
         id: e2e
         working-directory: ./e2e
 
