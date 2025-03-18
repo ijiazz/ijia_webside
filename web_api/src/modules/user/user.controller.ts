@@ -54,7 +54,7 @@ export class UserController {
   async bindPlatform(userId: number, bind: BindPlatformParam["account"]) {
     if (bind.platform !== Platform.douYin) throw new HttpError(409, { message: "暂不支持绑定该平台" });
     const [{ count }] = await user_platform_bind
-      .select("count(*) ::INT")
+      .select<{ count: number }>("count(*) ::INT")
       .where(`user_id=${v(userId)}`)
       .queryRows();
     if (count > 5) throw new HttpError(409, { message: "最多绑定5个平台账号" });

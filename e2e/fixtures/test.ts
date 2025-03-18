@@ -10,10 +10,10 @@ export interface Context {
 }
 const PROCESS_PORT_NUMBER = 10;
 const VIO_SERVER_BASE_PORT = 7001;
+if (!process.env.DATABASE_URL) dbPool.connectOption = env.pgUrl;
 
 export const vioServerTest = test.extend<Context>({
   async dbPool({}, use) {
-    dbPool.connectOption = env.pgUrl;
     await use(dbPool);
     await dbPool.close(true);
   },

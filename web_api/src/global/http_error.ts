@@ -12,37 +12,31 @@ export function errorHandler(error: unknown, ctx: Context): Response | Promise<R
   if (error instanceof HTTPException) {
     return error.getResponse();
   } else {
-    let html: string;
+    console.error(error);
     let status = 500;
     const isPROD = ENV.MODE == Mode.Prod;
-    console.error(error);
-    if (error instanceof Error) {
-      const stackInfo: StackOption | undefined = isPROD ? undefined : { info: error.stack, baseDir: baseDir };
-      html = createErrorHtmlText(error, stackInfo);
-    } else {
-      html = String(error);
-    }
+    const html = createErrorHtmlText(error, { baseDir: baseDir, showStack: !isPROD });
     return ctx.html(html, status as ContentfulStatusCode);
   }
 }
 type StackOption = {
-  info?: string;
+  showStack?: boolean;
   baseDir?: string;
 };
-function createErrorHtmlText(error: any, stack?: StackOption) {
+function createErrorHtmlText(error: any, stackOption: StackOption = {}) {
   if (error instanceof Error) {
-    let text = `<h3>${error.name}</h3>`;
+    let text = `<h3>${error.message}</h3>\n`;
 
+    let stack = error.stack;
     let detail: string;
-    if (stack && stack.info) {
-      let stackInfo = stack.info;
-      if (stack.baseDir) stackInfo = stackInfo.replaceAll(stack.baseDir, "");
-      detail = stackInfo;
-    } else detail = error.message;
-    text += `<span style="white-space:pre-wrap; font-size:12px">${detail}</span>`;
+    if (stack && stackOption.showStack) {
+      if (stackOption.baseDir) stack = stack.replaceAll(stackOption.baseDir, "");
+      detail = stack;
+    } else detail = `${error.name}: ${error.message}`;
+    text += `<span style="white-space:pre-wrap; font-size:12px">${detail}</span>\n`;
 
     if (error.cause) {
-      text += "\n" + createErrorHtmlText(error.cause);
+      text += "\n" + createErrorHtmlText(error.cause, stackOption);
     }
     return text;
   } else {

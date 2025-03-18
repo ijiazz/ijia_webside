@@ -56,8 +56,8 @@ importers:
   deps/ijia-data:
     dependencies:
       '@asla/yoursql':
-        specifier: ^0.8.4
-        version: 0.8.4
+        specifier: ^0.8.7
+        version: 0.8.7
       '@redis/client':
         specifier: ^1.6.0
         version: 1.6.0
@@ -348,8 +348,8 @@ packages:
       react: '>=19.0.0'
       react-dom: '>=19.0.0'
 
-  '@asla/yoursql@0.8.4':
-    resolution: {integrity: sha512-m++5qje/9m3VmbJsnaLGwpjf+4Xvb/w8FPmIaUliNbiYronfkWa7US/l9ltaqFt58pefL9yvbyoQFdkr4m7tuw==}
+  '@asla/yoursql@0.8.7':
+    resolution: {integrity: sha512-Bd+KMM7KoI8OQoLLu8bEQf1xnAr8fxRtXPfEY/3THmUC9RH3qkrlUcnUf3KtUhSbKYeYS6frU3IblQfVIrnRcg==}
     engines: {node: '>=18'}
 
   '@babel/code-frame@7.26.2':
@@ -3090,7 +3090,7 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
-  '@asla/yoursql@0.8.4': {}
+  '@asla/yoursql@0.8.7': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:
