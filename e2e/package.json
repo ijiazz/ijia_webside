@@ -9,11 +9,12 @@
     "codegen": "playwright codegen --channel msedge",
     "report": "playwright show-report"
   },
-  "devDependencies": {
+
+  "dependencies": {
     "@ijia/data": "workspace:^",
-    "@asla/hofetch": "workspace:^",
     "@playwright/test": "^1.44.1",
     "@types/node": "^22.13.8",
-    "evlib": "^3.0.2"
+    "evlib": "^3.0.2",
+    "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1"
   }
 }

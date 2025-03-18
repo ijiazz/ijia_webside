@@ -24,17 +24,11 @@ ADD ./deps/hono-decorator/build ./deps/hono-decorator/build
 ADD ./deps/hono-decorator/src ./deps/hono-decorator/src
 RUN pnpm run init-hono-decorator
 
-FROM install as hofetch
-ADD ./deps/hofetch/tsconfig.json ./deps/hofetch/package.json ./deps/hofetch/
-ADD ./deps/hofetch/build ./deps/hofetch/build
-ADD ./deps/hofetch/src ./deps/hofetch/src
-RUN pnpm run init-hofetch
 
 FROM install AS build
 
 COPY --from=ijia-data /build/deps/ijia-data ./deps/ijia-data
 COPY --from=hono-decorator /build/deps/hono-decorator ./deps/hono-decorator
-COPY --from=hofetch /build/deps/hofetch ./deps/hofetch
 
 ADD ./web_api/tsconfig.json ./web_api/
 ADD ./web_api/build ./web_api/build

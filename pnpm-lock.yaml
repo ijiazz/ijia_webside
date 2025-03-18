@@ -31,24 +31,12 @@ importers:
         specifier: ^5.6.3
         version: 5.8.2
 
-  deps/hofetch:
-    devDependencies:
-      vite-tsconfig-paths:
-        specifier: ^5.1.4
-        version: 5.1.4(typescript@5.8.2)(vite@6.2.2(@types/node@22.13.10)(terser@5.39.0)(yaml@2.7.0))
-      vitest:
-        specifier: ^3.0.5
-        version: 3.0.8(@types/node@22.13.10)(terser@5.39.0)(yaml@2.7.0)
-
   deps/hono-decorator:
     dependencies:
       hono:
         specifier: ^4.7.2
         version: 4.7.4
     devDependencies:
-      vite-tsconfig-paths:
-        specifier: ^5.1.4
-        version: 5.1.4(typescript@5.8.2)(vite@6.2.2(@types/node@22.13.10)(terser@5.39.0)(yaml@2.7.0))
       vitest:
         specifier: ^3.0.8
         version: 3.0.8(@types/node@22.13.10)(terser@5.39.0)(yaml@2.7.0)
@@ -85,10 +73,10 @@ importers:
         version: 3.0.8(@types/node@22.13.10)(terser@5.39.0)(yaml@2.7.0)
 
   e2e:
-    devDependencies:
+    dependencies:
       '@asla/hofetch':
-        specifier: workspace:^
-        version: link:../deps/hofetch
+        specifier: npm:@jsr/asla__hofetch@^0.0.1
+        version: '@jsr/asla__hofetch@0.0.1'
       '@ijia/data':
         specifier: workspace:^
         version: link:../deps/ijia-data
@@ -114,8 +102,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3(antd@5.24.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@asla/hofetch':
-        specifier: workspace:^
-        version: link:../deps/hofetch
+        specifier: npm:@jsr/asla__hofetch@^0.0.1
+        version: '@jsr/asla__hofetch@0.0.1'
       '@emotion/styled':
         specifier: ^11.14.0
         version: 11.14.0(@emotion/react@11.14.0(@types/react@19.0.10)(react@19.0.0))(@types/react@19.0.10)(react@19.0.0)
@@ -178,8 +166,8 @@ importers:
   web_api:
     dependencies:
       '@asla/hofetch':
-        specifier: workspace:^
-        version: link:../deps/hofetch
+        specifier: npm:@jsr/asla__hofetch@^0.0.1
+        version: '@jsr/asla__hofetch@0.0.1'
       '@asla/hono-decorator':
         specifier: workspace:^
         version: link:../deps/hono-decorator
@@ -1246,6 +1234,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@jsr/asla__hofetch@0.0.1':
+    resolution: {integrity: sha512-UO90cqDucrg3M3Fxea1Jrw15DLP2N+3pQAbAyNolnL6jx2ANEDhb1NGrTFMfZ5xVUQcB01KhhqpaKW2eE3FTYw==, tarball: https://npm.jsr.io/~/11/@jsr/asla__hofetch/0.0.1.tgz}
 
   '@jsr/std__media-types@1.1.0':
     resolution: {integrity: sha512-dHvaxHL7ENWnltgL653uo3KnKFse3ZbopZop2gqsT7yrscx7irZEClu5Cba7gMPPRk4Lg1FbriNcaBViM2RSBw==, tarball: https://npm.jsr.io/~/11/@jsr/std__media-types/1.1.0.tgz}
@@ -4090,6 +4081,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  '@jsr/asla__hofetch@0.0.1': {}
 
   '@jsr/std__media-types@1.1.0': {}
 

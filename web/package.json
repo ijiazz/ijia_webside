@@ -14,7 +14,7 @@
     "@ant-design/icons": "^5.6.1",
     "@ant-design/pro-components": "^2.8.5",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
-    "@asla/hofetch": "workspace:^",
+    "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
     "@emotion/styled": "^11.14.0",
     "antd": "^5.23.3",
     "classnames": "^2.5.1",

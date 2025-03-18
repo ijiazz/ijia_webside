@@ -6,20 +6,11 @@ RUN corepack enable && corepack prepare pnpm@10.4.0 --activate
 WORKDIR /build
 ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
 
-ADD ./deps/hofetch/package.json ./deps/hofetch/
 ADD ./web/package.json ./web/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 
-FROM prepare as hofetch
-ADD ./deps/hofetch/tsconfig.json ./deps/hofetch/
-ADD ./deps/hofetch/build ./deps/hofetch/build
-ADD ./deps/hofetch/src ./deps/hofetch/src
-RUN pnpm run init-hofetch
-
-
 FROM prepare AS build
-COPY --from=hofetch /build/deps/hofetch ./deps/hofetch
 
 ADD tsconfig.json  ./
 ADD ./web/src ./web/src
