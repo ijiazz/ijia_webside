@@ -29,23 +29,32 @@ describe("注册用户", function () {
   test("必须传正确的邮件验证码", async function ({ api }) {
     await expect(
       signup(api, {
-        email: "test@ijiazz.cn",
+        email: "david@ijiazz.cn",
         password: AlicePassword,
         emailCaptcha: { code: "123", sessionId: "111" },
       }),
     ).rejects.throwErrorMatchBody(403, { message: "验证码错误" });
 
-    const emailAnswer = await mockSendEmailCaptcha(api, "");
+    const emailAnswer = await mockSendEmailCaptcha(api, "david@ijiazz.cn");
     await expect(
-      signup(api, {
-        email: "@qq.com",
-        password: AlicePassword,
-        emailCaptcha: { code: "123", sessionId: emailAnswer.sessionId },
-      }),
+      signup(api, { email: "bob@ijiazz.cn", password: AlicePassword, emailCaptcha: emailAnswer }),
+      "试图用 david 的邮箱验证码注册 bob 的邮箱",
     ).rejects.throwErrorMatchBody(403, { message: "验证码错误" });
   });
+  test("邮箱验证码输入错，修正后可以认证通过", async function ({ api }) {
+    const emailAnswer = await mockSendEmailCaptcha(api, "david@ijiazz.cn");
+    await expect(
+      signup(api, {
+        email: "david@ijiazz.cn",
+        password: AlicePassword,
+        emailCaptcha: { ...emailAnswer, code: emailAnswer.code + "abc" },
+      }),
+      "传错误的验证码",
+    ).rejects.throwErrorMatchBody(403, { message: "验证码错误" });
+    await signup(api, { email: "david@ijiazz.cn", password: AlicePassword, emailCaptcha: emailAnswer });
+  });
   test("不允许传错误的邮箱", async function ({ api }) {
-    await expect(signup(api, { email: "@qq.com", password: AlicePassword }), "邮箱不正确").rejects.responseStatus(400);
+    await expect(mockSendEmailCaptcha(api, "@qq.com"), "邮箱不正确").rejects.responseStatus(400);
   });
 });
 describe("登录", function () {

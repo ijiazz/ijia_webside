@@ -7,7 +7,7 @@ import {
   type CreateUserProfileParam,
   type CreateUserProfileResult,
 } from "./passport.dto.ts";
-import { optional, array } from "evlib/validator";
+import { optional, array, stringMatch } from "evlib/validator";
 import { passportService } from "./services/passport.service.ts";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
@@ -30,7 +30,7 @@ import { APP_CONFIG } from "@/config.ts";
 import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/errors.ts";
 import { rolesGuard } from "@/global/auth.ts";
 import { HonoContext } from "@/hono/type.ts";
-
+const emailCheck = stringMatch(/^[^@]+@.+?\..+$/);
 @autoBody
 @Controller({})
 export class PassportController {
@@ -39,7 +39,7 @@ export class PassportController {
   @ToArguments(async function (ctx) {
     const body = await ctx.req.json();
     const param = checkValue(body, {
-      email: "string",
+      email: emailCheck,
       password: optional.string,
       passwordNoHash: optional.boolean,
       classId: optional(array.number),
@@ -68,7 +68,10 @@ export class PassportController {
 
   @PipeInput(async function (ctx) {
     const body = await ctx.req.json();
-    return checkValue(body, { captchaReply: imageCaptchaReplyChecker(), email: "string" });
+    return checkValue(body, {
+      captchaReply: imageCaptchaReplyChecker(),
+      email: emailCheck,
+    });
   })
   @Post("/passport/signup/email_captcha")
   async sendEmailCaptcha({ captchaReply, email }: RequestSignupEmailCaptchaParam): Promise<EmailCaptchaQuestion> {
