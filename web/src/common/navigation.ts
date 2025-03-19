@@ -4,3 +4,7 @@ export function getUrlByRouter(router: string) {
 export function getPathByRouter(router: string) {
   return `/x/#${router}`;
 }
+
+export function gotoHome() {
+  location.href = "/";
+}

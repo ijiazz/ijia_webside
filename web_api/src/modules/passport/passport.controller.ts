@@ -184,11 +184,17 @@ export class PassportController {
     const param = await checkValueAsync(ctx.req.json(), {
       newPassword: "string",
       oldPassword: "string",
+      passwordNoHash: optional.boolean,
     });
     return [userId, param.oldPassword, param.newPassword];
   })
   @Post("/passport/change_password")
-  async changePassword(userId: string, oldPwd: string, newPwd: string) {
+  async changePassword(userId: string, oldPwd: string, newPwd: string, passwordNoHash?: boolean): Promise<void> {
+    if (passwordNoHash) {
+      const res = await Promise.all([hashPasswordFrontEnd(newPwd), hashPasswordFrontEnd(oldPwd)]);
+      newPwd = res[0];
+      oldPwd = res[1];
+    }
     await passportService.changePassword(+userId, oldPwd, newPwd);
   }
 }

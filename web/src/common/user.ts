@@ -4,7 +4,7 @@ import { useAsync } from "@/hooks/async.ts";
 import { useEffect, useMemo } from "react";
 import { toFileUrl } from "./http.ts";
 import Cookie from "js-cookie";
-import { getUrlByRouter } from "./nav.ts";
+import { getUrlByRouter } from "./navigation.ts";
 
 export type UserProfileBasic = UserBasicDto & {
   userIdStr: string;

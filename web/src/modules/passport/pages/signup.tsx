@@ -10,7 +10,7 @@ import { VideoBg } from "../components/VideoBg.tsx";
 import { useRedirect } from "@/hooks/redirect.ts";
 import { useHoFetch } from "@/hooks/http.ts";
 import { isHttpErrorCode } from "@/common/http.ts";
-import { getPathByRouter } from "@/common/nav.ts";
+import { getPathByRouter } from "@/common/navigation.ts";
 import { useCurrentUser } from "@/common/user.ts";
 function useCooling(coolingTime = 60) {
   const [time, settime] = useState<number>(0);

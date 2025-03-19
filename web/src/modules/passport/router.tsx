@@ -1,20 +1,20 @@
-import { Route, Routes } from "react-router";
+import { RouteObject } from "react-router";
 import { lazyComponent } from "@/lib/lazy_component.ts";
 
-const LoginPage = lazyComponent(
-  () => import("./pages/login.tsx"),
-  (mod) => mod.LoginPage,
-);
-const SignupPage = lazyComponent(
-  () => import("./pages/signup.tsx"),
-  (mod) => mod.Signup,
-);
-
-export function Passport() {
-  return (
-    <Routes>
-      <Route path="login" Component={LoginPage}></Route>
-      <Route path="signup" Component={SignupPage}></Route>
-    </Routes>
-  );
-}
+const router: RouteObject[] = [
+  {
+    path: "login",
+    Component: lazyComponent(
+      () => import("./pages/login.tsx"),
+      (mod) => mod.LoginPage,
+    ),
+  },
+  {
+    path: "signup",
+    Component: lazyComponent(
+      () => import("./pages/signup.tsx"),
+      (mod) => mod.Signup,
+    ),
+  },
+];
+export default router;

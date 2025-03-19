@@ -4,7 +4,7 @@ import { AndContext } from "@/hooks/antd.ts";
 import { ApiContext, IGNORE_ERROR_MSG } from "@/hooks/http.ts";
 import { createHoFetch, getResponseErrorInfo } from "@/common/http.ts";
 import { useNavigate } from "react-router";
-import { getUrlByRouter } from "./common/nav.ts";
+import { getUrlByRouter } from "./common/navigation.ts";
 export const useToken = theme.useToken;
 
 export function AntdProvider(props: PropsWithChildren<{}>) {

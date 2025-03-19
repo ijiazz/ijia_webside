@@ -3,23 +3,16 @@ import "@ant-design/v5-patch-for-react-19";
 import "./styles/global.css";
 
 import { createRoot } from "react-dom/client";
-import { RouterRoot } from "./router-root.tsx";
-import { HoFetchProvider, AntdProvider } from "./global-provider.tsx";
-import { HashRouter } from "react-router";
+import routerRoot from "./router-root.tsx";
+import { RouterProvider } from "react-router";
 import { loginByAccessToken } from "./common/user.ts";
 
 paseAccessToken();
+mountApp();
 
-createRoot(document.getElementById("app")!).render(
-  <AntdProvider>
-    <HashRouter>
-      <HoFetchProvider>
-        <RouterRoot />
-      </HoFetchProvider>
-    </HashRouter>
-  </AntdProvider>,
-);
-
+function mountApp() {
+  createRoot(document.getElementById("app")!).render(<RouterProvider router={routerRoot}></RouterProvider>);
+}
 function paseAccessToken() {
   const url = new URL(location.href);
   const access_token = url.searchParams.get("access_token");

@@ -24,6 +24,7 @@ export interface PassportApi {
     response: EmailCaptchaQuestion;
     body: RequestSignupEmailCaptchaParam;
   };
+  /** 修改密码 */
   "POST /passport/change_password": {
     response: null;
     body: ChangePasswordParam;

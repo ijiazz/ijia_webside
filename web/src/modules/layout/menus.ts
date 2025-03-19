@@ -26,7 +26,7 @@ export const menus: MenuDataItem = {
           name: "个人中心",
         },
         {
-          path: "setting",
+          path: "security",
           name: "安全设置",
         },
       ],

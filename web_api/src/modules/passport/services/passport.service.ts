@@ -4,48 +4,44 @@ import { signJwt } from "@/global/jwt.ts";
 import { ENV } from "@/global/config.ts";
 import { hashPasswordBackEnd } from "./password.ts";
 import { HttpError } from "@/global/errors.ts";
-
+function selectUser(where: string) {
+  return user
+    .select<LoginUserInfo>({
+      user_id: "id",
+      password: true,
+      pwd_salt: true,
+      is_deleted: true,
+      login_ban: "get_bit(status, 0)",
+    })
+    .where(where);
+}
+function getUserById(userId: number): Promise<LoginUserInfo> {
+  return selectUser(`id=${v(userId)}`)
+    .limit(1)
+    .queryRows()
+    .then((items) => items[0]);
+}
+function getUserByEmail(email: string): Promise<LoginUserInfo> {
+  return selectUser(`email=${v(email)}`)
+    .limit(1)
+    .queryRows()
+    .then((items) => items[0]);
+}
 type LoginUserInfo = {
   user_id: number;
   password?: string;
   pwd_salt?: string;
   login_ban: boolean;
+  is_deleted: boolean;
 };
 export class PassportService {
-  private selectUser(where: string) {
-    return user
-      .select<LoginUserInfo>({
-        user_id: "id",
-        password: true,
-        pwd_salt: true,
-        login_ban: "get_bit(status, 0) ",
-      })
-      .where(["NOT is_deleted", where]);
-  }
-  private async expectPasswordIsEqual(user: LoginUserInfo | undefined, inputPassword: string): Promise<number> {
-    if (!user) throw new HttpError(401, { message: "账号或密码错误" });
-
-    if (user.pwd_salt && user.password) {
-      inputPassword = await hashPasswordBackEnd(inputPassword, user.pwd_salt);
-    }
-    if (typeof inputPassword !== "string" || user.password !== inputPassword)
-      throw new HttpError(401, { message: "账号或密码错误" });
-    if (user.login_ban) throw new HttpError(423, { message: "账号已被冻结" });
-    return user.user_id;
-  }
   async loginById(id: number, password: string): Promise<number> {
-    const user: LoginUserInfo | undefined = await this.selectUser(`id=${v(id)}`)
-      .limit(1)
-      .queryRows()
-      .then((users) => users[0]);
-    return this.expectPasswordIsEqual(user, password);
+    const user: LoginUserInfo | undefined = await getUserById(id);
+    return loginCheck(user, password);
   }
   async loginByEmail(email: string, password: string): Promise<number> {
-    const user = await this.selectUser(`email=${v(email)}`)
-      .limit(1)
-      .queryRows()
-      .then((users) => users[0]);
-    return this.expectPasswordIsEqual(user, password);
+    const user = await getUserByEmail(email);
+    return loginCheck(user, password);
   }
   signJwt(userId: number, minute: number): Promise<string> {
     const liveMs = minute * 60 * 1000;
@@ -75,12 +71,29 @@ export class PassportService {
 
     await using conn = dbPool.begin("REPEATABLE READ");
     const userInfo: LoginUserInfo | undefined = await conn
-      .queryRows(this.selectUser(`id=${v(uid)}`).limit(1))
-      .then((res) => res[0]);
+      .queryRows(selectUser(`id=${uid}`).limit(1))
+      .then((rows) => rows[0]);
     if (!userInfo) throw new HttpError(409, { message: "用户不存在" });
-    await this.expectPasswordIsEqual(userInfo, oldPwd);
+
+    await expectPasswordIsEqual(userInfo, oldPwd);
     await conn.queryCount(user.update({ password: v(password), pwd_salt: v(salt) }).where(`id=${v(uid)}`));
     await conn.commit();
   }
 }
 export const passportService = new PassportService();
+
+async function loginCheck(user: LoginUserInfo | undefined, password: string): Promise<number> {
+  if (!user) throw new HttpError(401, { message: "账号或密码错误" });
+
+  const pwdIsEqual = await expectPasswordIsEqual(user, password);
+  if (!pwdIsEqual) throw new HttpError(401, { message: "账号或密码错误" });
+  if (user.is_deleted || user.is_deleted === null) throw new HttpError(423, { message: "账号已注销" });
+  if (user.login_ban) throw new HttpError(423, { message: "账号已被冻结" });
+  return user.user_id;
+}
+async function expectPasswordIsEqual(user: LoginUserInfo, inputPassword: string): Promise<boolean> {
+  if (user.pwd_salt && user.password) {
+    inputPassword = await hashPasswordBackEnd(inputPassword, user.pwd_salt);
+  }
+  return typeof inputPassword !== "string" || user.password !== inputPassword;
+}

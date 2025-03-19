@@ -16,7 +16,7 @@ import { useWindowResize } from "@/hooks/window.ts";
 import { VideoBg } from "../components/VideoBg.tsx";
 import { IGNORE_ERROR_MSG, useHoFetch } from "@/hooks/http.ts";
 import { useRedirect } from "@/hooks/redirect.ts";
-import { getPathByRouter } from "@/common/nav.ts";
+import { getPathByRouter } from "@/common/navigation.ts";
 import { useCurrentUser } from "@/common/user.ts";
 
 type Msg = {
@@ -156,7 +156,6 @@ export function LoginPage() {
     </StyledPage>
   );
 }
-
 const StyledPage = styled.div`
   height: 100%;
   position: relative;

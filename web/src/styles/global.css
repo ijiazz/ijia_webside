@@ -34,10 +34,3 @@
 .ant-tabs-content-holder {
   overflow: auto;
 }
-
-html,
-body {
-  padding: 0;
-  margin: 0;
-  height: 100%;
-}

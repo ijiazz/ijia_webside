@@ -1,12 +1,66 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IJIA</title>
+    <style>
+      html,
+      body {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+      }
+    </style>
+    <style id="loadingStyle">
+      #app-loading {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+      }
+      .app-loading-animation {
+        background: -webkit-linear-gradient(
+          135deg,
+          #08dfb4,
+          #ff6ac6 25%,
+          #147b96 50%,
+          #53d545 55%,
+          #2cc4e0 60%,
+          #8b2ce0 80%,
+          #ff6384 95%,
+          #08dfb4
+        );
+        /* 文字颜色填充设置为透明 */
+        -webkit-text-fill-color: transparent;
+        /* 背景裁剪，即让文字使用背景色 */
+        background-clip: text;
+        /* 背景图放大一下，看着柔和一些 */
+        background-size: 600% 300%;
+        /* 应用动画flowCss 12秒速度 无限循环 线性匀速动画*/
+        animation: flowCss 12s infinite linear;
+      }
+      @keyframes flowCss {
+        0% {
+          /* 移动背景位置 */
+          background-position: 0 0;
+        }
+
+        100% {
+          background-position: -300% 0;
+        }
+      }
+    </style>
   </head>
   <body>
     <script src="../src/index.tsx" type="module"></script>
-    <div id="app" style="height: 100%"></div>
+    <div id="app" style="height: 100%">
+      <div id="app-loading">
+        <div class="app-loading-animation">
+          <h1>Loading...</h1>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
