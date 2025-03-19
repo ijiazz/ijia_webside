@@ -40,9 +40,11 @@ function useCreateHoFetch() {
       if (ctx.allowFailed instanceof Array && ctx.allowFailed.includes(res.status)) return res;
 
       const body = await res.parseBody();
+
       const err = getResponseErrorInfo(body);
       if (err) {
-        if (err.message) message.error(`(${res.status}) ${err.message}`);
+        const isHtml = res.headers.get("content-type")?.startsWith("text/html");
+        if (err.message && !isHtml) message.error(err.message);
         else message.error(res.status);
       }
 

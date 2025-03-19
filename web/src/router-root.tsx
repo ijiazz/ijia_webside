@@ -3,14 +3,13 @@ import passportRouter from "./modules/passport/router.tsx";
 import profileRouter from "./modules/profile/router.tsx";
 import { AntdProvider, HoFetchProvider } from "./global-provider.tsx";
 import { notFoundRouter } from "./modules/error_page/NotFound.tsx";
-import { PublicLayout } from "./modules/layout/BaseLayout.tsx";
 import { UserLayout } from "./modules/layout/UserLayout.tsx";
 
 const coreRouters: RouteObject[] = [
   { index: true, element: <div>home</div> },
   { path: "passport", children: passportRouter },
   {
-    Component: PublicLayout,
+    Component: UserLayout,
     children: [{ path: "live/*", element: <div>live</div> }],
   },
   {

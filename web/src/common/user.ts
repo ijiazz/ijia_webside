@@ -18,6 +18,7 @@ export function useCurrentUser(option: { manual?: boolean } = {}) {
   const { result, run, reset } = useAsync(
     (force?: boolean) => {
       if (!user || force) {
+        if (!hasUserToken()) return;
         user = api["/user/basic_info"].get().then((res) => ({
           ...res,
           avatar_url: toFileUrl(res.avatar_url),
@@ -58,4 +59,8 @@ export function userLogout() {
 }
 export function loginByAccessToken(jwtToken: string) {
   Cookie.set("jwt-token", jwtToken);
+}
+function hasUserToken() {
+  const hasCookie = Cookie.get("jwt-token");
+  return !!hasCookie;
 }
