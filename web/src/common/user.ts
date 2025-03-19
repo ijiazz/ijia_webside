@@ -9,16 +9,25 @@ import { getUrlByRouter } from "./navigation.ts";
 export type UserProfileBasic = UserBasicDto & {
   userIdStr: string;
 };
+
+export type UseCurrentUser = {
+  refresh: (token?: string) => Promise<boolean>;
+  logout(): void;
+
+  loading: boolean;
+  error?: any;
+  value?: UserProfileBasic | undefined;
+};
 let user: Promise<UserProfileBasic> | UserProfileBasic | undefined;
 const userEvent = new EventTarget();
 
-export function useCurrentUser(option: { manual?: boolean } = {}) {
+export function useCurrentUser(option: { manual?: boolean } = {}): UseCurrentUser {
   const { manual } = option;
   const { api } = useHoFetch();
   const { result, run, reset } = useAsync(
     (force?: boolean) => {
       if (!user || force) {
-        if (!hasUserToken()) return;
+        if (!getUserToken()) return;
         user = api["/user/basic_info"].get().then((res) => ({
           ...res,
           avatar_url: toFileUrl(res.avatar_url),
@@ -52,15 +61,13 @@ export function useCurrentUser(option: { manual?: boolean } = {}) {
     };
   }, [result]);
 }
-
+export function getUserToken(): string | undefined {
+  return Cookie.get("jwt-token");
+}
 export function userLogout() {
   Cookie.remove("jwt-token");
   location.href = getUrlByRouter("/passport/login");
 }
 export function loginByAccessToken(jwtToken: string) {
   Cookie.set("jwt-token", jwtToken);
-}
-function hasUserToken() {
-  const hasCookie = Cookie.get("jwt-token");
-  return !!hasCookie;
 }

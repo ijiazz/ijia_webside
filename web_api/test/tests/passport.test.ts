@@ -63,7 +63,7 @@ describe("登录", function () {
       loginUseCaptcha(api, {
         email: "alice@ijiazz.cn",
         method: LoginType.email,
-        password: "bob123",
+        password: "错误的密码",
         captcha,
       }),
     ).rejects.throwErrorEqualBody(401, { message: "账号或密码错误" });

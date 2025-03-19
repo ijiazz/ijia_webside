@@ -36,10 +36,10 @@ export function ChangePassport() {
       <h3>修改密码</h3>
       <Form name="change_password" onFinish={onFinish} layout="vertical" style={{ maxWidth: 400 }}>
         <Form.Item name="oldPassword" label="旧密码" rules={[{ required: true }]}>
-          <Input.Password />
+          <Input.Password placeholder="请输入旧密码" />
         </Form.Item>
         <Form.Item name="newPassword" label="新密码" rules={[{ required: true }]}>
-          <Input.Password />
+          <Input.Password placeholder="请输入新密码" />
         </Form.Item>
         <Form.Item
           name="confirmPassword"
@@ -54,7 +54,7 @@ export function ChangePassport() {
             }),
           ]}
         >
-          <Input.Password />
+          <Input.Password placeholder="确认密码" />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>

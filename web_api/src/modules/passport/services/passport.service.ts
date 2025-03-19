@@ -95,5 +95,5 @@ async function expectPasswordIsEqual(user: LoginUserInfo, inputPassword: string)
   if (user.pwd_salt && user.password) {
     inputPassword = await hashPasswordBackEnd(inputPassword, user.pwd_salt);
   }
-  return typeof inputPassword !== "string" || user.password !== inputPassword;
+  return typeof inputPassword === "string" && user.password === inputPassword;
 }

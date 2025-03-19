@@ -99,13 +99,14 @@ function BasicInfo() {
         <Form.Item
           label="确认密码"
           name="password-confirm"
+          dependencies={["password"]}
           rules={[
             { required: true },
-            {
-              validator: async (rule, value, callback) => {
-                if (value !== form.getFieldValue("password")) throw new Error("密码不一致");
+            ({ getFieldValue }) => ({
+              async validator(_, value) {
+                if (value && getFieldValue("password") !== value) throw new Error("密码不一致");
               },
-            },
+            }),
           ]}
         >
           <Input.Password />

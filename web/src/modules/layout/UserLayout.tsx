@@ -1,15 +1,18 @@
 import { PropsWithChildren } from "react";
 import { ProLayout, ProLayoutProps } from "@ant-design/pro-components";
 import { IjiaLogo } from "../../common/site-logo.tsx";
-import { MenuProps } from "antd";
+import { Button, MenuProps } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { menus } from "./menus.ts";
 import { gotoHome } from "@/common/navigation.ts";
-import { useCurrentUser } from "@/common/user.ts";
+import { getUserToken, useCurrentUser } from "@/common/user.ts";
 import { avatarDropdownRender } from "./avatar.tsx";
+import { useAntdStatic } from "@/hooks/antd.ts";
 
-function LayoutBase(props: PropsWithChildren<{ avatarProps?: ProLayoutProps["avatarProps"] }>) {
-  const { children = <Outlet /> } = props;
+function LayoutBase(
+  props: PropsWithChildren<{ avatarProps?: ProLayoutProps["avatarProps"]; action?: React.ReactNode }>,
+) {
+  const { children = <Outlet />, action } = props;
   const { pathname } = useLocation();
   const navigate = useNavigate();
   function onMenuSelect(item: Parameters<NonNullable<MenuProps["onSelect"]>>[0]) {
@@ -25,6 +28,14 @@ function LayoutBase(props: PropsWithChildren<{ avatarProps?: ProLayoutProps["ava
       location={{
         pathname: pathname,
       }}
+      actionsRender={
+        action
+          ? (props) => {
+              if (props.isMobile) return [];
+              return action;
+            }
+          : undefined
+      }
       avatarProps={props.avatarProps}
       layout="mix"
       splitMenus
@@ -36,9 +47,21 @@ function LayoutBase(props: PropsWithChildren<{ avatarProps?: ProLayoutProps["ava
     </ProLayout>
   );
 }
+const IS_DEV = import.meta.env.DEV;
 export function UserLayout(props: PropsWithChildren<{}>) {
   const navigate = useNavigate();
   const { logout, value: user } = useCurrentUser();
+  const { message } = useAntdStatic();
+  const copyToken = () => {
+    const url = new URL(location.href);
+    const token = getUserToken();
+    if (token) {
+      url.searchParams.set("access_token", token);
+      const tokenUrl = url.toString();
+      navigator.clipboard.writeText(tokenUrl);
+    }
+    message.success("已复制");
+  };
   return (
     <LayoutBase
       avatarProps={
@@ -55,6 +78,7 @@ export function UserLayout(props: PropsWithChildren<{}>) {
             }
           : undefined
       }
+      action={IS_DEV && user ? <Button onClick={copyToken}>复制token</Button> : undefined}
     >
       {props.children}
     </LayoutBase>

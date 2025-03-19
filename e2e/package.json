@@ -9,7 +9,6 @@
     "codegen": "playwright codegen --channel msedge",
     "report": "playwright show-report"
   },
-
   "dependencies": {
     "@ijia/data": "workspace:^",
     "@playwright/test": "^1.44.1",

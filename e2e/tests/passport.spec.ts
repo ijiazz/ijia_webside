@@ -1,6 +1,6 @@
 import { getAppUrlByRouter, vioServerTest as test } from "@/fixtures/test.ts";
 import { user } from "@ijia/data/db";
-import { initAlice, createOverwriteUser, loginGetToken, initBob } from "@/__mocks__/user.ts";
+import { initAlice, loginGetToken, initBob } from "@/__mocks__/user.ts";
 import { v } from "@ijia/data/yoursql";
 import { Page } from "@playwright/test";
 const { expect, beforeEach } = test;
@@ -45,25 +45,14 @@ test("注册账号", async function ({ page, webInfo }) {
 test("学号登录", async function ({ page }) {
   const user = await initAlice();
   await page.goto(getAppUrlByRouter("/passport/login"));
-  await page.getByRole("textbox", { name: "学号或邮箱" }).click();
-  await page.getByRole("textbox", { name: "学号或邮箱" }).fill(user.id.toString());
-  await page.getByRole("textbox", { name: "密码" }).click();
-  await page.getByRole("textbox", { name: "密码" }).fill(user.password);
-  await page.getByRole("button", { name: "登 录" }).click();
-  await selectCaptcha(page);
-
-  await expect(page, "注册成功后导航到个人配置页").toHaveURL(/\/live/, {});
+  await login(page, user.id.toString(), user.password);
+  await expect(page, "登录后导航到首页").toHaveURL(/\/live/, {});
 });
 test("邮箱登录", async function ({ page, browser }) {
   const user = await initAlice();
   await page.goto(getAppUrlByRouter("/passport/login"));
-  await page.getByRole("textbox", { name: "学号或邮箱" }).click();
-  await page.getByRole("textbox", { name: "学号或邮箱" }).fill(user.email);
-  await page.getByRole("textbox", { name: "密码" }).click();
-  await page.getByRole("textbox", { name: "密码" }).fill(user.password);
-  await page.getByRole("button", { name: "登 录" }).click();
-  await selectCaptcha(page);
-  await expect(page, "注册成功后导航到个人配置页").toHaveURL(/\/live/, {});
+  await login(page, user.email, user.password);
+  await expect(page, "登录后导航到首页").toHaveURL(/\/live/, {});
 });
 test("切换账号", async function ({ page }) {
   const Alice = await initAlice();
@@ -82,10 +71,43 @@ test("切换账号", async function ({ page }) {
   await page.getByRole("button", { name: "登 录" }).click();
   await selectCaptcha(page);
 });
+
+test("修改密码", async function ({ page }) {
+  const Alice = await initAlice();
+  const token = await loginGetToken(Alice.email, Alice.password);
+  const aliceNewPassword = "aliceNew";
+  await page.goto(getAppUrlByRouter("/profile/security", token));
+  await page.locator("body").click();
+  await page.getByRole("textbox", { name: "* 旧密码" }).click();
+  await page.getByRole("textbox", { name: "* 旧密码" }).fill(Alice.password + "err");
+  await page.getByRole("textbox", { name: "* 新密码" }).click();
+  await page.getByRole("textbox", { name: "* 新密码" }).fill(aliceNewPassword);
+  await page.getByRole("textbox", { name: "* 确认密码" }).click();
+  await page.getByRole("textbox", { name: "* 确认密码" }).fill(aliceNewPassword);
+  await page.getByRole("button", { name: "确认修改" }).click();
+
+  await page.getByRole("textbox", { name: "* 旧密码" }).click();
+  await page.getByRole("textbox", { name: "* 旧密码" }).fill(Alice.password);
+  await page.getByRole("button", { name: "确认修改" }).click();
+
+  await page.locator(".ant-avatar").click();
+  await page.getByText("退出登录").click();
+
+  await login(page, Alice.email, aliceNewPassword);
+  await expect(page, "登录后导航到首页").toHaveURL(/\/live/, {});
+});
 async function selectCaptcha(page: Page) {
   await page.locator(".captcha-img").first().click();
   await page.locator("div:nth-child(2) > .captcha-img").click();
   await page.locator("div:nth-child(3) > .captcha-img").click();
 
   await page.getByRole("button", { name: "确 定" }).click();
+}
+async function login(page: Page, emailOrUserId: string, password: string) {
+  await page.getByRole("textbox", { name: "学号或邮箱" }).click();
+  await page.getByRole("textbox", { name: "学号或邮箱" }).fill(emailOrUserId);
+  await page.getByRole("textbox", { name: "密码" }).click();
+  await page.getByRole("textbox", { name: "密码" }).fill(password);
+  await page.getByRole("button", { name: "登 录" }).click();
+  await selectCaptcha(page);
 }
