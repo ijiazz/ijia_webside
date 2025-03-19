@@ -1,7 +1,7 @@
 import { resolve } from "node:path/posix";
 import { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import { ENV, Mode } from "@/global/config.ts";
+import { ENV } from "@/global/config.ts";
 import { HTTPException } from "hono/http-exception";
 
 const pkgRoot = new URL(import.meta.url);
@@ -14,8 +14,7 @@ export function errorHandler(error: unknown, ctx: Context): Response | Promise<R
   } else {
     console.error(error);
     let status = 500;
-    const isPROD = ENV.MODE == Mode.Prod;
-    const html = createErrorHtmlText(error, { baseDir: baseDir, showStack: !isPROD });
+    const html = createErrorHtmlText(error, { baseDir: baseDir, showStack: !ENV.IS_PROD });
     return ctx.html(html, status as ContentfulStatusCode);
   }
 }

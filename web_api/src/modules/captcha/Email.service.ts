@@ -32,8 +32,9 @@ class EmailCaptchaService {
   async verify(reply: EmailCaptchaReply, email: string): Promise<boolean> {
     const data = await this.session.get(reply.sessionId);
     if (!data) return false;
-    await this.session.delete(reply.sessionId);
-    return data.code === reply.code && data.email === email;
+    const pass = data.code === reply.code && data.email === email;
+    if (pass) await this.session.delete(reply.sessionId);
+    return pass;
   }
 }
 

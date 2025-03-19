@@ -25,11 +25,15 @@ test("注册账号", async function ({ page, webInfo }) {
   await page.getByRole("button", { name: "确 定" }).click();
 
   await page.getByRole("textbox", { name: "* 邮件验证码 :" }).click();
-  await page.getByRole("textbox", { name: "* 邮件验证码 :" }).fill("1234"); // 测试模式邮件验证码一定是 1234
+  await page.getByRole("textbox", { name: "* 邮件验证码 :" }).fill("12345"); // 测试模式邮件验证码一定是 1234, 这里测试错误
   await page.getByRole("textbox", { name: "* 密码 :" }).click();
   await page.getByRole("textbox", { name: "* 密码 :" }).fill("123");
   await page.getByRole("textbox", { name: "* 确认密码 :" }).click();
   await page.getByRole("textbox", { name: "* 确认密码 :" }).fill("123");
+  await page.getByRole("button", { name: "提 交" }).click();
+
+  await page.getByRole("textbox", { name: "* 邮件验证码 :" }).click();
+  await page.getByRole("textbox", { name: "* 邮件验证码 :" }).fill("1234"); // 测试模式邮件验证码一定是 1234
   await page.getByRole("button", { name: "提 交" }).click();
 
   await expect(page, "注册成功后导航到个人配置页").toHaveURL(/\/profile\/center/, {});

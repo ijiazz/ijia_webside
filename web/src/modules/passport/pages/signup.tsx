@@ -134,9 +134,13 @@ function EmailInput(props: {
       <Input {...props} onChange={(e) => props.onChange?.(e.currentTarget.value)} />
       <ImageCaptchaPopover
         disabled={!emailIsValid}
-        onSubmit={(sessionId, select) => props.onCaptchaSubmit?.(email!, sessionId, select)}
+        onSubmit={(sessionId, select) => {
+          return props.onCaptchaSubmit?.(email!, sessionId, select).then(cooling.start);
+        }}
       >
-        <Button disabled={!emailIsValid}>发送验证码{cooling.time > 0 ? `${cooling.time}` : undefined}</Button>
+        <Button disabled={!emailIsValid || cooling.time > 0}>
+          发送验证码{cooling.time > 0 ? `${cooling.time}` : undefined}
+        </Button>
       </ImageCaptchaPopover>
     </div>
   );

@@ -1,5 +1,5 @@
 import * as jwtLib from "hono/jwt";
-import { ENV, Mode } from "@/global/config.ts";
+import { ENV } from "@/global/config.ts";
 export interface SignInfo {
   userId: string;
   exp?: number;
@@ -35,7 +35,7 @@ export class Jwt<T extends {}> {
 }
 let jwtKey: string;
 if (ENV.JWT_KEY) jwtKey = ENV.JWT_KEY;
-else if (ENV.MODE === Mode.Prod) jwtKey = crypto.randomUUID().replaceAll("-", "");
+else if (ENV.IS_PROD) jwtKey = crypto.randomUUID().replaceAll("-", "");
 else {
   console.warn("缺少环境变量 JWT_KEY, 将使用默认值");
   jwtKey = "abcd108";

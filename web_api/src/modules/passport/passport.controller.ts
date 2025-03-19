@@ -25,7 +25,7 @@ import {
 import { autoBody } from "@/global/pipe.ts";
 import { createEmailCodeHtmlContent } from "./template/sigup-email-code.ts";
 import { Context } from "hono";
-import { ENV, Mode } from "@/global/config.ts";
+import { ENV, RunMode } from "@/global/config.ts";
 import { APP_CONFIG } from "@/config.ts";
 import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/errors.ts";
 import { rolesGuard } from "@/global/auth.ts";
@@ -43,15 +43,15 @@ export class PassportController {
       password: optional.string,
       passwordNoHash: optional.boolean,
       classId: optional(array.number),
-      emailCaptcha: emailCaptchaReplyChecker(),
+      emailCaptcha: optional(emailCaptchaReplyChecker()),
     });
 
-    return [param, ENV.SIGNUP_VERIFY_EMAIL];
+    return [param, !ENV.SIGUP_VERIFY_EMAIL_DISABLE];
   })
   @Post("/passport/signup")
   async createUser(body: CreateUserProfileParam, verifyEmail?: boolean): Promise<CreateUserProfileResult> {
     if (verifyEmail) {
-      const pass = await emailCaptchaService.verify(body.emailCaptcha!, body.email);
+      const pass = body.emailCaptcha ? await emailCaptchaService.verify(body.emailCaptcha, body.email) : false;
       if (!pass) throw new HttpCaptchaError();
     }
     if (body.password) {
@@ -84,8 +84,7 @@ export class PassportController {
       if (exists) throw new HttpError(406, { message: "邮件已被注册" });
     }
 
-    const isProd = ENV.MODE === Mode.Prod;
-    const code = isProd ? "1234" : emailCaptchaService.genCode();
+    const code = ENV.IS_TEST ? "1234" : emailCaptchaService.genCode();
     const expire = 5 * 60; // 5 分钟有效期
     const htmlContent = createEmailCodeHtmlContent({
       code,
@@ -100,10 +99,10 @@ export class PassportController {
       text: htmlContent,
     };
     let emailCaptchaQuestion: EmailCaptchaQuestion;
-    if (isProd) {
+    if (ENV.IS_PROD) {
       emailCaptchaQuestion = await emailCaptchaService.sendEmailCaptcha(captchaEmail);
     } else {
-      if (ENV.MODE === Mode.Dev) console.log("模拟发送邮件验证码：" + code, captchaEmail);
+      if (ENV.MODE === RunMode.Dev) console.log("模拟发送邮件验证码：" + code, captchaEmail);
       emailCaptchaQuestion = await emailCaptchaService.createSession(captchaEmail);
     }
     return emailCaptchaQuestion;

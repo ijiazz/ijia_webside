@@ -25,14 +25,14 @@ import {
   setUserPublicClass,
 } from "./user.service.ts";
 import { toErrorStr } from "evlib";
-import { ENV, Mode } from "@/global/config.ts";
+import { ENV } from "@/global/config.ts";
 
 @Use(rolesGuard)
 @autoBody
 @Controller({})
 export class UserController {
   constructor() {
-    if (ENV.MODE !== Mode.Prod) {
+    if (!ENV.IS_PROD) {
       console.warn("非生产环境，账号绑定检测通过数据库检测");
     }
   }
@@ -108,7 +108,7 @@ export class UserController {
       }
     }
     let userInfo: PlatformUserBasicInfoCheckResult;
-    if (ENV.MODE === Mode.Prod) {
+    if (ENV.IS_PROD) {
       const checkServer = getCheckerServer();
       userInfo = await checkServer.checkPlatformUserInfo(platformUseId, userId);
       const [user] = await pla_user
@@ -193,7 +193,7 @@ export class UserController {
   })
   @Post("/user/profile/sync")
   async syncPlatformAccount(userId: number, param: { platform: Platform; pla_uid: string }): Promise<void> {
-    if (ENV.MODE === Mode.Prod) {
+    if (ENV.IS_PROD) {
       if (param.platform === Platform.douYin) {
         const [info] = await pla_user
           .select({ sec_uid: "(extra->>'sec_uid')" })

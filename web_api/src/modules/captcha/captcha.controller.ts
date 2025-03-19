@@ -8,13 +8,13 @@ import { autoBody } from "@/global/pipe.ts";
 import { getOOS, getBucket } from "@ijia/data/oos";
 import { contentType } from "@std/media-types";
 import path from "node:path";
-import { ENV, Mode } from "@/global/config.ts";
+import { ENV, RunMode } from "@/global/config.ts";
 const BUCKET = getBucket();
 
 @autoBody
 class ImageCaptchaController {
   constructor() {
-    if (ENV.MODE === Mode.E2E) {
+    if (ENV.MODE === RunMode.E2E) {
       console.log("E2E测试模式，验证码总是选择前 3 个图片");
     }
   }
@@ -44,7 +44,7 @@ class ImageCaptchaController {
       allIdList[i] = item.id;
       answer[i] = item.is_true;
     }
-    if (ENV.MODE === Mode.E2E) {
+    if (ENV.MODE === RunMode.E2E) {
       if (result.length < 9) {
         for (let i = result.length; i < 9; i++) {
           allIdList[i] = "null";
@@ -148,7 +148,7 @@ class ImageCaptchaController {
   /** 确认验证码是否通过，如果通过，则更新未知图片的选择情况 */
   async verify(reply: ImageCaptchaReply): Promise<boolean> {
     const pass = await this.imageVerifyOnly(reply.sessionId, reply.selectedIndex);
-    if (pass && ENV.MODE !== Mode.E2E) {
+    if (pass && ENV.MODE !== RunMode.E2E) {
       const assertCorrect = Array.from(pass.assertCorrect);
       const assertError = Array.from(pass.assertError);
       const add = captcha_picture
