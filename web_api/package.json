@@ -40,6 +40,7 @@
     "vitest": "^3.0.8"
   },
   "files": [
-    "dist/**"
+    "dist/**",
+    "./config.jsonc"
   ]
 }

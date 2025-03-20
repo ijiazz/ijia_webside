@@ -1,7 +1,7 @@
 {
   "appName": "IJIA 学院",
   //可选
- /*  "emailSender": {
+  /*  "emailSender": {
     "senderName": "IJIA学院", //发送署名，必填项
     "emailFrom": "school@ijiazz.cn", //发送邮箱验证码使用的电子邮件 必填项
     "password": null, //登录邮箱服务器的密码
