@@ -11,7 +11,7 @@ import { optional, array, stringMatch } from "evlib/validator";
 import { passportService } from "./services/passport.service.ts";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
-import { Controller, PipeInput, PipeOutput, Post, ToArguments, Use } from "@asla/hono-decorator";
+import { Controller, Get, PipeInput, PipeOutput, Post, ToArguments, Use } from "@asla/hono-decorator";
 import { checkValue, checkValueAsync } from "@/global/check.ts";
 import { integer } from "evlib/validator";
 import {
@@ -30,6 +30,7 @@ import { APP_CONFIG } from "@/config.ts";
 import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/errors.ts";
 import { rolesGuard } from "@/global/auth.ts";
 import { HonoContext } from "@/hono/type.ts";
+import { PassportConfig } from "./passport.dto.ts";
 const emailCheck = stringMatch(/^[^@]+@.+?\..+$/);
 @autoBody
 @Controller({})
@@ -198,6 +199,16 @@ export class PassportController {
       oldPwd = res[1];
     }
     await passportService.changePassword(+userId, oldPwd, newPwd);
+  }
+
+  @Get("/passport/config")
+  async getPassportConfig(): Promise<PassportConfig> {
+    return {
+      signupEnabled: true,
+      loginCaptchaDisabled: false,
+      signupTip: undefined,
+      loginTip: undefined,
+    };
   }
 }
 

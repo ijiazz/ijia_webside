@@ -1,56 +1,40 @@
 import styled from "@emotion/styled";
 import { Button, Form, Input, Space } from "antd";
-import { useContext, useRef, useState } from "react";
+import { useContext } from "react";
 import { tryHashPassword } from "../util/pwd_hash.ts";
-import { ImageCaptchaPopover } from "@/common/capthca/ImageCaptcha.tsx";
 import { useAsync } from "@/hooks/async.ts";
-import { AndContext } from "@/hooks/antd.ts";
+import { AndContext, useThemeToken } from "@/hooks/antd.ts";
 import { IjiaLogo } from "@/common/site-logo.tsx";
-import { VideoBg } from "../components/VideoBg.tsx";
 import { useRedirect } from "@/hooks/redirect.ts";
 import { useHoFetch } from "@/hooks/http.ts";
 import { isHttpErrorCode } from "@/common/http.ts";
 import { getPathByRouter } from "@/common/navigation.ts";
 import { useCurrentUser } from "@/common/user.ts";
-function useCooling(coolingTime = 60) {
-  const [time, settime] = useState<number>(0);
-  const ref = useRef<null | number>(null);
-
-  const start = () => {
-    if (ref.current) clearInterval(ref.current);
-    settime(coolingTime);
-    const id = setInterval(() => {
-      settime((time) => {
-        if (time - 1 === 0) clearInterval(id);
-        return time - 1;
-      });
-    }, 1000);
-    ref.current = id;
-  };
-  return {
-    time,
-    start,
-  };
-}
+import { EmailInput } from "../components/EmailInput.tsx";
+import { PassportConfig } from "@/api.ts";
+import { useRouteLoaderData } from "react-router";
 
 export function Signup() {
+  const config = useRouteLoaderData<PassportConfig>("/passport") ?? {};
+  const theme = useThemeToken();
   return (
     <StyledPage>
-      <VideoBg />
       <div className="main">
         <div className="header">
           <Space>
             <IjiaLogo />
             <h2>注册</h2>
           </Space>
+          <div style={{ color: theme.colorTextDescription, fontSize: theme.fontSize }}>{config.signupTip}</div>
         </div>
-        <BasicInfo />
+        <BasicInfo passportConfig={config} />
       </div>
     </StyledPage>
   );
 }
 
-function BasicInfo() {
+function BasicInfo(props: { passportConfig: PassportConfig }) {
+  const { passportConfig: config } = props;
   const [form] = Form.useForm<FormValues>();
   const { api } = useHoFetch();
   const { refresh } = useCurrentUser({ manual: true });
@@ -76,7 +60,13 @@ function BasicInfo() {
   const { message } = useContext(AndContext);
   return (
     <div style={{ padding: 32 }}>
-      <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }} form={form} onFinish={onSubmit}>
+      <Form
+        labelCol={{ span: 6 }}
+        wrapperCol={{ span: 18 }}
+        form={form}
+        onFinish={onSubmit}
+        disabled={!config.signupEnabled}
+      >
         <Form.Item label="电子邮箱" name="email" rules={[{ required: true, type: "email" }]}>
           <EmailInput
             onCaptchaSubmit={async (email, sessionId, selected) => {
@@ -113,38 +103,20 @@ function BasicInfo() {
         </Form.Item>
       </Form>
       <div style={{ display: "flex", justifyContent: "end" }}>
-        <Button loading={submitState.loading} type="primary" htmlType="submit" onClick={() => form.submit()}>
+        <Button
+          disabled={!config.signupEnabled}
+          loading={submitState.loading}
+          type="primary"
+          htmlType="submit"
+          onClick={() => form.submit()}
+        >
           提交
         </Button>
       </div>
     </div>
   );
 }
-function EmailInput(props: {
-  value?: string;
-  onChange?(value: string): void;
-  onCaptchaSubmit: (email: string, sessionId: string, selected: number[]) => Promise<void>;
-}) {
-  const cooling = useCooling();
-  const form = Form.useFormInstance();
-  const email: string | undefined = Form.useWatch("email", form);
-  const emailIsValid = /[^@]+?@[^@]+/.test(email ?? "");
-  return (
-    <div style={{ display: "flex", gap: 12 }}>
-      <Input {...props} onChange={(e) => props.onChange?.(e.currentTarget.value)} />
-      <ImageCaptchaPopover
-        disabled={!emailIsValid}
-        onSubmit={(sessionId, select) => {
-          return props.onCaptchaSubmit?.(email!, sessionId, select).then(cooling.start);
-        }}
-      >
-        <Button disabled={!emailIsValid || cooling.time > 0}>
-          发送验证码{cooling.time > 0 ? `${cooling.time}` : undefined}
-        </Button>
-      </ImageCaptchaPopover>
-    </div>
-  );
-}
+
 type FormValues = {
   email: string;
   email_code: string;
@@ -152,12 +124,13 @@ type FormValues = {
 };
 const StyledPage = styled.div`
   height: 100%;
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   .header {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
   }
   .main {

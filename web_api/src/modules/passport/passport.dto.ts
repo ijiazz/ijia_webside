@@ -54,3 +54,12 @@ export type ChangePasswordParam = {
   passwordNoHash?: boolean;
   // userId?: string;
 };
+export type PassportConfig = {
+  signupTip?: string;
+  /** 是否开启注册 */
+  signupEnabled?: boolean;
+
+  /** 登录关闭验证码 */
+  loginCaptchaDisabled?: boolean;
+  loginTip?: string;
+};

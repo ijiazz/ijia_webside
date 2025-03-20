@@ -3,8 +3,8 @@ import { LoginForm, ProFormText } from "@ant-design/pro-components";
 import { Alert, Space, Tabs } from "antd";
 import { useContext } from "react";
 import { useState } from "react";
-import { Link } from "react-router";
-import { LoginType, UserLoginParamDto } from "@/api.ts";
+import { Link, useRouteLoaderData } from "react-router";
+import { LoginType, PassportConfig, UserLoginParamDto } from "@/api.ts";
 import { CAN_HASH_PASSWORD, tryHashPassword } from "../util/pwd_hash.ts";
 import { AndContext } from "@/hooks/antd.ts";
 import { IjiaLogo } from "@/common/site-logo.tsx";
@@ -13,7 +13,6 @@ import { useAsync } from "@/hooks/async.ts";
 import { ImageCaptchaModal } from "@/common/capthca/ImageCaptcha.tsx";
 import classNames from "classnames";
 import { useWindowResize } from "@/hooks/window.ts";
-import { VideoBg } from "../components/VideoBg.tsx";
 import { IGNORE_ERROR_MSG, useHoFetch } from "@/hooks/http.ts";
 import { useRedirect } from "@/hooks/redirect.ts";
 import { getPathByRouter } from "@/common/navigation.ts";
@@ -30,6 +29,8 @@ const defaultMessage: Msg | undefined = CAN_HASH_PASSWORD
       title: "当前环境无法对密码进行加密，你的密码将以明文发送到服务器！",
     };
 export function LoginPage() {
+  const config = useRouteLoaderData<PassportConfig>("/passport") ?? {};
+
   const go = useRedirect({ defaultPath: () => getPathByRouter("/live") });
   const [loginType, setLoginType] = useState<LoginType>(LoginType.id);
   const [message, setMessage] = useState<Msg | undefined>(defaultMessage);
@@ -69,6 +70,9 @@ export function LoginPage() {
 
     try {
       const loginParam = await getLoinParam(loginType, param);
+      if (config.loginCaptchaDisabled) {
+        return postLogin(loginParam);
+      }
       setLoginParam(loginParam);
     } catch (error) {
       throw error;
@@ -78,14 +82,13 @@ export function LoginPage() {
 
   return (
     <StyledPage>
-      <VideoBg />
       <div className={classNames("main", { center: windowSize.height * 1.2 > windowSize.width })}>
         <div className="left-desc"> </div>
 
         <div className="login-form-container">
           <LoginForm
             logo={
-              <Link to="/" title="首页">
+              <Link to="/" title="首页" viewTransition>
                 <IjiaLogo size={44} />
               </Link>
             }
@@ -134,10 +137,10 @@ export function LoginPage() {
                 记住账号
               </ProFormCheckbox> */}
               <Space>
-                <Link to="../find-account" style={{ float: "right" }}>
+                <Link to="../find-account" style={{ float: "right" }} viewTransition>
                   忘记密码
                 </Link>
-                <Link to="../signup" style={{ float: "right" }}>
+                <Link to="../signup" style={{ float: "right" }} viewTransition>
                   注册账号
                 </Link>
               </Space>
@@ -158,14 +161,11 @@ export function LoginPage() {
 }
 const StyledPage = styled.div`
   height: 100%;
-  position: relative;
-
   .main {
     display: flex;
     justify-content: space-between;
     align-items: center;
     height: 100%;
-    position: relative;
     .left-desc {
       color: #fff;
       font-size: 48px;

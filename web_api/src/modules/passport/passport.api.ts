@@ -6,6 +6,7 @@ import type {
   UserLoginResultDto,
   RequestSignupEmailCaptchaParam,
   ChangePasswordParam,
+  PassportConfig,
 } from "./passport.dto.ts";
 
 export interface PassportApi {
@@ -28,5 +29,9 @@ export interface PassportApi {
   "POST /passport/change_password": {
     response: null;
     body: ChangePasswordParam;
+  };
+  /** 获取登录相关的配置 */
+  "GET /passport/config": {
+    response: PassportConfig;
   };
 }

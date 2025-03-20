@@ -11,12 +11,14 @@ export function AntdProvider(props: PropsWithChildren<{}>) {
   const [messageApi, messageSlot] = message.useMessage({});
   const [noticeApi, noticeSlot] = notification.useNotification({});
   const [modalApi, modalSlot] = Modal.useModal();
+  const color = "#16b3e7";
   return (
     <ConfigProvider
       theme={{
+        cssVar: true,
         token: {
-          colorPrimary: "#16b3e7",
-          colorInfo: "#16b3e7",
+          colorPrimary: color,
+          colorInfo: color,
           borderRadius: 4,
         },
       }}
