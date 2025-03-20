@@ -3,7 +3,6 @@ on:
   pull_request:
     branches:
       - main
-  push:
 jobs:
   e2e:
     runs-on: ubuntu-22.04
