@@ -1,3 +1,4 @@
 {
-  "deno.enablePaths": ["./data"]
+  "deno.enablePaths": ["./deps/hofetch", "./deps/ijia-data"],
+  "files.eol": "\n"
 }

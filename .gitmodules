@@ -1,3 +1,7 @@
-[submodule "data"]
-	path = data
+ [submodule "deps/ijia-data"]
+	path = deps/ijia-data
 	url = git@github.com:ijiazz/school_db.git
+
+[submodule "deps/hono-decorator"]
+	path = deps/hono-decorator
+	url = git@github.com:asnowc/hono-decorator.git

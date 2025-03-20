@@ -1,4 +1,5 @@
 packages:
   - web_api
   - web
-  - data
+  - deps/*
+  - e2e

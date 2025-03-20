@@ -1,0 +1,16 @@
+name: Setup project
+description: 项目初始化
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v4
+      with:
+        run_install: false
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: pnpm
+    - run: pnpm install
+      shell: bash
+    - run: pnpm init-deps
+      shell: bash

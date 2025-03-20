@@ -1,0 +1,46 @@
+name: E2E Test
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  e2e:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          ssh-key: ${{secrets.MOSS_SERVER_PKEY}}
+      - name: Build
+        run: docker compose build
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - uses: actions/cache@v4 #https://playwright.dev/docs/browsers#managing-browser-binaries
+        with:
+          path: /home/runner/.cache/ms-playwright
+          key: ${{ hashFiles('e2e/package.json') }}
+      - name: Install browser
+        run: pnpm playwright install chromium webkit firefox --with-deps
+        working-directory: ./e2e
+
+      - name: Start services
+        run: docker compose up -d
+      - name: E2E test
+        continue-on-error: true
+        run: pnpm run e2e:ci
+        env:
+          DATABASE_URL: "postgresql://postgres@localhost:5432/ijia"
+          WEB_URL: "http://localhost:9002"
+        id: e2e
+        working-directory: ./e2e
+
+      - uses: actions/upload-artifact@v4
+        if: ${{steps.e2e.outcome=='failure'}}
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+      - name: Result
+        if: ${{steps.e2e.outcome=='failure'}}
+        run: exit 1

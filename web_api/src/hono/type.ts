@@ -1,8 +1,7 @@
-import { SignInfo } from "@/crypto/jwt.ts";
+import { UserInfo } from "@/global/auth.ts";
 import { Context } from "hono";
 
 type HonoVariables = {
-  getUserPermission: () => Promise<unknown>;
-  getUserInfo(): Promise<SignInfo>;
+  userInfo: UserInfo;
 };
-export type NestHonoRequest = Context<{ Variables: HonoVariables }>;
+export type HonoContext = Context<{ Variables: HonoVariables }>;

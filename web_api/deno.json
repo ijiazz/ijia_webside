@@ -15,8 +15,5 @@
   "imports": {
     "@/": "./src/"
   },
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
-  }
+  "compilerOptions": {}
 }

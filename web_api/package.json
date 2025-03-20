@@ -7,29 +7,40 @@
     "commitDate": ""
   },
   "scripts": {
+    "test": "vitest run",
     "build": "rollup -c build/rollup.config.js",
+    "check-type-core": "tsc -p tsconfig.json",
+    "check-type-model": "tsc -p tsconfig.model.json",
     "check-type": "tsc -p tsconfig.json && tsc -p tsconfig.model.json",
-    "start": "node --env-file=.env dist/main.js"
+    "start": "node --env-file=.env dist/main.js",
+    "genApiDoc": "typedoc --tsconfig tsconfig.model.json"
   },
-  "exports": {
-    "model": "./model.js"
-  },
+  "exports": {},
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
+    "@asla/hono-decorator": "workspace:^",
     "@hono/node-server": "^1.13.7",
     "@ijia/data": "workspace:^",
-    "@nestjs/common": "^11.0.1",
-    "@nestjs/core": "^11.0.1",
-    "hono": "^4.6.17",
-    "nest-hono-adapter": "^0.3.1",
+    "@redis/client": "^1.6.0",
+    "@std/jsonc": "npm:@jsr/std__jsonc@^1.0.1",
+    "@std/media-types": "npm:@jsr/std__media-types@^1.1.0",
+    "evlib": "^3.1.1",
+    "hono": "^4.7.2",
+    "nodemailer": "^6.10.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
-    "@types/node": "^22.7.6"
+    "@types/node": "^22.7.6",
+    "@types/nodemailer": "^6.4.17",
+    "typedoc": "^0.27.6",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.0.8"
   },
   "files": [
-    "dist/**"
+    "dist/**",
+    "./config.jsonc"
   ]
 }

@@ -1,31 +1,52 @@
 services:
+  database:
+    image: ijia/db
+    container_name: ijia-db
+    build:
+      context: ./deps/ijia-data
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust # 测试用
+      POSTGRES_DB: ijia
+      POSTGRES_USER: postgres
+      # POSTGRES_PASSWORD: xxx
+    ports:
+      - 5432:5432 # e2e测试时 需要连接
+  redis:
+    image: redis:7.4.2-alpine
+
   web-api:
     image: ijia/web-api
     container_name: ijia-web-api
+    depends_on:
+      database:
+        condition: service_started
+      redis:
+        condition: service_started
+        restart: true
     build:
       context: .
       dockerfile: ./build/dockerfile.web-api
     environment:
-      DATABASE_URL: "postgresql://ijia_web@127.0.0.1:5432/ijia"
+      DATABASE_URL: "postgresql://ijia_web@database:5432/ijia"
+      REDIS_CONNECT_URL: "redis://redis:6379"
       OOS_DIR: "/data/oos"
-      CHECK_SERVER: "127.0.0.1:9000"
+      CHECK_SERVER: "host-gateway:9000"
+      MODE: E2E
       JWT_KEY: 123
-    network_mode: host
-    # ports:
-    #   - "3000:3000"
-    extra_hosts:
-      - postgresql:127.0.0.1
-  web-home:
-    image: ijia/web-home
-    container_name: ijia-web-home
+    links:
+      - redis
+      - database
+  web-nginx:
+    image: ijia/web-nginx
+    container_name: ijia-web-nginx
     build:
       context: .
       dockerfile: ./build/dockerfile.web
       args:
         - name=value
-    extra_hosts:
-      - web_api:host-gateway
-      - file_server:host-gateway
+    links:
+      - web-api:web_api
+      - web-api:file_server
     ports:
       - "9001:443"
       - "9002:80"

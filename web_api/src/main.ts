@@ -1,29 +1,49 @@
-import { ENV } from "@/config/mod.ts";
-import { setup } from "./serve.ts";
-import { getDbPool, setDbPool, createPgPool, DbPool } from "@ijia/data/yoursql";
+import { ENV, RunMode } from "@/config.ts";
+import { createHonoApp } from "./modules/serve.ts";
+import { dbPool } from "@ijia/data/yoursql";
+import { listenUseDenoHttpServer, listenUseNodeHttpServer, ListenOption, AppServer } from "@/hono/listen.ts";
+import { redisPool } from "@ijia/data/cache";
 
-async function testDatabase() {
-  let pool: DbPool;
-  try {
-    pool = getDbPool();
-  } catch (error) {
-    console.warn("未设置 DbPool, 将使用默认数据库地址");
-    pool = createPgPool({ database: "ijia" });
-    setDbPool(pool);
-  }
-  try {
-    const conn = await pool.connect();
-    conn.release();
-  } catch (error) {
-    console.error("数据库连接失败", error);
-  }
-}
 async function bootstrap() {
-  const app = await setup();
-  console.log("正测试数据库连接");
-  await testDatabase();
   console.log(`Server listen: ${ENV.LISTEN_ADDR}:${ENV.LISTEN_PORT}`);
-  await app.listen(ENV.LISTEN_PORT, ENV.LISTEN_ADDR);
+  console.log(`Mode: ${ENV.MODE}`);
+
+  const hono = createHonoApp({ static: ENV.MODE === RunMode.Dev });
+  const listenOption: ListenOption = {
+    hostname: ENV.LISTEN_ADDR,
+    port: ENV.LISTEN_PORT,
+  };
+
+  let server: AppServer;
+  //@ts-ignore
+  if (globalThis.Deno) {
+    server = await listenUseDenoHttpServer(hono, listenOption);
+  } else {
+    server = await listenUseNodeHttpServer(hono, listenOption);
+  }
   console.log("Server ready");
+
+  let isClosed = false;
+  function exit() {
+    if (isClosed) {
+      process.exit(0);
+    }
+    isClosed = true;
+    return Promise.all([
+      dbPool.close().then(() => {
+        console.log("数据连接已关闭");
+      }),
+      redisPool.close().then(() => {
+        console.log("Redis 连接已关闭");
+      }),
+      ,
+      server.close().then(() => {
+        console.log("API 服务已关闭");
+      }),
+    ]);
+  }
+  if (process.platform === "win32") process.on("SIGBREAK", exit);
+  else process.on("SIGTERM", exit);
+  process.on("SIGINT", exit);
 }
 await bootstrap();

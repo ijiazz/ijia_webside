@@ -1,27 +1,32 @@
 {
   "type": "module",
   "scripts": {
-    "init-deps": "rollup -c data/build/rollup.config.mjs",
+    "init-deps": "pnpm run init-ijia-data && pnpm run init-hono-decorator",
+    "init-ijia-data": "rollup -c deps/ijia-data/build/rollup.config.mjs",
+    "init-hono-decorator": "rollup -c deps/hono-decorator/build/rollup.config.mjs",
     "check-type": "pnpm run -r check-type",
-    "check-fmt": "pnpm prettier --check  --config package.json web_api web"
+    "check-fmt": "pnpm prettier --check web_api web e2e"
   },
   "engines": {
     "node": ">=22"
   },
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "pnpm@10.4.0",
   "publishConfig": {
     "registry": "https://registry.npm.org"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.1.2",
-    "commander": "^12.1.0",
-    "prettier": "^3.3.3",
-    "rollup": "^4.30.1",
+    "commander": "^13.1.0",
+    "prettier": "^3.5.2",
+    "rollup": "^4.30.8",
     "tslib": "^2.7.0",
     "typescript": "^5.6.3"
   },
-  "prettier": {
-    "printWidth": 120
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "core-js",
+      "esbuild"
+    ]
   }
 }

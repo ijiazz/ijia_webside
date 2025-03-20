@@ -34,6 +34,10 @@ export default {
       output: {
         manualChunks: createManualChunks(),
       },
+      input: {
+        index: import.meta.dirname + "/index.html",
+        "x/index": import.meta.dirname + "/x/index.html",
+      },
     },
   },
 } satisfies UserConfig;
@@ -44,13 +48,21 @@ function createManualChunks() {
   const pnpmParser = new PnpmNodeModulesParser(pnpmNodeModulesDir);
   console.log("pnpm dir", pnpmNodeModulesDir);
 
-  const chunkDeps = new Set(["react", "react-dom", "react-router"]);
+  const chunkDeps: Record<string, string | boolean> = {
+    // react: true, // 有bug，暂时不要分
+    "react-dom": true,
+    "react-router": true,
+    "@emotion/styled": "emotion",
+  };
   const manualChunks = (id: string, meta: ManualChunkMeta) => {
     const modInfo = pnpmParser.parserId(id);
     if (modInfo) {
+      const chunk = chunkDeps[modInfo.name];
       // id 是依赖
-      if (chunkDeps.has(modInfo.name)) return modInfo.name;
-      return "deps";
+      if (chunk) {
+        if (typeof chunk === "string") return chunk;
+        else return modInfo.name;
+      }
     }
   };
   return manualChunks;

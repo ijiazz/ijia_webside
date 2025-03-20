@@ -9,10 +9,10 @@ export class PnpmNodeModulesParser {
     id = path.resolve(id);
     if (id.startsWith(this.dotPnpm)) {
       const rel = id.slice(this.dotPnpm.length);
-      const matchResult = rel.match(/^[\\\/]([^@]+)@([^\\\/]+)[\\\/]/);
+      const matchResult = rel.match(/^[\\\/](?<name>@?[^@]+)@(?<version>[^\\\/@]+)/);
       if (!matchResult) return;
       return {
-        name: matchResult[1],
+        name: matchResult[1].replace("+", "/"),
         version: matchResult[2],
       };
     }
