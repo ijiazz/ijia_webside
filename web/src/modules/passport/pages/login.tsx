@@ -79,13 +79,16 @@ export function LoginPage() {
     }
     setCaptchaModalOpen(true);
   };
-
+  const isCenter = windowSize.height * 1.2 > windowSize.width;
   return (
     <StyledPage>
-      <div className={classNames("main", { center: windowSize.height * 1.2 > windowSize.width })}>
+      <div className={classNames("main", { center: isCenter })}>
         <div className="left-desc"> </div>
 
-        <div className="login-form-container">
+        <div
+          className="login-form-container"
+          style={{ maxWidth: 400, padding: windowSize.width > 448 ? "0 24px" : undefined }}
+        >
           <LoginForm
             logo={
               <Link to="/" title="首页" viewTransition>
@@ -172,8 +175,6 @@ const StyledPage = styled.div`
       font-weight: bold;
     }
     .login-form-container {
-      width: 400px;
-      padding: 0 24px;
       > * {
         box-shadow: 0 0 2px #9b9b9b;
       }

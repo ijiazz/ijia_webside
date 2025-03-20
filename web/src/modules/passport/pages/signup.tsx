@@ -134,10 +134,11 @@ const StyledPage = styled.div`
     justify-content: center;
   }
   .main {
+    margin: 12px;
     max-width: 600px;
     border-radius: 6px;
     box-shadow: 0 0 2px #d7d7d7;
-    padding: 32px;
+    padding: 24px;
 
     background-color: #fff8;
     backdrop-filter: blur(6px);

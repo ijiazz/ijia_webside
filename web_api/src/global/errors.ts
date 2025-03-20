@@ -1,15 +1,16 @@
 import { HTTPException } from "hono/http-exception";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
+export type HttpErrorOption = {
+  message: string;
+  code?: string | number;
+  cause?: any;
+};
 export class HttpError extends HTTPException {
-  constructor(
-    httpStatus: ContentfulStatusCode,
-    option: {
-      message: string;
-      code?: string | number;
-      cause?: any;
-    },
-  ) {
+  constructor(httpStatus: ContentfulStatusCode, message: string);
+  constructor(httpStatus: ContentfulStatusCode, option: HttpErrorOption);
+  constructor(httpStatus: ContentfulStatusCode, option: HttpErrorOption | string) {
+    if (typeof option === "string") option = { message: option };
     super(httpStatus, { message: option.message, cause: option.cause, res: Response.json(option) });
     this.code = option.code;
   }

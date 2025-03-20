@@ -26,7 +26,7 @@ export function VideoBg(props: PropsWithChildren<{ style?: React.CSSProperties; 
           <source src="/main/bg-login.mp4" type="video/mp4" />
         </video>
       </div>
-      <div style={{ position: "relative", height: "100%" }}>{props.children}</div>
+      <div style={{ position: "relative", height: "100%", overflow: "auto" }}>{props.children}</div>
     </div>
   );
 }
