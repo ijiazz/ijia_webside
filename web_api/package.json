@@ -25,6 +25,7 @@
     "@hono/node-server": "^1.13.7",
     "@ijia/data": "workspace:^",
     "@redis/client": "^1.6.0",
+    "@std/jsonc": "npm:@jsr/std__jsonc@^1.0.1",
     "@std/media-types": "npm:@jsr/std__media-types@^1.1.0",
     "evlib": "^3.1.1",
     "hono": "^4.7.2",

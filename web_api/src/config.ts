@@ -1,3 +1,2 @@
-export const APP_CONFIG = {
-  appName: "IJIA 学院",
-};
+export * from "./config/config.ts";
+export * from "./config/env.ts";

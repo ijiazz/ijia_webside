@@ -1,4 +1,4 @@
-import { ENV, RunMode } from "@/global/config.ts";
+import { ENV, RunMode } from "@/config.ts";
 import { createHonoApp } from "./modules/serve.ts";
 import { dbPool } from "@ijia/data/yoursql";
 import { listenUseDenoHttpServer, listenUseNodeHttpServer, ListenOption, AppServer } from "@/hono/listen.ts";

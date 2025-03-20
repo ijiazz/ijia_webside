@@ -1,7 +1,7 @@
 import { user, user_profile } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import { signJwt } from "@/global/jwt.ts";
-import { ENV } from "@/global/config.ts";
+import { ENV } from "@/config.ts";
 import { hashPasswordBackEnd } from "./password.ts";
 import { HttpError } from "@/global/errors.ts";
 function selectUser(where: string) {

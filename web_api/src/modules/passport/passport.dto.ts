@@ -55,11 +55,11 @@ export type ChangePasswordParam = {
   // userId?: string;
 };
 export type PassportConfig = {
-  signupTip?: string;
+  signupTip?: string | null;
   /** 是否开启注册 */
-  signupEnabled?: boolean;
+  signupEnabled?: boolean | null;
 
   /** 登录关闭验证码 */
-  loginCaptchaDisabled?: boolean;
-  loginTip?: string;
+  loginCaptchaDisabled?: boolean | null;
+  loginTip?: string | null;
 };

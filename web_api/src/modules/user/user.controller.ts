@@ -25,7 +25,7 @@ import {
   setUserPublicClass,
 } from "./user.service.ts";
 import { toErrorStr } from "evlib";
-import { ENV } from "@/global/config.ts";
+import { ENV } from "@/config.ts";
 
 @Use(rolesGuard)
 @autoBody

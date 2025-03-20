@@ -8,7 +8,7 @@ import { autoBody } from "@/global/pipe.ts";
 import { getOOS, getBucket } from "@ijia/data/oos";
 import { contentType } from "@std/media-types";
 import path from "node:path";
-import { ENV, RunMode } from "@/global/config.ts";
+import { ENV, RunMode } from "@/config.ts";
 const BUCKET = getBucket();
 
 @autoBody

@@ -1,7 +1,7 @@
 import { resolve } from "node:path/posix";
 import { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import { ENV } from "@/global/config.ts";
+import { ENV } from "@/config.ts";
 import { HTTPException } from "hono/http-exception";
 
 const pkgRoot = new URL(import.meta.url);

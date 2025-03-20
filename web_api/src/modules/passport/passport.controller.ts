@@ -25,8 +25,7 @@ import {
 import { autoBody } from "@/global/pipe.ts";
 import { createEmailCodeHtmlContent } from "./template/sigup-email-code.ts";
 import { Context } from "hono";
-import { ENV, RunMode } from "@/global/config.ts";
-import { APP_CONFIG } from "@/config.ts";
+import { ENV, appConfig, RunMode } from "@/config.ts";
 import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/errors.ts";
 import { rolesGuard } from "@/global/auth.ts";
 import { HonoContext } from "@/hono/type.ts";
@@ -47,10 +46,11 @@ export class PassportController {
       emailCaptcha: optional(emailCaptchaReplyChecker()),
     });
 
-    return [param, !ENV.SIGUP_VERIFY_EMAIL_DISABLE];
+    return [param];
   })
   @Post("/passport/signup")
-  async createUser(body: CreateUserProfileParam, verifyEmail?: boolean): Promise<CreateUserProfileResult> {
+  async createUser(body: CreateUserProfileParam): Promise<CreateUserProfileResult> {
+    const verifyEmail = !appConfig.passport?.emailVerifyDisabled;
     if (verifyEmail) {
       const pass = body.emailCaptcha ? await emailCaptchaService.verify(body.emailCaptcha, body.email) : false;
       if (!pass) throw new HttpCaptchaError();
@@ -87,19 +87,19 @@ export class PassportController {
         .queryCount();
       if (exists) throw new HttpError(406, { message: "邮件已被注册" });
     }
-
     const code = ENV.IS_TEST ? "1234" : emailCaptchaService.genCode();
     const expire = 5 * 60; // 5 分钟有效期
     const htmlContent = createEmailCodeHtmlContent({
       code,
       time: expire,
-      title: `HI! 您正在使用 ${email} 注册 ${APP_CONFIG.appName}账号`,
+      title: `HI! 您正在使用 ${email} 注册 ${appConfig.appName}账号`,
+      appName: appConfig.appName,
     });
     const captchaEmail: CaptchaEmail = {
       expire,
       code,
       recipient: email,
-      title: `${APP_CONFIG.appName}验证码: ${code}`,
+      title: `${appConfig.appName}验证码: ${code}`,
       text: htmlContent,
     };
     let emailCaptchaQuestion: EmailCaptchaQuestion;
@@ -203,11 +203,13 @@ export class PassportController {
 
   @Get("/passport/config")
   async getPassportConfig(): Promise<PassportConfig> {
+    const p = appConfig.passport;
+    if (!p) return {};
     return {
-      signupEnabled: true,
-      loginCaptchaDisabled: false,
-      signupTip: undefined,
-      loginTip: undefined,
+      signupEnabled: p.signupEnabled,
+      loginCaptchaDisabled: p.loginCaptchaDisabled,
+      signupTip: p.signupTip,
+      loginTip: p.loginTip,
     };
   }
 }

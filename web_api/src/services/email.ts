@@ -1,7 +1,7 @@
 import { createTransport, Transporter } from "nodemailer";
-import { EmailConfig, ENV } from "@/global/config.ts";
+import { EmailConfig, appConfig } from "@/config.ts";
 
-class EmailSender {
+export class EmailSender {
   private readonly emailSender: Transporter;
   private readonly form: { name: string; address: string };
   constructor(config: EmailConfig) {
@@ -18,7 +18,7 @@ class EmailSender {
           }
         : undefined,
     });
-    this.form = { address: config.senderEmail, name: config.senderName };
+    this.form = { address: config.emailFrom, name: config.senderName };
   }
   async sendEmail(option: SendMailOption) {
     await this.emailSender.sendMail({
@@ -36,8 +36,10 @@ let emailSender: EmailSender | undefined;
 
 export function getEmailSender() {
   if (!emailSender) {
-    if (!ENV.EMAIL_CONFIG) throw new Error("未设置邮件服务");
-    emailSender = new EmailSender(ENV.EMAIL_CONFIG);
+    if (!appConfig.emailSender) {
+      throw new Error("未设置邮件服务");
+    }
+    emailSender = new EmailSender(appConfig.emailSender);
   }
   return emailSender;
 }

@@ -30,7 +30,7 @@ FROM install AS build
 COPY --from=ijia-data /build/deps/ijia-data ./deps/ijia-data
 COPY --from=hono-decorator /build/deps/hono-decorator ./deps/hono-decorator
 
-ADD ./web_api/tsconfig.json ./web_api/
+ADD ./web_api/tsconfig.json ./web_api/config.jsonc ./web_api/
 ADD ./web_api/build ./web_api/build
 ADD ./web_api/src ./web_api/src
 RUN pnpm run --filter=@ijia/web-api build

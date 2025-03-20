@@ -1,4 +1,4 @@
-import { ENV } from "@/global/config.ts";
+import { ENV } from "@/config.ts";
 import { Platform } from "@ijia/data/db";
 import { HoFetch, HoFetchStatusError } from "@asla/hofetch";
 import { HttpError } from "@/global/errors.ts";

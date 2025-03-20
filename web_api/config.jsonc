@@ -1,0 +1,18 @@
+{
+  "appName": "IJIA 学院",
+  //可选
+ /*  "emailSender": {
+    "senderName": "IJIA学院", //发送署名，必填项
+    "emailFrom": "school@ijiazz.cn", //发送邮箱验证码使用的电子邮件 必填项
+    "password": null, //登录邮箱服务器的密码
+    "serverUrl": null, //邮箱服务器地址，只支持 SMTPS 协议
+  }, */
+  "passport": {
+    "emailVerifyDisabled": false, // 关闭邮箱验证
+    "signupTip": null, //注册页面提示语
+    "signupEnabled": true, //是否开启注册
+
+    "loginCaptchaDisabled": false, //登录关闭验证码
+    "loginTip": null, // 登录页面提示语
+  },
+}

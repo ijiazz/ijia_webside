@@ -1,10 +1,9 @@
-import { APP_CONFIG } from "@/config.ts";
-
 type GenOption = {
   title: string;
   code: string;
   /** 有效时间，单位秒 */
   time: number;
+  appName: string;
 };
 export function createEmailCodeHtmlContent(option: GenOption) {
   const { code, time, title } = option;
@@ -14,7 +13,7 @@ export function createEmailCodeHtmlContent(option: GenOption) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${APP_CONFIG.appName}验证码</title>
+    <title>${option.appName}验证码</title>
     <style>
       html,
       body {
