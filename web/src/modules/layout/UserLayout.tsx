@@ -8,6 +8,7 @@ import { gotoHome } from "@/common/navigation.ts";
 import { getUserToken, useCurrentUser } from "@/common/user.ts";
 import { avatarDropdownRender } from "./avatar.tsx";
 import { useAntdStatic } from "@/hooks/antd.ts";
+import styled from "@emotion/styled";
 
 function LayoutBase(
   props: PropsWithChildren<{ avatarProps?: ProLayoutProps["avatarProps"]; action?: React.ReactNode }>,
@@ -17,10 +18,11 @@ function LayoutBase(
   const navigate = useNavigate();
   function onMenuSelect(item: Parameters<NonNullable<MenuProps["onSelect"]>>[0]) {
     let path = item.key;
-    if (path) navigate(path);
+    if (path) navigate(path, { viewTransition: true });
   }
   return (
-    <ProLayout
+    <ProLayoutCSS
+      token={{ pageContainer: { paddingBlockPageContainerContent: 0, paddingInlinePageContainerContent: 0 } }}
       onMenuHeaderClick={gotoHome}
       logo={<IjiaLogo />}
       title="IJIA 学院"
@@ -44,9 +46,12 @@ function LayoutBase(
       }}
     >
       {children}
-    </ProLayout>
+    </ProLayoutCSS>
   );
 }
+const ProLayoutCSS = styled(ProLayout)`
+  height: 100%;
+`;
 const IS_DEV = import.meta.env.DEV;
 export function UserLayout(props: PropsWithChildren<{}>) {
   const navigate = useNavigate();
@@ -72,7 +77,10 @@ export function UserLayout(props: PropsWithChildren<{}>) {
               size: "small",
               title: user?.nickname,
               render: (props, dom) => {
-                return avatarDropdownRender(dom, { navigate, onLogout: logout });
+                return avatarDropdownRender(dom, {
+                  navigate: (to) => navigate(to, { viewTransition: true }),
+                  onLogout: logout,
+                });
               },
               children: user.nickname ?? " ",
             }

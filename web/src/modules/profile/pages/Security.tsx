@@ -4,13 +4,14 @@ import { useHoFetch } from "@/hooks/http.ts";
 import { useAntdStatic } from "@/hooks/antd.ts";
 import { ChangePasswordParam } from "@/api.ts";
 import { CAN_HASH_PASSWORD, hashPassword } from "@/modules/passport/util/pwd_hash.ts";
-import { Developing } from "@/modules/error_page/Developing.tsx";
+import { Developing } from "@/common/page_state/Developing.tsx";
+import { PagePadding } from "@/lib/components/Page.tsx";
 export function Security() {
   return (
-    <div>
+    <PagePadding>
       <ChangePassport />
       <ChangeEmail />
-    </div>
+    </PagePadding>
   );
 }
 export function ChangePassport() {

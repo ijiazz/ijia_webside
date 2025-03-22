@@ -23,6 +23,7 @@ import styled from "@emotion/styled";
 import { Meta } from "@/lib/components/Meta.tsx";
 import { BindAccountDto, UserProfileDto } from "@/api.ts";
 import { toFileUrl } from "@/common/http.ts";
+import { PagePadding } from "@/lib/components/Page.tsx";
 
 export function BasicInfoPage() {
   const { api } = useHoFetch();
@@ -37,11 +38,11 @@ export function BasicInfoPage() {
   );
 
   return (
-    <div>
+    <PagePadding>
       <CurrentIdCard />
       <BindAccountList profileResult={result} onProfileChange={() => run()} />
       <BasicForm profileResult={result} onProfileChange={() => run()} />
-    </div>
+    </PagePadding>
   );
 }
 

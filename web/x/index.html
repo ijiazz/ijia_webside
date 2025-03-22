@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IJIA</title>
+    <title>IJIA学院</title>
     <style>
       html,
       body {
@@ -23,18 +23,20 @@
       .app-loading-animation {
         background: -webkit-linear-gradient(
           135deg,
-          #08dfb4,
+          #00ffcc 0%,
+          #12ffd0 10%,
           #ff6ac6 25%,
-          #147b96 50%,
-          #53d545 55%,
-          #2cc4e0 60%,
-          #8b2ce0 80%,
+          #ffea00 50%,
+          #54ff41 55%,
+          #2adfff 60%,
+          #a948ff 80%,
           #ff6384 95%,
-          #08dfb4
+          #ff456d 100%
         );
         /* 文字颜色填充设置为透明 */
         -webkit-text-fill-color: transparent;
         /* 背景裁剪，即让文字使用背景色 */
+        -webkit-background-clip: text;
         background-clip: text;
         /* 背景图放大一下，看着柔和一些 */
         background-size: 600% 300%;
@@ -58,7 +60,7 @@
     <div id="app" style="height: 100%">
       <div id="app-loading">
         <div class="app-loading-animation">
-          <h1>Loading...</h1>
+          <h1>Loading</h1>
         </div>
       </div>
     </div>

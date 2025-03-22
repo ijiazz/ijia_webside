@@ -1,7 +1,7 @@
 import { Outlet, RouteObject } from "react-router";
-import { lazyComponent } from "@/lib/lazy_component.ts";
 import { VideoBg } from "./components/VideoBg.tsx";
 import { api } from "@/common/http.ts";
+import { appLazy } from "@/common/lazy_load_component.tsx";
 
 const router: RouteObject[] = [
   {
@@ -17,14 +17,14 @@ const router: RouteObject[] = [
     children: [
       {
         path: "login",
-        Component: lazyComponent(
+        Component: appLazy(
           () => import("./pages/login.tsx"),
           (mod) => mod.LoginPage,
         ),
       },
       {
         path: "signup",
-        Component: lazyComponent(
+        Component: appLazy(
           () => import("./pages/signup.tsx"),
           (mod) => mod.Signup,
         ),

@@ -85,7 +85,7 @@ export class PassportController {
         .where(`email=${v(email)}`)
         .limit(1)
         .queryCount();
-      if (exists) throw new HttpError(406, { message: "邮件已被注册" });
+      if (exists) throw new HttpError(406, "邮件已被注册");
     }
     const code = ENV.IS_TEST ? "1234" : emailCaptchaService.genCode();
     const expire = 5 * 60; // 5 分钟有效期
@@ -117,6 +117,7 @@ export class PassportController {
     return ctx.json(value, 200);
   })
   @PipeInput(function (ctx: Context) {
+    if (!appConfig.passport?.signupEnabled) throw new HttpError(403, "禁止注册");
     return ctx.req.json();
   })
   @Post("/passport/login")
