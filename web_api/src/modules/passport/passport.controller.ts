@@ -37,6 +37,7 @@ export class PassportController {
   constructor() {}
 
   @ToArguments(async function (ctx) {
+    if (!appConfig.passport?.signupEnabled) throw new HttpError(403, "禁止注册");
     const body = await ctx.req.json();
     const param = checkValue(body, {
       email: emailCheck,
@@ -117,7 +118,6 @@ export class PassportController {
     return ctx.json(value, 200);
   })
   @PipeInput(function (ctx: Context) {
-    if (!appConfig.passport?.signupEnabled) throw new HttpError(403, "禁止注册");
     return ctx.req.json();
   })
   @Post("/passport/login")
