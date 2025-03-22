@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { AppConfig, checkConfig } from "./config_check.ts";
 import * as jsonc from "@std/jsonc";
+import { ENV } from "./env.ts";
 
 export function getPackageJson() {
   return import("../../package.json", { with: { type: "json" } }).then((mod) => mod.default);
@@ -10,7 +11,10 @@ const rootDir = path.resolve(import.meta.dirname, "../..");
 const configFilePath = path.join(rootDir, "config.jsonc");
 
 export let appConfig: AppConfig = await readConfig().then((res) => {
-  watch();
+  if (ENV.WATCH_CONFIG) {
+    console.log("监听配置文件变化");
+    watch();
+  }
   return res;
 });
 
