@@ -1,7 +1,8 @@
 import { getCheckerServer } from "@/services/douyin.ts";
-import { getSubscribeLiveEmails, noticeBatch, sendEmailMany } from "./notice_user_email.ts";
+import { getSubscribeLiveEmails, sendEmailMany } from "./notice_user_email.ts";
 import { log, LogLevel } from "@ijia/data/db";
 import { appConfig, ENV } from "@/config.ts";
+import { getEmailSender } from "../email.ts";
 
 class UserLive {
   private onTick?: () => Promise<0 | 1>;
@@ -84,19 +85,22 @@ const pollingMinute = appConfig.watch.pollingMinute;
 export const watchIjia = new IjiaWatch("MS4wLjABAAAA0AiK9Q4FlkTxKHo-b6Vi1ckA2Ybq-WNgJ-b5xXlULtI", pollingMinute);
 if (pollingMinute >= 1 && ENV.CHECK_SERVER) watchIjia.start();
 
-function genNoticeContent() {
-  //TODO html 提示，并给出取消通知的地址
-  return `IJIA 学院开课了，快去直播间学习吧！争取成为IJIA高手！`;
-}
 // 通知订阅直播通知的人
 async function sendLiveNotificationEmails() {
   const startTime = Date.now();
   let failedTotal = 0;
-  const res = await sendEmailMany(getSubscribeLiveEmails(), async (items) => {
-    return noticeBatch(items, "IJIA 学院开课通知", genNoticeContent()).catch((e) => {
-      failedTotal += items.length;
-      throw e;
-    });
+  const sender = getEmailSender();
+  const res = await sendEmailMany(getSubscribeLiveEmails(), (info) => {
+    return sender
+      .sendEmail({
+        targetEmail: { address: info.email, name: info.name },
+        title: "IJIA 学院开课通知",
+        text: genNoticeContent(),
+      })
+      .catch((e) => {
+        failedTotal++;
+        throw e;
+      });
   });
   const useTime = Date.now() - startTime;
 
@@ -112,4 +116,9 @@ async function sendLiveNotificationEmails() {
       name: "发送直播通知邮件",
     })
     .queryCount();
+}
+
+function genNoticeContent() {
+  //TODO html 提示，并给出取消通知的地址
+  return `IJIA 学院开课了，快去直播间学习吧！争取成为IJIA高手！`;
 }

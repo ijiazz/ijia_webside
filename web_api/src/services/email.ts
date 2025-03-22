@@ -28,7 +28,6 @@ export class EmailSender {
       html: option.html,
       text: option.text,
     });
-    console.log("已发送");
   }
   /** 关闭空闲连接 */
   cose() {
