@@ -1,18 +1,18 @@
 import { RouteObject } from "react-router";
-import { lazyComponent } from "@/lib/lazy_component.ts";
-import { notFoundRouter } from "../error_page/NotFound.tsx";
+import { notFoundRouter } from "../../common/page_state/NotFound.tsx";
+import { appLazy } from "@/common/lazy_load_component.tsx";
 
 const routers: RouteObject[] = [
   {
     path: "center",
-    Component: lazyComponent(
+    Component: appLazy(
       () => import("./pages/BasicInfo.tsx"),
       (mod) => mod.BasicInfoPage,
     ),
   },
   {
     path: "security",
-    Component: lazyComponent(
+    Component: appLazy(
       () => import("./pages/Security.tsx"),
       (mod) => mod.Security,
     ),

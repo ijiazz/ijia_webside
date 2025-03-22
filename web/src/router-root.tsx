@@ -2,7 +2,7 @@ import { Outlet, createHashRouter, RouteObject } from "react-router";
 import passportRouter from "./modules/passport/router.tsx";
 import profileRouter from "./modules/profile/router.tsx";
 import { AntdProvider, HoFetchProvider } from "./global-provider.tsx";
-import { notFoundRouter } from "./modules/error_page/NotFound.tsx";
+import { notFoundRouter } from "./common/page_state/NotFound.tsx";
 import { UserLayout } from "./modules/layout/UserLayout.tsx";
 
 const coreRouters: RouteObject[] = [
@@ -10,11 +10,8 @@ const coreRouters: RouteObject[] = [
   { path: "passport", children: passportRouter },
   {
     Component: UserLayout,
-    children: [{ path: "live/*", element: <div>live</div> }],
-  },
-  {
-    Component: UserLayout,
     children: [
+      { path: "live/*", element: <div>live</div> },
       { path: "profile", children: profileRouter },
       { path: "examination/*", element: <div>examination</div> },
     ],

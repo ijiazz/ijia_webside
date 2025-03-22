@@ -57,7 +57,7 @@ function useCreateHoFetch() {
         const isLoginPage = location.href.startsWith(getUrlByRouter("/passport/login"));
         if (!isLoginPage) {
           s.set("redirect", target);
-          navigate("/passport/login?" + s.toString(), {});
+          navigate("/passport/login?" + s.toString(), { viewTransition: true });
         }
       }
 
