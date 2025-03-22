@@ -30,6 +30,10 @@ export class EmailSender {
     });
     console.log("已发送");
   }
+  /** 关闭空闲连接 */
+  cose() {
+    this.emailSender.close();
+  }
 }
 
 let emailSender: EmailSender | undefined;
@@ -44,7 +48,7 @@ export function getEmailSender() {
   return emailSender;
 }
 export type SendMailOption = {
-  targetEmail: string | { name: string; address: string };
+  targetEmail: string | string[] | { name: string; address: string };
   title?: string;
   html?: string;
   text?: string;

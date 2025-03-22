@@ -81,6 +81,12 @@ const appConfigChecker = {
     loginCaptchaDisabled: optionalBoolean,
     loginTip: optionalString,
   }),
+  watch: nullishOptional(
+    {
+      pollingMinute: nullishOptional("number", 0),
+    },
+    { pollingMinute: 0 },
+  ),
 } satisfies ExpectType;
 
 export type AppConfig = Readonly<InferExpect<typeof appConfigChecker>>;
