@@ -1,4 +1,4 @@
-import { ENV, RunMode } from "@/config.ts";
+import { ENV, constWatcher, RunMode } from "@/config.ts";
 import { createHonoApp } from "./modules/serve.ts";
 import { dbPool } from "@ijia/data/yoursql";
 import { listenUseDenoHttpServer, listenUseNodeHttpServer, ListenOption, AppServer } from "@/hono/listen.ts";
@@ -36,10 +36,10 @@ async function bootstrap() {
       redisPool.close().then(() => {
         console.log("Redis 连接已关闭");
       }),
-      ,
       server.close().then(() => {
         console.log("API 服务已关闭");
       }),
+      constWatcher.close(),
     ]);
   }
   if (process.platform === "win32") process.on("SIGBREAK", exit);
