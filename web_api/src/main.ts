@@ -1,8 +1,9 @@
-import { ENV, constWatcher, RunMode } from "@/config.ts";
+import { ENV, appConfig, constWatcher, RunMode } from "@/config.ts";
 import { createHonoApp } from "./modules/serve.ts";
 import { dbPool } from "@ijia/data/yoursql";
 import { listenUseDenoHttpServer, listenUseNodeHttpServer, ListenOption, AppServer } from "@/hono/listen.ts";
 import { redisPool } from "@ijia/data/cache";
+import { watchIjia } from "@/services/waitch_live/user_live.service.ts";
 
 async function bootstrap() {
   console.log(`Server listen: ${ENV.LISTEN_ADDR}:${ENV.LISTEN_PORT}`);
@@ -22,7 +23,7 @@ async function bootstrap() {
     server = await listenUseNodeHttpServer(hono, listenOption);
   }
   console.log("Server ready");
-
+  if (appConfig.live_watch.pollingMinute >= 1 && ENV.CHECK_SERVER) watchIjia.start();
   let isClosed = false;
   function exit() {
     if (isClosed) {

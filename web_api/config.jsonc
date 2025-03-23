@@ -16,6 +16,6 @@
     "loginTip": null, // 登录页面提示语
   },
   "live_watch": {
-    "pollingMinute": 5, // 如果小于等于0则不开启直播监听
+    "pollingMinute": 0, // 如果小于等于0则不开启直播监听
   },
 }

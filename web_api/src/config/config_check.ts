@@ -81,7 +81,7 @@ const appConfigChecker = {
     loginCaptchaDisabled: optionalBoolean,
     loginTip: optionalString,
   }),
-  watch: nullishOptional(
+  live_watch: nullishOptional(
     {
       pollingMinute: nullishOptional("number", 0),
     },
