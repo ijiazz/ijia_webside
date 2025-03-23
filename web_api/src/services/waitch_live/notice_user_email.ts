@@ -20,7 +20,7 @@ export async function sendEmailMany(iter: AsyncIterable<WatchInfo>, send: (items
 }
 
 export type WatchInfo = {
-  name: string;
+  name?: string | null;
   email: string;
   domain: string;
   user_id: number;

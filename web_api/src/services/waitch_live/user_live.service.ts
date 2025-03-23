@@ -111,12 +111,13 @@ async function sendLiveNotificationEmails() {
   const startTime = Date.now();
   let failedTotal = 0;
   const sender = getEmailSender();
+  const content = genNoticeContent();
   const res = await sendEmailMany(getSubscribeLiveEmails(), (info) => {
     return sender
       .sendEmail({
-        targetEmail: { address: info.email, name: info.name },
+        targetEmail: info.name ? { address: info.email, name: info.name } : info.email,
         title: "IJIA 学院开课通知",
-        text: genNoticeContent(),
+        text: content,
       })
       .catch((e) => {
         failedTotal++;
