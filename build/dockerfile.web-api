@@ -44,7 +44,7 @@ COPY --from=build /dist/web-api .
 EXPOSE 3000
 
 ENV DATABASE_URL="postgresql://ijia_web@localhost:5432/ijia"
-ENV OOS_DIR="./store/oos"
+ENV OSS_ROOT_DIR="./store/oss"
 ENV LISTEN="0.0.0.0:3000"
 ENV CHECK_SERVER="localhost:9000"
 

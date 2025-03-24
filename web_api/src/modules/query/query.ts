@@ -1,6 +1,14 @@
 import { type DbPool, dbPool } from "@ijia/data/yoursql";
-import * as q from "@ijia/data/query";
 import { Get, PipeInput } from "@asla/hono-decorator";
+import { getAssetList, getCommentList, getCommentReplyByCid } from "./pla_query.ts";
+import type {
+  GetAssetListParam,
+  AssetItemDto,
+  GetCommentListParam,
+  CommentRootItemDto,
+  GetCommentReplyListParam,
+  CommentReplyItemDto,
+} from "./query.dto.ts";
 
 interface DebugOption {
   sendSql?: (sql: string) => void;
@@ -11,23 +19,23 @@ export class BsQuery {
 
   @Get("published")
   async getAssetList(
-    option: q.GetAssetListParam & { published_id?: string } & DebugOption = {},
-  ): Promise<q.AssetItemDto[]> {
-    return q.getAssetList(this.client, option);
+    option: GetAssetListParam & { published_id?: string } & DebugOption = {},
+  ): Promise<AssetItemDto[]> {
+    return getAssetList(this.client, option);
   }
 
   @PipeInput(function (ctx) {
     return ctx.req.param();
   })
   @Get("comment")
-  async getCommentList(option: q.GetCommentListParam & DebugOption = {}): Promise<q.CommentRootItemDto[]> {
-    return q.getCommentList(this.client, option);
+  async getCommentList(option: GetCommentListParam & DebugOption = {}): Promise<CommentRootItemDto[]> {
+    return getCommentList(this.client, option);
   }
   @PipeInput(function (ctx) {
     return ctx.req.param();
   })
   @Get("comment_reply")
-  async getCommentReplyByCid(option: q.GetCommentReplyListParam & DebugOption = {}): Promise<q.CommentReplyItemDto[]> {
-    return q.getCommentReplyByCid(this.client, option);
+  async getCommentReplyByCid(option: GetCommentReplyListParam & DebugOption = {}): Promise<CommentReplyItemDto[]> {
+    return getCommentReplyByCid(this.client, option);
   }
 }

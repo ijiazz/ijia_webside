@@ -22,7 +22,7 @@ export const ENV = {
   IS_TEST: [RunMode.E2E, RunMode.Test].includes(MODE),
   IS_PROD: MODE === RunMode.Prod,
   MODE,
-  OOS_ROOT_DIR: env.OOS_ROOT_DIR,
+  OSS_ROOT_DIR: env.OSS_ROOT_DIR,
   CHECK_SERVER: env.CHECK_SERVER,
   WATCH_CONFIG: !!env.WATCH_CONFIG,
   JWT_KEY: getJwtKey(),

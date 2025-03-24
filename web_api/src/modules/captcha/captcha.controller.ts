@@ -5,7 +5,7 @@ import { PipeInput, PipeOutput, Get, Post } from "@asla/hono-decorator";
 import { HTTPException } from "hono/http-exception";
 import { SessionManager } from "./_SessionManage.ts";
 import { autoBody } from "@/global/pipe.ts";
-import { getOOS, getBucket } from "@ijia/data/oos";
+import { getOSS, getBucket } from "@ijia/data/oss";
 import { contentType } from "@std/media-types";
 import path from "node:path";
 import { ENV, RunMode } from "@/config.ts";
@@ -183,7 +183,7 @@ class ImageCaptchaController {
   async getCaptchaImageStream(imageUri: string) {
     const imageId = await this.imageUrlToId(imageUri).catch(() => null);
     if (!imageId) throw new HTTPException(404);
-    const bucket = getOOS().getBucket(BUCKET.CAPTCHA_PICTURE);
+    const bucket = getOSS().getBucket(BUCKET.CAPTCHA_PICTURE);
     const mime = contentType(path.parse(imageId).ext);
     try {
       const stream = await bucket.getObjectStream(imageId);

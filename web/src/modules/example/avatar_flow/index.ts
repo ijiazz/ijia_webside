@@ -1,4 +1,4 @@
-import { createImageStream, getOosThumbBlobName, CommentStatByCount } from "./image_stream.ts";
+import { createImageStream, getOssThumbBlobName, CommentStatByCount } from "./image_stream.ts";
 function createImg() {
   const img = document.createElement("img");
   img.onerror = function () {
@@ -69,7 +69,7 @@ async function renderRow(stream: ReadableStreamDefaultReader<CommentStatByCount>
         div.removeChild(img);
       } else {
         const info = image.value;
-        img.src = getOosThumbBlobName(info.avatar);
+        img.src = getOssThumbBlobName(info.avatar);
         img.style.opacity = "1";
         name.innerText = info.comment_total + "." + info.user_name;
       }
