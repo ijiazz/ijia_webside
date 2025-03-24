@@ -29,7 +29,7 @@ services:
     environment:
       DATABASE_URL: "postgresql://ijia_web@database:5432/ijia"
       REDIS_CONNECT_URL: "redis://redis:6379"
-      OOS_DIR: "/data/oos"
+      OSS_ROOT_DIR: "/data/oss"
       CHECK_SERVER: "localserver:9000"
       MODE: E2E
       JWT_KEY: 123

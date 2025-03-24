@@ -32,6 +32,6 @@ export interface CommentStatByCount {
   avatar: string;
   index: number;
 }
-export function getOosThumbBlobName(uri: string) {
+export function getOssThumbBlobName(uri: string) {
   return "/file/avatar/" + uri;
 }
