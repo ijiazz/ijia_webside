@@ -1,19 +1,21 @@
-import { checkType, ExpectType, InferExpect, TypeCheckOptions } from "evlib/validator";
+import { checkTypeCopy, getCheckTypeErrorReason, ExpectType, InferExpect, TypeCheckOption } from "@asla/wokao";
 import { HttpParamsCheckError } from "./errors.ts";
 
 export function checkValue<T extends ExpectType>(
   input: unknown,
   expectType: T,
-  option?: TypeCheckOptions,
+  option?: TypeCheckOption,
 ): InferExpect<T> {
-  const { value, error } = checkType(input, expectType, { ...option, policy: "delete" });
-  if (error) throw new HttpParamsCheckError(error);
-  return value;
+  try {
+    return checkTypeCopy(input, expectType, { ...option, policy: "pass" });
+  } catch (error) {
+    throw new HttpParamsCheckError(getCheckTypeErrorReason(error));
+  }
 }
 export function checkValueAsync<T extends ExpectType>(
   input: Promise<unknown>,
   expectType: T,
-  option?: TypeCheckOptions,
+  option?: TypeCheckOption,
 ): Promise<InferExpect<T>> {
   return input.then((data) => checkValue(data, expectType, option));
 }

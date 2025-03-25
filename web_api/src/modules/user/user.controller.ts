@@ -8,7 +8,7 @@ import {
   UserBasicDto,
   UserProfileDto,
 } from "./user.dto.ts";
-import { array, enumType, optional, stringMatch } from "evlib/validator";
+import { array, enumType, optional, stringMatch } from "@asla/wokao";
 import { Controller, Delete, Get, Patch, PipeInput, Post, ToArguments, Use } from "@asla/hono-decorator";
 import { HonoContext } from "@/hono/type.ts";
 import { checkValue, checkValueAsync } from "@/global/check.ts";
