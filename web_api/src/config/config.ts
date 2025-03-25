@@ -3,6 +3,7 @@ import path from "node:path";
 import { AppConfig, checkConfig } from "./config_check.ts";
 import * as jsonc from "@std/jsonc";
 import { ENV } from "./env.ts";
+import { getCheckTypeErrorReason } from "@asla/wokao";
 
 export function getPackageJson() {
   return import("../../package.json", { with: { type: "json" } }).then((mod) => mod.default);
@@ -71,6 +72,11 @@ async function readConfig(): Promise<AppConfig> {
     return checkConfig({});
   }
 
-  return checkConfig(jsonc.parse(configFile));
+  try {
+    return checkConfig(jsonc.parse(configFile));
+  } catch (error) {
+    console.error(getCheckTypeErrorReason(error));
+    throw error;
+  }
 }
 export type { AppConfig, EmailConfig } from "./config_check.ts";

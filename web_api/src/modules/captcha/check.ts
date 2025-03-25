@@ -1,4 +1,4 @@
-import { ExpectType, array } from "evlib/validator";
+import { ExpectType, array } from "@asla/wokao";
 
 export function imageCaptchaReplyChecker() {
   return { sessionId: "string", selectedIndex: array.number } satisfies ExpectType;

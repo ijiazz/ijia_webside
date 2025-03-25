@@ -7,13 +7,12 @@ import {
   type CreateUserProfileParam,
   type CreateUserProfileResult,
 } from "./passport.dto.ts";
-import { optional, array, stringMatch } from "evlib/validator";
+import { optional, array, stringMatch, integer } from "@asla/wokao";
 import { passportService } from "./services/passport.service.ts";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
 import { Controller, Get, PipeInput, PipeOutput, Post, ToArguments, Use } from "@asla/hono-decorator";
 import { checkValue, checkValueAsync } from "@/global/check.ts";
-import { integer } from "evlib/validator";
 import {
   imageCaptchaReplyChecker,
   imageCaptchaController,
