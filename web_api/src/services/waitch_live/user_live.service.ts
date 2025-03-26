@@ -87,7 +87,7 @@ export class IjiaWatch extends UserLive {
         .insert({ info: { error: toErrorStr(error) }, name: "直播轮询", level: LogLevel.error })
         .query()
         .catch((e) => {
-          console.error("Error: 直播状态轮询请求异常");
+          console.error("直播状态轮询请求异常, 且无法写入日志", e);
         });
     }
   }
@@ -126,18 +126,22 @@ async function sendLiveNotificationEmails() {
   });
   const useTime = Date.now() - startTime;
 
-  await log
-    .insert({
-      info: {
-        总发送用户数: res.total,
-        发送总耗时: useTime,
-        发送失败次数: res.sendFailedCount,
-        发送失败人数: failedTotal,
-      },
-      level: LogLevel.log,
-      name: "发送直播通知邮件",
-    })
-    .queryCount();
+  try {
+    await log
+      .insert({
+        info: {
+          总发送用户数: res.total,
+          发送总耗时: useTime,
+          发送失败次数: res.sendFailedCount,
+          发送失败人数: failedTotal,
+        },
+        level: LogLevel.log,
+        name: "发送直播通知邮件",
+      })
+      .queryCount();
+  } catch (error) {
+    console.error("添直播通知邮件通知日志失败", error);
+  }
 }
 
 function genNoticeContent() {

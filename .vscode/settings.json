@@ -1,4 +1,4 @@
 {
-  "deno.enablePaths": ["./deps/hofetch", "./deps/ijia-data"],
+  "deno.disablePaths": ["./web_api"],
   "files.eol": "\n"
 }
