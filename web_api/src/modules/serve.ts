@@ -3,7 +3,6 @@ import { addServeStatic } from "../hono/serve_static.ts";
 import { applyController } from "@asla/hono-decorator";
 import { errorHandler } from "../global/http_error.ts";
 
-import { commentStatController } from "./stat/mod.ts";
 import { userController } from "./user/mod.ts";
 import { passportController } from "./passport/mod.ts";
 import { classController } from "./class/mod.ts";
@@ -15,7 +14,6 @@ export function createHonoApp(option: { static?: boolean } = {}) {
   applyController(hono, imageCaptchaController);
   applyController(hono, userController);
   applyController(hono, classController);
-  applyController(hono, commentStatController);
   return hono;
 }
 
