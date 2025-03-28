@@ -2,7 +2,7 @@ import React, { PropsWithChildren } from "react";
 import { ProLayout, ProLayoutProps } from "@ant-design/pro-components";
 import { IjiaLogo } from "../../common/site-logo.tsx";
 import { Button, MenuProps } from "antd";
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import { menus } from "./menus.ts";
 import { gotoHome } from "@/app.ts";
 import { getUserToken, useCurrentUser } from "@/common/user.ts";
@@ -56,6 +56,7 @@ const ProLayoutCSS = styled(ProLayout)`
 const IS_DEV = import.meta.env?.DEV;
 export function UserLayout(props: PropsWithChildren<{}>) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { logout, value: user } = useCurrentUser();
   const { message } = useAntdStatic();
   const copyToken = () => {
@@ -85,7 +86,21 @@ export function UserLayout(props: PropsWithChildren<{}>) {
               },
               children: user.nickname ?? " ",
             }
-          : undefined
+          : {
+              className: "e2e-avatar",
+              size: "small",
+              title: "登录",
+              onClick: () => {
+                navigate("/passport/login", { viewTransition: true });
+              },
+              render: (props, dom) => {
+                return (
+                  <Link style={{ color: "inherit" }} to={"/passport/login?redirect=." + pathname} viewTransition>
+                    {dom}
+                  </Link>
+                );
+              },
+            }
       }
       action={IS_DEV && user ? <Button onClick={copyToken}>复制token</Button> : undefined}
     >

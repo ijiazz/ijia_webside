@@ -6,9 +6,10 @@ import { AntdProvider, HoFetchProvider } from "./global-provider.tsx";
 import { notFoundRouter } from "./common/page_state/NotFound.tsx";
 import { UserLayout } from "./modules/layout/UserLayout.tsx";
 import { getPathByRoute } from "./app.ts";
+import liveRoutes from "./modules/live/routes.tsx";
 
 const coreRouters: RouteObject[] = [
-  { index: true, element: <div>home</div> },
+  { path: "live", children: liveRoutes },
   { path: "passport", children: passportRouter },
   {
     Component: UserLayout,

@@ -1,7 +1,7 @@
 import { ConfigProvider, theme, message, notification, Modal } from "antd";
 import React, { PropsWithChildren, useContext, useMemo } from "react";
 import { AndContext } from "@/hooks/antd.ts";
-import { ApiContext, IGNORE_ERROR_MSG } from "@/hooks/http.ts";
+import { ApiContext, IGNORE_ERROR_MSG, IGNORE_UNAUTHORIZED_REDIRECT } from "@/hooks/http.ts";
 import { createHoFetch, getResponseErrorInfo } from "@/common/http.ts";
 import { useNavigate } from "react-router";
 import { getUrlByRoute } from "./app.ts";
@@ -50,7 +50,7 @@ function useCreateHoFetch() {
         else message.error(res.status);
       }
 
-      if (res.status === 401 && err?.code === "REQUIRED_LOGIN") {
+      if (res.status === 401 && err?.code === "REQUIRED_LOGIN" && !ctx[IGNORE_UNAUTHORIZED_REDIRECT]) {
         const s = new URLSearchParams();
         const url = new URL(location.href);
         const target = url.pathname + url.search + url.hash;

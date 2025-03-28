@@ -1,6 +1,6 @@
 import { Platform } from "@ijia/data/db";
 import { GetListOption } from "../dto_common.ts";
-import { ImageInfoDto, MulFormat, UserSampleInfo } from "./common.dto.ts";
+import { ImageInfoDto, MulFormat, AssetUserInfo } from "./common.dto.ts";
 
 export type GetAssetListParam = GetListOption & {
   platform?: Platform;
@@ -12,15 +12,17 @@ export type GetAssetListParam = GetListOption & {
 };
 
 export interface AssetItemDto {
+  platform: Platform;
   asset_id: string;
   /** 作者信息 */
-  author: UserSampleInfo;
+  author: AssetUserInfo;
   /** 作品类型 */
   type: number;
   content_text: string | null;
   cover?: MulFormat<ImageInfoDto>;
   publish_time: Date | null;
   ip_location: string | null;
+  url?: string;
 
   // videoList: VideoInfoDto[];
   // audioList: AudioInfoDto[];

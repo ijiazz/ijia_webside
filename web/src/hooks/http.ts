@@ -8,3 +8,4 @@ export function useHoFetch() {
   return useContext(ApiContext);
 }
 export const IGNORE_ERROR_MSG = Symbol("ignore error message");
+export const IGNORE_UNAUTHORIZED_REDIRECT = Symbol("ignore unauthorized redirect");

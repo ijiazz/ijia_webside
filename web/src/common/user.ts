@@ -1,5 +1,5 @@
 import { UserBasicDto } from "@/api.ts";
-import { useHoFetch } from "@/hooks/http.ts";
+import { IGNORE_UNAUTHORIZED_REDIRECT, IGNORE_ERROR_MSG, useHoFetch } from "@/hooks/http.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { useEffect, useMemo } from "react";
 import { toFileUrl } from "./http.ts";
@@ -28,11 +28,13 @@ export function useCurrentUser(option: { manual?: boolean } = {}): UseCurrentUse
     (force?: boolean) => {
       if (!user || force) {
         if (!getUserToken()) return;
-        user = api["/user/basic_info"].get().then((res) => ({
-          ...res,
-          avatar_url: toFileUrl(res.avatar_url),
-          userIdStr: res.user_id.toString().padStart(6),
-        }));
+        user = api["/user/basic_info"]
+          .get({ [IGNORE_UNAUTHORIZED_REDIRECT]: true, [IGNORE_ERROR_MSG]: true })
+          .then((res) => ({
+            ...res,
+            avatar_url: toFileUrl(res.avatar_url),
+            userIdStr: res.user_id.toString().padStart(6),
+          }));
       }
       return user;
     },
