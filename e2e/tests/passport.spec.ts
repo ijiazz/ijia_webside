@@ -1,4 +1,4 @@
-import { getAppUrlByRouter, vioServerTest as test } from "@/fixtures/test.ts";
+import { getAppUrlByRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { user } from "@ijia/data/db";
 import { initAlice, loginGetToken, initBob } from "@/__mocks__/user.ts";
 import { v } from "@ijia/data/yoursql";
@@ -9,7 +9,7 @@ test("注册账号", async function ({ page, webInfo }) {
   const email = "test_signup@ijiazz.cn";
   await user.delete({ where: "email=" + v(email) }).queryCount();
 
-  await page.goto(getAppUrlByRouter("/passport/signup"));
+  await page.goto(getAppUrlByRoute("/passport/signup"));
 
   await page.getByRole("textbox", { name: "* 电子邮箱 :" }).click();
   await page.getByRole("textbox", { name: "* 电子邮箱 :" }).fill(email);
@@ -48,13 +48,13 @@ test("注册账号", async function ({ page, webInfo }) {
 });
 test("学号登录", async function ({ page }) {
   const user = await initAlice();
-  await page.goto(getAppUrlByRouter("/passport/login"));
+  await page.goto(getAppUrlByRoute("/passport/login"));
   await login(page, user.id.toString(), user.password);
   await expect(page, "登录后导航到首页").toHaveURL(/\/live/, {});
 });
 test("邮箱登录", async function ({ page, browser }) {
   const user = await initAlice();
-  await page.goto(getAppUrlByRouter("/passport/login"));
+  await page.goto(getAppUrlByRoute("/passport/login"));
   await login(page, user.email, user.password);
   await expect(page, "登录后导航到首页").toHaveURL(/\/live/, {});
 });
@@ -62,7 +62,7 @@ test("切换账号", async function ({ page }) {
   const Alice = await initAlice();
   const Bob = await initBob();
   const token = await loginGetToken(Alice.email, Alice.password);
-  await page.goto(getAppUrlByRouter("/profile/center", token));
+  await page.goto(getAppUrlByRoute("/profile/center", token));
 
   await expect(page.getByText("学号： " + Alice.id.toString())).toBeVisible();
   await page.locator(".e2e-avatar").hover();
@@ -80,7 +80,7 @@ test("修改密码", async function ({ page }) {
   const Alice = await initAlice();
   const token = await loginGetToken(Alice.email, Alice.password);
   const aliceNewPassword = "aliceNew";
-  await page.goto(getAppUrlByRouter("/profile/security", token));
+  await page.goto(getAppUrlByRoute("/profile/security", token));
   await page.locator("body").click();
   await page.getByRole("textbox", { name: "* 旧密码" }).click();
   await page.getByRole("textbox", { name: "* 旧密码" }).fill(Alice.password + "err");

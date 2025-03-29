@@ -1,4 +1,4 @@
-import type { UserConfig } from "vite";
+import type { UserConfig, Plugin } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
 import legacy from "@vitejs/plugin-legacy";
@@ -9,11 +9,11 @@ export default {
   root: import.meta.dirname,
   server: {
     proxy: {
-      "/api": {
+      "/api/": {
         target: "http://127.0.0.1:3000",
         rewrite: (path) => path.replace(/^\/api\//, "/"),
       },
-      "/file": { target: "http://127.0.0.1:3000" },
+      "/file/": { target: "http://127.0.0.1:3000" },
     },
   },
   plugins: [
@@ -30,13 +30,15 @@ export default {
   ],
   build: {
     target: "es2018",
+    outDir: "dist/client",
     rollupOptions: {
       output: {
         manualChunks: createManualChunks(),
       },
       input: {
         index: import.meta.dirname + "/index.html",
-        "x/index": import.meta.dirname + "/x/index.html",
+        // "x/index": import.meta.dirname + "/x/index.html",
+        ssr_client: import.meta.dirname + "/ssr.html",
       },
     },
   },
@@ -66,4 +68,19 @@ function createManualChunks() {
     }
   };
   return manualChunks;
+}
+function ssrRenderProxy(): Plugin {
+  return {
+    name: "ssr-proxy",
+    transformIndexHtml: async (html, ctx) => {
+      const base = ctx.originalUrl ?? "/";
+      const res = await fetch(`http://localhost:5273${base}`);
+      if (res.status !== 200) {
+        console.error("SSR error", res.status, base);
+        return html;
+      }
+      const text = await res.text();
+      return html.replace("<!--SSR-ELEMENT-->", text);
+    },
+  };
 }

@@ -1,4 +1,4 @@
 {
-  "deno.disablePaths": ["./web_api"],
+  "deno.disablePaths": ["./web_api", "./web"],
   "files.eol": "\n"
 }

@@ -1,6 +1,7 @@
 import { Select, SelectProps, Space } from "antd";
 import { TikTokOutlined, BilibiliOutlined, WeiboOutlined } from "@ant-design/icons";
 import { ReactNode } from "react";
+import React from "react";
 export enum Platform {
   /** 抖音 */
   douYin = "douyin",

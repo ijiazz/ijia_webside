@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { useThemeToken } from "@/hooks/antd.ts";
 import styled from "@emotion/styled";
+import React from "react";
 
 export function Meta(props: { icon?: ReactNode; title?: ReactNode; description?: ReactNode }) {
   const { icon, description, title } = props;

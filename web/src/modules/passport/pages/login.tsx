@@ -1,7 +1,7 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { LoginForm, ProFormText } from "@ant-design/pro-components";
 import { Alert, Space, Tabs } from "antd";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { useState } from "react";
 import { Link, useRouteLoaderData } from "react-router";
 import { LoginType, PassportConfig, UserLoginParamDto } from "@/api.ts";
@@ -15,7 +15,7 @@ import classNames from "classnames";
 import { useWindowResize } from "@/hooks/window.ts";
 import { IGNORE_ERROR_MSG, useHoFetch } from "@/hooks/http.ts";
 import { useRedirect } from "@/hooks/redirect.ts";
-import { getPathByRouter } from "@/common/navigation.ts";
+import { getPathByRoute } from "@/app.ts";
 import { useCurrentUser } from "@/common/user.ts";
 
 type Msg = {
@@ -31,7 +31,7 @@ const defaultMessage: Msg | undefined = CAN_HASH_PASSWORD
 export function LoginPage() {
   const config = useRouteLoaderData<PassportConfig>("/passport") ?? {};
 
-  const go = useRedirect({ defaultPath: () => getPathByRouter("/live") });
+  const go = useRedirect({ defaultPath: () => getPathByRoute("/live") });
   const [loginType, setLoginType] = useState<LoginType>(LoginType.id);
   const [message, setMessage] = useState<Msg | undefined>(defaultMessage);
   const { api } = useHoFetch();
@@ -79,7 +79,7 @@ export function LoginPage() {
     }
     setCaptchaModalOpen(true);
   };
-  const isCenter = windowSize.height * 1.2 > windowSize.width;
+  const isCenter = windowSize ? windowSize.height * 1.2 > windowSize.width : false;
   return (
     <StyledPage>
       <div className={classNames("main", { center: isCenter })}>
@@ -87,7 +87,7 @@ export function LoginPage() {
 
         <div
           className="login-form-container"
-          style={{ maxWidth: 400, padding: windowSize.width > 448 ? "0 24px" : undefined }}
+          style={{ maxWidth: 400, padding: windowSize && windowSize.width > 448 ? "0 24px" : undefined }}
         >
           <LoginForm
             logo={

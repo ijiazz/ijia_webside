@@ -1,5 +1,5 @@
 import { lazyComponent } from "@/lib/lazy_component.ts";
-import { ComponentType, Suspense, createElement } from "react";
+import React, { ComponentType, Suspense, createElement } from "react";
 import { PageLoading } from "./page_state/Loading.tsx";
 
 export function appLazy<T extends ComponentType<any>>(load: () => Promise<{ default: T }>): ComponentType<any>;

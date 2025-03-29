@@ -3,7 +3,7 @@ function getWindowSize() {
   return { height: document.body.clientHeight, width: document.body.clientWidth };
 }
 export function useWindowResize(onResize?: () => void) {
-  const [windowSize, updateWindowSize] = useReducer(getWindowSize, getWindowSize());
+  const [windowSize, updateWindowSize] = useReducer(getWindowSize, undefined);
   const ref = useRef(onResize);
   ref.current = onResize;
   useEffect(() => {

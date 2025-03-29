@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Button, Form, Input, Space } from "antd";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { tryHashPassword } from "../util/pwd_hash.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { AndContext, useThemeToken } from "@/hooks/antd.ts";
@@ -8,7 +8,7 @@ import { IjiaLogo } from "@/common/site-logo.tsx";
 import { useRedirect } from "@/hooks/redirect.ts";
 import { useHoFetch } from "@/hooks/http.ts";
 import { isHttpErrorCode } from "@/common/http.ts";
-import { getPathByRouter } from "@/common/navigation.ts";
+import { getPathByRoute } from "@/app.ts";
 import { useCurrentUser } from "@/common/user.ts";
 import { EmailInput } from "../components/EmailInput.tsx";
 import { PassportConfig } from "@/api.ts";
@@ -38,7 +38,7 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
   const [form] = Form.useForm<FormValues>();
   const { api } = useHoFetch();
   const { refresh } = useCurrentUser({ manual: true });
-  const go = useRedirect({ defaultPath: () => getPathByRouter("/profile/center") });
+  const go = useRedirect({ defaultPath: () => getPathByRoute("/profile/center") });
   const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>
     api["/passport/signup/email_captcha"].post({
       body: { email, captchaReply: { sessionId, selectedIndex: selected } },

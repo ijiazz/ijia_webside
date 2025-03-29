@@ -1,5 +1,5 @@
 import { Result } from "antd";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import styled from "@emotion/styled";
 import { CheckCircleTwoTone } from "@ant-design/icons";
 import classnames from "classnames";

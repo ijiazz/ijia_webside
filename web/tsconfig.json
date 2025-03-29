@@ -7,12 +7,11 @@
     "lib": ["DOM", "ESNext"],
     "baseUrl": ".",
     "rootDir": ".",
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
+    "jsx": "react",
     "paths": {
       "@/*": ["./src/*"],
       "@asset/*": ["./public/*"]
     }
   },
-  "include": ["./src"]
+  "include": ["./src", "./view"]
 }

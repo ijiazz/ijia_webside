@@ -2,6 +2,7 @@ import { Outlet, RouteObject } from "react-router";
 import { VideoBg } from "./components/VideoBg.tsx";
 import { api } from "@/common/http.ts";
 import { appLazy } from "@/common/lazy_load_component.tsx";
+import React from "react";
 
 const router: RouteObject[] = [
   {
