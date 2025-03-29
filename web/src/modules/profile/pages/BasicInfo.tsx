@@ -16,7 +16,7 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { PlatformBind } from "../components/PlatformBind.tsx";
 import { useCurrentUser } from "@/common/user.ts";
 import styled from "@emotion/styled";

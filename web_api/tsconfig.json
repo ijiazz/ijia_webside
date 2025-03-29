@@ -5,7 +5,8 @@
     "lib": ["ESNext"],
     "isolatedModules": true,
     "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] }
+    "paths": { "@/*": ["./src/*"] },
+    "jsx": "react"
   },
   "exclude": ["node_modules", "dist", "scripts", "./_api.ts"]
 }

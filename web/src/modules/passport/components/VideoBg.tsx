@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "react";
+import React, { PropsWithChildren } from "react";
 
 export function VideoBg(props: PropsWithChildren<{ style?: React.CSSProperties; className?: string }>) {
   return (

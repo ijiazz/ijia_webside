@@ -1,18 +1,21 @@
 /// <reference types="vite/client" />
 import "@ant-design/v5-patch-for-react-19";
 import "./styles/global.css";
+import React from "react";
 
 import { createRoot } from "react-dom/client";
-import routerRoot from "./router-root.tsx";
-import { RouterProvider } from "react-router";
-import { loginByAccessToken } from "./common/user.ts";
+import { SpaRoot } from "./routes.tsx";
+import { loginByAccessToken } from "@/common/user.ts";
+import { remoteLoading } from "./app.ts";
 
+console.log("应用运行于 SPA 模式");
+const mountApp = () => {
+  createRoot(document.getElementById("app")!).render(<SpaRoot />);
+};
 paseAccessToken();
 mountApp();
+remoteLoading();
 
-function mountApp() {
-  createRoot(document.getElementById("app")!).render(<RouterProvider router={routerRoot}></RouterProvider>);
-}
 function paseAccessToken() {
   const url = new URL(location.href);
   const access_token = url.searchParams.get("access_token");

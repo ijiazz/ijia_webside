@@ -1,10 +1,10 @@
-import { PropsWithChildren } from "react";
+import React, { PropsWithChildren } from "react";
 import { ProLayout, ProLayoutProps } from "@ant-design/pro-components";
 import { IjiaLogo } from "../../common/site-logo.tsx";
 import { Button, MenuProps } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { menus } from "./menus.ts";
-import { gotoHome } from "@/common/navigation.ts";
+import { gotoHome } from "@/app.ts";
 import { getUserToken, useCurrentUser } from "@/common/user.ts";
 import { avatarDropdownRender } from "./avatar.tsx";
 import { useAntdStatic } from "@/hooks/antd.ts";
@@ -22,6 +22,7 @@ function LayoutBase(
   }
   return (
     <ProLayoutCSS
+      disableMobile
       token={{ pageContainer: { paddingBlockPageContainerContent: 0, paddingInlinePageContainerContent: 0 } }}
       onMenuHeaderClick={gotoHome}
       logo={<IjiaLogo />}
@@ -52,7 +53,7 @@ function LayoutBase(
 const ProLayoutCSS = styled(ProLayout)`
   height: 100%;
 `;
-const IS_DEV = import.meta.env.DEV;
+const IS_DEV = import.meta.env?.DEV;
 export function UserLayout(props: PropsWithChildren<{}>) {
   const navigate = useNavigate();
   const { logout, value: user } = useCurrentUser();

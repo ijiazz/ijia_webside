@@ -1,4 +1,5 @@
 import { Spin } from "antd";
+import React from "react";
 
 export function PageLoading() {
   return (

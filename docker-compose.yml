@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: postgres
       # POSTGRES_PASSWORD: xxx
     ports:
-      - 5432:5432 # e2e测试时 需要连接
+      - 5442:5432 # e2e测试时 需要连接
   redis:
     image: redis:7.4.2-alpine
 

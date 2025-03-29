@@ -5,7 +5,8 @@
   "scripts": {
     "check-type": "tsc --noEmit",
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "build:ssr": "vite build --outDir dist/server --ssr src/index.server.tsx"
   },
   "keywords": [],
   "author": "",

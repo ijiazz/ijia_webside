@@ -1,0 +1,13 @@
+{
+  "nodeModulesDir": "manual",
+  "tasks": {
+    "ssr-dev": "deno run --allow-net --allow-env ./ssr-render-server.ts"
+  },
+
+  "lock": false,
+  "imports": {
+    "@/": "../web/src/",
+    "@static/": "../web/dist/client/",
+    "@ssr-render": "../web/dist/server/index.server.js"
+  }
+}

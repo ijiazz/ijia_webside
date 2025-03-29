@@ -6,6 +6,7 @@ import { ChangePasswordParam } from "@/api.ts";
 import { CAN_HASH_PASSWORD, hashPassword } from "@/modules/passport/util/pwd_hash.ts";
 import { Developing } from "@/common/page_state/Developing.tsx";
 import { PagePadding } from "@/lib/components/Page.tsx";
+import React from "react";
 export function Security() {
   return (
     <PagePadding>

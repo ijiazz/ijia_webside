@@ -4,7 +4,7 @@ import { useAsync } from "@/hooks/async.ts";
 import { useEffect, useMemo } from "react";
 import { toFileUrl } from "./http.ts";
 import Cookie from "js-cookie";
-import { getUrlByRouter } from "./navigation.ts";
+import { getUrlByRoute } from "@/app.ts";
 
 export type UserProfileBasic = UserBasicDto & {
   userIdStr: string;
@@ -66,7 +66,7 @@ export function getUserToken(): string | undefined {
 }
 export function userLogout() {
   Cookie.remove("jwt-token");
-  location.href = getUrlByRouter("/passport/login");
+  location.href = getUrlByRoute("/passport/login");
 }
 export function loginByAccessToken(jwtToken: string) {
   Cookie.set("jwt-token", jwtToken);

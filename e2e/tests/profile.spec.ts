@@ -1,4 +1,4 @@
-import { getAppUrlByRouter, vioServerTest as test } from "@/fixtures/test.ts";
+import { getAppUrlByRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { AccountInfo, initAlice, loginGetToken } from "@/__mocks__/user.ts";
 import { dclass, pla_user, Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { Page } from "@playwright/test";
@@ -9,7 +9,7 @@ let Alice!: AccountInfo;
 beforeEach(async ({ page }) => {
   Alice = await initAlice();
   const aliceToken = await loginGetToken(Alice.email, Alice.password);
-  await page.goto(getAppUrlByRouter("/profile/center", aliceToken));
+  await page.goto(getAppUrlByRoute("/profile/center", aliceToken));
 });
 test("账号绑定", async function ({ page, browser }) {
   await pla_user.delete({ where: "pla_uid in ('alice','bob','david')" }).queryCount();

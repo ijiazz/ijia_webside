@@ -2,6 +2,7 @@ import { Avatar } from "antd";
 import { useCurrentUser, UserProfileBasic } from "./user.ts";
 import styled from "@emotion/styled";
 import { useThemeToken } from "@/hooks/antd.ts";
+import React from "react";
 export type StudentIdCardInfo = {
   avatarUrl?: string;
   id?: string;

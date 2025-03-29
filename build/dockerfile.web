@@ -16,8 +16,7 @@ ADD tsconfig.json  ./
 ADD ./web/src ./web/src
 ADD ./web/public ./web/public
 ADD ./web/build ./web/build
-ADD ./web/x ./web/x
-ADD ./web/index.html ./web/vite.config.ts ./web/tsconfig.json ./web/
+ADD ./web/index.html ./web/ssr.html ./web/vite.config.ts ./web/tsconfig.json ./web/
 ADD ./web_api/src ./web_api/src
 ADD ./web_api/_api.ts ./web_api/_api.ts
 
@@ -32,6 +31,6 @@ ADD ./build/nginx/conf.d /etc/nginx/conf.d
 ADD ./build/nginx/localhost.crt /tls.crt
 ADD ./build/nginx/localhost.key /tls.key
 
-COPY --from=build /build/web/dist .
+COPY --from=build /build/web/dist/client .
 EXPOSE 443
 

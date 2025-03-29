@@ -23,12 +23,12 @@ export const vioServerTest = test.extend<Context>({
   },
 });
 
-export function getAppUrlByRouter(router: string, token?: string): string {
-  const base = new URL(env.WEB_URL + "/x/");
+export function getAppUrlByRoute(route: string, token?: string): string {
+  if (!route.startsWith("/")) throw new Error("router must start with /");
+  const base = new URL(env.WEB_URL + route);
   if (token) {
     base.searchParams.append("access_token", token);
   }
-  base.hash = router;
   return base.toString();
 }
 function getFreePort() {

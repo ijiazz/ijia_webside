@@ -1,0 +1,11 @@
+{
+  "nodeModulesDir": "manual",
+  "tasks": {},
+  "compilerOptions": {
+    "lib": ["deno.window", "dom", "esnext"]
+  },
+  "lock": false,
+  "imports": {
+    "@/": "../web/src/"
+  }
+}

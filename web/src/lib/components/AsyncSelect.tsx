@@ -1,6 +1,7 @@
 import { useAsync } from "@/hooks/async.ts";
 import { Select, SelectProps } from "antd";
 import type { BaseOptionType, DefaultOptionType } from "antd/es/select/index.js";
+import React from "react";
 import { useThrottle } from "react-use";
 
 export type AsyncSelectProps<

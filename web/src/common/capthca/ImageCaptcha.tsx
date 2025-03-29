@@ -1,7 +1,7 @@
 import { CaptchaPanel } from "@/common/capthca/captcha.tsx";
 import { Modal, Popover, Spin, Button } from "antd";
 import { useAsync } from "@/hooks/async.ts";
-import { PropsWithChildren, useEffect, useState } from "react";
+import React, { PropsWithChildren, useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { useHoFetch } from "@/hooks/http.ts";
 

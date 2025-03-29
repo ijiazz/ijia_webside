@@ -1,5 +1,5 @@
 import { Modal, Radio } from "antd";
-import { useState } from "react";
+import React, { useState } from "react";
 
 export function UserAgreementModal(props: { open?: boolean; onClose?(agree?: boolean): void; needAgree?: boolean }) {
   const { needAgree } = props;
