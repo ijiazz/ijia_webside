@@ -9,7 +9,11 @@ import { getPathByRoute } from "./app.ts";
 import liveRoutes from "./modules/live/routes.tsx";
 
 const coreRouters: RouteObject[] = [
-  { path: "live", children: liveRoutes },
+  {
+    Component: UserLayout,
+    path: "live",
+    children: liveRoutes,
+  },
   { path: "passport", children: passportRouter },
   {
     Component: UserLayout,
@@ -58,20 +62,14 @@ function Router() {
 }
 
 export function SpaRoot() {
-  return (
-    <React.StrictMode>
-      <Router />
-    </React.StrictMode>
-  );
+  return <Router />;
 }
 
 export function SsrClientRoot() {
   return (
-    <React.StrictMode>
-      <SsrRootWarp>
-        <Router />
-      </SsrRootWarp>
-    </React.StrictMode>
+    <SsrRootWarp>
+      <Router />
+    </SsrRootWarp>
   );
 }
 export function SsrRootWarp(props: React.PropsWithChildren) {

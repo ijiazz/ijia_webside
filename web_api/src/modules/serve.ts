@@ -7,7 +7,7 @@ import { userController } from "./user/mod.ts";
 import { passportController } from "./passport/mod.ts";
 import { classController } from "./class/mod.ts";
 import { imageCaptchaController } from "./captcha/mod.ts";
-import { assetController } from "./asset/mod.ts";
+import { postController } from "./post/mod.ts";
 
 export function createHonoApp(option: { static?: boolean } = {}) {
   const hono = createHono(option);
@@ -15,7 +15,7 @@ export function createHonoApp(option: { static?: boolean } = {}) {
   applyController(hono, imageCaptchaController);
   applyController(hono, userController);
   applyController(hono, classController);
-  applyController(hono, assetController);
+  applyController(hono, postController);
   return hono;
 }
 

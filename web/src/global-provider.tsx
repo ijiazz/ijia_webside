@@ -4,7 +4,7 @@ import { AndContext } from "@/hooks/antd.ts";
 import { ApiContext, IGNORE_ERROR_MSG, IGNORE_UNAUTHORIZED_REDIRECT } from "@/hooks/http.ts";
 import { createHoFetch, getResponseErrorInfo } from "@/common/http.ts";
 import { useNavigate } from "react-router";
-import { getUrlByRoute } from "./app.ts";
+import { getUrlByRoute, ROUTES } from "./app.ts";
 export const useToken = theme.useToken;
 
 export function AntdProvider(props: PropsWithChildren<{}>) {
@@ -54,10 +54,10 @@ function useCreateHoFetch() {
         const s = new URLSearchParams();
         const url = new URL(location.href);
         const target = url.pathname + url.search + url.hash;
-        const isLoginPage = location.href.startsWith(getUrlByRoute("/passport/login"));
+        const isLoginPage = location.href.startsWith(getUrlByRoute(ROUTES.LOGIN));
         if (!isLoginPage) {
           s.set("redirect", target);
-          navigate("/passport/login?" + s.toString(), { viewTransition: true });
+          navigate(ROUTES.LOGIN + "?" + s.toString(), { viewTransition: true });
         }
       }
 

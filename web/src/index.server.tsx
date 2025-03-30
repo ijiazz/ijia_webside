@@ -29,11 +29,9 @@ export class ReactRouterSsrRender implements SsrRender {
     if (context instanceof Response) throw context;
     const router = createStaticRouter(dataRoutes, context);
     return (
-      <React.StrictMode>
-        <SsrRootWarp>
-          <RouterProvider router={router} />
-        </SsrRootWarp>
-      </React.StrictMode>
+      <SsrRootWarp>
+        <RouterProvider router={router} />
+      </SsrRootWarp>
     );
   }
   /**
