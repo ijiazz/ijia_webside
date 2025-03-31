@@ -21,55 +21,6 @@ export type UserItemDto = UserSampleInfo & {
   ip_location: string | null;
 };
 
-export type GetAssetListParam = PageOption & {
-  platform?: Platform;
-  userId?: string;
-  s_content?: string;
-  s_author?: string;
-
-  sort?: Record<"publish_time" | "digg_total" | "forward_total" | "collection_num", "ASC" | "DESC">;
-};
-export interface AssetItemDto {
-  asset_id: string;
-  /** 作者信息 */
-  author: UserSampleInfo;
-  /** 作品类型 */
-  type: number;
-  /** 作品统计 */
-  stat: {
-    comment_total: number;
-    digg_total: number;
-    forward_total: number;
-    collection_num: number;
-  };
-  content_text: string;
-  cover: MulFormat<ImageInfoDto>;
-  publish_time: Date | null;
-  ip_location: string;
-
-  //   videoList: VideoInfoDto[];
-  //   audioList: AudioInfoDto[];
-  //   imageList: ImageInfoDto[];
-  videoUrlList?: string[];
-  audioUrlList?: string[];
-  imageUrlList?: string[];
-}
-export interface VideoInfoDto {
-  url: string;
-}
-export interface AudioInfoDto {
-  url: string;
-}
-export interface ImageInfoDto {
-  //   width: number;
-  //   height: number;
-  url: string;
-}
-export interface MulFormat<T> {
-  origin: T;
-  thumb?: T;
-}
-
 type CommentSortKeys = "author_like" | "publish_time" | "like_count";
 export type GetCommentListParam = PageOption & {
   asset_id?: string;

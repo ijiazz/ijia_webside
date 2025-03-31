@@ -21,7 +21,7 @@ class Watcher {
   listen() {
     if (this.abc) return;
     this.abc = new AbortController();
-    this.watch(this.abc.signal);
+    this.watch(this.abc.signal).catch(() => {});
   }
   private async watch(signal: AbortSignal) {
     let timer: number | NodeJS.Timeout | undefined;

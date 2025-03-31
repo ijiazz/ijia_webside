@@ -17,3 +17,7 @@ export function remoteLoading() {
     element.remove();
   }
 }
+
+export const ROUTES = {
+  LOGIN: "/passport/login",
+} as const;

@@ -1,15 +1,14 @@
 import { DbUserAvatarCreate, pla_asset, pla_comment, pla_user, user_avatar } from "@ijia/data/db";
 import { DbQuery, v } from "@ijia/data/yoursql";
 import type {
-  AssetItemDto,
   CommentReplyItemDto,
   CommentRootItemDto,
-  GetAssetListParam,
   GetCommentListParam,
   GetCommentReplyListParam,
   GetUserParam,
   UserItemDto,
 } from "./query.dto.ts";
+import { createSearch } from "@/global/sql_util.ts";
 const operation = {
   andEq(value: Record<string, any>): string[] {
     let values: string[] = [];
@@ -24,9 +23,7 @@ const operation = {
     return values;
   },
 };
-export const DEFAULT_RESOURCE = {
-  cover: "",
-};
+
 function uriToUrl(uri: string, origin: string) {
   return origin + "/file/" + uri;
 }
@@ -62,90 +59,8 @@ export async function getUserList(queryable: DbQuery, option: GetUserParam & Deb
   return queryable.queryRows(sql);
 }
 
-function sqlAssetList(option: GetAssetListParam = {}) {
-  const { page = 0, pageSize = 20, platform, userId, sort } = option;
-  //TODO 处理资源信息
-  const selectable = pla_asset
-    .fromAs("p")
-    .innerJoin(pla_user, "u", "u.pla_uid=p.pla_uid")
-    .select({
-      asset_id: true,
-      publish_time: true,
-      type: "content_type",
-      ip_location: true,
-      content_text: true,
-      stat: `jsonb_build_object('collection_num', p.collection_num , 'forward_total', p.forward_num, 'digg_total', p.like_count)`,
-      author: `jsonb_build_object('user_name', u.user_name, 'user_id', u.pla_uid)`,
-    })
-    .where(() => {
-      const searchWhere: string[] = [];
-      if (option.s_author) searchWhere.push(createSearch("u.user_name", option.s_author));
-      if (option.s_content) searchWhere.push(createSearch("p.content_text", option.s_content));
-      operation
-        .andEq({
-          ["p.asset_id"]: userId,
-          ["p.platform"]: platform,
-        })
-        .concat(searchWhere);
-      return searchWhere;
-    })
-    .orderBy(() => {
-      let by: string[] = [];
-      if (sort) {
-        const map: Record<string, string> = {
-          publish_time: "p.published_time",
-          digg_total: "p.like_count",
-          forward_total: "p.forward_num",
-          collection_num: "p.collection_num",
-        };
-        for (const [k, v] of Object.entries(sort)) {
-          if (!map[k]) continue;
-          by.push(map[k] + " " + v);
-        }
-      }
-      return by;
-    })
-    .limit(pageSize, page * pageSize);
-  return selectable;
-}
-
 interface DebugOption {
   catchSql?(sql: string): void;
-}
-export async function getAssetList(
-  queryable: DbQuery,
-  option: GetAssetListParam & { asset_id?: string } & DebugOption = {},
-): Promise<AssetItemDto[]> {
-  const sql1 = sqlAssetList(option);
-
-  const sql = `WITH t AS ${sql1.toSelect()}
-SELECT t.*, jsonb_set(t.stat, ARRAY['comment_total'], (CASE WHEN c.count IS NULL THEN 0 ELSE c.count END)::TEXT::JSONB) AS stat FROM t 
-LEFT JOIN (
-    SELECT c.asset_id, count(*)::INT FROM t INNER JOIN pla_comment AS c ON c.asset_id = t.asset_id
-    GROUP BY c.asset_id
-) AS c ON t.asset_id =c.asset_id`;
-
-  option.catchSql?.(sql.toString());
-  const rows = await queryable.queryRows(sql);
-
-  const uriToUrl = (uri: string) => "/file/" + uri;
-  return rows.map((item): AssetItemDto => {
-    return {
-      audioUrlList: item.audio_uri?.map(uriToUrl),
-      imageUrlList: item.image_uri?.map(uriToUrl),
-      videoUrlList: item.video_uri?.map(uriToUrl),
-      author: item.author,
-      content_text: item.content_text ?? "",
-      ip_location: item.ip_location ?? "未知",
-      stat: item.stat,
-      publish_time: item.publish_time,
-      type: item.type,
-      asset_id: item.asset_id,
-      cover: {
-        origin: { url: item.cover_uri ? uriToUrl(item.cover_uri) : DEFAULT_RESOURCE.cover },
-      },
-    };
-  });
 }
 
 function sqlCommentList(option: (GetCommentListParam & GetCommentReplyListParam) & DebugOption = {}) {
@@ -228,7 +143,4 @@ export async function getCommentReplyByCid(
     Reflect.deleteProperty(item, "image_uri");
     return item;
   });
-}
-function createSearch(column: string, value: string) {
-  return `${column} LIKE ${v("%" + value + "%")}`;
 }

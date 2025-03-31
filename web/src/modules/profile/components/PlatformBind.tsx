@@ -6,8 +6,8 @@ import React, { useContext, useState } from "react";
 import { useThemeToken, AndContext } from "@/hooks/antd.ts";
 import styled from "@emotion/styled";
 import { BindPlatformCheckDto } from "@/api.ts";
-// import step1Path from "@asset/profile/douyin-step-1.jpg";
-import step2Path from "@asset/profile/douyin-step-2.jpg";
+// import step1Path from "./PlatformBind/douyin-step-1.jpg";
+import step2Path from "./PlatformBind/douyin-step-2.jpg";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Meta } from "@/lib/components/Meta.tsx";
 

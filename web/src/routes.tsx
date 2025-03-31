@@ -6,9 +6,14 @@ import { AntdProvider, HoFetchProvider } from "./global-provider.tsx";
 import { notFoundRouter } from "./common/page_state/NotFound.tsx";
 import { UserLayout } from "./modules/layout/UserLayout.tsx";
 import { getPathByRoute } from "./app.ts";
+import liveRoutes from "./modules/live/routes.tsx";
 
 const coreRouters: RouteObject[] = [
-  { index: true, element: <div>home</div> },
+  {
+    Component: UserLayout,
+    path: "live",
+    children: liveRoutes,
+  },
   { path: "passport", children: passportRouter },
   {
     Component: UserLayout,
@@ -57,20 +62,14 @@ function Router() {
 }
 
 export function SpaRoot() {
-  return (
-    <React.StrictMode>
-      <Router />
-    </React.StrictMode>
-  );
+  return <Router />;
 }
 
 export function SsrClientRoot() {
   return (
-    <React.StrictMode>
-      <SsrRootWarp>
-        <Router />
-      </SsrRootWarp>
-    </React.StrictMode>
+    <SsrRootWarp>
+      <Router />
+    </SsrRootWarp>
   );
 }
 export function SsrRootWarp(props: React.PropsWithChildren) {
