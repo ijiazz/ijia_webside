@@ -127,7 +127,7 @@ function PostHeader(props: { item: AssetItemDto }) {
   );
 }
 const HomePageCSS = styled.div`
-  padding: 12px 24px;
+  padding: 12px 12px;
 `;
 const PostListCSS = styled.div`
   max-width: 650px;

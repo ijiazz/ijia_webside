@@ -12,13 +12,13 @@ ADD ./deps/hono-decorator/package.json ./deps/hono-decorator/package.json
 ADD ./web_api/package.json ./web_api/package.json
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-FROM install as ijia-data
+FROM install AS ijia-data
 ADD ./deps/ijia-data/tsconfig.json ./deps/ijia-data/
 ADD ./deps/ijia-data/build ./deps/ijia-data/build
 ADD ./deps/ijia-data/src ./deps/ijia-data/src
 RUN pnpm run init-ijia-data
 
-FROM install as hono-decorator
+FROM install AS hono-decorator
 ADD ./deps/hono-decorator/tsconfig.json ./deps/hono-decorator/
 ADD ./deps/hono-decorator/build ./deps/hono-decorator/build
 ADD ./deps/hono-decorator/src ./deps/hono-decorator/src
