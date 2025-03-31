@@ -23,5 +23,9 @@ export function createHono(option: { static?: boolean } = {}) {
   const hono = new Hono();
   hono.onError(errorHandler);
   if (option.static) addServeStatic(hono);
+  hono.use(function (ctx, next) {
+    ctx.header("Server", "Hono");
+    return next();
+  });
   return hono;
 }
