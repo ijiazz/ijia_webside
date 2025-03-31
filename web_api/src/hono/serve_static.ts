@@ -29,7 +29,7 @@ export async function addServeStatic(hono: Hono) {
     await createRuntimeServeStatic({
       async onFound(path, c) {
         if (c.req.method !== "GET") return;
-        const rel = path.slice(rooDir.length);
+        const rel = path.slice(rooDir.length).replaceAll("\\", "/");
         if (bucketTest.AVATAR.test(rel)) {
           c.header("Cache-Control", "private, max-age=" + 86400 * 3);
           return;
@@ -95,7 +95,6 @@ async function createRuntimeServeStatic(
       throw error;
     }
 
-    ctx.header("Content-Length", stat.size.toString());
     ctx.header("Content-Type", contentType(filename));
     ctx.header("Accept-Ranges", "bytes");
 
@@ -107,14 +106,16 @@ async function createRuntimeServeStatic(
     if (range) {
       const ifRangeStr = ctx.req.header("If-Range");
       if (!ifRangeStr || ifRangeStr === stat.mtime.toUTCString()) {
-        const { end, start } = getHttpHeaderRange(range);
+        const { end = stat.size, start } = getHttpHeaderRange(range);
 
-        ctx.header("Content-Range", `bytes ${start}-${end}/${stat.size}`);
+        ctx.header("Content-Length", (end - start).toString());
+        ctx.header("Content-Range", `bytes ${start}-${end - 1}/${stat.size}`);
         ctx.status(206);
         return ctx.body(createFileStream(filename, { start, end }));
       }
     }
 
+    ctx.header("Content-Length", stat.size.toString());
     return ctx.body(createFileStream(filename));
   };
 }
