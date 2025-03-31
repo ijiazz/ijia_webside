@@ -32,7 +32,7 @@ export function HomePage() {
 
   const { result, run } = useAsync((params: { page: number; pageSize: number }) => {
     const { page, pageSize } = params;
-    return api["/live/posts"].get({ query: { offset: (page - 1) * pageSize, number: pageSize } }).then((item) => {
+    return api["/post/god_list"].get({ query: { offset: (page - 1) * pageSize, number: pageSize } }).then((item) => {
       const items = item.items.map((item) => ({
         ...item,
         publish_time: item.publish_time ? new Date(item.publish_time).toLocaleString() : null,

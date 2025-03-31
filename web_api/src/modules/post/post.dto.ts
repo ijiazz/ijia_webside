@@ -26,7 +26,7 @@ export interface AssetItemDto {
   type: PostAssetType;
   content_text: string | null;
   content_text_structure: TextStructure[] | null;
-  publish_time: string | null;
+  publish_time?: string | null;
   ip_location: string | null;
   url?: string;
 

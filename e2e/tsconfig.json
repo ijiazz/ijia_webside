@@ -6,7 +6,9 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@api/*": ["../web_api/src/*"],
+      "@api-test/*": ["../web_api/test/*"]
     }
   }
 }

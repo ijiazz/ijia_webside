@@ -95,7 +95,7 @@ export function UserLayout(props: PropsWithChildren<{}>) {
               },
               render: (props, dom) => {
                 return (
-                  <Link style={{ color: "inherit" }} to={"/passport/login?redirect=." + pathname} viewTransition>
+                  <Link style={{ color: "inherit" }} to={"/passport/login?redirect=" + pathname} viewTransition>
                     {dom}
                   </Link>
                 );
