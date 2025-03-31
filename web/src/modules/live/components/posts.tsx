@@ -16,7 +16,6 @@ export function PostCardLayout(props: PropsWithChildren<PostCardProps>) {
     <UserMetaCSS>
       {props.icon}
       {props.header}
-      <div></div>
       {props.children}
     </UserMetaCSS>
   );
@@ -24,10 +23,15 @@ export function PostCardLayout(props: PropsWithChildren<PostCardProps>) {
 const UserMetaCSS = styled.div`
   overflow: hidden;
   margin: 8px 12px;
+
   display: grid;
-  grid-template-columns: 40px auto;
   gap: 8px;
   align-items: center;
+  place-items: stretch;
+  grid-template-columns: 40px auto;
+  > div:last-of-type {
+    grid-column-start: span 2;
+  }
   .text {
   }
 `;
