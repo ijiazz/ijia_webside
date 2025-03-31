@@ -38,8 +38,9 @@ export async function addServeStatic(hono: Hono) {
           c.header("Cache-Control", "private, max-age=86400");
           const userInfo = new UserInfo(getCookie(c, "jwt-token"));
           await userInfo.getJwtInfo();
+          return;
         }
-        throw new HTTPException(404);
+        throw new HTTPException(404, { res: new Response("访问不存在的资源地址") });
       },
       rewriteRequestPath(path) {
         const rel = path.replace(/^\/file\//, "/");
