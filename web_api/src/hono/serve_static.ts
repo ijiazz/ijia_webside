@@ -7,8 +7,8 @@ import { platform } from "node:os";
 import { HTTPException } from "hono/http-exception";
 import { UserInfo } from "@/global/auth.ts";
 import { getCookie } from "hono/cookie";
-import { getBucket } from "@ijia/data/oss";
-import fs, { FileHandle } from "node:fs/promises";
+import { getBucket, createFileStream } from "@ijia/data/oss";
+import fs from "node:fs/promises";
 import { Stats } from "node:fs";
 import { contentType } from "@std/media-types";
 
@@ -63,85 +63,6 @@ function isCached(mtime: Date, ctx: Context) {
   }
 }
 
-const defaultChunkSize = 1024 * 32;
-class RangeRead {
-  constructor(public end?: number) {}
-  getChunkSize(offset: number) {
-    if (this.end === undefined) {
-      return defaultChunkSize;
-    }
-    let readSize: number;
-    if (this.end - offset >= defaultChunkSize) readSize = defaultChunkSize;
-    else readSize = this.end - offset;
-    return readSize;
-  }
-}
-function getFileStreamNode(path: string, rangeStart?: number, rangeEnd?: number): ReadableStream<Uint8Array> {
-  let fd: FileHandle;
-
-  let offset = rangeStart ?? 0;
-  const rangeRead = new RangeRead(rangeEnd);
-
-  return new ReadableStream({
-    cancel() {
-      return fd.close();
-    },
-    async start() {
-      fd = await fs.open(path, "r");
-    },
-    async pull(ctrl) {
-      const readSize = rangeRead.getChunkSize(offset);
-      const chunk = new Uint8Array(readSize);
-      const { bytesRead } = await fd.read(chunk, offset, readSize);
-      offset += bytesRead;
-      if (bytesRead === 0) {
-        ctrl.close();
-        return fd.close();
-      } else if (bytesRead < readSize) {
-        ctrl.enqueue(chunk.subarray(0, bytesRead));
-        ctrl.close();
-        return fd.close();
-      } else {
-        ctrl.enqueue(chunk);
-      }
-    },
-  });
-}
-function getFileStreamDeno(path: string, rangeStart?: number, rangeEnd?: number): ReadableStream<Uint8Array> {
-  //@ts-ignore
-  let fd: Deno.FsFile;
-  return new ReadableStream({
-    cancel() {
-      return fd.close();
-    },
-    async start() {
-      //@ts-ignore
-      fd = await Deno.open(path);
-      if (rangeStart) {
-        //@ts-ignore
-        await fd.seek(rangeStart, Deno.SeekMode.Start);
-      }
-      if (rangeEnd) {
-        //@ts-ignore
-        await fd.seek(rangeEnd, Deno.SeekMode.End);
-      }
-    },
-    async pull(ctrl) {
-      const chunk = new Uint8Array(defaultChunkSize);
-      const bytesRead = await fd.read(chunk);
-      if (bytesRead === null || bytesRead === 0) {
-        ctrl.close();
-        return fd.close();
-      } else if (bytesRead < defaultChunkSize) {
-        ctrl.enqueue(chunk.subarray(0, bytesRead));
-        ctrl.close();
-        return fd.close();
-      } else {
-        ctrl.enqueue(chunk);
-      }
-    },
-  });
-}
 function getHttpHeaderRange(range: string) {
   const rangeMatch = range.match(/bytes=(\d+)-(\d+)?/);
   if (rangeMatch) {
@@ -156,9 +77,6 @@ async function createRuntimeServeStatic(
 ): Promise<MiddlewareHandler> {
   const { rewriteRequestPath, onFound } = options;
   const rooDir = path.resolve(options.root ?? ".");
-  //@ts-ignore
-  const isDeno: boolean = typeof globalThis.Deno === "object";
-  const getFileStream = isDeno ? getFileStreamDeno : getFileStreamNode;
 
   return async function (ctx: Context, next: Next) {
     const method = ctx.req.method;
@@ -193,10 +111,10 @@ async function createRuntimeServeStatic(
 
         ctx.header("Content-Range", `bytes ${start}-${end}/${stat.size}`);
         ctx.status(206);
-        return ctx.body(getFileStream(filename, start, end));
+        return ctx.body(createFileStream(filename, { start, end }));
       }
     }
 
-    return ctx.body(getFileStream(filename));
+    return ctx.body(createFileStream(filename));
   };
 }

@@ -9,8 +9,7 @@
     "rootDir": ".",
     "jsx": "react",
     "paths": {
-      "@/*": ["./src/*"],
-      "@asset/*": ["./public/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["./src", "./view"]
