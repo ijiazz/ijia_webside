@@ -26,7 +26,7 @@ export type GetAssetListOption = GetListOption & {
   userId?: string;
   s_content?: string;
   s_author?: string;
-
+  includeHidden?: boolean;
   sort?: Record<"digg_total" | "forward_total" | "collection_num", "ASC" | "DESC">;
 };
 
@@ -53,7 +53,7 @@ type SelectAssetList = {
   image: DbAssetImage[] | null;
 };
 async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total: number; items: SelectAssetList[] }> {
-  const { number = 20, offset = 0, platform, userId, sort } = option;
+  const { number = 20, offset = 0, platform, userId, sort, includeHidden } = option;
 
   const select = watching_pla_user
     .fromAs("god_user")
@@ -62,7 +62,15 @@ async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total
       " u.pla_uid=god_user.pla_uid",
       `god_user.level >=${USER_LEVEL.god}`,
     ])
-    .innerJoin(pla_asset, "p", ["p.platform=u.platform", "p.pla_uid=u.pla_uid"]);
+    .innerJoin(pla_asset, "p", () => {
+      const where = ["p.platform=u.platform", "p.pla_uid=u.pla_uid"];
+      if (!includeHidden) {
+        const condition =
+          "( god_user.visible_time_second IS NULL OR NOW() - p.publish_time < INTERVAL '1 second' * visible_time_second )";
+        where.push(condition);
+      }
+      return where;
+    });
 
   const itemsSql = select
     .select<SelectAssetList>({
@@ -185,16 +193,6 @@ function toPostListDto(list: SelectAssetList[]) {
         url = `https://weibo.com/${author.user_id}/${item.asset_id}`;
         author.home_page = `https://weibo.com/u/${author.user_id}`;
 
-        const expireTime = (86400 * 365 * 1000) / 2; //TODO: 改为可配置
-
-        if (!item.publish_time || Date.now() - item.publish_time.getTime() > expireTime) {
-          item.content_text = "微博不可见";
-          item.content_text_structure = null;
-          imageList.length = 0;
-          videoList.length = 0;
-          audioList.length = 0;
-        }
-        // 是否可见
         break;
       }
       case Platform.v5sing:
