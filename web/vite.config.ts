@@ -31,6 +31,7 @@ export default {
   build: {
     target: "es2018",
     outDir: "dist/client",
+    manifest: true,
     rollupOptions: {
       output: {
         manualChunks: createManualChunks(),
@@ -62,8 +63,8 @@ function createManualChunks() {
       const chunk = chunkDeps[modInfo.name];
       // id 是依赖
       if (chunk) {
-        if (typeof chunk === "string") return chunk;
-        else return modInfo.name;
+        if (typeof chunk === "string") return "deps/" + chunk;
+        else return "deps/" + modInfo.name;
       }
     }
   };

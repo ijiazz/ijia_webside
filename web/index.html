@@ -13,14 +13,13 @@
       }
     </style>
     <style id="loadingStyle">
-      #app-loading {
+      .app-loading {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         height: 100%;
         width: 100%;
-        position: absolute;
         top: 0;
       }
       .app-loading-animation {
@@ -59,10 +58,10 @@
     </style>
   </head>
   <body>
-    <script src="./src/index.spa.tsx" type="module"></script>
+    <script src="./src/index-spa.tsx" type="module"></script>
 
     <div id="app" style="height: 100%"><!--SSR-ELEMENT--></div>
-    <div id="app-loading">
+    <div id="app-loading" class="app-loading" style="position: absolute">
       <div class="app-loading-animation">
         <h1>Loading</h1>
       </div>

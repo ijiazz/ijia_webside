@@ -6,7 +6,6 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { SpaRoot } from "./routes.tsx";
 import { loginByAccessToken } from "@/common/user.ts";
-import { remoteLoading } from "./app.ts";
 
 console.log("应用运行于 SPA 模式");
 const mountApp = () => {
@@ -14,7 +13,6 @@ const mountApp = () => {
 };
 paseAccessToken();
 mountApp();
-remoteLoading();
 
 function paseAccessToken() {
   const url = new URL(location.href);

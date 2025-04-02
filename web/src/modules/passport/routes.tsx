@@ -1,7 +1,7 @@
 import { Outlet, RouteObject } from "react-router";
 import { VideoBg } from "./components/VideoBg.tsx";
 import { api } from "@/common/http.ts";
-import { appLazy } from "@/common/lazy_load_component.tsx";
+import { lazyPage } from "@/common/lazy_load_component.tsx";
 import React from "react";
 
 const router: RouteObject[] = [
@@ -18,17 +18,11 @@ const router: RouteObject[] = [
     children: [
       {
         path: "login",
-        Component: appLazy(
-          () => import("./pages/login.tsx"),
-          (mod) => mod.LoginPage,
-        ),
+        Component: lazyPage(() => import("./pages/login.tsx").then((mod) => mod.LoginPage)),
       },
       {
         path: "signup",
-        Component: appLazy(
-          () => import("./pages/signup.tsx"),
-          (mod) => mod.Signup,
-        ),
+        Component: lazyPage(() => import("./pages/signup.tsx").then((mod) => mod.Signup)),
       },
     ],
   },
