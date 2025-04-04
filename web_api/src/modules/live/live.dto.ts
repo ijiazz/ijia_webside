@@ -1,6 +1,16 @@
-import type { Platform } from "@/common/third_part_account.tsx";
+import { Platform } from "@ijia/data/db";
+import { ListDto } from "../dto_common.ts";
 
-export type HomePageDto = {
+export type UserAvatar = {
+  avatar_url: string;
+  id: string;
+  name: string;
+  width?: number;
+  height?: number;
+};
+export type ScreenAvatarRes = ListDto<UserAvatar>;
+
+export type HomePageRes = {
   god_user: GodUserDto;
   god_user_platforms: GodPlatformDto[];
   current_user: CurrentUserDto | null;
@@ -10,7 +20,7 @@ export type GodPlatformDto = {
   user_id: string;
   platform: Platform;
   user_name: string;
-
+  home_url?: string | null;
   avatar_url?: string | null;
   cover_url?: string | null;
 
@@ -22,8 +32,6 @@ export type GodUserDto = {
 };
 export type PlatformUserStat = {
   followers_count: number;
-  post_total?: number;
-  post_digg_total: number;
 };
 
 export type CurrentUserDto = {

@@ -1,82 +1,111 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link, useLoaderData } from "react-router";
-import { HomePageDto } from "./type.ts";
-import { AvatarList } from "./avatar.tsx";
 import styled from "@emotion/styled";
-import { gsap } from "gsap";
-import { TextPlugin } from "gsap/TextPlugin";
-import { FlashText } from "./components/FlashText.tsx";
+import { Screen, ScreenAvatar } from "./components/Screen.tsx";
+import { Footer } from "./components/Footer.tsx";
+import { HomePageRes } from "@/api.ts";
+import { StarHover, LineBtn, RefreshButton } from "@/lib/components/button.tsx";
+import { useWindowResize } from "@/hooks/window.ts";
+
 export function HomePage() {
-  const data = useLoaderData<HomePageDto>();
+  const data = useLoaderData<HomePageRes>();
   const block = useRef<HTMLDivElement>(null);
 
   useEffect(() => {}, []);
-
+  const avatarUrl = data.god_user.avatar_url;
+  /**
+   * 我们互相守护
+   * 我喜欢的小偶像叫邹佳佳，她一点都不垃圾。饭她很幸福
+   * 谢谢宝宝们，回头看你们都在，嘿嘿
+   */
   return (
-    <HomePageCSS style={{ padding: "20px", backgroundColor: "ButtonShadow" }}>
-      <div ref={block} style={{ backgroundColor: "red ", width: 100, height: 100 }}></div>
-      <div>
-        <AvatarList />
-        <div>
-          <FlashText text="我们互相守护！" />
-        </div>
-      </div>
+    <HomePageCSS>
+      <Screen text="我们互相守护" avatar={avatarUrl ? <ScreenAvatar src={avatarUrl} /> : undefined}>
+        <Header />
+      </Screen>
+
       {/* 平台列表介绍 */}
-      <div>
+      <div className="screen">
         {data.god_user_platforms.map((item) => {
           return <div key={item.platform + item.user_id}>{item.user_name}</div>;
         })}
       </div>
-      <Footer>
-        {footerLinks.map((item) => {
-          return (
-            <Link
-              key={item.text}
-              to={item.link}
-              target={isExternalSite(item.link) ? "_blank" : undefined}
-              viewTransition
-            >
-              {item.text}
-            </Link>
-          );
-        })}
-      </Footer>
+      <Footer />
     </HomePageCSS>
   );
 }
+const HomePageCSS = styled.div`
+  width: 100%;
+  .screen {
+    height: 100vh;
+  }
+`;
 
-function isExternalSite(linkOrPath: string) {
-  if (/^[\.\/]/.test(linkOrPath)) return false;
-  return true;
+function Header() {
+  const size = useWindowResize();
+  return (
+    <HeaderCSS style={{ flexDirection: size.width > 500 ? "row" : "column" }}>
+      <Link to="live" viewTransition style={{ textDecoration: "none" }}>
+        <LineBtn className="link-item">IJIA学院</LineBtn>
+      </Link>
+      <Link to="#f">
+        <StarHover>
+          <RefreshButton className="link-item">故事的开始</RefreshButton>
+        </StarHover>
+      </Link>
+      <Link to="passport/signup" viewTransition style={{ textDecoration: "none" }}>
+        <LineBtn className="link-item">加入守护</LineBtn>
+      </Link>
+    </HeaderCSS>
+  );
 }
-const footerLinks: {
-  text: string;
-  link: string;
-}[] = [
-  {
-    text: "GITHUB",
-    link: "https://github.com/ijiazz/ijia_webside",
-  },
-  {
-    text: "关于本站",
-    link: "/about",
-  },
-  {
-    text: "为本站贡献",
-    link: "/about/contribute",
-  },
-];
-const Footer = styled.div``;
-
-const HomePageCSS = styled.div``;
-
+const HeaderCSS = styled.div`
+  width: 100%;
+  justify-items: start;
+  top: 148px;
+  gap: 24px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 20px;
+  font-weight: 600;
+  a {
+    color: #fff;
+  }
+  .link-item {
+    pointer-events: all;
+    letter-spacing: 4px;
+  }
+`;
 /* 
 
-头像海报
+头像大屏
 平台账号数据与相关链接
 
 三年之约
 
 如果爱情有颜色，那一定是蓝色！
 
+
+你会...  你会一直陪着我的吧？
+
+
+可以不走吗？
+
+既然这样的话，那我以后就不会再纠缠你了。
+
+
+
+真的会一直都在吗？    
+
+尊嘟假嘟，这种话我可是听过好多次了，该走的还是走了
+
+哈哈，没关系我会珍惜当下的。
+不知道明年大家还在不在
+
+
+虽然不知道你们还在不在，希望到时候你们还在拉
+我知道你们有时候说自己是小丑，是跟我开玩笑的，但是你们要知道，你们不是小丑！
+有很多人说自己是什么臭打游戏的，所以不要再说自己是臭大游戏的了，我希望你们能和我一起变得越来越自信
 */

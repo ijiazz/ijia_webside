@@ -1,13 +1,16 @@
 import styled from "@emotion/styled";
 import anime from "animejs";
-import React, { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { CaptionSegment, CaptionStruct } from "./type.ts";
 
-type FlashTextProps = {
-  text: string;
-  offset?: number;
+type CaptionFlowProps = {
+  text?: string;
+  struct?: CaptionStruct;
+  style?: CSSProperties;
+  delay?: number;
 };
-export function FlashText(props: FlashTextProps) {
-  const { text, offset = 2 } = props;
+export function CaptionFlow(props: CaptionFlowProps) {
+  const { text = "", struct, style } = props;
   const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -26,13 +29,7 @@ export function FlashText(props: FlashTextProps) {
     let list: ReactNode[] = [];
 
     let i = 0;
-    for (; i < offset; i++) {
-      list.push(
-        <span key={i} className="flash-text-char">
-          {text[i]}
-        </span>,
-      );
-    }
+
     for (; i < text.length; i++) {
       list.push(
         <span key={i} className="flash-text-char">
@@ -43,10 +40,14 @@ export function FlashText(props: FlashTextProps) {
     return list;
   }, [props.text]);
 
-  return <FlashTextCSS ref={ref}>{children} </FlashTextCSS>;
+  return (
+    <CaptionFlowCSS className="flash-text" style={style} ref={ref}>
+      {children}
+    </CaptionFlowCSS>
+  );
 }
 
-const FlashTextCSS = styled.span`
+const CaptionFlowCSS = styled.span`
   @keyframes flash {
     from {
       opacity: 0;

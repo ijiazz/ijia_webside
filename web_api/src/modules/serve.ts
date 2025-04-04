@@ -8,6 +8,7 @@ import { passportController } from "./passport/mod.ts";
 import { classController } from "./class/mod.ts";
 import { imageCaptchaController } from "./captcha/mod.ts";
 import { postController } from "./post/mod.ts";
+import { liveController } from "./live/live.controller.ts";
 
 export function createHonoApp(option: { static?: boolean } = {}) {
   const hono = createHono(option);
@@ -16,6 +17,7 @@ export function createHonoApp(option: { static?: boolean } = {}) {
   applyController(hono, userController);
   applyController(hono, classController);
   applyController(hono, postController);
+  applyController(hono, liveController);
   return hono;
 }
 

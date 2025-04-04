@@ -1,9 +1,19 @@
 import { useEffect, useReducer, useRef } from "react";
-function getWindowSize() {
+export function getWindowSize() {
+  if (typeof window === "undefined") {
+    return { height: 0, width: 0 };
+  }
   return { height: document.body.clientHeight, width: document.body.clientWidth };
 }
-export function useWindowResize(onResize?: () => void) {
-  const [windowSize, updateWindowSize] = useReducer(getWindowSize, undefined);
+type WindowSize = {
+  height: number;
+  width: number;
+};
+/**
+ * 如果在服务端渲染，宽高将返回 0
+ */
+export function useWindowResize(onResize?: () => void): WindowSize {
+  const [windowSize, updateWindowSize] = useReducer(getWindowSize, undefined, getWindowSize);
   const ref = useRef(onResize);
   ref.current = onResize;
   useEffect(() => {

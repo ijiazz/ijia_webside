@@ -1,4 +1,12 @@
-import { checkTypeCopy, getCheckTypeErrorReason, ExpectType, InferExpect, TypeCheckOption } from "@asla/wokao";
+import {
+  checkTypeCopy,
+  getCheckTypeErrorReason,
+  ExpectType,
+  InferExpect,
+  TypeCheckOption,
+  optional,
+  integer,
+} from "@asla/wokao";
 import { HttpParamsCheckError } from "./errors.ts";
 
 export function checkValue<T extends ExpectType>(
@@ -19,3 +27,6 @@ export function checkValueAsync<T extends ExpectType>(
 ): Promise<InferExpect<T>> {
   return input.then((data) => checkValue(data, expectType, option));
 }
+
+export const positiveInt = integer({ acceptString: true, min: 0 });
+export const optionalPositiveInt = optional(positiveInt);
