@@ -7,6 +7,7 @@ type CaptionFlowProps = {
   struct?: CaptionStruct;
   style?: CSSProperties;
   delay?: number;
+  play?: boolean;
 };
 export function CaptionFlow(props: CaptionFlowProps) {
   const { text = "", struct, style } = props;

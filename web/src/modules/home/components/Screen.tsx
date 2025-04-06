@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import { AvatarScreen } from "../avatar.tsx";
-import { CaptionFlow } from "./talk.tsx";
+import { CaptionFlow } from "../../../lib/components/talk.tsx";
 
 import styled from "@emotion/styled";
 
@@ -85,7 +85,7 @@ const AvatarCSS = styled.div`
     height: 100px;
   }
   overflow: hidden;
-  border-radius:50%;
+  border-radius: 50%;
 
   --glow-color: #fff6bd;
   border: 3px solid var(--glow-color);

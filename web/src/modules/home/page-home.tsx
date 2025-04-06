@@ -42,11 +42,11 @@ function Header() {
       <Link to="live" viewTransition style={{ textDecoration: "none" }}>
         <LineBtn className="link-item">IJIA学院</LineBtn>
       </Link>
-      <a href="#platforms" style={{ textDecoration: "none" }}>
+      <Link to="./story" viewTransition style={{ textDecoration: "none" }}>
         <StarHover>
           <RefreshButton className="link-item">故事的开始</RefreshButton>
         </StarHover>
-      </a>
+      </Link>
       <Link to="passport/signup" viewTransition style={{ textDecoration: "none" }}>
         <LineBtn className="link-item">成为IJIA</LineBtn>
       </Link>
@@ -72,34 +72,3 @@ const HeaderCSS = styled.div`
     letter-spacing: 4px;
   }
 `;
-/* 
-
-头像大屏
-平台账号数据与相关链接
-
-三年之约
-
-如果爱情有颜色，那一定是蓝色！
-
-
-你会...  你会一直陪着我的吧？
-
-
-可以不走吗？
-
-既然这样的话，那我以后就不会再纠缠你了。
-
-
-
-真的会一直都在吗？    
-
-尊嘟假嘟，这种话我可是听过好多次了，该走的还是走了
-
-哈哈，没关系我会珍惜当下的。
-不知道明年大家还在不在
-
-
-虽然不知道你们还在不在，希望到时候你们还在拉
-我知道你们有时候说自己是小丑，是跟我开玩笑的，但是你们要知道，你们不是小丑！
-有很多人说自己是什么臭打游戏的，所以不要再说自己是臭大游戏的了，我希望你们能和我一起变得越来越自信
-*/

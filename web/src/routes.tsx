@@ -15,6 +15,10 @@ const coreRoutes: RouteObject[] = [
     path: "about/*",
     Component: lazyPage(() => import("./modules/home/about/about.tsx").then((mod) => mod.About)),
   },
+  {
+    path: "story",
+    Component: lazyPage(() => import("./modules/home/story/story-page.tsx").then((mod) => mod.StoryPage)),
+  },
   { path: "passport", children: passportRoutes },
   {
     Component: lazyPage(() => import("./modules/layout/UserLayout.tsx").then((mod) => mod.UserLayout)),
