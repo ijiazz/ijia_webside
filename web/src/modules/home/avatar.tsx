@@ -2,6 +2,7 @@ import { useHoFetch } from "@/hooks/http.ts";
 import { useWindowResize } from "@/hooks/window.ts";
 import styled from "@emotion/styled";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { animate, JSAnimation } from "animejs";
 
 type AvatarItem = {
   key: string;
@@ -28,6 +29,7 @@ export function AvatarScreen(props: AvatarListProps) {
     return size;
   };
   const windowSize = useWindowResize(calcSize);
+  const animationCtrlRef = useRef<JSAnimation>(null);
 
   useEffect(() => {
     const size = calcSize();
@@ -58,8 +60,39 @@ export function AvatarScreen(props: AvatarListProps) {
     [],
   );
   useEffect(() => {
-    return () => area.dispose();
-  }, [area]);
+    const animation = animate(ref.current!, {
+      scrollLeft: [
+        { to: image_width, duration: 3000 },
+        { to: 0, duration: 3000 },
+      ],
+      scrollTop: [
+        { to: image_height, duration: 4000 },
+        { to: 0, duration: 4000 },
+      ],
+      ease: "inOut", // ease applied between each keyframes if no ease defined
+      loop: true,
+    });
+    animationCtrlRef.current = animation;
+    return () => {
+      animation.revert();
+      area.dispose();
+    };
+  }, [area, image_height, image_width]);
+  useEffect(() => {
+    const element = ref.current!;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          animationCtrlRef.current?.play();
+          console.log("播放头像大屏动画");
+        } else {
+          animationCtrlRef.current?.pause();
+          console.log("暂停头像大屏动画");
+        }
+      });
+    });
+    observer.observe(element);
+  }, []);
 
   return (
     <AvatarScreenCSS>
@@ -70,8 +103,12 @@ export function AvatarScreen(props: AvatarListProps) {
             top: ref.current!.scrollTop,
           };
           area.onTargetStart(e.clientX, e.clientY);
+          animationCtrlRef.current?.pause();
         }}
-        onMouseUp={(e) => area.onTargetEnd()}
+        onMouseUp={(e) => {
+          area.onTargetEnd();
+          animationCtrlRef.current?.play();
+        }}
         imgRowNum={xCount}
         imgColNum={yCount}
         imgWidth={image_width}
@@ -110,8 +147,18 @@ const AvatarListCSS = styled.div<{ imgRowNum: number; imgColNum: number; imgWidt
   place-items: stretch;
 
   .avatar-item {
+    transition: all 100ms linear;
     position: relative;
-    padding: 1.2px;
+    box-sizing: border-box;
+    border: 1.2px solid #0000;
+    opacity: 0.6;
+    cursor: move;
+    /* padding: 1.2px; */
+    :hover {
+      border-color: rgb(104, 116, 255);
+      opacity: 1;
+      filter: brightness(1.5);
+    }
     &-container {
       border-radius: 10%;
       overflow: hidden;
@@ -121,7 +168,6 @@ const AvatarListCSS = styled.div<{ imgRowNum: number; imgColNum: number; imgWidt
       object-fit: cover;
       width: 100%;
       height: 100%;
-      opacity: 0.6;
     }
     &-dev-index {
       position: absolute;
@@ -152,7 +198,7 @@ function calcCount(containerWith: number, containerHeight: number, image_width: 
   };
 }
 class ListenMoveArea {
-  constructor(public onMove: (dx: number, dy: number) => void) {}
+  constructor(public move: (dx: number, dy: number) => void) {}
   x = 0;
   y = 0;
   onTargetStart(x: number, y: number) {
@@ -166,7 +212,7 @@ class ListenMoveArea {
     const { clientX, clientY } = e;
     const dx = clientX - this.x;
     const dy = clientY - this.y;
-    this.onMove(dx, dy);
+    this.move(dx, dy);
   };
   onTargetEnd() {
     this.dispose();

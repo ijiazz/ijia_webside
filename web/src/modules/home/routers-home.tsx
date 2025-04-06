@@ -1,5 +1,5 @@
 import { LazyRoute } from "@/type.ts";
-import { HomePage } from "./index.tsx";
+import { HomePage } from "./page-home.tsx";
 import { api } from "@/common/http.ts";
 import { HomePageRes } from "@/api.ts";
 

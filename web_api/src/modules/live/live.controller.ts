@@ -34,17 +34,28 @@ class LiveController {
       avatar_url: "'/file/avatar/'||avatar",
       stat: "json_build_object('followers_count',follower_count)",
     };
-    const dy = pla_user.select({ ...select }).where(["platform='douyin' ", " pla_uid='63677127177'"]);
-    const wb = pla_user.select({ ...select }).where(["platform='weibo' ", " pla_uid='6201382716'"]);
+    const dy = pla_user
+      .select({ ...select, home_url: "'https://www.douyin.com/user/'||(extra->>'sec_uid')" })
+      .where(["platform='douyin' ", " pla_uid='63677127177'"]);
+    const wb = pla_user
+      .select({ ...select, home_url: "'https://weibo.com/u/'||pla_uid" })
+      .where(["platform='weibo' ", " pla_uid='6201382716'"]);
     const [dyData, wbData] = await dbPool.multipleQueryRows<[GodPlatformDto, GodPlatformDto]>([dy, wb].join(";"));
 
     const platforms: GodPlatformDto[] = [...list];
-    if (wbData[0]) platforms.unshift(wbData[0]);
-    if (dyData[0]) platforms.unshift(dyData[0]);
+
+    const wbCard = wbData[0];
+    if (wbCard) {
+      platforms.unshift(wbCard);
+    }
+    const dyCard = dyData[0];
+    if (dyCard) {
+      platforms.unshift(dyCard);
+    }
     return {
       current_user: null,
       god_user: { user_name: platforms[0].user_name, avatar_url: platforms[0].avatar_url },
-      god_user_platforms: platforms,
+      god_user_platforms: platforms.sort((a, b) => b.stat.followers_count - a.stat.followers_count),
     };
   }
 }

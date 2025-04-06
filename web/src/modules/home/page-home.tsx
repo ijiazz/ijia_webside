@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { Link, useLoaderData } from "react-router";
 import styled from "@emotion/styled";
 import { Screen, ScreenAvatar } from "./components/Screen.tsx";
-import { Footer } from "./components/Footer.tsx";
+import { GodPlatform } from "./components/Platforms.tsx";
+import { Footer } from "@/common/Footer.tsx";
 import { HomePageRes } from "@/api.ts";
 import { StarHover, LineBtn, RefreshButton } from "@/lib/components/button.tsx";
 import { useWindowResize } from "@/hooks/window.ts";
@@ -11,25 +12,18 @@ export function HomePage() {
   const data = useLoaderData<HomePageRes>();
   const block = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {}, []);
   const avatarUrl = data.god_user.avatar_url;
   /**
-   * 我们互相守护
-   * 我喜欢的小偶像叫邹佳佳，她一点都不垃圾。饭她很幸福
+   * 我们互相保护！
+   * 我喜欢的小偶像叫邹佳佳！她一点都不垃圾，饭她很幸福！
    * 谢谢宝宝们，回头看你们都在，嘿嘿
    */
   return (
     <HomePageCSS>
-      <Screen text="我们互相守护" avatar={avatarUrl ? <ScreenAvatar src={avatarUrl} /> : undefined}>
+      <Screen text="我们互相保护" avatar={avatarUrl ? <ScreenAvatar src={avatarUrl} /> : undefined}>
         <Header />
       </Screen>
-
-      {/* 平台列表介绍 */}
-      <div className="screen">
-        {data.god_user_platforms.map((item) => {
-          return <div key={item.platform + item.user_id}>{item.user_name}</div>;
-        })}
-      </div>
+      <GodPlatform platforms={data.god_user_platforms}></GodPlatform>
       <Footer />
     </HomePageCSS>
   );
@@ -48,13 +42,13 @@ function Header() {
       <Link to="live" viewTransition style={{ textDecoration: "none" }}>
         <LineBtn className="link-item">IJIA学院</LineBtn>
       </Link>
-      <Link to="#f">
+      <a href="#platforms" style={{ textDecoration: "none" }}>
         <StarHover>
           <RefreshButton className="link-item">故事的开始</RefreshButton>
         </StarHover>
-      </Link>
+      </a>
       <Link to="passport/signup" viewTransition style={{ textDecoration: "none" }}>
-        <LineBtn className="link-item">加入守护</LineBtn>
+        <LineBtn className="link-item">成为IJIA</LineBtn>
       </Link>
     </HeaderCSS>
   );

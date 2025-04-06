@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import anime from "animejs";
 import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { CaptionSegment, CaptionStruct } from "./type.ts";
 
@@ -16,13 +15,6 @@ export function CaptionFlow(props: CaptionFlowProps) {
   useEffect(() => {
     const element = ref.current!;
     const chars: HTMLSpanElement[] = [];
-    anime({
-      targets: element.getElementsByClassName("flash-text-first"),
-      translateX: 250,
-      direction: "alternate",
-      loop: true,
-      easing: "steps(5)",
-    });
   }, []);
 
   const children = useMemo(() => {

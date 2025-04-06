@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { createBrowserRouter, Outlet, RouteObject, RouterProvider, useViewTransitionState } from "react-router";
-import passportRouter from "./modules/passport/routes.tsx";
-import profileRouter from "./modules/profile/routes.tsx";
+import { createBrowserRouter, Outlet, RouteObject, RouterProvider } from "react-router";
+import passportRoutes from "./modules/passport/routes.tsx";
+import profileRoutes from "./modules/profile/routes.tsx";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
 import liveRoutes from "./modules/live/routes.tsx";
 import { notFoundRouter } from "./common/page_state/NotFound.tsx";
@@ -9,14 +9,18 @@ import { getPathByRoute, remoteLoading } from "./app.ts";
 const coreRoutes: RouteObject[] = [
   {
     index: true,
-    lazy: () => import("./modules/home/page.tsx").then((mod) => mod.page),
+    lazy: () => import("./modules/home/routers-home.tsx").then((mod) => mod.page),
   },
-  { path: "passport", children: passportRouter },
+  {
+    path: "about/*",
+    Component: lazyPage(() => import("./modules/home/about/about.tsx").then((mod) => mod.About)),
+  },
+  { path: "passport", children: passportRoutes },
   {
     Component: lazyPage(() => import("./modules/layout/UserLayout.tsx").then((mod) => mod.UserLayout)),
     children: [
       { path: "live", children: liveRoutes },
-      { path: "profile", children: profileRouter },
+      { path: "profile", children: profileRoutes },
       { path: "examination/*", element: <div>examination</div> },
       notFoundRouter,
     ],

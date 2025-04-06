@@ -5,7 +5,7 @@ export const list: GodPlatformDto[] = [
   {
     platform: Platform.bilibili,
     user_name: "佳佳佳-zZ",
-    stat: { followers_count: 1200000 },
+    stat: { followers_count: 120000 },
     user_id: "18429568",
     home_url: "https://space.bilibili.com/18429568",
     avatar_url: "/main/avatar/bilibili.webp",
@@ -16,7 +16,7 @@ export const list: GodPlatformDto[] = [
     stat: { followers_count: 15000 },
     user_id: "",
     home_url: "https://www.xiaohongshu.com/user/profile/58e8b3b66a6a696804f89bb3",
-    avatar_url: "/main/avatar/xiaohonshu.jpg",
+    avatar_url: "/main/avatar/xiaohongshu.webp",
   },
   {
     platform: Platform.v5sing,
