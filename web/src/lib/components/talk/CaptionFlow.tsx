@@ -5,7 +5,7 @@ import { Caption, CaptionSegment } from "./type.ts";
 type CaptionFlowProps = {
   style?: CSSProperties;
   delay?: number;
-  text: Caption | string;
+  text?: Caption | string;
 };
 export function CaptionFlow(props: CaptionFlowProps) {
   const { text, delay = 0, style } = props;

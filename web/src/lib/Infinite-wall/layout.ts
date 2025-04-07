@@ -1,9 +1,13 @@
 export type InfiniteWallOptions = {
   blockHeight?: number;
   blockWidth?: number;
-  createElement?: (element: HTMLElement) => void;
-  remoteElement?: (element: HTMLElement) => void;
+  createElement?: (element: HTMLElement, x: number, y: number) => void;
+  removeElement?: (element: HTMLElement) => void;
   onElementVisible?: (element: HTMLElement, x: number, y: number) => void;
+  /** x 轴错位偏移 */
+  getOffsetX?: (x: number) => number;
+  /** y 轴错位偏移 */
+  getOffsetY?: (y: number) => number;
 };
 
 export class InfiniteWall {
@@ -16,20 +20,31 @@ export class InfiniteWall {
       scrollLeft: 0,
       blockHeight: option.blockHeight || 0,
       blockWidth: option.blockWidth || 0,
+
+      xCount: 0,
+      yCount: 0,
+      scrollOffsetLeft: 0,
+      scrollOffsetTop: 0,
+      containerWidth: 0,
+      containerHeight: 0,
     };
     this.#onElementVisible = option.onElementVisible;
     this.#createElement = option.createElement;
-    this.#remoteElement = option.remoteElement;
-    console.log(this.#meta);
+    this.#removeElement = option.removeElement;
 
-    this.render();
+    this.#getOffsetX = option.getOffsetX ?? ((x) => x * 10);
+    this.#getOffsetY = option.getOffsetY;
+
+    this.requestRender();
   }
 
-  #createElement?: (element: HTMLElement) => void;
-  #remoteElement?: (element: HTMLElement) => void;
+  #createElement?: (element: HTMLElement, x: number, y: number) => void;
+  #removeElement?: (element: HTMLElement) => void;
+  #getOffsetX?: (x: number) => number;
+  #getOffsetY?: (y: number) => number;
   #onElementVisible?: (element: HTMLElement, x: number, y: number) => void;
-  #changed = true;
-  #meta: Meta;
+
+  #meta: RenderLayout;
 
   get scrollTop() {
     return this.#meta.scrollTop;
@@ -37,7 +52,7 @@ export class InfiniteWall {
   set scrollTop(value: number) {
     if (value === this.#meta.scrollTop) return;
     this.#meta.scrollTop = value;
-    this.#changed = true;
+    this.requestRender();
   }
 
   get scrollLeft() {
@@ -46,7 +61,7 @@ export class InfiniteWall {
   set scrollLeft(value: number) {
     if (value === this.#meta.scrollLeft) return;
     this.#meta.scrollLeft = value;
-    this.#changed = true;
+    this.requestRender();
   }
 
   get blockHeight() {
@@ -55,7 +70,7 @@ export class InfiniteWall {
   set blockHeight(value: number) {
     if (value === this.#meta.blockHeight) return;
     this.#meta.blockHeight = value;
-    this.#changed = true;
+    this.requestRender();
   }
 
   get blockWidth() {
@@ -63,22 +78,48 @@ export class InfiniteWall {
   }
   set blockWidth(value: number) {
     this.#meta.blockWidth = value;
-    this.#changed = true;
+    this.requestRender();
   }
+  #requesting = false;
+  private requestRender() {
+    if (this.#requesting) return;
+    this.#requesting = true;
+    requestAnimationFrame(() => {
+      this.render();
+      this.#requesting = false;
+    });
+  }
+  private layout() {
+    const { blockHeight, blockWidth } = this.#meta;
+    const { clientWidth: containerWidth, clientHeight: containerHeight } = this.element;
 
-  render() {
-    if (!this.#changed) return;
-    const { blockHeight, blockWidth, scrollLeft, scrollTop } = this.#meta;
+    const scrollLeft = this.#meta.scrollLeft % containerWidth;
+    const scrollTop = this.#meta.scrollTop % containerHeight;
+    const xCount = 1 + Math.ceil(containerWidth / blockWidth);
+    const yCount = 1 + Math.ceil(containerHeight / blockHeight);
 
-    const xCount = 1 + Math.floor(this.element.clientWidth / blockWidth);
-    const yCount = 1 + Math.floor(this.element.clientHeight / blockHeight);
+    const data = this.#meta;
+    data.xCount = xCount;
+    data.yCount = yCount;
+    data.scrollOffsetLeft = scrollLeft;
+    data.scrollOffsetTop = scrollTop;
+
+    return data;
+  }
+  private render() {
+    const layout = this.layout();
+    const { blockHeight, blockWidth, xCount, yCount } = layout;
+
+    const overWidth = (xCount - 1) * blockWidth;
+    const overHeight = (yCount - 1) * blockHeight;
+
     const totalCount = xCount * yCount;
 
     const childNodes = this.element.childNodes;
     if (childNodes.length > totalCount) {
-      for (let i = childNodes.length - 1; i >= totalCount; i++) {
-        this.#remoteElement?.(childNodes[i] as HTMLElement);
+      for (let i = childNodes.length - 1; i >= totalCount; i--) {
         this.element.removeChild(childNodes[i]);
+        this.#removeElement?.(childNodes[i] as HTMLElement);
       }
     }
 
@@ -88,36 +129,66 @@ export class InfiniteWall {
     let x: number;
     let y: number;
 
-    let offsetLeft: number;
-    let offsetTop: number;
     for (let i = 0; i < total; i++) {
       item = childNodes[i] as HTMLElement;
 
       x = i % xCount;
       y = Math.floor(i / xCount);
 
-      offsetLeft = x * blockWidth;
-      offsetTop = y * blockHeight;
-      item.style.translate = `translate(${offsetLeft}px, ${offsetTop}px)`;
+      updatePosition(layout, item.style, x, y, overWidth, overHeight);
     }
+
     for (let i = total; i < totalCount; i++) {
       item = createItem(blockHeight, blockWidth);
-      this.#createElement?.(item);
-
       x = i % xCount;
       y = Math.floor(i / xCount);
-      offsetLeft = x * blockWidth;
-      offsetTop = y * blockHeight;
 
-      item.style.left = offsetLeft + "px";
-      item.style.top = offsetTop + "px";
+      this.#createElement?.(item, x, y);
 
+      updatePosition(layout, item.style, x, y, overWidth, overHeight);
       this.element.appendChild(item);
     }
-    this.#changed = false;
+  }
+
+  isVisible(x: number, y: number) {
+    const { blockHeight, blockWidth } = this.#meta;
+    const { clientWidth: containerWidth, clientHeight: containerHeight } = this.element;
+
+    const scrollLeft = this.#meta.scrollLeft % containerWidth;
+    const scrollTop = this.#meta.scrollTop % containerHeight;
+
+    const offsetLeft = x * blockWidth + scrollLeft;
+    const offsetTop = y * blockHeight + scrollTop;
+
+    return offsetLeft >= 0 && offsetLeft <= containerWidth && offsetTop >= 0 && offsetTop <= containerHeight;
   }
 }
+function updatePosition(
+  layout: RenderLayout,
+  style: CSSStyleDeclaration,
+  x: number,
+  y: number,
+  overWidth: number,
+  overHeight: number,
+) {
+  const { scrollOffsetLeft, scrollOffsetTop, containerWidth, containerHeight, blockHeight, blockWidth } = layout;
+  let offsetLeft = x * blockWidth + scrollOffsetLeft;
+  let offsetTop = y * blockHeight + scrollOffsetTop;
 
+  if (offsetLeft > overWidth) {
+    offsetLeft = offsetLeft - overWidth - blockWidth;
+  } else if (offsetLeft < -blockWidth) {
+    offsetLeft = offsetLeft + overWidth + blockWidth;
+  }
+  if (offsetTop > overHeight) {
+    offsetTop = offsetTop - overHeight - blockHeight;
+  } else if (offsetTop < -blockHeight) {
+    offsetTop = offsetTop + overHeight + blockHeight;
+  }
+  // const isHidden = offsetLeft < 0 || offsetLeft > containerWidth || offsetTop < 0 || offsetTop > containerHeight;
+
+  style.transform = `translate(${offsetLeft}px, ${offsetTop}px)`;
+}
 function createItem(height: number, width: number) {
   const node = document.createElement("div");
   node.style.position = "absolute";
@@ -125,9 +196,20 @@ function createItem(height: number, width: number) {
   node.style.height = height + "px";
   return node;
 }
-type Meta = {
+type RenderLayout = {
+  /** 容器内 x轴向元素数量 */
+  xCount: number;
+  /** 容器内 y轴向元素数量 */
+  yCount: number;
+  scrollOffsetLeft: number;
+  scrollOffsetTop: number;
+  containerWidth: number;
+  containerHeight: number;
+
   scrollTop: number;
   scrollLeft: number;
+  /** 元素高度 */
   blockHeight: number;
+  /** 元素宽度 */
   blockWidth: number;
 };

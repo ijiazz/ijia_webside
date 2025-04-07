@@ -28,8 +28,8 @@ export function StoryPage(props: StoryPageProps) {
   );
 }
 
-function Card(props: { play?: boolean; captionTip?: CaptionTip; src?: string }) {
-  const { captionTip, play } = props;
+function Card(props: { captionTip?: CaptionTip; src?: string }) {
+  const { captionTip } = props;
   let question: Question | undefined;
   switch (captionTip?.type) {
     case CaptionType.QUESTION:
@@ -45,7 +45,7 @@ function Card(props: { play?: boolean; captionTip?: CaptionTip; src?: string }) 
       <div></div>
       <div style={{ width: "100%" }}>
         <h2 className="caption">
-          <CaptionFlow text={captionTip?.text} play={play} />
+          <CaptionFlow text={captionTip?.text} />
         </h2>
         <SelectCSS>
           {question?.answers.map((item) => (

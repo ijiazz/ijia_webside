@@ -20,7 +20,6 @@ const IS_DEV = true; //import.meta.env?.DEV;
 export function AvatarScreen(props: AvatarListProps) {
   const { image_width = 50, image_height = image_width } = props;
   const ref = useRef<HTMLDivElement>(null);
-  const [list, setList] = useState<AvatarItem[]>();
   const { api, http } = useHoFetch();
 
   const { result: data } = useAsync(async () => {
@@ -42,10 +41,12 @@ export function AvatarScreen(props: AvatarListProps) {
     const wall = new InfiniteWall(ref.current!, {
       blockHeight: 50,
       blockWidth: 50,
-      createElement(element) {
+      createElement(element, x, y) {
         element.className = "avatar-item";
+
         const container = document.createElement("div");
         container.className = "avatar-item-container";
+        container.style.backgroundColor = "red";
         const img = document.createElement("img");
         img.className = "avatar-item-img";
         img.draggable = false;
@@ -54,26 +55,29 @@ export function AvatarScreen(props: AvatarListProps) {
         if (IS_DEV) {
           const devIndex = document.createElement("div");
           devIndex.className = "avatar-item-dev-index";
+          devIndex.innerText = `${x},${y}`;
           container.appendChild(devIndex);
         }
+
+        element.appendChild(container);
       },
     });
     wallRef.current = wall;
   }, []);
 
-  const basePosition = useRef({ top: 0, left: 0 });
-  const area = useMemo(
-    () =>
-      new ListenMoveArea((dx, dy) => {
-        const dom = ref.current!;
-        dom.scrollTop = basePosition.current.top - dy;
-        dom.scrollLeft = basePosition.current.left - dx;
-      }),
-    [],
-  );
+  const area = useMemo((): ListenMoveArea => {
+    const area = new ListenMoveArea(function (dx, dy) {
+      const dom = wallRef.current!;
+      dom.scrollTop = this.baseY + dy;
+      dom.scrollLeft = this.baseX + dx;
+    });
+    area.baseX = 0;
+    area.baseY = 0;
+    return area;
+  }, []);
   useEffect(() => {
     if (IS_DEV) return;
-    const animation = animate(ref.current!, {
+    const animation = animate(wallRef.current!, {
       scrollLeft: [
         { to: image_width, duration: 3000 },
         { to: 0, duration: 3000 },
@@ -111,11 +115,10 @@ export function AvatarScreen(props: AvatarListProps) {
     <AvatarScreenCSS>
       <AvatarListCSS
         onMouseDown={(e) => {
-          basePosition.current = {
-            left: ref.current!.scrollLeft,
-            top: ref.current!.scrollTop,
-          };
           area.onTargetStart(e.clientX, e.clientY);
+          const wall = wallRef.current!;
+          area.baseX = wall.scrollLeft;
+          area.baseY = wall.scrollTop;
           animationCtrlRef.current?.pause();
         }}
         onMouseUp={(e) => {
@@ -127,6 +130,7 @@ export function AvatarScreen(props: AvatarListProps) {
     </AvatarScreenCSS>
   );
 }
+
 const AvatarScreenCSS = styled.div`
   height: 100%;
 `;
@@ -138,7 +142,9 @@ const AvatarListCSS = styled.div`
   user-select: none;
 
   .avatar-item {
-    transition: all 100ms linear;
+    transition:
+      border-color 100ms linear,
+      opacity 100ms linear;
     position: relative;
     box-sizing: border-box;
     border: 1.2px solid #0000;
@@ -166,6 +172,7 @@ const AvatarListCSS = styled.div`
       position: absolute;
       top: 0;
       background-color: #fff;
+      color: red;
       border-radius: 4px;
     }
   }
