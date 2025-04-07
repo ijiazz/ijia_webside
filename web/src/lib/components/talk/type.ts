@@ -1,16 +1,18 @@
 export type CaptionSegment = {
+  className?: string;
   length?: number;
-  time?: number;
-};
-export type CaptionStruct = {
-  pause_ms: number;
-  speed: number;
-  segments: CaptionSegment[];
+  speed?: number;
+  pauseMs?: number;
 };
 export type Caption = {
   target?: string;
   text: string;
-  text_struct?: CaptionStruct;
+
+  /** segments 之间暂停的毫秒数 */
+  pauseMs?: number;
+  /** 默认的播放速度，单位 字符/秒。  */
+  speed?: number;
+  segments: (CaptionSegment | number)[];
 };
 export enum CaptionType {
   MONOLOGUE = "monologue",

@@ -1,7 +1,8 @@
-import React, { useRef } from "react";
-import { Link, useLoaderData } from "react-router";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useLoaderData, useLocation } from "react-router";
 import styled from "@emotion/styled";
 import { Screen, ScreenAvatar } from "./components/Screen.tsx";
+import { Caption, CaptionFlow } from "@/lib/components/talk.tsx";
 import { GodPlatform } from "./components/Platforms.tsx";
 import { Footer } from "@/common/Footer.tsx";
 import { HomePageRes } from "@/api.ts";
@@ -10,17 +11,33 @@ import { useWindowResize } from "@/hooks/window.ts";
 
 export function HomePage() {
   const data = useLoaderData<HomePageRes>();
-  const block = useRef<HTMLDivElement>(null);
-
+  const { state } = useLocation();
+  const showExtend = state?.showExtend;
+  const [speak, setSpeak] = useState<Caption>(showExtend ? extend[0] : flashTextList[0]);
+  const indexRef = useRef(-1);
   const avatarUrl = data.god_user.avatar_url;
-  /**
-   * 我们互相保护！
-   * 我喜欢的小偶像叫邹佳佳！她一点都不垃圾，饭她很幸福！
-   * 谢谢宝宝们，回头看你们都在，嘿嘿
-   */
+
+  useEffect(() => {
+    indexRef.current = 0;
+    const internal = setInterval(() => {
+      let next = indexRef.current + 1;
+      if (next >= flashTextList.length) {
+        next = 0;
+      }
+      indexRef.current = next;
+      setSpeak(flashTextList[next]);
+    }, 8000);
+    return () => {
+      clearInterval(internal);
+    };
+  }, []);
   return (
     <HomePageCSS>
-      <Screen text="我们互相保护" avatar={avatarUrl ? <ScreenAvatar src={avatarUrl} /> : undefined}>
+      <Screen
+        // 第一个延迟
+        text={<CaptionFlow delay={indexRef.current < 0 ? 1000 : 0} text={speak} style={{ textAlign: "center" }} />}
+        avatar={avatarUrl ? <ScreenAvatar src={avatarUrl} /> : undefined}
+      >
         <Header />
       </Screen>
       <GodPlatform platforms={data.god_user_platforms}></GodPlatform>
@@ -72,3 +89,32 @@ const HeaderCSS = styled.div`
     letter-spacing: 4px;
   }
 `;
+
+const flashTextList: Caption[] = [
+  {
+    text: "我们互相保护！",
+    speed: 8,
+    pauseMs: 800,
+    segments: [
+      { length: 2, speed: 4 },
+      { length: 5, speed: 6 },
+    ],
+  },
+  {
+    text: "我喜欢的小偶像叫邹佳佳！她一点都不垃圾，饭她很幸福！",
+    speed: 7,
+    pauseMs: 800,
+    segments: [{ length: 7, speed: 6, pauseMs: 250 }, { length: 5, speed: 8 }, 8, 6],
+  },
+];
+const extend: Caption[] = [
+  {
+    text: "谢谢宝宝们，回头看你们都在，嘿嘿",
+    speed: 6,
+    pauseMs: 800,
+    segments: [6, { length: 3, pauseMs: 200 }, 5, 2],
+  },
+];
+type RouteState = {
+  showExtend?: boolean;
+};

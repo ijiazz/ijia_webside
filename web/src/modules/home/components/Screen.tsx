@@ -1,13 +1,13 @@
 import React, { ReactNode } from "react";
 import { AvatarScreen } from "../avatar.tsx";
-import { CaptionFlow } from "../../../lib/components/talk.tsx";
 
 import styled from "@emotion/styled";
 
 export function Screen(props: {
-  text?: string;
+  text?: ReactNode;
   head?: ReactNode;
   avatar?: ReactNode;
+
   showMask?: boolean;
   children?: ReactNode;
 }) {
@@ -19,7 +19,7 @@ export function Screen(props: {
         {head}
         <div className="center">
           <div className="god-avatar">{avatar}</div>
-          <CaptionFlow text={text} style={{ textAlign: "center" }} />
+          {text}
         </div>
         {children}
       </div>
