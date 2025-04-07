@@ -4,10 +4,6 @@ export type InfiniteWallOptions = {
   createElement?: (element: HTMLElement, x: number, y: number) => void;
   removeElement?: (element: HTMLElement) => void;
   onElementVisible?: (element: HTMLElement, x: number, y: number) => void;
-  /** x 轴错位偏移 */
-  getOffsetX?: (x: number) => number;
-  /** y 轴错位偏移 */
-  getOffsetY?: (y: number) => number;
 };
 
 export class InfiniteWall {
@@ -32,17 +28,15 @@ export class InfiniteWall {
     this.#createElement = option.createElement;
     this.#removeElement = option.removeElement;
 
-    this.#getOffsetX = option.getOffsetX ?? ((x) => x * 10);
-    this.#getOffsetY = option.getOffsetY;
-
     this.requestRender();
   }
 
   #createElement?: (element: HTMLElement, x: number, y: number) => void;
   #removeElement?: (element: HTMLElement) => void;
-  #getOffsetX?: (x: number) => number;
-  #getOffsetY?: (y: number) => number;
+  // #getOffsetX?: (x: number) => number;
+  // #getOffsetY?: (y: number) => number;
   #onElementVisible?: (element: HTMLElement, x: number, y: number) => void;
+  #onElementHidden?: (element: HTMLElement, x: number, y: number) => void;
 
   #meta: RenderLayout;
 
@@ -150,9 +144,8 @@ export class InfiniteWall {
     }
   }
 
-  isVisible(x: number, y: number) {
-    const { blockHeight, blockWidth } = this.#meta;
-    const { clientWidth: containerWidth, clientHeight: containerHeight } = this.element;
+  isHidden(x: number, y: number) {
+    const { containerWidth, containerHeight, blockHeight, blockWidth } = this.#meta;
 
     const scrollLeft = this.#meta.scrollLeft % containerWidth;
     const scrollTop = this.#meta.scrollTop % containerHeight;
@@ -160,7 +153,7 @@ export class InfiniteWall {
     const offsetLeft = x * blockWidth + scrollLeft;
     const offsetTop = y * blockHeight + scrollTop;
 
-    return offsetLeft >= 0 && offsetLeft <= containerWidth && offsetTop >= 0 && offsetTop <= containerHeight;
+    return offsetLeft < 0 || offsetLeft > containerWidth || offsetTop < 0 || offsetTop > containerHeight;
   }
 }
 function updatePosition(
