@@ -11,7 +11,7 @@ export function Screen(props: {
   showMask?: boolean;
   children?: ReactNode;
 }) {
-  const { children, showMask = true, avatar, head = <div />, text } = props;
+  const { children, showMask = false, avatar, head = <div />, text } = props;
   return (
     <ScreenCSS className="screen">
       <AvatarScreen />
@@ -29,6 +29,8 @@ export function Screen(props: {
 
 const ScreenCSS = styled.div`
   position: relative;
+  height: 100%;
+  overflow: hidden;
   .god-avatar {
     display: flex;
   }

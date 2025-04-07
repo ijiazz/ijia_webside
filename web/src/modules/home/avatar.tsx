@@ -3,6 +3,8 @@ import { useWindowResize } from "@/hooks/window.ts";
 import styled from "@emotion/styled";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { animate, JSAnimation } from "animejs";
+import { InfiniteWall, ListenMoveArea } from "@/lib/Infinite-wall/mod.ts";
+import { useAsync } from "@/hooks/async.ts";
 
 type AvatarItem = {
   key: string;
@@ -13,40 +15,50 @@ export type AvatarListProps = {
   image_width?: number;
   image_height?: number;
 };
-const IS_DEV = false; //import.meta.env?.DEV;
+const IS_DEV = true; //import.meta.env?.DEV;
 
 export function AvatarScreen(props: AvatarListProps) {
   const { image_width = 50, image_height = image_width } = props;
   const ref = useRef<HTMLDivElement>(null);
   const [list, setList] = useState<AvatarItem[]>();
-  const [{ xCount, yCount }, setCount] = useState({ xCount: 0, yCount: 0 });
   const { api, http } = useHoFetch();
 
-  const calcSize = () => {
-    const container = ref.current!;
-    const size = calcCount(container.clientWidth, container.clientHeight, image_width, image_height);
-    setCount(size);
-    return size;
-  };
-  const windowSize = useWindowResize(calcSize);
+  const { result: data } = useAsync(async () => {
+    const num = 500;
+    const { items, total } = await api["/live/screen/avatar"].get({ query: { number: num } });
+    const list: AvatarItem[] = new Array(num);
+    for (let i = 0; i < num; i++) {
+      list[i] = {
+        key: "" + i,
+        name: "" + i,
+        url: "",
+      };
+    }
+    return list;
+  });
   const animationCtrlRef = useRef<JSAnimation>(null);
-
+  const wallRef = useRef<InfiniteWall>(null);
   useEffect(() => {
-    const size = calcSize();
-    const { xCount, yCount } = size;
-    setCount({ xCount, yCount });
-    const num = xCount * yCount;
-    api["/live/screen/avatar"].get({ query: { number: num } }).then(({ items, total }) => {
-      const list: AvatarItem[] = new Array(num);
-      for (let i = 0; i < num; i++) {
-        list[i] = {
-          key: items[i]?.id ?? i,
-          name: items[i]?.name,
-          url: items[i]?.avatar_url,
-        };
-      }
-      setList(list);
+    const wall = new InfiniteWall(ref.current!, {
+      blockHeight: 50,
+      blockWidth: 50,
+      createElement(element) {
+        element.className = "avatar-item";
+        const container = document.createElement("div");
+        container.className = "avatar-item-container";
+        const img = document.createElement("img");
+        img.className = "avatar-item-img";
+        img.draggable = false;
+        img.ondragstart = (e) => e.preventDefault();
+
+        if (IS_DEV) {
+          const devIndex = document.createElement("div");
+          devIndex.className = "avatar-item-dev-index";
+          container.appendChild(devIndex);
+        }
+      },
     });
+    wallRef.current = wall;
   }, []);
 
   const basePosition = useRef({ top: 0, left: 0 });
@@ -60,6 +72,7 @@ export function AvatarScreen(props: AvatarListProps) {
     [],
   );
   useEffect(() => {
+    if (IS_DEV) return;
     const animation = animate(ref.current!, {
       scrollLeft: [
         { to: image_width, duration: 3000 },
@@ -109,42 +122,20 @@ export function AvatarScreen(props: AvatarListProps) {
           area.onTargetEnd();
           animationCtrlRef.current?.play();
         }}
-        imgRowNum={xCount}
-        imgColNum={yCount}
-        imgWidth={image_width}
-        imgHeight={image_height}
         ref={ref}
-      >
-        {list?.map((item, index) => (
-          <div className="avatar-item" key={item.key}>
-            <div className="avatar-item-container">
-              {item.url ? (
-                <img className="avatar-item-img" src={item.url} onDragStart={(e) => e.preventDefault()}></img>
-              ) : (
-                <div></div>
-              )}
-              {IS_DEV && <div className="avatar-item-dev-index">{index}</div>}
-            </div>
-          </div>
-        ))}
-      </AvatarListCSS>
+      ></AvatarListCSS>
     </AvatarScreenCSS>
   );
 }
 const AvatarScreenCSS = styled.div`
   height: 100%;
 `;
-const AvatarListCSS = styled.div<{ imgRowNum: number; imgColNum: number; imgWidth: number; imgHeight: number }>`
+const AvatarListCSS = styled.div`
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background: linear-gradient(to bottom right, #141c64, #00a6d4, #000a68);
+  /* background: linear-gradient(to bottom right, #141c64, #00a6d4, #000a68); */
   user-select: none;
-
-  display: grid;
-  grid-template-rows: repeat(${(props) => props.imgColNum}, ${(props) => props.imgHeight + "px"});
-  grid-template-columns: repeat(${(props) => props.imgRowNum}, ${(props) => props.imgWidth + "px"});
-  place-items: stretch;
 
   .avatar-item {
     transition: all 100ms linear;
@@ -154,6 +145,8 @@ const AvatarListCSS = styled.div<{ imgRowNum: number; imgColNum: number; imgWidt
     opacity: 0.6;
     cursor: move;
     /* padding: 1.2px; */
+
+    border-color: #000;
     :hover {
       border-color: rgb(104, 116, 255);
       opacity: 1;
@@ -191,53 +184,3 @@ const AvatarListCSS = styled.div<{ imgRowNum: number; imgColNum: number; imgWidt
     }
   }
 `;
-function calcCount(containerWith: number, containerHeight: number, image_width: number, image_height: number) {
-  return {
-    xCount: Math.floor(containerWith / image_width) + 2,
-    yCount: Math.floor(containerHeight / image_height) + 2,
-  };
-}
-class ListenMoveArea {
-  constructor(public move: (dx: number, dy: number) => void) {}
-  x = 0;
-  y = 0;
-  onTargetStart(x: number, y: number) {
-    window.addEventListener("mousemove", this.#onMove);
-    window.addEventListener("mouseup", this.#onEnd);
-    window.addEventListener("blur", this.#onEnd);
-    this.x = x;
-    this.y = y;
-  }
-  #onMove = (e: MouseEvent) => {
-    const { clientX, clientY } = e;
-    const dx = clientX - this.x;
-    const dy = clientY - this.y;
-    this.move(dx, dy);
-  };
-  onTargetEnd() {
-    this.dispose();
-  }
-  #onEnd = () => {
-    this.dispose();
-  };
-  dispose() {
-    window.removeEventListener("mousemove", this.#onMove);
-    window.removeEventListener("mouseup", this.#onEnd);
-    window.removeEventListener("blur", this.#onEnd);
-  }
-}
-function move(offsetX: number, offsetY: number, container: HTMLElement, xCount: number) {
-  const { clientWidth, clientHeight, children } = container;
-  const total = children.length;
-
-  let x: number;
-  let y: number;
-
-  for (let i = 0; i < total; i++) {
-    x = i % xCount;
-    y = Math.floor(i / xCount);
-    const item = children[i] as HTMLElement;
-    item.style.top;
-    // item.appendChild()
-  }
-}
