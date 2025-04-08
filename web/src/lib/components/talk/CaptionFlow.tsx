@@ -40,6 +40,7 @@ const CaptionFlowCSS = styled.span`
   display: inline-block;
   min-height: 1em;
   min-width: 1em;
+  white-space: pre;
   .flash-text-char {
     animation: flash 0.1s;
     animation-fill-mode: backwards;
@@ -62,6 +63,7 @@ function playFlashText(char: Char[], container: HTMLElement) {
   for (let i = children.length - 1; i >= 0; i--) {
     container.removeChild(children[i]);
   }
+  container.appendChild(document.createTextNode(" "));
   for (let i = 0; i < char.length; i++) {
     const item = char[i];
     const span = document.createElement("span");
@@ -70,6 +72,7 @@ function playFlashText(char: Char[], container: HTMLElement) {
     span.innerText = item.char;
     container.appendChild(span);
   }
+  container.appendChild(document.createTextNode(" "));
 }
 
 function normalizeSegments(option: Caption & { delay?: number }): Char[] {

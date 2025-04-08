@@ -1,28 +1,115 @@
-import React, { ReactNode, useRef, useState } from "react";
+import React, { ReactNode, useMemo, useRef, useState } from "react";
 import { useHoFetch } from "@/hooks/http.ts";
 import styled from "@emotion/styled";
 import { InfiniteWallRender } from "@/lib/Infinite-wall/mod.ts";
 import { InfiniteWall } from "@/lib/Infinite-wall/react.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "./shake_animation.ts";
-import { PlusSquareOutlined, UserOutlined } from "@ant-design/icons";
+import classNames from "classnames";
 
-export function Screen(props: {
+type AvatarItem = {
+  key: string;
+  url: string;
+  name: string;
+};
+type AvatarListProps = {
   text?: ReactNode;
   head?: ReactNode;
   avatar?: ReactNode;
 
   showMask?: boolean;
   children?: ReactNode;
-}) {
-  const { children, showMask = false, avatar, head = <div />, text } = props;
+};
+
+export function Screen(props: AvatarListProps) {
+  const { children, showMask = true, avatar, head = <div />, text } = props;
+
+  const { api, http } = useHoFetch();
+  const rows = 20;
+  const columns = 20;
+  const { result: data } = useAsync(
+    async () => {
+      const num = 400;
+      const { items, total } = await api["/live/screen/avatar"].get({ query: { number: num } });
+      const list: AvatarItem[] = new Array(num);
+      for (let i = 0; i < num; i++) {
+        list[i] = {
+          key: `${i}`,
+          name: items[i]?.name,
+          url: items[i]?.avatar_url,
+        };
+      }
+      return list;
+    },
+    { autoRunArgs: [] },
+  );
+  const wallRef = useRef<InfiniteWallRender>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const godAvatarRef = useRef<HTMLDivElement>(null);
+  /** 镜头抖动 */
+  const animationCtrl = useShakeAnimation({
+    autoPlay: true,
+    targetRef: godAvatarRef,
+    heightRange: 50,
+    widthRange: 50,
+    onFrameUpdate: (offsetX: number, offsetY: number) => {
+      const wall = wallRef.current!;
+      wall.scrollLeft = areaRef.current.baseX + offsetX;
+      wall.scrollTop = areaRef.current.baseY + offsetY;
+    },
+  });
+  const areaRef = useRef<{ baseX: number; baseY: number; isPlay: boolean }>({
+    baseX: 0,
+    baseY: 0,
+    isPlay: animationCtrl.isPlay,
+  });
+
   return (
     <ScreenCSS className="screen">
-      <AvatarScreen />
+      <AvatarScreenCSS
+        ref={ref}
+        onDragStartCapture={(e) => e.preventDefault()}
+        onMouseDown={() => {
+          const wall = wallRef.current!;
+          const meta = areaRef.current;
+          meta.baseX = wall.scrollLeft;
+          meta.baseY = wall.scrollTop;
+          if (animationCtrl.isPlay) {
+            animationCtrl.stop();
+            meta.isPlay = true;
+          }
+        }}
+        onMouseUp={() => {
+          const wall = wallRef.current!;
+          const meta = areaRef.current;
+          meta.baseX = wall.scrollLeft;
+          meta.baseY = wall.scrollTop;
+          if (meta.isPlay) {
+            animationCtrl.play();
+          }
+        }}
+      >
+        <InfiniteWall
+          blockHeight={60}
+          blockWidth={60}
+          ref={wallRef}
+          deps={[data]}
+          renderItem={(element, wall) => {
+            const x = Math.abs(element.wallX % columns);
+            const y = Math.abs(element.wallY % rows);
+            const index = y * columns + x + 1;
+            const item = data.value?.[index];
+
+            return <Image className="avatar-item" imgClassName="avatar-item-img" item={item}></Image>;
+          }}
+        ></InfiniteWall>
+      </AvatarScreenCSS>
       <div className="screen-top-mask" style={{ display: showMask ? undefined : "none" }}>
         {head}
         <div className="center">
-          <div className="god-avatar">{avatar}</div>
+          <div className="god-avatar" ref={godAvatarRef}>
+            {avatar}
+          </div>
           {text}
         </div>
         {children}
@@ -71,6 +158,107 @@ const ScreenCSS = styled.div`
   }
 `;
 
+const AvatarScreenCSS = styled.div`
+  height: 100%;
+  background: linear-gradient(to bottom right, #141c64, #00a6d4, #000a68);
+  user-select: none;
+
+  cursor: move;
+  .avatar-item {
+    position: relative;
+    height: 100%;
+    transition: opacity 100ms linear;
+    box-sizing: border-box;
+    opacity: 0.6;
+    padding: 1.2px;
+    border-radius: 10%;
+    overflow: hidden;
+
+    :hover {
+      opacity: 1;
+    }
+
+    &-img {
+      display: block;
+      object-fit: cover;
+      width: 0%;
+      height: 0%;
+    }
+    &-img.loaded {
+      animation: img-display 1s ease forwards;
+      margin: auto;
+    }
+    .user-name {
+      padding: 2px;
+      text-align: center;
+      font-size: 10px;
+      transition: background-color 100ms linear;
+    }
+    :hover {
+      .user-name {
+        height: 100%;
+        width: 100%;
+        background-color: #0009;
+        color: #fff;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    }
+
+    @keyframes img-display {
+      0% {
+        width: 0%;
+        height: 0%;
+      }
+      100% {
+        width: 100%;
+        height: 100%;
+      }
+    }
+    @keyframes img-empty-display {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+  }
+
+  animation: gradient-x 10s ease infinite;
+  background-size: 300%;
+  @keyframes gradient-x {
+    0% {
+      background-position-x: 0%;
+    }
+    50% {
+      background-position-x: 100%;
+    }
+    100% {
+      background-position-x: 0%;
+    }
+  }
+`;
+function Image(props: { item?: AvatarItem; className?: string; imgClassName?: string }) {
+  const { item, className, imgClassName } = props;
+  const [loading, setLoading] = useState(true);
+  useMemo(() => setLoading(true), [item]);
+  return (
+    <div className={classNames(className, { loaded: !loading })}>
+      <img
+        className={classNames(imgClassName, { loaded: !loading })}
+        src={item?.url}
+        onLoad={() => {
+          setLoading(false);
+        }}
+        style={{ display: loading ? "none" : undefined }}
+      ></img>
+      <div className="user-name">{item?.name}</div>
+    </div>
+  );
+}
+
 export function ScreenAvatar(props: { children?: ReactNode; src?: string }) {
   const { children, src } = props;
   return (
@@ -100,186 +288,3 @@ const AvatarCSS = styled.div`
     4px 4px 28px 3px var(--glow-color),
     4px 4px 28px 3px var(--glow-color);
 `;
-
-type AvatarItem = {
-  key: string;
-  url: string;
-  name: string;
-};
-type AvatarListProps = {
-  image_width?: number;
-  image_height?: number;
-};
-
-function AvatarScreen(props: AvatarListProps) {
-  const { image_width = 50, image_height = image_width } = props;
-
-  const { api, http } = useHoFetch();
-
-  const { result: data } = useAsync(async () => {
-    const num = 400;
-    const { items, total } = await api["/live/screen/avatar"].get({ query: { number: num } });
-    const list: AvatarItem[] = new Array(num);
-    for (let i = 0; i < num; i++) {
-      list[i] = {
-        key: "" + i,
-        name: "" + i,
-        url: "",
-      };
-    }
-    return list;
-  });
-  const wallRef = useRef<InfiniteWallRender>(null);
-  const ref = useRef<HTMLDivElement>(null);
-  /** 镜头抖动 */
-  const animationCtrl = useShakeAnimation({
-    autoPlay: false,
-    heightRange: 50,
-    widthRange: 50,
-    onFrameUpdate: (offsetX: number, offsetY: number) => {
-      const wall = wallRef.current!;
-      wall.scrollLeft = areaRef.current.baseX + offsetX;
-      wall.scrollTop = areaRef.current.baseY + offsetY;
-    },
-  });
-  const areaRef = useRef<{ baseX: number; baseY: number; isPlay: boolean }>({
-    baseX: 0,
-    baseY: 0,
-    isPlay: animationCtrl.isPlay,
-  });
-
-  return (
-    <AvatarScreenCSS
-      ref={ref}
-      onMouseDown={() => {
-        const wall = wallRef.current!;
-        const meta = areaRef.current;
-        meta.baseX = wall.scrollLeft;
-        meta.baseY = wall.scrollTop;
-        if (animationCtrl.isPlay) {
-          animationCtrl.stop();
-          meta.isPlay = true;
-        }
-      }}
-      onMouseUp={() => {
-        const wall = wallRef.current!;
-        const meta = areaRef.current;
-        meta.baseX = wall.scrollLeft;
-        meta.baseY = wall.scrollTop;
-        if (meta.isPlay) {
-          animationCtrl.play();
-        }
-      }}
-    >
-      <InfiniteWall
-        ref={wallRef}
-        renderItem={(element, wall) => {
-          const x = element.wallX;
-          const y = element.wallY;
-          const src = "";
-          return (
-            <Image
-              fallback={<UserOutlined className="avatar-item-empty" />}
-              className="avatar-item"
-              imgClassName="avatar-item-img"
-              src={src}
-            ></Image>
-          );
-        }}
-      ></InfiniteWall>
-    </AvatarScreenCSS>
-  );
-}
-function useFlowLoad(list: string[], width: number, height: number) {
-  const [data, setData] = useState<number[][]>([]);
-
-  return {
-    getSrc(x: number, y: number): string | undefined {
-      x = x % width;
-      y = y % height;
-      let row = data[y];
-      if (!row) {
-        row = [];
-        data[y] = row;
-
-        return;
-      }
-      let path = row[x];
-      if (!path) {
-      }
-    },
-  };
-}
-
-const AvatarScreenCSS = styled.div`
-  height: 100%;
-  background: linear-gradient(to bottom right, #141c64, #00a6d4, #000a68);
-  user-select: none;
-
-  cursor: move;
-  .avatar-item {
-    height: 100%;
-    /* transition:
-      border-color 100ms linear,
-      opacity 100ms linear; */
-    box-sizing: border-box;
-    border: 1.2px solid #0000;
-    opacity: 0.6;
-    padding: 1.2px;
-    border-radius: 10%;
-    overflow: hidden;
-
-    :hover {
-      border-color: rgb(104, 116, 255);
-      opacity: 1;
-      filter: brightness(1.5);
-    }
-
-    &-img {
-      display: block;
-      object-fit: cover;
-      width: 100%;
-      height: 100%;
-    }
-    &-empty {
-      border-radius: 10%;
-      box-sizing: border-box;
-      border: 2px solid #000;
-      width: 100%;
-      height: 100%;
-      svg {
-        width: 100%;
-        height: 100%;
-      }
-    }
-  }
-
-  animation: gradient-x 10s ease infinite;
-  background-size: 300%;
-  @keyframes gradient-x {
-    0% {
-      background-position-x: 0%;
-    }
-    50% {
-      background-position-x: 100%;
-    }
-    100% {
-      background-position-x: 0%;
-    }
-  }
-`;
-function Image(props: { src?: string; fallback?: ReactNode; className?: string; imgClassName?: string }) {
-  const { fallback, src, className, imgClassName } = props;
-  const [loading, setLoading] = useState(true);
-  return (
-    <div className={className}>
-      <img
-        className={imgClassName}
-        src={src}
-        onLoad={() => setLoading(false)}
-        style={{ display: loading ? "none" : undefined }}
-      ></img>
-      {loading && fallback}
-    </div>
-  );
-}

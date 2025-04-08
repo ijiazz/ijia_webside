@@ -16,11 +16,11 @@ export function useShakeAnimation(config: {
     const obj = { scrollLeft: 0, scrollTop: 0 };
     const animation = animate(obj, {
       scrollLeft: [
-        { to: widthRange, duration: 3000 },
+        { from: 0, to: widthRange, duration: 3000 },
         { to: 0, duration: 3000 },
       ],
       scrollTop: [
-        { to: heightRange, duration: 4000 },
+        { from: 0, to: heightRange, duration: 4000 },
         { to: 0, duration: 4000 },
       ],
       autoplay: isPlay,
@@ -68,7 +68,7 @@ export function useShakeAnimation(config: {
     },
     play() {
       setIsPlay(true);
-      animationCtrlRef.current?.play();
+      animationCtrlRef.current?.restart();
     },
     stop() {
       setIsPlay(false);

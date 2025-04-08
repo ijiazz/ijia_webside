@@ -7,9 +7,10 @@ export type InfiniteWallProps = InfiniteWallConfig & {
   className?: string;
   style?: React.CSSProperties;
   renderItem?: (element: WallElement, wall: InfiniteWallRender) => ReactNode;
+  deps?: any[];
 };
 export function InfiniteWall(props: InfiniteWallProps) {
-  const { className, style, ...reset } = props;
+  const { className, style, deps = [], ...reset } = props;
 
   const ref = useRef<HTMLDivElement>(null);
   /** 无限滚动 */
@@ -28,6 +29,9 @@ export function InfiniteWall(props: InfiniteWallProps) {
     area.baseY = 0;
     return area;
   }, []);
+  useEffect(() => {
+    updateList();
+  }, deps);
   return (
     <div
       className={className}
