@@ -2,8 +2,6 @@ export class ListenMoveArea {
   constructor(public move: (this: ListenMoveArea, dx: number, dy: number) => void) {}
   private startX = 0;
   private startY = 0;
-  baseX = 0;
-  baseY = 0;
   onTargetStart(x: number, y: number) {
     window.addEventListener("mousemove", this.#onMove);
     window.addEventListener("mouseup", this.#onEnd);

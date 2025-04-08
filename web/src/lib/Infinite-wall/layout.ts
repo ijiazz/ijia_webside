@@ -1,12 +1,12 @@
 export type InfiniteWallOptions = {
   blockHeight?: number;
   blockWidth?: number;
-  createElement?: (element: HTMLElement, x: number, y: number) => void;
-  removeElement?: (element: HTMLElement) => void;
-  onElementVisible?: (element: HTMLElement, x: number, y: number) => void;
+  createElement?: (elements: WallElement[]) => void;
+  removeElement?: (elements: WallElement[]) => void;
+  onElementUpdate?: (elements: WallElement[]) => void;
 };
 
-export class InfiniteWall {
+export class InfiniteWallRender {
   constructor(
     public element: HTMLElement,
     option: InfiniteWallOptions = {},
@@ -19,24 +19,25 @@ export class InfiniteWall {
 
       xCount: 0,
       yCount: 0,
-      scrollOffsetLeft: 0,
-      scrollOffsetTop: 0,
-      containerWidth: 0,
-      containerHeight: 0,
+      screenX: 0,
+      screenY: 0,
+      realOffsetLeft: 0,
+      realOffsetTop: 0,
+      realHeightTotal: 0,
+      realWidthTotal: 0,
     };
-    this.#onElementVisible = option.onElementVisible;
+    this.#onElementUpdate = option.onElementUpdate;
     this.#createElement = option.createElement;
     this.#removeElement = option.removeElement;
 
     this.requestRender();
   }
 
-  #createElement?: (element: HTMLElement, x: number, y: number) => void;
-  #removeElement?: (element: HTMLElement) => void;
+  #createElement?: (elements: WallElement[]) => void;
+  #removeElement?: (elements: WallElement[]) => void;
   // #getOffsetX?: (x: number) => number;
   // #getOffsetY?: (y: number) => number;
-  #onElementVisible?: (element: HTMLElement, x: number, y: number) => void;
-  #onElementHidden?: (element: HTMLElement, x: number, y: number) => void;
+  #onElementUpdate?: (elements: WallElement[]) => void;
 
   #meta: RenderLayout;
 
@@ -66,7 +67,12 @@ export class InfiniteWall {
     this.#meta.blockHeight = value;
     this.requestRender();
   }
-
+  get xCount() {
+    return this.#meta.xCount;
+  }
+  get yCount() {
+    return this.#meta.yCount;
+  }
   get blockWidth() {
     return this.#meta.blockWidth;
   }
@@ -83,69 +89,78 @@ export class InfiniteWall {
       this.#requesting = false;
     });
   }
-  private layout() {
-    const { blockHeight, blockWidth } = this.#meta;
-    const { clientWidth: containerWidth, clientHeight: containerHeight } = this.element;
 
-    const scrollLeft = this.#meta.scrollLeft % containerWidth;
-    const scrollTop = this.#meta.scrollTop % containerHeight;
-    const xCount = 1 + Math.ceil(containerWidth / blockWidth);
-    const yCount = 1 + Math.ceil(containerHeight / blockHeight);
-
-    const data = this.#meta;
-    data.xCount = xCount;
-    data.yCount = yCount;
-    data.scrollOffsetLeft = scrollLeft;
-    data.scrollOffsetTop = scrollTop;
-
-    return data;
-  }
   private render() {
-    const layout = this.layout();
+    const layout = this.#meta;
+    calcLayout(layout, layout, this.element.clientWidth, this.element.clientHeight);
+
     const { blockHeight, blockWidth, xCount, yCount } = layout;
 
-    const overWidth = (xCount - 1) * blockWidth;
-    const overHeight = (yCount - 1) * blockHeight;
+    const limitWidth = (xCount - 1) * blockWidth;
+    const limitHeight = (yCount - 1) * blockHeight;
 
     const totalCount = xCount * yCount;
 
     const childNodes = this.element.childNodes;
     if (childNodes.length > totalCount) {
+      let removeCount = childNodes.length - totalCount;
+      const arr = new Array(removeCount);
       for (let i = childNodes.length - 1; i >= totalCount; i--) {
         this.element.removeChild(childNodes[i]);
-        this.#removeElement?.(childNodes[i] as HTMLElement);
+        arr[i - totalCount] = childNodes[i];
       }
+      this.#removeElement?.(arr);
     }
 
     const total = childNodes.length;
 
-    let item: HTMLElement;
+    let item: WallElement;
     let x: number;
     let y: number;
+    const changedList: WallElement[] = [];
 
     for (let i = 0; i < total; i++) {
-      item = childNodes[i] as HTMLElement;
+      item = childNodes[i] as WallElement;
 
-      x = i % xCount;
-      y = Math.floor(i / xCount);
+      x = item.wallIdX;
+      y = item.wallIdY;
 
-      updatePosition(layout, item.style, x, y, overWidth, overHeight);
+      const position = updatePosition(layout, item, limitWidth, limitHeight);
+      if (position.changed) changedList.push(item);
+      item.style.transform = `translate(${position.offsetLeft}px, ${position.offsetTop}px)`;
     }
 
-    for (let i = total; i < totalCount; i++) {
-      item = createItem(blockHeight, blockWidth);
-      x = i % xCount;
-      y = Math.floor(i / xCount);
+    if (totalCount > total) {
+      const newsList: WallElement[] = new Array(totalCount - total);
+      for (let i = total; i < totalCount; i++) {
+        item = createItem(blockHeight, blockWidth, i);
 
-      this.#createElement?.(item, x, y);
+        x = i % xCount;
+        y = Math.floor(i / xCount);
+        item.wallIdX = x;
+        item.wallIdY = y;
+        item.wallX = x;
+        item.wallY = y;
 
-      updatePosition(layout, item.style, x, y, overWidth, overHeight);
-      this.element.appendChild(item);
+        const position = updatePosition(layout, item, limitWidth, limitHeight);
+        item.style.transform = `translate(${position.offsetLeft}px, ${position.offsetTop}px)`;
+        this.element.appendChild(item);
+
+        newsList[totalCount - i - 1] = item;
+        changedList.push(item);
+      }
+      this.#createElement?.(newsList);
+    }
+    if (changedList.length > 0) {
+      this.#onElementUpdate?.(changedList);
     }
   }
-
+  get elements(): NodeListOf<WallElement> {
+    return this.element.childNodes as NodeListOf<WallElement>;
+  }
   isHidden(x: number, y: number) {
-    const { containerWidth, containerHeight, blockHeight, blockWidth } = this.#meta;
+    const { blockHeight, blockWidth } = this.#meta;
+    const { clientHeight: containerHeight, clientWidth: containerWidth } = this.element;
 
     const scrollLeft = this.#meta.scrollLeft % containerWidth;
     const scrollTop = this.#meta.scrollTop % containerHeight;
@@ -156,49 +171,92 @@ export class InfiniteWall {
     return offsetLeft < 0 || offsetLeft > containerWidth || offsetTop < 0 || offsetTop > containerHeight;
   }
 }
-function updatePosition(
-  layout: RenderLayout,
-  style: CSSStyleDeclaration,
-  x: number,
-  y: number,
-  overWidth: number,
-  overHeight: number,
-) {
-  const { scrollOffsetLeft, scrollOffsetTop, containerWidth, containerHeight, blockHeight, blockWidth } = layout;
-  let offsetLeft = x * blockWidth + scrollOffsetLeft;
-  let offsetTop = y * blockHeight + scrollOffsetTop;
 
+function updatePosition(layout: RenderLayout, element: WallData, overWidth: number, overHeight: number) {
+  const { blockHeight, blockWidth } = layout;
+  let offsetLeft = element.wallIdX * blockWidth + layout.realOffsetLeft;
+  let offsetTop = element.wallIdY * blockHeight + layout.realOffsetTop;
+
+  let screenX: number;
   if (offsetLeft > overWidth) {
+    // 右边元素移到最左边
     offsetLeft = offsetLeft - overWidth - blockWidth;
+    screenX = layout.screenX - 1;
   } else if (offsetLeft < -blockWidth) {
+    // 左边元素移到最右边
     offsetLeft = offsetLeft + overWidth + blockWidth;
+    screenX = layout.screenX + 1;
+  } else {
+    screenX = layout.screenX;
   }
+  const wallX: number = screenX * layout.xCount + element.wallIdX;
+
+  let screenY: number;
   if (offsetTop > overHeight) {
     offsetTop = offsetTop - overHeight - blockHeight;
+    screenY = layout.screenY - 1;
   } else if (offsetTop < -blockHeight) {
     offsetTop = offsetTop + overHeight + blockHeight;
+    screenY = layout.screenY + 1;
+  } else {
+    screenY = layout.screenY;
   }
-  // const isHidden = offsetLeft < 0 || offsetLeft > containerWidth || offsetTop < 0 || offsetTop > containerHeight;
+  const wallY = screenY * layout.yCount + element.wallIdY;
 
-  style.transform = `translate(${offsetLeft}px, ${offsetTop}px)`;
+  const changed = element.wallX !== wallX || element.wallY !== wallY;
+  if (changed) {
+    element.wallX = wallX;
+    element.wallY = wallY;
+  }
+
+  // style.top = offsetTop + "px";
+  // style.left = offsetLeft + "px";
+
+  return {
+    offsetLeft,
+    offsetTop,
+    changed,
+  };
 }
-function createItem(height: number, width: number) {
-  const node = document.createElement("div");
+function createItem(height: number, width: number, id: number): WallElement {
+  const node = document.createElement("div") as WallElement;
   node.style.position = "absolute";
   node.style.width = width + "px";
   node.style.height = height + "px";
+  node.wallId = id;
+  node.wallX = 0;
+  node.wallY = 0;
   return node;
 }
-type RenderLayout = {
-  /** 容器内 x轴向元素数量 */
-  xCount: number;
-  /** 容器内 y轴向元素数量 */
-  yCount: number;
-  scrollOffsetLeft: number;
-  scrollOffsetTop: number;
-  containerWidth: number;
-  containerHeight: number;
+function calcLayout(input: Readonly<InputData>, output: CalcData, containerWidth: number, containerHeight: number) {
+  const { blockHeight, blockWidth, scrollLeft, scrollTop } = input;
 
+  const xCount = 1 + Math.ceil(containerWidth / blockWidth);
+  const yCount = 1 + Math.ceil(containerHeight / blockHeight);
+  const limitWidth = xCount * blockWidth;
+  const limitHeight = yCount * blockHeight;
+
+  output.xCount = xCount;
+  output.yCount = yCount;
+
+  output.realWidthTotal = limitWidth;
+  output.realHeightTotal = limitHeight;
+
+  output.realOffsetLeft = scrollLeft % limitWidth;
+  output.realOffsetTop = scrollTop % limitHeight;
+  output.screenX = scrollLeft < 0 ? Math.floor(-scrollLeft / limitWidth) : Math.ceil(-scrollLeft / limitWidth);
+  output.screenY = scrollTop < 0 ? Math.floor(-scrollTop / limitHeight) : Math.ceil(-scrollTop / limitHeight);
+  return input;
+}
+type WallData = {
+  wallId: number;
+  wallX: number;
+  wallY: number;
+  wallIdX: number;
+  wallIdY: number;
+};
+export type WallElement = HTMLDivElement & WallData;
+type InputData = {
   scrollTop: number;
   scrollLeft: number;
   /** 元素高度 */
@@ -206,3 +264,20 @@ type RenderLayout = {
   /** 元素宽度 */
   blockWidth: number;
 };
+type CalcData = {
+  /** 容器内 x轴向真实的元素数量 */
+  xCount: number;
+  /** 容器内 y轴向真实的元素数量 */
+  yCount: number;
+
+  /** 容器内元素宽度总和 */
+  realWidthTotal: number;
+  /** 容器内元素高度总和 */
+  realHeightTotal: number;
+  realOffsetLeft: number;
+  realOffsetTop: number;
+
+  screenX: number;
+  screenY: number;
+};
+type RenderLayout = InputData & CalcData;
