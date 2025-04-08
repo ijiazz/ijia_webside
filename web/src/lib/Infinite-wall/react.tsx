@@ -13,7 +13,7 @@ export function InfiniteWall(props: InfiniteWallProps) {
 
   const ref = useRef<HTMLDivElement>(null);
   /** 无限滚动 */
-  const { list, wallRef } = useInfiniteWall({
+  const { list, wallRef, updateList } = useInfiniteWall({
     containerRef: ref,
     ...reset,
   });
@@ -113,7 +113,7 @@ export function useInfiniteWall(
     wall.blockWidth = blockWidth;
   }, [blockHeight, blockWidth]);
 
-  return { list, wallRef: wallRef };
+  return { list, wallRef, updateList };
 }
 function devRender(element: WallElement, wall: InfiniteWallRender) {
   const showText = element.wallIdX === 0 || element.wallIdY === 0;

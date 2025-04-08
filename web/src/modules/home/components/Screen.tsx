@@ -1,10 +1,11 @@
-import React, { ReactNode, useRef } from "react";
+import React, { ReactNode, useRef, useState } from "react";
 import { useHoFetch } from "@/hooks/http.ts";
 import styled from "@emotion/styled";
 import { InfiniteWallRender } from "@/lib/Infinite-wall/mod.ts";
 import { InfiniteWall } from "@/lib/Infinite-wall/react.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "./shake_animation.ts";
+import { PlusSquareOutlined, UserOutlined } from "@ant-design/icons";
 
 export function Screen(props: {
   text?: ReactNode;
@@ -105,18 +106,18 @@ type AvatarItem = {
   url: string;
   name: string;
 };
-export type AvatarListProps = {
+type AvatarListProps = {
   image_width?: number;
   image_height?: number;
 };
 
-export function AvatarScreen(props: AvatarListProps) {
+function AvatarScreen(props: AvatarListProps) {
   const { image_width = 50, image_height = image_width } = props;
 
   const { api, http } = useHoFetch();
 
   const { result: data } = useAsync(async () => {
-    const num = 500;
+    const num = 400;
     const { items, total } = await api["/live/screen/avatar"].get({ query: { number: num } });
     const list: AvatarItem[] = new Array(num);
     for (let i = 0; i < num; i++) {
@@ -132,7 +133,7 @@ export function AvatarScreen(props: AvatarListProps) {
   const ref = useRef<HTMLDivElement>(null);
   /** 镜头抖动 */
   const animationCtrl = useShakeAnimation({
-    autoPlay: true,
+    autoPlay: false,
     heightRange: 50,
     widthRange: 50,
     onFrameUpdate: (offsetX: number, offsetY: number) => {
@@ -173,15 +174,41 @@ export function AvatarScreen(props: AvatarListProps) {
       <InfiniteWall
         ref={wallRef}
         renderItem={(element, wall) => {
+          const x = element.wallX;
+          const y = element.wallY;
+          const src = "";
           return (
-            <div className="avatar-item">
-              <img className="avatar-item-img"></img>
-            </div>
+            <Image
+              fallback={<UserOutlined className="avatar-item-empty" />}
+              className="avatar-item"
+              imgClassName="avatar-item-img"
+              src={src}
+            ></Image>
           );
         }}
       ></InfiniteWall>
     </AvatarScreenCSS>
   );
+}
+function useFlowLoad(list: string[], width: number, height: number) {
+  const [data, setData] = useState<number[][]>([]);
+
+  return {
+    getSrc(x: number, y: number): string | undefined {
+      x = x % width;
+      y = y % height;
+      let row = data[y];
+      if (!row) {
+        row = [];
+        data[y] = row;
+
+        return;
+      }
+      let path = row[x];
+      if (!path) {
+      }
+    },
+  };
 }
 
 const AvatarScreenCSS = styled.div`
@@ -192,11 +219,11 @@ const AvatarScreenCSS = styled.div`
   cursor: move;
   .avatar-item {
     height: 100%;
-    transition:
+    /* transition:
       border-color 100ms linear,
-      opacity 100ms linear;
+      opacity 100ms linear; */
     box-sizing: border-box;
-    border: 1.2px solid #000;
+    border: 1.2px solid #0000;
     opacity: 0.6;
     padding: 1.2px;
     border-radius: 10%;
@@ -214,6 +241,17 @@ const AvatarScreenCSS = styled.div`
       width: 100%;
       height: 100%;
     }
+    &-empty {
+      border-radius: 10%;
+      box-sizing: border-box;
+      border: 2px solid #000;
+      width: 100%;
+      height: 100%;
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
   }
 
   animation: gradient-x 10s ease infinite;
@@ -230,3 +268,18 @@ const AvatarScreenCSS = styled.div`
     }
   }
 `;
+function Image(props: { src?: string; fallback?: ReactNode; className?: string; imgClassName?: string }) {
+  const { fallback, src, className, imgClassName } = props;
+  const [loading, setLoading] = useState(true);
+  return (
+    <div className={className}>
+      <img
+        className={imgClassName}
+        src={src}
+        onLoad={() => setLoading(false)}
+        style={{ display: loading ? "none" : undefined }}
+      ></img>
+      {loading && fallback}
+    </div>
+  );
+}
