@@ -39,13 +39,11 @@ async function getUserRoleNameList(userId: number): Promise<{ user_id: number; r
 export class UserInfo {
   constructor(private jwtToken?: string) {}
 
-  #roleNameList?: Promise<string[]>;
+  #roleNameList?: Promise<UserWithRole>;
   /** 获取有效用户的角色列表 */
-  async getRoles(): Promise<string[]> {
+  async getRoles(): Promise<UserWithRole> {
     if (!this.#roleNameList) {
-      this.#roleNameList = this.getJwtInfo().then(({ userId }) =>
-        getUserRoleNameList(+userId).then((item) => item.role_id_list),
-      );
+      this.#roleNameList = this.getJwtInfo().then(({ userId }) => getUserRoleNameList(+userId));
     }
     return this.#roleNameList;
   }
@@ -74,3 +72,7 @@ export class UserInfo {
     return { user_id: info.user_id };
   }
 }
+export type UserWithRole = {
+  user_id: number;
+  role_id_list: string[];
+};

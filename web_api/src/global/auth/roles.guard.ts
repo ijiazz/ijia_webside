@@ -14,8 +14,8 @@ async function checkRoles(userInfo: UserInfo, requiredAnyRoles: Set<string>) {
   if (requiredAnyRoles.size === 0) {
     await userInfo.getUserInfo();
   } else {
-    const userRoles = await userInfo.getRoles();
-    if (!userRoles.some((role) => requiredAnyRoles.has(role))) {
+    const { role_id_list } = await userInfo.getRoles();
+    if (!role_id_list.some((role) => requiredAnyRoles.has(role))) {
       throw new HTTPException(403);
     }
   }

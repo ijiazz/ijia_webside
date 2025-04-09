@@ -6,30 +6,13 @@ import { enumPlatform } from "@ijia/data/db";
 import { checkValue } from "@/global/check.ts";
 import { enumType, integer, optional } from "@asla/wokao";
 import { HonoContext } from "@/hono/type.ts";
-import { rolesGuard } from "@/global/auth.ts";
+import { Role, rolesGuard } from "@/global/auth.ts";
+import { getCheckerServer } from "@/services/douyin.ts";
 
 @Use(rolesGuard)
 @autoBody
 @Controller({})
 class PostController {
-  @ToArguments(async (ctx: HonoContext) => {
-    const user = await ctx
-      .get("userInfo")
-      .getJwtInfo()
-      .catch(() => null);
-
-    const params = checkValue(ctx.req.query(), {
-      number: optional(integer({ acceptString: true, min: 1, max: 100 })),
-      offset: optional(integer({ acceptString: true, min: 0 })),
-      platform: optional(enumType(Array.from(enumPlatform))),
-      userId: optional.string,
-      s_content: optional.string,
-      s_author: optional.string,
-    });
-
-    return [params, user ? +user.userId : undefined];
-  })
-  @Get("/post/god_list")
   async getPostList(option: GetPostListParam = {}, userId?: number): Promise<LivePostResponse> {
     const DEFAULT_NUMBER = 10;
     const LIMIT = 10;
@@ -47,6 +30,31 @@ class PostController {
     const { items, total } = await getGodPost(option);
     if (needLogin) items.length = 0;
     return { items, total, needLogin };
+  }
+  @ToArguments(async (ctx: HonoContext) => {
+    const params = checkValue(ctx.req.query(), {
+      number: optional(integer({ acceptString: true, min: 1, max: 100 })),
+      offset: optional(integer({ acceptString: true, min: 0 })),
+      platform: optional(enumType(Array.from(enumPlatform))),
+      userId: optional.string,
+      s_content: optional.string,
+      s_author: optional.string,
+    });
+
+    const isAdmin: boolean = await ctx
+      .get("userInfo")
+      .getRoles()
+      .then(
+        ({ role_id_list }) => role_id_list.includes(Role.Admin),
+        () => false,
+      );
+
+    return [params, isAdmin];
+  })
+  @Get("/post/god_list")
+  async getPostNewest(option: GetPostListParam, isAdmin: boolean) {
+    if (isAdmin) return this.getPostList(option);
+    return getCheckerServer().getNewsPost();
   }
 }
 

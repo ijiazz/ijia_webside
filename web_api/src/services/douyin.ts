@@ -31,6 +31,11 @@ function createCheckServer(token: string, serverUrl: string) {
     ctx.headers.set("cookie", "jwt_token=" + token);
     return next();
   });
+  hoFetch.use(function (ctx, next) {
+    return next().catch((res) => {
+      throw getError(res);
+    });
+  });
   return hoFetch;
 }
 export class CheckServer {
@@ -43,33 +48,25 @@ export class CheckServer {
    * @param uid 抖音是 sec_id
    */
   async syncUserInfo(platform: Platform, uid: string): Promise<PlatformUserBasicInfo> {
-    try {
-      const res = await this.hoFetch.fetch<PlatformUserBasicInfo>(`/p/${platform}/user/sync`, {
-        method: "POST",
-        query: { uid: uid },
-      });
-      return res.bodyData;
-    } catch (error) {
-      throw getError(error);
-    }
+    const res = await this.hoFetch.fetch<PlatformUserBasicInfo>(`/p/${platform}/user/sync`, {
+      method: "POST",
+      query: { uid: uid },
+    });
+    return res.bodyData;
   }
   /**
    * 查看平台用户是否按要求添加了属于 id 的认证信息
    * @param uid 抖音是 sec_id
    */
   async checkPlatformUserInfo(uid: string, ijia_id: string | number): Promise<PlatformUserBasicInfoCheckResult> {
-    try {
-      const { bodyData } = await this.hoFetch.fetch<PlatformUserBasicInfoCheckResult>(
-        `/p/${Platform.douYin}/user/check_bind`,
-        {
-          method: "POST",
-          query: { uid: uid, ijia_id: ijia_id },
-        },
-      );
-      return bodyData;
-    } catch (error) {
-      throw getError(error);
-    }
+    const { bodyData } = await this.hoFetch.fetch<PlatformUserBasicInfoCheckResult>(
+      `/p/${Platform.douYin}/user/check_bind`,
+      {
+        method: "POST",
+        query: { uid: uid, ijia_id: ijia_id },
+      },
+    );
+    return bodyData;
   }
 
   /** 查看平台用户是否正在直播 */
@@ -79,14 +76,19 @@ export class CheckServer {
     });
     return bodyData.live_status;
   }
+  /** 获取最新作品信息 */
+  async getNewsPost() {
+    const { bodyData } = await this.hoFetch.fetch(`/p/post/newest`);
+    return bodyData;
+  }
 }
 
 function getError(error: unknown): HttpError {
   if (error instanceof HoFetchStatusError) {
     const body = error.body instanceof ReadableStream ? error.body : JSON.stringify(error.body);
-    return new HTTPException(502, { res: new Response(body, { headers: error.headers }) });
+    return new HTTPException(error.status as any, { res: new Response(body, { headers: error.headers }) });
   }
-  return new HttpError(502, { message: toErrorStr(error) });
+  return new HTTPException(502, { res: Response.json({ message: "服务暂不可用", reason: toErrorStr(error) }) });
 }
 let checkServer: CheckServer | undefined;
 export function getCheckerServer() {
