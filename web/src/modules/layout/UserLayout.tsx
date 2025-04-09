@@ -52,6 +52,12 @@ function LayoutBase(
 }
 const ProLayoutCSS = styled(ProLayout)`
   height: 100%;
+  .ant-layout {
+    height: 100%;
+  }
+  .ant-pro-layout-container {
+    min-height: 100%;
+  }
 `;
 const IS_DEV = import.meta.env?.DEV;
 export function UserLayout(props: PropsWithChildren<{}>) {
