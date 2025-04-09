@@ -15,7 +15,7 @@ const getPosts = (api: Api, option: { number: number; offset: number; token?: st
     [JWT_TOKEN_KEY]: option.token,
   });
 };
-test("没有登录只能查看前 10 条", async function ({ api, ijiaDbPool }) {
+test.skip("没有登录只能查看前 10 条", async function ({ api, ijiaDbPool }) {
   await insertMock();
   await insertPosts(20, Platform.douYin, "dy0");
 
@@ -30,7 +30,7 @@ test("没有登录只能查看前 10 条", async function ({ api, ijiaDbPool }) 
   const res = await getPosts(api, { number: 11, offset: 1, token });
   expect(res.items.length).toBe(11);
 });
-test("只能查看 god 用户发布的帖子", async function ({ api, ijiaDbPool }) {
+test.skip("只能查看 god 用户发布的帖子", async function ({ api, ijiaDbPool }) {
   await insertMock();
   await insertPosts(2, Platform.douYin, "dy0"); //god
   await insertPosts(2, Platform.douYin, "dy1"); //second

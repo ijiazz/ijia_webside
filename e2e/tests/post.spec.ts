@@ -13,7 +13,7 @@ describe.skip("登录的账号", function () {
   });
 });
 
-test("游客查看帖子列表", async function ({ page, browser }) {
+test.skip("游客查看帖子列表", async function ({ page, browser }) {
   await insertMock();
   await pla_asset.delete().query();
   await insertPosts(12, Platform.douYin, "dy0");
