@@ -1,5 +1,5 @@
-import React, { PropsWithChildren } from "react";
+import React, { CSSProperties, PropsWithChildren } from "react";
 
-export function PagePadding(props: PropsWithChildren<{}>) {
-  return <div style={{ padding: 24, height: "100%" }}>{props.children}</div>;
+export function PagePadding(props: PropsWithChildren<{ style?: CSSProperties }>) {
+  return <div style={{ padding: 24, ...props.style }}>{props.children}</div>;
 }

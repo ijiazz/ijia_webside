@@ -10,10 +10,10 @@ export function VideoBg(props: PropsWithChildren<{ style?: React.CSSProperties; 
           top: 0,
           left: 0,
           overflow: "hidden",
-          zIndex: -1,
         }}
       >
         <video
+          poster="/main/bg-login.jpg"
           style={{
             height: "100%",
             width: "100vw",

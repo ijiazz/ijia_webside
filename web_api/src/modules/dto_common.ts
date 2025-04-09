@@ -1,3 +1,5 @@
+import { TextStructure } from "@ijia/data/db";
+
 export type Option<T> = {
   label: string;
   value: T;
@@ -10,3 +12,7 @@ export interface GetListOption {
   number?: number;
   offset?: number;
 }
+
+export type TextStructureExternalLink = TextStructure & {
+  link: string;
+};

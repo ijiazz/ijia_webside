@@ -4,11 +4,11 @@ import { IjiaLogo } from "../../common/site-logo.tsx";
 import { Button, MenuProps } from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import { menus } from "./menus.ts";
-import { gotoHome } from "@/app.ts";
 import { getUserToken, useCurrentUser } from "@/common/user.ts";
 import { avatarDropdownRender } from "./avatar.tsx";
 import { useAntdStatic } from "@/hooks/antd.ts";
 import styled from "@emotion/styled";
+import { ROUTES } from "@/app.ts";
 
 function LayoutBase(
   props: PropsWithChildren<{ avatarProps?: ProLayoutProps["avatarProps"]; action?: React.ReactNode }>,
@@ -24,7 +24,7 @@ function LayoutBase(
     <ProLayoutCSS
       disableMobile
       token={{ pageContainer: { paddingBlockPageContainerContent: 0, paddingInlinePageContainerContent: 0 } }}
-      onMenuHeaderClick={gotoHome}
+      onMenuHeaderClick={() => navigate(ROUTES.Home, { viewTransition: true })}
       logo={<IjiaLogo />}
       title="IJIA 学院"
       route={menus}
@@ -52,6 +52,12 @@ function LayoutBase(
 }
 const ProLayoutCSS = styled(ProLayout)`
   height: 100%;
+  .ant-layout {
+    height: 100%;
+  }
+  .ant-pro-layout-container {
+    min-height: 100%;
+  }
 `;
 const IS_DEV = import.meta.env?.DEV;
 export function UserLayout(props: PropsWithChildren<{}>) {

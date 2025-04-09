@@ -1,64 +1,64 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createBrowserRouter, Outlet, RouteObject, RouterProvider } from "react-router";
-import passportRouter from "./modules/passport/router.tsx";
-import profileRouter from "./modules/profile/router.tsx";
-import { AntdProvider, HoFetchProvider } from "./global-provider.tsx";
-import { notFoundRouter } from "./common/page_state/NotFound.tsx";
-import { UserLayout } from "./modules/layout/UserLayout.tsx";
-import { getPathByRoute } from "./app.ts";
+import passportRoutes from "./modules/passport/routes.tsx";
+import profileRoutes from "./modules/profile/routes.tsx";
+import { lazyPage } from "@/common/lazy_load_component.tsx";
 import liveRoutes from "./modules/live/routes.tsx";
-
-const coreRouters: RouteObject[] = [
+import { notFoundRouter } from "./common/page_state/NotFound.tsx";
+import { getPathByRoute, remoteLoading } from "./app.ts";
+const coreRoutes: RouteObject[] = [
   {
-    Component: UserLayout,
-    path: "live",
-    children: liveRoutes,
+    index: true,
+    lazy: () => import("./modules/home/routers-home.tsx").then((mod) => mod.page),
   },
-  { path: "passport", children: passportRouter },
   {
-    Component: UserLayout,
+    path: "about/*",
+    Component: lazyPage(() => import("./modules/home/about/about.tsx").then((mod) => mod.About)),
+  },
+  {
+    path: "story",
+    Component: lazyPage(() => import("./modules/home/story/story-page.tsx").then((mod) => mod.StoryPage)),
+  },
+  { path: "passport", children: passportRoutes },
+  {
+    Component: lazyPage(() => import("./modules/layout/UserLayout.tsx").then((mod) => mod.UserLayout)),
     children: [
-      { path: "live/*", element: <div>live</div> },
-      { path: "profile", children: profileRouter },
+      { path: "live", children: liveRoutes },
+      { path: "profile", children: profileRoutes },
       { path: "examination/*", element: <div>examination</div> },
+      notFoundRouter,
     ],
-  },
-  {
-    path: "lazy", // 测试 Lazy
-    Component: () => (
-      <React.Suspense fallback={<div>loading...</div>}>
-        <LazyTest />
-      </React.Suspense>
-    ),
   },
   notFoundRouter,
 ];
 
-const routers: RouteObject[] = [
+const routes: RouteObject[] = [
   {
     path: "/",
-    element: (
-      <AntdProvider>
-        <HoFetchProvider>
-          <Outlet />
-        </HoFetchProvider>
-      </AntdProvider>
-    ),
-    children: coreRouters,
+    lazy: () => {
+      return import("./global-provider.tsx").then(({ AntdProvider, HoFetchProvider }) => ({
+        Component() {
+          return (
+            <AntdProvider>
+              <HoFetchProvider>
+                <Outlet />
+              </HoFetchProvider>
+            </AntdProvider>
+          );
+        },
+      }));
+    },
+    HydrateFallback() {
+      useEffect(() => remoteLoading, []);
+      return null;
+    },
+    children: coreRoutes,
   },
 ];
-export default routers;
+export default routes;
 
-const LazyTest = React.lazy(async () => {
-  await new Promise((resolve) => {
-    setTimeout(resolve, 3000);
-  });
-  return {
-    default: () => <div>lazy</div>,
-  };
-});
 function Router() {
-  return <RouterProvider router={createBrowserRouter(routers, { basename: getPathByRoute("/") })} />;
+  return <RouterProvider router={createBrowserRouter(routes, { basename: getPathByRoute("/") })} />;
 }
 
 export function SpaRoot() {

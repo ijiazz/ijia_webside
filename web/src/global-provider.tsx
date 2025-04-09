@@ -54,10 +54,10 @@ function useCreateHoFetch() {
         const s = new URLSearchParams();
         const url = new URL(location.href);
         const target = url.pathname + url.search + url.hash;
-        const isLoginPage = location.href.startsWith(getUrlByRoute(ROUTES.LOGIN));
+        const isLoginPage = location.href.startsWith(getUrlByRoute(ROUTES.Login));
         if (!isLoginPage) {
           s.set("redirect", target);
-          navigate(ROUTES.LOGIN + "?" + s.toString(), { viewTransition: true });
+          navigate(ROUTES.Login + "?" + s.toString(), { viewTransition: true });
         }
       }
 

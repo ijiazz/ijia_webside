@@ -54,7 +54,7 @@ export function HomePage() {
       <PostListCSS style={{ backgroundColor: theme.colorBgLayout }}>
         {data?.needLogin && (
           <div style={{ display: "flex", justifyContent: "center", paddingTop: 48 }}>
-            <Link to={ROUTES.LOGIN} viewTransition>
+            <Link to={ROUTES.Login} viewTransition>
               登录后查看更多
             </Link>
           </div>

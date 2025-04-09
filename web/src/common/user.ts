@@ -73,3 +73,27 @@ export function userLogout() {
 export function loginByAccessToken(jwtToken: string) {
   Cookie.set("jwt-token", jwtToken);
 }
+export function getCurrentUserId(): number | undefined {
+  const token = getUserToken();
+  if (!token) return;
+  let data: { userId: string };
+  try {
+    data = parseJwt(token) as { userId: string };
+  } catch (error) {
+    console.error("JWT 解析失败", error);
+    return;
+  }
+  const userId = +data.userId;
+
+  if (!Number.isInteger(userId)) return;
+  return userId;
+}
+
+function parseJwt(token: string) {
+  const content = token.split(".")[1];
+  const raw = content.replaceAll("-", "+").replaceAll("_", "/");
+
+  const value = decodeURIComponent(atob(raw));
+
+  return JSON.parse(value);
+}

@@ -8,9 +8,6 @@ export function getPathByRoute(route: string) {
   return route;
 }
 
-export function gotoHome() {
-  location.href = getPathByRoute("/");
-}
 export function remoteLoading() {
   const element = document.getElementById("app-loading");
   if (element) {
@@ -19,5 +16,6 @@ export function remoteLoading() {
 }
 
 export const ROUTES = {
-  LOGIN: "/passport/login",
+  Home: "/",
+  Login: "/passport/login",
 } as const;
