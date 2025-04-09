@@ -1,25 +1,46 @@
 import { autoBody } from "@/global/pipe.ts";
-import { Controller, Get, PipeInput } from "@asla/hono-decorator";
+import { Controller, Get, PipeInput, PipeOutput } from "@asla/hono-decorator";
 import { ScreenAvatarRes, HomePageRes, GodPlatformDto } from "./live.dto.ts";
-import { GetListOption } from "../dto_common.ts";
 import { optionalPositiveInt, checkValue } from "@/global/check.ts";
-import { getAvatar } from "./sql/avatar.ts";
-import { ENV } from "@/config.ts";
+import { genScreenAvatar } from "./sql/avatar.ts";
 import { pla_user } from "@ijia/data/db";
+import { redisPool } from "@ijia/data/cache";
 import { dbPool } from "@ijia/data/yoursql";
 import { list } from "./home_extra.ts";
 
 @autoBody
 @Controller({})
 class LiveController {
-  @PipeInput((ctx) => {
-    const queries = ctx.req.query();
-    return checkValue(queries, { offset: optionalPositiveInt, number: optionalPositiveInt });
+  @PipeOutput((result, ctx) => {
+    return ctx.body(result, { headers: { "Content-Type": "application/json" } });
   })
   @Get("/live/screen/avatar")
-  async getLiveList(option: GetListOption): Promise<ScreenAvatarRes> {
-    if (ENV.IS_PROD) throw new Error("未开发"); //TODO
-    return getAvatar(option);
+  getLiveList(): Promise<string> {
+    if (!this.#screenAvatarCache) {
+      this.#screenAvatarCache = this.getScreenAvatarTryCache().finally(() => {
+        this.#screenAvatarCache = undefined;
+      });
+    }
+    return this.#screenAvatarCache;
+  }
+  #screenAvatarCache?: Promise<string>;
+  async getScreenAvatarTryCache(): Promise<string> {
+    using conn = await redisPool.connect();
+    const key = "live:avatar";
+    let cache = await conn.get(key);
+    if (!cache) {
+      const limit = 400;
+      const items = await genScreenAvatar(limit);
+      const data: ScreenAvatarRes = {
+        items: items,
+        total: items.length,
+      };
+      cache = JSON.stringify(data);
+      // 次日零点过期。如果数量不到limit，则不缓存
+      if (items.length >= limit) await conn.set(key, cache, { EX: getZeroMs() });
+    }
+
+    return cache;
   }
   @PipeInput((ctx) => {
     const queries = ctx.req.query();
@@ -58,5 +79,11 @@ class LiveController {
       god_user_platforms: platforms.sort((a, b) => b.stat.followers_count - a.stat.followers_count),
     };
   }
+}
+
+function getZeroMs(): number {
+  const now = new Date();
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  return tomorrow.getTime() - now.getTime();
 }
 export const liveController = new LiveController();
