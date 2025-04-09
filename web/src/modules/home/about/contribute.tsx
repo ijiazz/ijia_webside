@@ -34,7 +34,7 @@ export function Contribute() {
       <Title level={4}>三、内容贡献</Title>
       <Paragraph>
         提供网站素材：如果您有合适的图片、视频、音频等素材，且愿意分享给网站使用，可以通过邮箱 eaviyi@ijiazz.cn
-        与我们联系。请在邮件中注明素材的来源、使用授权等相关信息，以便我们确认其合法性和适用性。您的素材将为网站增添更多色彩和活力。
+        与作者联系。您的素材将为网站增添更多色彩和活力。
       </Paragraph>
       <Title level={4}>四、支持与赞助</Title>
       <Paragraph>

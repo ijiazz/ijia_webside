@@ -26,7 +26,7 @@ export function AboutSite(props: AboutSiteProps) {
       </Paragraph>
       <Paragraph>若发现网站存在漏洞，请及时告知作者，以保障网站的安全稳定运行。</Paragraph>
       <Paragraph>
-        此外，如果你对本站充满热爱，渴望为其贡献一份力量，那么请查阅<Link to="#contribute">贡献指南</Link>
+        此外，如果你对本站充满热爱，渴望为其贡献一份力量，那么请查看“<Link to="#contribute">为本站贡献</Link>”栏目
         ，了解具体的参与方式，期待你的加入！
       </Paragraph>
     </Typography>
