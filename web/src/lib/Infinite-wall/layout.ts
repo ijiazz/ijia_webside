@@ -81,7 +81,7 @@ export class InfiniteWallRender {
     this.requestRender();
   }
   #requesting = false;
-  private requestRender() {
+  requestRender() {
     if (this.#requesting) return;
     this.#requesting = true;
     requestAnimationFrame(() => {
@@ -112,43 +112,39 @@ export class InfiniteWallRender {
       this.#removeElement?.(arr);
     }
 
-    const total = childNodes.length;
+    const oldTotal = childNodes.length;
 
     let item: WallElement;
     let x: number;
     let y: number;
-    const changedList: WallElement[] = [];
 
-    for (let i = 0; i < total; i++) {
+    const newsList: WallElement[] = new Array(totalCount - oldTotal);
+    for (let i = oldTotal; i < totalCount; i++) {
+      x = i % xCount;
+      y = Math.floor(i / xCount);
+      item = createItem(blockHeight, blockWidth, i, x, y);
+
+      const position = updatePosition(layout, item, limitWidth, limitHeight, x, y);
+      item.style.transform = `translate(${position.offsetLeft}px, ${position.offsetTop}px)`;
+      this.element.appendChild(item);
+
+      newsList[totalCount - i - 1] = item;
+    }
+
+    let changedList: WallElement[] = [];
+
+    for (let i = 0; i < oldTotal; i++) {
       item = childNodes[i] as WallElement;
 
-      x = item.wallIdX;
-      y = item.wallIdY;
+      x = i % xCount;
+      y = Math.floor(i / xCount);
 
-      const position = updatePosition(layout, item, limitWidth, limitHeight);
+      const position = updatePosition(layout, item, limitWidth, limitHeight, x, y);
       if (position.changed) changedList.push(item);
       item.style.transform = `translate(${position.offsetLeft}px, ${position.offsetTop}px)`;
     }
-
-    if (totalCount > total) {
-      const newsList: WallElement[] = new Array(totalCount - total);
-      for (let i = total; i < totalCount; i++) {
-        item = createItem(blockHeight, blockWidth, i);
-
-        x = i % xCount;
-        y = Math.floor(i / xCount);
-        item.wallIdX = x;
-        item.wallIdY = y;
-        item.wallX = x;
-        item.wallY = y;
-
-        const position = updatePosition(layout, item, limitWidth, limitHeight);
-        item.style.transform = `translate(${position.offsetLeft}px, ${position.offsetTop}px)`;
-        this.element.appendChild(item);
-
-        newsList[totalCount - i - 1] = item;
-        changedList.push(item);
-      }
+    if (newsList.length > 0) {
+      changedList = changedList.concat(newsList);
       this.#createElement?.(newsList);
     }
     if (changedList.length > 0) {
@@ -172,10 +168,17 @@ export class InfiniteWallRender {
   }
 }
 
-function updatePosition(layout: RenderLayout, element: WallData, overWidth: number, overHeight: number) {
+function updatePosition(
+  layout: RenderLayout,
+  element: WallData,
+  overWidth: number,
+  overHeight: number,
+  idX: number,
+  idY: number,
+) {
   const { blockHeight, blockWidth } = layout;
-  let offsetLeft = element.wallIdX * blockWidth + layout.realOffsetLeft;
-  let offsetTop = element.wallIdY * blockHeight + layout.realOffsetTop;
+  let offsetLeft = idX * blockWidth + layout.realOffsetLeft;
+  let offsetTop = idY * blockHeight + layout.realOffsetTop;
 
   let screenX: number;
   if (offsetLeft > overWidth) {
@@ -189,7 +192,7 @@ function updatePosition(layout: RenderLayout, element: WallData, overWidth: numb
   } else {
     screenX = layout.screenX;
   }
-  const wallX: number = screenX * layout.xCount + element.wallIdX;
+  const wallX: number = screenX * layout.xCount + idX;
 
   let screenY: number;
   if (offsetTop > overHeight) {
@@ -201,7 +204,7 @@ function updatePosition(layout: RenderLayout, element: WallData, overWidth: numb
   } else {
     screenY = layout.screenY;
   }
-  const wallY = screenY * layout.yCount + element.wallIdY;
+  const wallY = screenY * layout.yCount + idY;
 
   const changed = element.wallX !== wallX || element.wallY !== wallY;
   if (changed) {
@@ -218,14 +221,14 @@ function updatePosition(layout: RenderLayout, element: WallData, overWidth: numb
     changed,
   };
 }
-function createItem(height: number, width: number, id: number): WallElement {
+function createItem(height: number, width: number, id: number, x: number, y: number): WallElement {
   const node = document.createElement("div") as WallElement;
   node.style.position = "absolute";
   node.style.width = width + "px";
   node.style.height = height + "px";
   node.wallId = id;
-  node.wallX = 0;
-  node.wallY = 0;
+  node.wallX = x;
+  node.wallY = y;
   return node;
 }
 function calcLayout(input: Readonly<InputData>, output: CalcData, containerWidth: number, containerHeight: number) {
@@ -252,8 +255,6 @@ type WallData = {
   wallId: number;
   wallX: number;
   wallY: number;
-  wallIdX: number;
-  wallIdY: number;
 };
 export type WallElement = HTMLDivElement & WallData;
 type InputData = {

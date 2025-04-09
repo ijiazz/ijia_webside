@@ -29,6 +29,7 @@ export function InfiniteWall(props: InfiniteWallProps) {
     area.baseY = 0;
     return area;
   }, []);
+
   useEffect(() => {
     updateList();
   }, deps);
@@ -110,6 +111,15 @@ export function useInfiniteWall(
     if (config.ref) config.ref.current = wall;
     wallRef.current = wall;
   }, [containerRef]);
+  useEffect(() => {
+    const onResize = () => {
+      wallRef.current?.requestRender();
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
   useMemo(() => {
     if (!wallRef.current) return;
     const wall = wallRef.current;
@@ -120,7 +130,6 @@ export function useInfiniteWall(
   return { list, wallRef, updateList };
 }
 function devRender(element: WallElement, wall: InfiniteWallRender) {
-  const showText = element.wallIdX === 0 || element.wallIdY === 0;
   return (
     <div
       style={{
