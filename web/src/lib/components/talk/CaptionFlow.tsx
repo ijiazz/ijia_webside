@@ -40,7 +40,7 @@ const CaptionFlowCSS = styled.span`
   display: inline-block;
   min-height: 1em;
   min-width: 1em;
-  white-space: pre;
+  white-space: pre-wrap;
   .flash-text-char {
     animation: flash 0.1s;
     animation-fill-mode: backwards;

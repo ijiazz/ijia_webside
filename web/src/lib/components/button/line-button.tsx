@@ -113,16 +113,7 @@ const RollRightBtnCSS = styled.div`
   }
 `;
 
-export const LineBtn = (props: BtnCommonProps) => {
-  const { children, style, className } = props;
-  return (
-    <LineBtnCSS style={style} className={className}>
-      {children}
-    </LineBtnCSS>
-  );
-};
-
-const LineBtnCSS = styled.button`
+export const LineBtn = styled.button`
   --color: #254487;
   --hover-color: #fff;
   color: var(--hover-color);

@@ -6,10 +6,12 @@ import { InfiniteWall } from "@/lib/Infinite-wall/react.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "./shake_animation.ts";
 import classNames from "classnames";
+import { getCurrentUserId } from "@/common/user.ts";
 
 type AvatarItem = {
   key: string;
   url: string;
+  userId: number;
   name: string;
 };
 type AvatarListProps = {
@@ -27,22 +29,27 @@ export function Screen(props: AvatarListProps) {
   const { api, http } = useHoFetch();
   const rows = 20;
   const columns = 20;
+  const limit = rows * columns;
   const { result: data } = useAsync(
     async () => {
-      const num = 400;
-      const { items, total } = await api["/live/screen/avatar"].get({ query: { number: num } });
-      const list: AvatarItem[] = new Array(num);
-      for (let i = 0; i < num; i++) {
+      const { items, total } = await api["/live/screen/avatar"].get({ query: { number: limit } });
+      const list: AvatarItem[] = new Array(limit);
+      for (let i = 0; i < limit; i++) {
         list[i] = {
           key: `${i}`,
           name: items[i]?.name,
           url: items[i]?.avatar_url,
+          userId: 23456,
         };
       }
-      return list;
+      const currentUserId = getCurrentUserId();
+      return { userId: currentUserId, list };
     },
     { autoRunArgs: [] },
   );
+  const avatarList = data.value?.list;
+  const currentUserId = data.value?.userId;
+
   const wallRef = useRef<InfiniteWallRender>(null);
   const ref = useRef<HTMLDivElement>(null);
   const godAvatarRef = useRef<HTMLDivElement>(null);
@@ -95,12 +102,18 @@ export function Screen(props: AvatarListProps) {
           ref={wallRef}
           deps={[data]}
           renderItem={(element, wall) => {
-            const x = Math.abs(element.wallX % columns);
-            const y = Math.abs(element.wallY % rows);
-            const index = y * columns + x + 1;
-            const item = data.value?.[index];
+            let px: number = element.wallX;
+            let py: number = element.wallY;
+            if (avatarList && avatarList.length >= limit) {
+              px %= columns;
+              py %= rows;
+            }
+            const index = Math.abs(py) * columns + Math.abs(px) + 1;
 
-            return <Image className="avatar-item" imgClassName="avatar-item-img" item={item}></Image>;
+            const item = avatarList?.[index];
+            const isActive = currentUserId !== undefined && item?.userId === currentUserId;
+
+            return <Image className="avatar-item" imgClassName="avatar-item-img" active={isActive} item={item}></Image>;
           }}
         ></InfiniteWall>
       </AvatarScreenCSS>
@@ -177,6 +190,10 @@ const AvatarScreenCSS = styled.div`
     :hover {
       opacity: 1;
     }
+    .highlight {
+      opacity: 1;
+      filter: brightness(1.3);
+    }
 
     &-img {
       display: block;
@@ -240,12 +257,12 @@ const AvatarScreenCSS = styled.div`
     }
   }
 `;
-function Image(props: { item?: AvatarItem; className?: string; imgClassName?: string }) {
-  const { item, className, imgClassName } = props;
+function Image(props: { active?: boolean; item?: AvatarItem; className?: string; imgClassName?: string }) {
+  const { item, className, imgClassName, active } = props;
   const [loading, setLoading] = useState(true);
   useMemo(() => setLoading(true), [item]);
   return (
-    <div className={classNames(className, { loaded: !loading })}>
+    <div className={classNames(className, { loaded: !loading, highlight: active })}>
       <img
         className={classNames(imgClassName, { loaded: !loading })}
         src={item?.url}

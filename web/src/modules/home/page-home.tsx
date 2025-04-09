@@ -6,7 +6,7 @@ import { Caption, CaptionFlow } from "@/lib/components/talk.tsx";
 import { GodPlatform } from "./components/Platforms.tsx";
 import { Footer } from "@/common/Footer.tsx";
 import { HomePageRes } from "@/api.ts";
-import { StarHover, LineBtn, RefreshButton } from "@/lib/components/button.tsx";
+import { LineBtn } from "@/lib/components/button.tsx";
 import { useWindowResize } from "@/hooks/window.ts";
 
 export function HomePage() {
@@ -16,6 +16,8 @@ export function HomePage() {
   const [speak, setSpeak] = useState<Caption>(showExtend ? extend[0] : flashTextList[0]);
   const indexRef = useRef(-1);
   const avatarUrl = data.god_user.avatar_url;
+
+  const size = useWindowResize();
 
   useEffect(() => {
     indexRef.current = 0;
@@ -31,6 +33,7 @@ export function HomePage() {
       clearInterval(internal);
     };
   }, []);
+  const platformRef = useRef<HTMLDivElement>(null);
   return (
     <HomePageCSS>
       <Screen
@@ -38,9 +41,19 @@ export function HomePage() {
         text={<CaptionFlow delay={indexRef.current < 0 ? 1000 : 0} text={speak} style={{ textAlign: "center" }} />}
         avatar={avatarUrl ? <ScreenAvatar src={avatarUrl} /> : undefined}
       >
-        <Header />
+        <HeaderCSS style={{ flexDirection: size.width > 500 ? "row" : "column" }}>
+          <Link to="live" viewTransition style={{ textDecoration: "none" }}>
+            <LineBtn className="link-item">IJIA学院</LineBtn>
+          </Link>
+          <LineBtn
+            className="link-item"
+            onClick={() => platformRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          >
+            成为IJIA
+          </LineBtn>
+        </HeaderCSS>
       </Screen>
-      <GodPlatform platforms={data.god_user_platforms}></GodPlatform>
+      <GodPlatform platforms={data.god_user_platforms} ref={platformRef}></GodPlatform>
       <Footer />
     </HomePageCSS>
   );
@@ -52,24 +65,6 @@ const HomePageCSS = styled.div`
   }
 `;
 
-function Header() {
-  const size = useWindowResize();
-  return (
-    <HeaderCSS style={{ flexDirection: size.width > 500 ? "row" : "column" }}>
-      <Link to="live" viewTransition style={{ textDecoration: "none" }}>
-        <LineBtn className="link-item">IJIA学院</LineBtn>
-      </Link>
-      <Link to="./story" viewTransition style={{ textDecoration: "none" }}>
-        <StarHover>
-          <RefreshButton className="link-item">故事的开始</RefreshButton>
-        </StarHover>
-      </Link>
-      <Link to="passport/signup" viewTransition style={{ textDecoration: "none" }}>
-        <LineBtn className="link-item">成为IJIA</LineBtn>
-      </Link>
-    </HeaderCSS>
-  );
-}
 const HeaderCSS = styled.div`
   width: 100%;
   justify-items: start;
@@ -115,6 +110,3 @@ const extend: Caption[] = [
     segments: [6, { length: 3, pauseMs: 200 }, 5, 2],
   },
 ];
-type RouteState = {
-  showExtend?: boolean;
-};

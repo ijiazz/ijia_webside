@@ -5,11 +5,15 @@ import { THIRD_PART } from "@/common/third_part_account.tsx";
 import styled from "@emotion/styled";
 import { VLink } from "@/lib/components/VLink.tsx";
 
-type GodPlatformProps = { platforms?: GodPlatformDto[]; followerNumDetail?: boolean };
+type GodPlatformProps = {
+  platforms?: GodPlatformDto[];
+  followerNumDetail?: boolean;
+  ref?: React.RefObject<HTMLDivElement | null>;
+};
 export function GodPlatform(props: GodPlatformProps) {
-  const { platforms, followerNumDetail = false } = props;
+  const { platforms, followerNumDetail = false, ref } = props;
   return (
-    <StyledWrapper>
+    <StyledWrapper ref={ref}>
       <div className="background">
         <div className="shape-rectangle"></div>
         <div className="shape-round"></div>
@@ -57,9 +61,10 @@ const StyledWrapper = styled.div`
   justify-content: center;
   display: flex;
   flex-wrap: wrap;
-  min-height: 50vh;
+  min-height: max(90vh, 550px);
 
   .background {
+    z-index: -1;
     .shape-rectangle {
       position: absolute;
       left: 100px;
