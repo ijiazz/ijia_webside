@@ -8,4 +8,17 @@ export * from "./post/post.dto.ts";
 export * from "./live/live.dto.ts";
 
 export type { TextStructureType, TextStructure } from "@ijia/data/db";
-export { Platform } from "@ijia/data/db";
+export enum Platform {
+  /** 抖音 */
+  douYin = "douyin",
+  /** bilibili */
+  bilibili = "bilibili",
+  /** 小红书 */
+  xiaoHongShu = "xiaohonshu",
+  /** 微博 */
+  weibo = "weibo",
+  /** 5Sing 音乐 */
+  v5sing = "v5sing",
+  /** 网易云音乐 */
+  wangYiMusic = "wangyiyun",
+}

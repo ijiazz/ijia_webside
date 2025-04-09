@@ -1,5 +1,5 @@
 import { jwtManage, SignInfo } from "@/global/jwt.ts";
-import { user_role_bind } from "@ijia/data/db";
+import { user, user_role_bind } from "@ijia/data/db";
 import { v } from "@ijia/data/yoursql";
 import { HttpError, RequiredLoginError } from "../errors.ts";
 
@@ -21,26 +21,38 @@ async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
   }
   return count > 0;
 }
-async function getUserRoleNameList(userId: number): Promise<string[]> {
-  const roles = await user_role_bind
-    .fromAs("bind")
-    .select<{ role_name: string }>({ role_name: "role.user_name" })
-    .where(`bind.user_id=${v(userId)}`)
+async function getUserRoleNameList(userId: number): Promise<{ user_id: number; role_id_list: string[] }> {
+  const [userInfo] = await user
+    .fromAs("u")
+    .select({
+      user_id: "u.id",
+      role_id_list: user_role_bind
+        .fromAs("bind")
+        .select<{ role_id: "string" }>({ role_id: "array_agg(bind.role_id)" })
+        .where(`bind.user_id=${v(userId)}`)
+        .toSelect(),
+    })
+    .where("NOT u.is_deleted")
     .queryRows();
-
-  return roles.map((item) => item.role_name);
+  return { role_id_list: userInfo.role_id_list || [], user_id: userInfo.user_id };
 }
 export class UserInfo {
   constructor(private jwtToken?: string) {}
 
   #roleNameList?: Promise<string[]>;
+  /** 获取有效用户的角色列表 */
   async getRoles(): Promise<string[]> {
     if (!this.#roleNameList) {
-      this.#roleNameList = this.getJwtInfo().then(({ userId }) => getUserRoleNameList(+userId));
+      this.#roleNameList = this.getJwtInfo().then(({ userId }) =>
+        getUserRoleNameList(+userId).then((item) => item.role_id_list),
+      );
     }
     return this.#roleNameList;
   }
   #jwtInfo?: Promise<SignInfo>;
+  /**
+   * 可能要考虑用后被注销或禁用
+   */
   async getJwtInfo(): Promise<SignInfo> {
     if (!this.jwtToken) throw new RequiredLoginError();
     if (!this.#jwtInfo) {
@@ -49,5 +61,16 @@ export class UserInfo {
       });
     }
     return this.#jwtInfo;
+  }
+  /** 从数据库获取有效用户信息 */
+  async getUserInfo(): Promise<{ user_id: number }> {
+    const baseInfo = await this.getJwtInfo();
+    const [info] = await user
+      .select<{ user_id: number }>({ user_id: "id" })
+      .where(`id=${v(+baseInfo.userId)} AND NOT is_deleted`)
+      .queryRows();
+    if (!user) throw new RequiredLoginError("用户不存在");
+
+    return { user_id: info.user_id };
   }
 }
