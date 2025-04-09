@@ -12,7 +12,7 @@ export type Caption = {
   pauseMs?: number;
   /** 默认的播放速度，单位 字符/秒。  */
   speed?: number;
-  segments: (CaptionSegment | number)[];
+  segments?: (CaptionSegment | number)[];
 };
 export enum CaptionType {
   MONOLOGUE = "monologue",

@@ -1,11 +1,10 @@
 import { useAsync } from "@/hooks/async.ts";
 import { useHoFetch } from "@/hooks/http.ts";
 import { Avatar, Button, Input, Divider, Popover, Typography, Tag } from "antd";
-import { Platform } from "@/common/third_part_account.tsx";
 import React, { useContext, useState } from "react";
 import { useThemeToken, AndContext } from "@/hooks/antd.ts";
 import styled from "@emotion/styled";
-import { BindPlatformCheckDto } from "@/api.ts";
+import { BindPlatformCheckDto, Platform } from "@/api.ts";
 // import step1Path from "./PlatformBind/douyin-step-1.jpg";
 import step2Path from "./PlatformBind/douyin-step-2.jpg";
 import { QuestionCircleOutlined } from "@ant-design/icons";

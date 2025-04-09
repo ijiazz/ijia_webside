@@ -13,7 +13,7 @@ function useCooling(coolingTime = 60) {
         if (time - 1 === 0) clearInterval(id);
         return time - 1;
       });
-    }, 1000);
+    }, 1000) as any as number;
     ref.current = id;
   };
   return {

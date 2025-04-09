@@ -8,21 +8,7 @@ import wangyimusicIco from "./third_part_platforms/wangyimusic.png";
 import bilibiliIco from "./third_part_platforms/bilibili.png";
 import weiboIco from "./third_part_platforms/weibo.png";
 import xiaohongshuIco from "./third_part_platforms/xiaohongshu.png";
-
-export enum Platform {
-  /** 抖音 */
-  douYin = "douyin",
-  /** bilibili */
-  bilibili = "bilibili",
-  /** 小红书 */
-  xiaoHongShu = "xiaohonshu",
-  /** 微博 */
-  weibo = "weibo",
-  /** 5Sing 音乐 */
-  v5sing = "v5sing",
-  /** 网易云音乐 */
-  wangYiMusic = "wangyiyun",
-}
+import { Platform } from "@/api.ts";
 
 export type ThirdPartSelectProps<T extends Platform | Platform[] = Platform | Platform[]> = Omit<
   SelectProps<T>,
