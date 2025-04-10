@@ -47,7 +47,7 @@ test("账号绑定", async function ({ page, browser }) {
   await addBind(page, "sec_alice");
 
   await page.locator(".ant-avatar-group").getByText("Alice").hover();
-  await page.getByRole("button", { name: "更新信息" }).click();
+  await page.getByRole("button", { name: "同步用户信息" }).click();
   await expect(page.locator(".student-card-body")).toHaveText(/Alice/);
 
   await page.getByRole("button", { name: "解除关联" }).click();

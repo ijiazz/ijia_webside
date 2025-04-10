@@ -13,8 +13,12 @@ export const menus: MenuDataItem = {
       name: "考试",
       children: [
         {
-          path: "cc",
-          name: "abc",
+          path: "simulate",
+          name: "模拟考试",
+        },
+        {
+          path: "final_exam",
+          name: "期末考试",
         },
       ],
     },

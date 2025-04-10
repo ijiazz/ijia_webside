@@ -13,7 +13,7 @@ export function VideoBg(props: PropsWithChildren<{ style?: React.CSSProperties; 
         }}
       >
         <video
-          poster="/main/bg-login.jpg"
+          poster="/main/bg-login.webp"
           style={{
             height: "100%",
             width: "100vw",

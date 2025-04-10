@@ -7,7 +7,7 @@ import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "./shake_animation.ts";
 import classNames from "classnames";
 import { getCurrentUserId } from "@/common/user.ts";
-
+import { UserAvatarDto } from "@/api.ts";
 type AvatarItem = {
   key: string;
   url: string;
@@ -23,32 +23,62 @@ type AvatarListProps = {
   children?: ReactNode;
 };
 
+function moveWallBlockToCenter(wall: InfiniteWallRender, x: number, y: number) {
+  const offsetY = Math.floor(((wall.yCount - 1 - x) * wall.blockHeight) / 2);
+  const offsetX = Math.floor(((wall.xCount - 1 - y) * wall.blockWidth) / 2);
+
+  wall.scrollLeft = offsetX;
+  wall.scrollTop = offsetY;
+}
 export function Screen(props: AvatarListProps) {
   const { children, showMask = true, avatar, head = <div />, text } = props;
 
   const { api, http } = useHoFetch();
-  const rows = 20;
-  const columns = 20;
-  const limit = rows * columns;
   const { result: data } = useAsync(
     async () => {
+      let rows = 20;
+      let columns = 20;
+      const limit = rows * columns;
       const { items, total } = await api["/live/screen/avatar"].get({ query: { number: limit } });
-      const list: AvatarItem[] = new Array(limit);
-      for (let i = 0; i < limit; i++) {
-        list[i] = {
-          key: `${i}`,
-          name: items[i]?.name,
-          url: items[i]?.avatar_url,
-          userId: 23456,
-        };
-      }
+      const list: AvatarItem[] = items.map((item) => ({
+        key: `${item.id}`,
+        url: item.avatar_url,
+        userId: item.id,
+        name: item.name,
+      }));
       const currentUserId = getCurrentUserId();
-      return { userId: currentUserId, list };
+      if (items.length < limit) {
+        columns = Math.ceil(Math.sqrt(items.length));
+        rows = columns;
+      }
+
+      const wall = wallRef.current;
+
+      const repeat = items.length >= limit;
+      if (wall) {
+        if (currentUserId) {
+          const index = list.findIndex((item) => item.userId === currentUserId);
+          // 如果头像墙存在当前用户，把它移动到中间
+          if (index >= 0) {
+            const x = index % columns;
+            const y = Math.floor(index / columns);
+            moveWallBlockToCenter(wall, x, y);
+          }
+        } else {
+          if (!repeat) {
+            // 如果数量不够，则移动方块到中间
+            moveWallBlockToCenter(wall, columns, rows);
+          }
+        }
+        areaRef.current.baseX = wall.scrollLeft;
+        areaRef.current.baseY = wall.scrollTop;
+      }
+
+      return { userId: currentUserId, list, total, rows, columns, limit, repeat };
     },
     { autoRunArgs: [] },
   );
-  const avatarList = data.value?.list;
-  const currentUserId = data.value?.userId;
+  const res = data.value;
 
   const wallRef = useRef<InfiniteWallRender>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -102,18 +132,36 @@ export function Screen(props: AvatarListProps) {
           ref={wallRef}
           deps={[data]}
           renderItem={(element, wall) => {
+            if (!res) return <></>;
             let px: number = element.wallX;
             let py: number = element.wallY;
-            if (avatarList && avatarList.length >= limit) {
-              px %= columns;
-              py %= rows;
+            let item: AvatarItem | undefined;
+            let isActive = false;
+
+            if (!res.repeat) {
+              if (px >= res.columns || px < 0 || py >= res.rows || py < 0) {
+                return <></>;
+              }
             }
-            const index = Math.abs(py) * columns + Math.abs(px) + 1;
+            if (px >= res.columns) px = px % res.columns;
+            if (py >= res.rows) py = py % res.rows;
 
-            const item = avatarList?.[index];
-            const isActive = currentUserId !== undefined && item?.userId === currentUserId;
+            if (py < 0) py = py + res.rows;
+            if (px < 0) px = px + res.columns;
 
-            return <Image className="avatar-item" imgClassName="avatar-item-img" active={isActive} item={item}></Image>;
+            const index = py * res.columns + px;
+
+            item = res.list[index];
+            isActive = res.userId !== undefined && item.userId === res.userId;
+            return (
+              <Image
+                className="avatar-item"
+                imgClassName="avatar-item-img"
+                active={isActive}
+                item={item}
+                id={element.wallX + "-" + element.wallY}
+              ></Image>
+            );
           }}
         ></InfiniteWall>
       </AvatarScreenCSS>
@@ -190,20 +238,12 @@ const AvatarScreenCSS = styled.div`
     :hover {
       opacity: 1;
     }
-    .highlight {
-      opacity: 1;
-      filter: brightness(1.3);
-    }
 
     &-img {
-      display: block;
+      display: none;
       object-fit: cover;
-      width: 0%;
-      height: 0%;
-    }
-    &-img.loaded {
-      animation: img-display 1s ease forwards;
-      margin: auto;
+      width: 0;
+      height: 0;
     }
     .user-name {
       padding: 2px;
@@ -242,6 +282,19 @@ const AvatarScreenCSS = styled.div`
       }
     }
   }
+  .avatar-item.highlight {
+    opacity: 1;
+    background-color: #00fbff;
+  }
+  .avatar-item.loaded {
+    .avatar-item-img {
+      height: 100%;
+      width: 100%;
+      animation: img-display 1s ease forwards;
+      margin: auto;
+      display: block;
+    }
+  }
 
   animation: gradient-x 10s ease infinite;
   background-size: 300%;
@@ -257,21 +310,21 @@ const AvatarScreenCSS = styled.div`
     }
   }
 `;
-function Image(props: { active?: boolean; item?: AvatarItem; className?: string; imgClassName?: string }) {
-  const { item, className, imgClassName, active } = props;
+function Image(props: { active?: boolean; item?: AvatarItem; className?: string; imgClassName?: string; id?: string }) {
+  const { item, className, imgClassName, active, id } = props;
   const [loading, setLoading] = useState(true);
-  useMemo(() => setLoading(true), [item]);
+  useMemo(() => setLoading(true), [item?.url]);
   return (
     <div className={classNames(className, { loaded: !loading, highlight: active })}>
       <img
-        className={classNames(imgClassName, { loaded: !loading })}
+        className={imgClassName}
         src={item?.url}
         onLoad={() => {
           setLoading(false);
         }}
-        style={{ display: loading ? "none" : undefined }}
       ></img>
       <div className="user-name">{item?.name}</div>
+      {id}
     </div>
   );
 }

@@ -59,7 +59,6 @@ function PostText(props: { text?: string | null; structure?: TextStructure[] | n
 }
 
 const PostTextCSS = styled.div`
-  font-weight: 350;
   > span {
     color: ${(props) => props.color};
   }
@@ -94,7 +93,7 @@ export function PostContent(props: { item: AssetItemDto }) {
             return (
               <div className="post-image-omit">
                 {element}
-                <div style={{ color: theme.colorBorderSecondary }}>+{total}</div>
+                <div style={{ color: theme.colorBorderSecondary }}>+{total - 9}</div>
               </div>
             );
           }

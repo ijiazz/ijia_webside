@@ -191,7 +191,7 @@ function BindAccountList(props: { profileResult: UseAsyncResult<UserProfileDto>;
                           loading={refreshAccountResult.loading}
                           onClick={() => refreshAccount(account)}
                         >
-                          更新信息
+                          同步用户信息
                         </Button>
                         <Button
                           loading={removeBindResult.loading}

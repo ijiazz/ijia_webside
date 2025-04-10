@@ -26,5 +26,9 @@ const router: RouteObject[] = [
       },
     ],
   },
+  {
+    path: "/passport/find-account",
+    Component: lazyPage(() => import("./pages/find-account.tsx").then((mod) => mod.FindAccount)),
+  },
 ];
 export default router;

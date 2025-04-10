@@ -2,19 +2,18 @@ import { AssetItemDto } from "@/api.ts";
 import { THIRD_PART } from "@/common/third_part_account.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useHoFetch } from "@/hooks/http.ts";
-import { Avatar, List, Space, Button, Empty } from "antd";
+import { Avatar, List, Space, Button } from "antd";
 import styled from "@emotion/styled";
 import { useThemeToken } from "@/hooks/antd.ts";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { PostCardLayout, PostContent } from "../components/posts.tsx";
 import React, { useEffect, useMemo, useRef } from "react";
-import { Link, useLocation, useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { ExportOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
 const DEFAULT_PAGE_SIZE = 10;
 export function HomePage() {
   const { api } = useHoFetch();
-  const loc = useLocation();
   const [search, setSearch] = useSearchParams();
   const pageRef = useRef<HTMLDivElement>(null);
   const param = useMemo(() => {
@@ -46,8 +45,8 @@ export function HomePage() {
   useEffect(() => {
     run(param);
   }, [param.page]);
-  const data = result.value;
-  const items: AssetItemDto[] = result.value?.items ?? [];
+  const data = result.value || { items: [], total: 0, needLogin: false };
+  const items: AssetItemDto[] = data.items;
   const theme = useThemeToken();
   return (
     <HomePageCSS>
@@ -60,17 +59,21 @@ export function HomePage() {
           </div>
         )}
         <List
-          pagination={{
-            current: param.page,
-            pageSize: param.pageSize,
-            total: result.value?.total,
-            showSizeChanger: false,
-            showQuickJumper: true,
-            onChange(page, pageSize) {
-              pageRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-              return changePage(page);
-            },
-          }}
+          pagination={
+            items.length < data.total
+              ? {
+                  current: param.page,
+                  pageSize: param.pageSize,
+                  total: data.total,
+                  showSizeChanger: false,
+                  showQuickJumper: data.total > param.pageSize * 6,
+                  onChange(page, pageSize) {
+                    pageRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+                    return changePage(page);
+                  },
+                }
+              : undefined
+          }
           loading={result.loading}
           dataSource={items}
           itemLayout="vertical"
@@ -107,7 +110,7 @@ function PostHeader(props: { item: AssetItemDto }) {
       <div>
         <Space>
           <b>{item.author.user_name}</b>
-          <span>{THIRD_PART[item.platform].iconOutline}</span>
+          <span>{THIRD_PART[item.platform]?.iconOutline}</span>
         </Space>
         <div style={{ color: theme.colorTextDescription, fontSize: theme.fontSizeSM }}>
           <Space>

@@ -1,14 +1,14 @@
 import { Platform } from "@ijia/data/db";
 import { ListDto } from "../dto_common.ts";
 
-export type UserAvatar = {
+export type UserAvatarDto = {
   avatar_url: string;
-  id: string;
+  id: number;
   name: string;
   width?: number;
   height?: number;
 };
-export type ScreenAvatarRes = ListDto<UserAvatar>;
+export type ScreenAvatarRes = ListDto<UserAvatarDto>;
 
 export type HomePageRes = {
   god_user: GodUserDto;
