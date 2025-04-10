@@ -30,10 +30,10 @@ export function AboutAuthor(props: AboutAuthorProps) {
       </Paragraph>
       <Title level={4}>赞助作者</Title>
       无论多少，都是对作者莫大的鼓励，感谢！
-      <div>
-        <img src="/main/sponsor-0.jpg" style={{ maxWidth: 400, maxHeight: 600, objectFit: "cover" }}></img>
-        <img src="/main/sponsor-1.jpg" style={{ maxWidth: 400, maxHeight: 600, objectFit: "cover" }}></img>
-      </div>
+      <Paragraph>
+        <img src="/main/sponsor-0.jpg" style={{ maxWidth: 180, maxHeight: 400, objectFit: "cover" }}></img>
+        <img src="/main/sponsor-1.jpg" style={{ maxWidth: 180, maxHeight: 400, objectFit: "cover" }}></img>
+      </Paragraph>
     </Typography>
   );
 }
