@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { createBrowserRouter, Outlet, RouteObject, RouterProvider } from "react-router";
 import passportRoutes from "./modules/passport/routes.tsx";
 import profileRoutes from "./modules/profile/routes.tsx";
+import { routes as examinationRoutes } from "./modules/examination/routes.tsx";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
 import liveRoutes from "./modules/live/routes.tsx";
 import { notFoundRouter } from "./common/page_state/NotFound.tsx";
@@ -25,7 +26,7 @@ const coreRoutes: RouteObject[] = [
     children: [
       { path: "live", children: liveRoutes },
       { path: "profile", children: profileRoutes },
-      { path: "examination/*", element: <div>examination</div> },
+      { path: "examination", children: examinationRoutes },
       notFoundRouter,
     ],
   },
