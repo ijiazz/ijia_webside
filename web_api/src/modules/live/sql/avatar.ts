@@ -1,29 +1,14 @@
 import { GetListOption } from "@/api.ts";
 import { pla_user, user, user_platform_bind } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/yoursql";
-import { UserAvatar } from "../live.dto.ts";
-import { ListDto } from "@/modules/dto_common.ts";
-import fs from "node:fs/promises";
-
-export async function getDirFile(dir: string): Promise<ListDto<UserAvatar>> {
-  const list = await fs.readdir(dir);
-
-  return {
-    items: list.map((fileName) => ({
-      avatar_url: fileName,
-      id: fileName,
-      name: fileName,
-    })),
-    total: list.length,
-  };
-}
+import { UserAvatarDto } from "../live.dto.ts";
 
 /** 获取所有用户的头像 */
-export async function genScreenAvatar(limit: number): Promise<UserAvatar[]> {
+export async function genScreenAvatar(limit: number): Promise<UserAvatarDto[]> {
   if (!limit) throw new Error("limit is required");
   return user
     .fromAs("u")
-    .select<UserAvatar>({
+    .select<UserAvatarDto>({
       avatar_url: "'/file/avatar/'||u.avatar",
       id: "u.id",
       name: "u.nickname",
@@ -40,7 +25,7 @@ export async function genAllAvatar(option: GetListOption) {
   const { number = 20, offset = 0 } = option;
   const itemsSql = pla_user
     .fromAs("u")
-    .select<UserAvatar>({
+    .select<UserAvatarDto>({
       avatar_url: "'/file/avatar/'||u.avatar",
       id: "u.platform||u.pla_uid",
       name: "u.user_name",
