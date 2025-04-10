@@ -5,8 +5,9 @@ import React, { useContext, useState } from "react";
 import { useThemeToken, AndContext } from "@/hooks/antd.ts";
 import styled from "@emotion/styled";
 import { BindPlatformCheckDto, Platform } from "@/api.ts";
-// import step1Path from "./PlatformBind/douyin-step-1.jpg";
+import step1Path from "./PlatformBind/douyin-step-1.webp";
 import step2Path from "./PlatformBind/douyin-step-2.jpg";
+import step3Path from "./PlatformBind/douyin-step-3.webp";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Meta } from "@/lib/components/Meta.tsx";
 
@@ -148,10 +149,13 @@ function TutorialModal() {
       <Paragraph>
         <Title level={5}>从抖音APP获取首页连接</Title>
         <Paragraph>
-          1. 在抖音APP个人页，点击抖音号旁边的小二维码(一定要点中)
-          {/* <img src={step1Path} /> */}
+          1.
+          在抖音APP个人页，点击抖音号旁边的小二维码(一定要点中)，不同版本抖音的分享按钮位置可能不一样。如果找不到可以用小号访问账号的主页
+          <img src={step1Path} />
           2. 点击右上角小箭头，点击弹出的菜单左下角的”复制链接“，然后粘贴到输入框中
           <img src={step2Path} />
+          3. 最后将学号复制到简介的任意位置，然后可以开始检测
+          <img src={step3Path} />
         </Paragraph>
       </Paragraph>
     </TutorialModalCSS>
