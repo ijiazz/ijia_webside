@@ -7,7 +7,7 @@ import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "./shake_animation.ts";
 import classNames from "classnames";
 import { getCurrentUserId } from "@/common/user.ts";
-import { UserAvatarDto } from "@/api.ts";
+
 type AvatarItem = {
   key: string;
   url: string;
@@ -46,7 +46,7 @@ export function Screen(props: AvatarListProps) {
         userId: item.id,
         name: item.name,
       }));
-      const currentUserId = getCurrentUserId();
+      const currentUserId = getCurrentUserId() ?? "2966898197667372";
       if (items.length < limit) {
         columns = Math.ceil(Math.sqrt(items.length));
         rows = columns;
@@ -131,6 +131,7 @@ export function Screen(props: AvatarListProps) {
           blockWidth={60}
           ref={wallRef}
           deps={[data]}
+          itemClassName="wall-block-item"
           renderItem={(element, wall) => {
             if (!res) return <></>;
             let px: number = element.wallX;
@@ -181,6 +182,12 @@ export function Screen(props: AvatarListProps) {
 }
 
 const ScreenCSS = styled.div`
+  background: url("/main/home.webp");
+  background-color: #d4f5ff;
+  background-blend-mode: multiply;
+  background-size: cover;
+  background-position: center;
+
   position: relative;
   height: 100%;
   overflow: hidden;
@@ -192,7 +199,6 @@ const ScreenCSS = styled.div`
     &-top-mask {
       pointer-events: none;
       position: absolute;
-      backdrop-filter: blur(0.5px);
       top: 0;
       display: flex;
       gap: 14px;
@@ -222,29 +228,33 @@ const ScreenCSS = styled.div`
 
 const AvatarScreenCSS = styled.div`
   height: 100%;
-  background: linear-gradient(to bottom right, #141c64, #00a6d4, #000a68);
   user-select: none;
 
   cursor: move;
+
   .avatar-item {
     position: relative;
-    height: 100%;
-    transition: opacity 100ms linear;
-    box-sizing: border-box;
-    opacity: 0.6;
-    padding: 1.2px;
-    border-radius: 10%;
     overflow: hidden;
-
-    :hover {
-      opacity: 1;
-    }
+    height: 100%;
+    box-sizing: border-box;
+    /* opacity: 0.6; */
+    /* padding: 1.2px; */
 
     &-img {
+      --glow-color: #12639a;
+      box-sizing: border-box;
+      border: 1.2px solid;
+      border-color: var(--glow-color);
+      background: var(--glow-color);
+      img {
+        width: 100%;
+        height: 100%;
+        opacity: 0.75;
+        object-fit: cover;
+        border-radius: 10%;
+        overflow: hidden;
+      }
       display: none;
-      object-fit: cover;
-      width: 0;
-      height: 0;
     }
     .user-name {
       padding: 2px;
@@ -252,6 +262,7 @@ const AvatarScreenCSS = styled.div`
       font-size: 10px;
       transition: background-color 100ms linear;
     }
+
     :hover {
       .user-name {
         height: 100%;
@@ -284,8 +295,11 @@ const AvatarScreenCSS = styled.div`
     }
   }
   .avatar-item.highlight {
-    opacity: 1;
-    background-color: #00fbff;
+    .avatar-item-img {
+      background-color: #00fbff;
+      border-color: #00fbff;
+      border-width: 3px;
+    }
   }
   .avatar-item.loaded {
     .avatar-item-img {
@@ -296,20 +310,6 @@ const AvatarScreenCSS = styled.div`
       display: block;
     }
   }
-
-  animation: gradient-x 10s ease infinite;
-  background-size: 300%;
-  @keyframes gradient-x {
-    0% {
-      background-position-x: 0%;
-    }
-    50% {
-      background-position-x: 100%;
-    }
-    100% {
-      background-position-x: 0%;
-    }
-  }
 `;
 function Image(props: { active?: boolean; item?: AvatarItem; className?: string; imgClassName?: string; id?: string }) {
   const { item, className, imgClassName, active, id } = props;
@@ -317,13 +317,14 @@ function Image(props: { active?: boolean; item?: AvatarItem; className?: string;
   useMemo(() => setLoading(true), [item?.url]);
   return (
     <div className={classNames(className, { loaded: !loading, highlight: active })}>
-      <img
-        className={imgClassName}
-        src={item?.url}
-        onLoad={() => {
-          setLoading(false);
-        }}
-      ></img>
+      <div className={imgClassName}>
+        <img
+          src={item?.url}
+          onLoad={() => {
+            setLoading(false);
+          }}
+        ></img>
+      </div>
       <div className="user-name">{item?.name}</div>
     </div>
   );
