@@ -143,8 +143,8 @@ export function Screen(props: AvatarListProps) {
                 return <></>;
               }
             }
-            if (px >= res.columns) px = px % res.columns;
-            if (py >= res.rows) py = py % res.rows;
+            py = py % res.rows;
+            px = px % res.columns;
 
             if (py < 0) py = py + res.rows;
             if (px < 0) px = px + res.columns;
@@ -153,6 +153,7 @@ export function Screen(props: AvatarListProps) {
 
             item = res.list[index];
             isActive = res.userId !== undefined && item.userId === res.userId;
+
             return (
               <Image
                 className="avatar-item"
@@ -324,7 +325,6 @@ function Image(props: { active?: boolean; item?: AvatarItem; className?: string;
         }}
       ></img>
       <div className="user-name">{item?.name}</div>
-      {id}
     </div>
   );
 }
