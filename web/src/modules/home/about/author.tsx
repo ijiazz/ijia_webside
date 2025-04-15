@@ -24,10 +24,7 @@ export function AboutAuthor(props: AboutAuthorProps) {
         </li>
       </ul>
       <Title level={4}>简介</Title>
-      <Paragraph>
-        我叫一维依，是一名程序员，大学毕业于 2023 年 6 月。能来到这个页面，我相信 99% 的人都是ijia，而我也不例外。
-        作为粉丝，我想，或许我也能做些什么，为这份喜爱贡献一份力量
-      </Paragraph>
+      <Paragraph>00后前端程序员。身为IJIA，我想，或许我也能做些什么，为这份喜爱贡献一份力量</Paragraph>
       <Title level={4}>赞助作者</Title>
       无论多少，都是对作者莫大的鼓励，感谢！
       <Paragraph>
