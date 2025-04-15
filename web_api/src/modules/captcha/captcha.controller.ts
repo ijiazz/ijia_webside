@@ -103,7 +103,7 @@ class ImageCaptchaController {
     const data = await this.imageCreateSessionData();
     sessionId = await this.imageCaptcha.set(data, { sessionId });
     return {
-      title: "请选择包含校长的图片",
+      title: "请选择包含佳佳的图片",
       sessionId,
       imageUrlList: data.allIdList.map((imageId, index) => "/captcha/image/" + sessionId + "-" + index),
       survivalTime: this.imageCaptcha.expire,

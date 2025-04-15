@@ -145,6 +145,13 @@ async function sendLiveNotificationEmails() {
 }
 
 function genNoticeContent() {
-  //TODO html 提示，并给出取消通知的地址
-  return `IJIA 学院开课了，快去直播间学习吧！争取成为IJIA高手！`;
+  //TODO 个性化 html 提示，
+  const date = new Date();
+  const h = date.getUTCHours() + 8; // 北京时间
+  const m = date.getUTCMinutes();
+  const time = h.toString().padStart(2, "0") + ":" + m.toString().padStart(2, "0");
+
+  const cancelLink = "https://iijazz.cn/profile/center";
+  return `IJIA 学院开课了(${time})，快去直播间学习吧！争取成为IJIA高手！\n 如果你不希望接收这类通知，请前往 ${cancelLink} 取消通知`;
 }
+console.log(genNoticeContent());
