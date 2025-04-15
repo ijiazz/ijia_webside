@@ -6,6 +6,8 @@ import {
   TypeCheckOption,
   optional,
   integer,
+  TypeCheckFn,
+  CheckTypeError,
 } from "@asla/wokao";
 import { HttpParamsCheckError } from "./errors.ts";
 
@@ -28,5 +30,15 @@ export function checkValueAsync<T extends ExpectType>(
   return input.then((data) => checkValue(data, expectType, option));
 }
 
-export const positiveInt = integer({ acceptString: true, min: 0 });
-export const optionalPositiveInt = optional(positiveInt);
+export const optionalPositiveInt = optional(integer.positive);
+export const date: TypeCheckFn<Date> = function (input: unknown) {
+  switch (typeof input) {
+    case "string":
+      return new Date(input);
+    case "number":
+      return new Date(input);
+
+    default:
+      throw new CheckTypeError("string|number", typeof input);
+  }
+};

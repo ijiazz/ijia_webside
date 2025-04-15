@@ -9,7 +9,7 @@ import {
   Platform,
 } from "@ijia/data/db";
 import v, { ChainInsert, dbPool, Selection } from "@ijia/data/yoursql";
-import { UserBasicDto, UserProfileDto } from "./user.dto.ts";
+import { UserBasicDto, UserInfoDto } from "./user.dto.ts";
 import { HttpError } from "@/global/errors.ts";
 
 export function setUserPublicClass(userId: number, classId: number | null): ChainInsert<{}> {
@@ -47,17 +47,19 @@ export async function getUserBasic(userId: number): Promise<UserBasicDto> {
   const userInfo = users[0];
   return userInfo;
 }
-export async function getUserProfile(userId: number): Promise<UserProfileDto> {
-  const profile = user_profile.select(["live_notice AS live"]).where(`user_id=${v(userId)}`);
+export async function getUserProfile(userId: number): Promise<UserInfoDto> {
+  const profile = user_profile
+    .select({ acquaintance_time: true, comment_stat_enabled: true, live_notice: true })
+    .where(`user_id=${v(userId)}`);
   const users = await user
     .fromAs("u")
-    .select<UserProfileDto>({
+    .select<UserInfoDto>({
       user_id: "id",
       avatar_url: "'/file/avatar/'||avatar",
       nickname: true,
       primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,
       bind_accounts: `(SELECT json_agg(row_to_json(accounts)) FROM ${getUserBindAccount(userId).toSelect()} AS accounts)`,
-      notice_setting: `(SELECT row_to_json(profile) FROM ${profile.toSelect()} AS profile)`,
+      profile: `(SELECT row_to_json(profile) FROM ${profile.toSelect()} AS profile)`,
     })
     .where(`u.id=${v(userId)}`)
     .limit(1)

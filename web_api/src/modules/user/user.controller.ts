@@ -1,4 +1,12 @@
-import { enumPlatform, Platform, pla_user, user_platform_bind, user_profile, user } from "@ijia/data/db";
+import {
+  enumPlatform,
+  Platform,
+  pla_user,
+  user_platform_bind,
+  user_profile,
+  user,
+  DbUserProfileCreate,
+} from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import {
   BindPlatformCheckDto,
@@ -6,12 +14,12 @@ import {
   BindPlatformParam,
   UpdateUserProfileParam,
   UserBasicDto,
-  UserProfileDto,
+  UserInfoDto,
 } from "./user.dto.ts";
 import { array, enumType, optional, stringMatch } from "@asla/wokao";
 import { Controller, Delete, Get, Patch, PipeInput, Post, ToArguments, Use } from "@asla/hono-decorator";
 import { HonoContext } from "@/hono/type.ts";
-import { checkValue, checkValueAsync } from "@/global/check.ts";
+import { checkValue, checkValueAsync, date } from "@/global/check.ts";
 import { autoBody } from "@/global/pipe.ts";
 import { rolesGuard } from "@/global/auth.ts";
 import { HttpError } from "@/global/errors.ts";
@@ -148,13 +156,18 @@ export class UserController {
 
   @PipeInput(getUserId)
   @Get("/user/profile")
-  async getUserProfile(userId: number): Promise<UserProfileDto> {
+  async getUserProfile(userId: number): Promise<UserInfoDto> {
     return getUserProfile(userId);
   }
 
   @ToArguments(async function (ctx: HonoContext) {
     const jwtInfo = await ctx.get("userInfo").getJwtInfo();
-    const body = await checkValueAsync(ctx.req.json(), "object");
+    const body = await checkValueAsync(ctx.req.json(), {
+      primary_class_id: optional("number", "nullish"),
+      notice_setting: optional({ live: optional.boolean }),
+      comment_stat_enabled: optional.boolean,
+      acquaintance_time: optional(date, "nullish"),
+    });
     return [+jwtInfo.userId, body];
   })
   @Patch("/user/profile")
@@ -169,12 +182,28 @@ export class UserController {
         if (count === 0) throw new HttpError(409, { message: "班级不存在" });
       }
     }
-    if (notice_setting) {
-      if (notice_setting.live !== undefined) {
+    {
+      const profileUpdate: Omit<DbUserProfileCreate, "user_id"> = {};
+      let updateProfile = false;
+      if (notice_setting) {
+        if (notice_setting.live !== undefined) {
+          updateProfile = true;
+          profileUpdate.live_notice = notice_setting.live;
+        }
+      }
+      if (body.acquaintance_time !== undefined) {
+        updateProfile = true;
+        profileUpdate.acquaintance_time = body.acquaintance_time ? new Date(body.acquaintance_time) : null;
+      }
+      if (body.comment_stat_enabled !== undefined) {
+        updateProfile = true;
+        profileUpdate.comment_stat_enabled = body.comment_stat_enabled;
+      }
+      if (updateProfile) {
         const sql = user_profile
-          .insert({ user_id: userId, live_notice: notice_setting.live })
+          .insert({ user_id: userId, ...profileUpdate })
           .onConflict("user_id")
-          .doUpdate({ live_notice: v(notice_setting.live) });
+          .doUpdate("SET " + updateSet(profileUpdate));
 
         await db.queryCount(sql);
       }
@@ -230,7 +259,16 @@ export class UserController {
     if (count !== 1) throw new Error("修改超过一个账号" + sql);
   }
 }
-
+function updateSet(obj: Record<string, any>) {
+  const keys = Object.keys(obj);
+  const set: string[] = [];
+  for (const key of keys) {
+    if (obj[key] !== undefined) {
+      set.push(`${key}=${v(obj[key])}`);
+    }
+  }
+  return set.join(",");
+}
 async function getUserId(ctx: HonoContext) {
   const jwtInfo = await ctx.get("userInfo").getJwtInfo();
   return +jwtInfo.userId;

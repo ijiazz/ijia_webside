@@ -21,6 +21,7 @@
     "antd": "^5.23.3",
     "canvas-confetti": "^1.9.3",
     "classnames": "^2.5.1",
+    "dayjs": "^1.11.13",
     "evlib": "^3.1.2",
     "fireworks-js": "^2.10.8",
     "gsap": "^3.12.7",

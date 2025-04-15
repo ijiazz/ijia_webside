@@ -6,6 +6,7 @@ import {
   Avatar,
   Button,
   Checkbox,
+  DatePicker,
   Form,
   message,
   Modal,
@@ -21,8 +22,9 @@ import { PlatformBind } from "../components/PlatformBind.tsx";
 import { useCurrentUser } from "@/common/user.ts";
 import styled from "@emotion/styled";
 import { Meta } from "@/lib/components/Meta.tsx";
-import { BindAccountDto, UserProfileDto } from "@/api.ts";
+import { BindAccountDto, UserInfoDto } from "@/api.ts";
 import { toFileUrl } from "@/common/http.ts";
+import dayjs, { Dayjs } from "dayjs";
 import { PagePadding } from "@/lib/components/Page.tsx";
 
 export function BasicInfoPage() {
@@ -47,10 +49,13 @@ export function BasicInfoPage() {
 }
 
 type BasicFormData = {
-  received_live?: boolean | null;
+  received_live?: boolean;
   primary_class_id?: number | null;
+  acquaintance_time?: Dayjs | null;
+  /** 是否开启年度评论统计 */
+  comment_stat_enabled?: boolean;
 };
-function BasicForm(props: { profileResult: UseAsyncResult<UserProfileDto>; onProfileChange?(): void }) {
+function BasicForm(props: { profileResult: UseAsyncResult<UserInfoDto>; onProfileChange?(): void }) {
   const { profileResult, onProfileChange } = props;
   const profile = profileResult.value;
 
@@ -62,9 +67,12 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserProfileDto>; onPro
   const defaultData = useMemo(() => {
     let defaultData: BasicFormData = {};
     if (profile) {
+      const pf = profile.profile ?? { acquaintance_time: null, comment_stat_enabled: false, live_notice: false };
       defaultData = {
-        received_live: profile.notice_setting?.live ?? false,
+        received_live: pf.live_notice ?? false,
         primary_class_id: profile.primary_class?.class_id ?? null,
+        acquaintance_time: pf.acquaintance_time && dayjs(pf.acquaintance_time),
+        comment_stat_enabled: pf.comment_stat_enabled,
       };
     }
     return defaultData;
@@ -80,7 +88,9 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserProfileDto>; onPro
         notice_setting: {
           live: formData.received_live,
         },
-        primary_class_id: formData.primary_class_id === undefined ? null : formData.primary_class_id,
+        acquaintance_time: formData.acquaintance_time?.toISOString() ?? null,
+        comment_stat_enabled: formData.comment_stat_enabled,
+        primary_class_id: formData.primary_class_id ?? null,
       },
     });
     message.success("已修改");
@@ -114,7 +124,6 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserProfileDto>; onPro
         {profile?.is_official || <div>部分信息需要绑定平台账号后才能修改</div>}
         <Form
           form={form}
-          disabled={!profile?.is_official}
           onValuesChange={(value, values) => {
             if (!isChanged) setIsChanged(true);
           }}
@@ -130,13 +139,36 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserProfileDto>; onPro
               </Space>
             }
           >
-            <PublicClassSelect />
+            <PublicClassSelect disabled={!profile?.is_official} />
+          </Form.Item>
+          <Form.Item
+            name="acquaintance_time"
+            label={
+              <Space>
+                纪念日
+                <Tooltip title="将根据这个日期为你推送纪念日邮件和个性化壁纸">
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </Space>
+            }
+          >
+            <DatePicker />
           </Form.Item>
           <Form.Item label={null} name="received_live" valuePropName="checked">
             <Checkbox>
               <Space>
                 接收直播通知
-                <Tooltip title="校长直播时，将通过邮件发送通知">
+                <Tooltip title="佳佳直播时，将通过邮件发送通知">
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </Space>
+            </Checkbox>
+          </Form.Item>
+          <Form.Item label={null} name="comment_stat_enabled" valuePropName="checked">
+            <Checkbox disabled={!profile?.is_official}>
+              <Space>
+                年度评论统计
+                <Tooltip title="如果勾选，将在年度(12月份)统计时统计(抽样)你在佳佳作品的评论数，然后生成头像排名">
                   <QuestionCircleOutlined />
                 </Tooltip>
               </Space>
@@ -148,7 +180,7 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserProfileDto>; onPro
   );
 }
 
-function BindAccountList(props: { profileResult: UseAsyncResult<UserProfileDto>; onProfileChange?(): void }) {
+function BindAccountList(props: { profileResult: UseAsyncResult<UserInfoDto>; onProfileChange?(): void }) {
   const { profileResult, onProfileChange } = props;
   const profile = profileResult.value;
   const accounts = profile?.bind_accounts ?? [];
@@ -250,7 +282,7 @@ const BindAccountListCSS = styled.div`
   }
 `;
 
-function PublicClassSelect(props: { value?: number; onChange?(value: number): void }) {
+function PublicClassSelect(props: { value?: number; onChange?(value: number): void; disabled?: boolean }) {
   const api = useHoFetch().api;
   const { result } = useAsync(
     async function (search?: string) {

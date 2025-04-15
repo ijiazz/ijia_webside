@@ -6,7 +6,7 @@ import {
   ProfileSyncParam,
   UpdateUserProfileParam,
   UserBasicDto,
-  UserProfileDto,
+  UserInfoDto,
 } from "./user.dto.ts";
 
 export interface UserApi {
@@ -32,7 +32,7 @@ export interface UserApi {
   };
   /** 获取用户配置信息 */
   "GET /user/profile": {
-    response: UserProfileDto;
+    response: UserInfoDto;
   };
   /** 同步平台用户信息 */
   "POST /user/profile/sync": {

@@ -62,18 +62,18 @@ test("账号绑定", async function ({ page, browser }) {
     .filter({ hasText: /^e2e-8$/ })
     .nth(1)
     .click();
-  await page.getByRole("checkbox", { name: "接收直播通知 question-circle" }).check();
+  await page.getByRole("checkbox", { name: "年度评论统计 question-circle" }).check();
   await page.getByRole("button", { name: "保 存" }).click();
   await page.reload();
 
   await expect(page.locator(".student-card-body")).toHaveText(/e2e-8/);
-  await expect(page.getByRole("checkbox", { name: "接收直播通知 question-circle" })).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: "年度评论统计 question-circle" })).toBeChecked();
 
   await page.locator(".ant-avatar-group").getByText("Bob").hover();
   await page.getByRole("button", { name: "解除关联" }).click();
   await page.getByRole("button", { name: "确 定" }).click();
 
-  await expect(page.getByRole("checkbox", { name: "接收直播通知 question-circle" })).toBeDisabled();
+  await expect(page.getByRole("checkbox", { name: "年度评论统计 question-circle" })).toBeDisabled();
 
   async function addBind(page: Page, sec_id: string) {
     await page.getByRole("button", { name: "plus 添加绑定" }).click();

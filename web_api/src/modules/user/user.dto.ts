@@ -11,14 +11,19 @@ export type UserBasicDto = {
     class_name: string;
   };
 };
-export type UserProfileDto = UserBasicDto & {
+export type UserInfoDto = UserBasicDto & {
   bind_accounts: BindAccountDto[];
-  notice_setting?: UserNoticeSettingDto;
+  profile?: UserProfileDto;
+};
+export type UserProfileDto = {
+  live_notice: boolean;
+  acquaintance_time: Date | null;
+  comment_stat_enabled: boolean;
 };
 
 export type UserNoticeSettingDto = {
   /** 是否接收直播通知 */
-  live?: boolean | null;
+  live?: boolean;
 };
 export type BindAccountDto = {
   platform: Platform;
@@ -67,6 +72,8 @@ export type DeleteBindPlatformParam = {
 export type UpdateUserProfileParam = {
   /** 班级 */
   primary_class_id?: number | null;
-
+  acquaintance_time?: Date | string | null;
+  /** 是否开启年度评论统计 */
+  comment_stat_enabled?: boolean;
   notice_setting?: UserNoticeSettingDto;
 };
