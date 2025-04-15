@@ -10,7 +10,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-          ssh-key: ${{secrets.MOSS_SERVER_PKEY}}
       - name: Setup project
         uses: ./.github/actions/setup-project
       - run: pnpm check-type
@@ -42,7 +41,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-          ssh-key: ${{secrets.MOSS_SERVER_PKEY}}
       - name: Setup project
         uses: ./.github/actions/setup-project
       - name: Test
