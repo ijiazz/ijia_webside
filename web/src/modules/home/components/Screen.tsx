@@ -46,7 +46,7 @@ export function Screen(props: AvatarListProps) {
         userId: item.id,
         name: item.name,
       }));
-      const currentUserId = getCurrentUserId() ?? "2966898197667372";
+      const currentUserId = getCurrentUserId();
       if (items.length < limit) {
         columns = Math.ceil(Math.sqrt(items.length));
         rows = columns;
