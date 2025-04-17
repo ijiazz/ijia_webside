@@ -8,6 +8,7 @@ import { Footer } from "@/common/Footer.tsx";
 import { HomePageRes } from "@/api.ts";
 import { LineBtn } from "@/lib/components/button.tsx";
 import { useWindowResize } from "@/hooks/window.ts";
+import { WindowEffect } from "@/common/effect/window-effect.tsx";
 
 export function HomePage() {
   const data = useLoaderData<HomePageRes>();
@@ -18,7 +19,6 @@ export function HomePage() {
   const avatarUrl = data.god_user.avatar_url;
 
   const size = useWindowResize();
-
   useEffect(() => {
     indexRef.current = 0;
     const internal = setInterval(() => {
@@ -35,27 +35,29 @@ export function HomePage() {
   }, []);
   const platformRef = useRef<HTMLDivElement>(null);
   return (
-    <HomePageCSS>
-      <Screen
-        // 第一个延迟
-        text={<CaptionFlow delay={indexRef.current < 0 ? 1000 : 0} text={speak} style={{ textAlign: "center" }} />}
-        avatar={avatarUrl ? <ScreenAvatar src={avatarUrl} /> : undefined}
-      >
-        <HeaderCSS style={{ flexDirection: size.width > 500 ? "row" : "column" }}>
-          <Link to="live" viewTransition style={{ textDecoration: "none" }}>
-            <LineBtn className="link-item">IJIA学院</LineBtn>
-          </Link>
-          <LineBtn
-            className="link-item"
-            onClick={() => platformRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-          >
-            成为IJIA
-          </LineBtn>
-        </HeaderCSS>
-      </Screen>
-      <GodPlatform platforms={data.god_user_platforms} ref={platformRef}></GodPlatform>
-      <Footer />
-    </HomePageCSS>
+    <WindowEffect>
+      <HomePageCSS>
+        <Screen
+          // 第一个延迟
+          text={<CaptionFlow delay={indexRef.current < 0 ? 1000 : 0} text={speak} style={{ textAlign: "center" }} />}
+          avatar={avatarUrl ? <ScreenAvatar src={avatarUrl} /> : undefined}
+        >
+          <HeaderCSS style={{ flexDirection: size.width > 500 ? "row" : "column" }}>
+            <Link to="live" viewTransition style={{ textDecoration: "none" }}>
+              <LineBtn className="link-item">IJIA学院</LineBtn>
+            </Link>
+            <LineBtn
+              className="link-item"
+              onClick={() => platformRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            >
+              成为IJIA
+            </LineBtn>
+          </HeaderCSS>
+        </Screen>
+        <GodPlatform platforms={data.god_user_platforms} ref={platformRef}></GodPlatform>
+        <Footer />
+      </HomePageCSS>
+    </WindowEffect>
   );
 }
 const HomePageCSS = styled.div`
