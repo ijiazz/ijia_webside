@@ -4,7 +4,7 @@
 
 ## 贡献
 
-请参阅[贡献指南](./CONTRIBUTING.md)
+如果你有兴趣为本项目做贡献，请参阅[贡献指南](./CONTRIBUTING.md)，这有助于你快速上手
 
 ## License 许可证
 

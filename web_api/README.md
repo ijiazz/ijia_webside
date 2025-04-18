@@ -23,6 +23,15 @@ web api 服务只需要运行 `/web_api/src/main.ts` 文件即可启动服务，
 
 debug 已经配置了使用 Deno 进行 debug 的 vscode 模板，点击 vscode 调试面板运行 `run web api` 即可启动调试
 
+## 开发
+
+### 数据库和 Redis操作
+
+因为需要 [using](https://github.com/tc39/proposal-using-enforcement) 语法，所以重新实现了连接池和客户端实例
+
+[如何查询 SQL 语句](../docs/查询SQL语句.md)\
+[如何操作 Redis](../docs/查询SQL语句.md)
+
 ## 编译
 
 在 `/web_api` 目录下运行 `pnpm build` ，这将编译 ts文件输出到 `/web_api/dist` 目录
