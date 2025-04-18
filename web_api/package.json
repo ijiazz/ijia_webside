@@ -21,7 +21,7 @@
   "license": "ISC",
   "dependencies": {
     "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
-    "@asla/hono-decorator": "workspace:^",
+    "@asla/hono-decorator": "^0.0.1",
     "@asla/wokao": "npm:@jsr/asla__wokao@^0.0.3",
     "@hono/node-server": "^1.13.7",
     "@ijia/data": "workspace:^",
