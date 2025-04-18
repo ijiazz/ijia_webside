@@ -1,9 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "init-deps": "pnpm run init-ijia-data && pnpm run init-hono-decorator",
+    "init-deps": "pnpm run init-ijia-data",
     "init-ijia-data": "rollup -c deps/ijia-data/build/rollup.config.mjs",
-    "init-hono-decorator": "rollup -c deps/hono-decorator/build/rollup.config.mjs",
     "check-type": "pnpm run -r check-type",
     "check-fmt": "pnpm prettier --check web_api web e2e"
   },

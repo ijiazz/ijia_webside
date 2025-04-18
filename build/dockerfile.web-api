@@ -8,7 +8,6 @@ ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
 
 FROM prepare AS install
 ADD ./deps/ijia-data/package.json ./deps/ijia-data/package.json
-ADD ./deps/hono-decorator/package.json ./deps/hono-decorator/package.json
 ADD ./web_api/package.json ./web_api/package.json
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
@@ -18,17 +17,9 @@ ADD ./deps/ijia-data/build ./deps/ijia-data/build
 ADD ./deps/ijia-data/src ./deps/ijia-data/src
 RUN pnpm run init-ijia-data
 
-FROM install AS hono-decorator
-ADD ./deps/hono-decorator/tsconfig.json ./deps/hono-decorator/
-ADD ./deps/hono-decorator/build ./deps/hono-decorator/build
-ADD ./deps/hono-decorator/src ./deps/hono-decorator/src
-RUN pnpm run init-hono-decorator
-
-
 FROM install AS build
 
 COPY --from=ijia-data /build/deps/ijia-data ./deps/ijia-data
-COPY --from=hono-decorator /build/deps/hono-decorator ./deps/hono-decorator
 
 ADD ./web_api/tsconfig.json ./web_api/config.jsonc ./web_api/
 ADD ./web_api/build ./web_api/build

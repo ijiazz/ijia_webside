@@ -21,11 +21,11 @@ E2E测试: [Playwright](https://playwright.dev/)
 第一次初始项目时，需要执行一些操作：
 
 1. 初始化子模块
-   项目依赖 [@ijia/data](https://github.com/ijiazz/school_db) 和 [@asla/hono-decorator](https://github.com/asnowc/hono-decorator)，这两个包通过 git submodules 链接到项目中（分别在项目的 /deps/ijia-data 和 /deps/hono-decorator 位置）。\
+   项目依赖 [@ijia/data](https://github.com/ijiazz/school_db) ， 这个包通过 git submodules 链接到项目中（在项目的 /deps/ijia-data 位置）。\
    克隆项目时通过 `git clone --recursive git@github.com:ijiazz/ijia_website.git` 进行克隆，或者在克隆仓库到本地后执行 `git submodule init` 初始化子模块。
 
 2. 安装依赖：运行`pnpm install`安装项目所需的依赖到 node_modules 目录下
-3. 构建 `@ijia/data` 和 `@asla/hono-decorator`，运行命令 `pnpm run init-deps`, 每次`@ijia/data` 和 `@asla/hono-decorator` 更新后都需要执行一次，后面会解释这两个包有什么用。
+3. 构建 `@ijia/data`，运行命令 `pnpm run init-deps`, 每次`@ijia/data` 更新后都需要执行一次，后面会解释这个包有什么用。
 
 ## 开发与调试
 
