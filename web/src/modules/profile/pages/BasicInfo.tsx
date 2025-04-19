@@ -1,7 +1,7 @@
-import { CurrentIdCard } from "@/common/StudentIdCard.tsx";
+import { StudentIdCard, StudentIdCardBack } from "@/common/StudentIdCard.tsx";
 import { useAsync, UseAsyncResult } from "@/hooks/async.ts";
 import { useHoFetch } from "@/hooks/http.ts";
-import { PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { PlusOutlined, QuestionCircleOutlined, ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 import {
   Avatar,
   Button,
@@ -38,10 +38,41 @@ export function BasicInfoPage() {
     },
     { autoRunArgs: [] },
   );
+  const [zoom, setZoom] = useState(1);
+  const value = result.value;
+
+  const date = useMemo(() => {
+    const time = value?.profile?.acquaintance_time;
+    if (!time) return undefined;
+    const date = new Date(time);
+
+    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  }, [value]);
 
   return (
     <PagePadding>
-      <CurrentIdCard />
+      {value && (
+        <>
+          <Button
+            icon={zoom === 1 ? <ZoomInOutlined /> : <ZoomOutOutlined />}
+            onClick={() => setZoom((size) => (size === 1 ? 2 : 1))}
+          >
+            {zoom === 1 ? "放大" : "缩小"}
+          </Button>
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            <StudentIdCard
+              className={value.primary_class?.class_name}
+              avatarUrl={value.avatar_url}
+              id={value.user_id.toString().padStart(5)}
+              name={value.nickname}
+              isOfficial={value.is_official}
+              scale={zoom}
+              date={date}
+            />
+            <StudentIdCardBack scale={zoom} />
+          </div>
+        </>
+      )}
       <BindAccountList profileResult={result} onProfileChange={() => run()} />
       <BasicForm profileResult={result} onProfileChange={() => run()} />
     </PagePadding>
@@ -196,7 +227,8 @@ function BindAccountList(props: { profileResult: UseAsyncResult<UserInfoDto>; on
   const { run: refreshAccount, result: refreshAccountResult } = useAsync(async (item: BindAccountDto) => {
     await api["/user/profile/sync"].post({ body: { bindKey: item.key } });
     message.success("已更新");
-    onAccountChange?.();
+    onAccountChange();
+    onProfileChange?.();
   });
   const [confirmOpen, setConfirmOpen] = useState<{ title: string; item: BindAccountDto } | undefined>();
   const [isAddBind, setIsAddBind] = useState(false);

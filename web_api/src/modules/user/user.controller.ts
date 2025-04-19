@@ -6,6 +6,9 @@ import {
   user_profile,
   user,
   DbUserProfileCreate,
+  user_class_bind,
+  PUBLIC_CLASS_ROOT_ID,
+  dclass,
 } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import {
@@ -83,10 +86,28 @@ export class UserController {
       platform,
       pla_uid,
     };
-    const count = await user_platform_bind
-      .delete({ where: `platform=${v(bind.platform)} AND pla_uid=${v(bind.pla_uid)} AND user_id=${v(userId)}` })
-      .queryCount();
+    await using db = dbPool.begin("REPEATABLE READ");
+    const deleteBind = user_platform_bind.delete({
+      where: `platform=${v(bind.platform)} AND pla_uid=${v(bind.pla_uid)} AND user_id=${v(userId)}`,
+    });
+    const count = await db.queryCount(deleteBind);
     if (count === 0) throw new HttpError(409, { message: "未找到绑定" });
+
+    const [reset] = await db.queryRows(
+      user_platform_bind.select<{ count: number }>("count(*)::INT").where(`user_id=${v(userId)}`),
+    );
+
+    if (reset.count === 0) {
+      const deleteCommentStat = user_profile.update({ comment_stat_enabled: "FALSE" }).where(`user_id=${v(userId)}`);
+      const deleteClass = user_class_bind.delete({
+        where: `user_id=${v(userId)} AND EXISTS ${dclass
+          .select("*")
+          .where(`parent_class_id=${v(PUBLIC_CLASS_ROOT_ID)} AND id=user_class_bind.class_id`)
+          .toSelect()}`,
+      });
+      await db.multipleQuery(deleteCommentStat.toString() + ";" + deleteClass.toString());
+    }
+    await db.commit();
   }
 
   @ToArguments(async function (ctx) {
