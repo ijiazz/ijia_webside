@@ -97,7 +97,7 @@ export function LoginPage() {
             }
             message={message && <Alert type={message.type} message={message.title} />}
             title="IJIA 学院"
-            subTitle="IJIA 学院"
+            subTitle="要一直在哦！"
             onFinish={onClickLoinBtn}
             loading={loginLoading}
           >

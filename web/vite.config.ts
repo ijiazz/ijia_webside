@@ -4,16 +4,16 @@ import react from "@vitejs/plugin-react";
 import legacy from "@vitejs/plugin-legacy";
 import { ManualChunkMeta } from "rollup";
 import { getPnpmNodeModulesDir, PnpmNodeModulesParser } from "./build/vite-tool.ts";
-
+const origin = "http://127.0.0.1:3000";
 export default {
   root: import.meta.dirname,
   server: {
     proxy: {
       "/api/": {
-        target: "http://127.0.0.1:3000",
+        target: origin,
         rewrite: (path) => path.replace(/^\/api\//, "/"),
       },
-      "/file/": { target: "http://127.0.0.1:3000" },
+      "/file/": { target: origin },
     },
   },
   plugins: [

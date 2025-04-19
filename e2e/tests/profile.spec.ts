@@ -9,9 +9,7 @@ let Alice!: AccountInfo;
 beforeEach(async ({ page }) => {
   Alice = await initAlice();
   const aliceToken = await loginGetToken(Alice.email, Alice.password);
-  await page.goto(getAppUrlFromRoute("/profile/center", aliceToken));
-});
-test("账号绑定", async function ({ page, browser }) {
+
   await pla_user.delete({ where: "pla_uid in ('alice','bob','david')" }).queryCount();
   await pla_user
     .insert([
@@ -41,20 +39,32 @@ test("账号绑定", async function ({ page, browser }) {
     .query();
   // 账号绑定
 
+  await page.goto(getAppUrlFromRoute("/profile/center", aliceToken));
+});
+test("账号绑定与解除关联", async function ({ page, browser }) {
   await addBind(page, "sec_bob");
-  await expect(page.locator(".student-card-body")).toHaveText(/Bob/);
+  await expect(page.locator(".student-card-body").first()).toHaveText(/Bob/);
 
   await addBind(page, "sec_alice");
 
   await page.locator(".ant-avatar-group").getByText("Alice").hover();
   await page.getByRole("button", { name: "同步用户信息" }).click();
-  await expect(page.locator(".student-card-body")).toHaveText(/Alice/);
+  await expect(page.locator(".student-card-body").first()).toHaveText(/Alice/);
 
   await page.getByRole("button", { name: "解除关联" }).click();
   await page.getByRole("button", { name: "确 定" }).click();
 
   await expect(page.locator(".bind-list").locator(".ant-avatar-group>span"), "Alice 已被解除").toHaveCount(1);
 
+  await page.locator(".ant-avatar-group").getByText("Bob").hover();
+  await page.getByRole("button", { name: "解除关联" }).click();
+  await page.getByRole("button", { name: "确 定" }).click();
+
+  await expect(page.getByRole("checkbox", { name: "年度评论统计 question-circle" })).toBeDisabled();
+});
+
+test("修改基础配置", async function ({ page, browser }) {
+  await addBind(page, "sec_bob");
   // 修改基础配置
   await page.locator(".ant-select-selection-search").click();
   await page
@@ -66,20 +76,14 @@ test("账号绑定", async function ({ page, browser }) {
   await page.getByRole("button", { name: "保 存" }).click();
   await page.reload();
 
-  await expect(page.locator(".student-card-body")).toHaveText(/e2e-8/);
+  await expect(page.locator(".student-card-body").first()).toHaveText(/e2e-8/);
   await expect(page.getByRole("checkbox", { name: "年度评论统计 question-circle" })).toBeChecked();
-
-  await page.locator(".ant-avatar-group").getByText("Bob").hover();
-  await page.getByRole("button", { name: "解除关联" }).click();
-  await page.getByRole("button", { name: "确 定" }).click();
-
-  await expect(page.getByRole("checkbox", { name: "年度评论统计 question-circle" })).toBeDisabled();
-
-  async function addBind(page: Page, sec_id: string) {
-    await page.getByRole("button", { name: "plus 添加绑定" }).click();
-    await page.getByRole("textbox", { name: "输入抖音个人首页连接" }).click();
-    await page.getByRole("textbox", { name: "输入抖音个人首页连接" }).fill("https://www.douyin.com/user/" + sec_id);
-    await page.getByRole("button", { name: "检 测" }).click();
-    await page.getByRole("button", { name: "绑 定" }).click();
-  }
 });
+
+async function addBind(page: Page, sec_id: string) {
+  await page.getByRole("button", { name: "plus 添加绑定" }).click();
+  await page.getByRole("textbox", { name: "输入抖音个人首页连接" }).click();
+  await page.getByRole("textbox", { name: "输入抖音个人首页连接" }).fill("https://www.douyin.com/user/" + sec_id);
+  await page.getByRole("button", { name: "检 测" }).click();
+  await page.getByRole("button", { name: "绑 定" }).click();
+}
