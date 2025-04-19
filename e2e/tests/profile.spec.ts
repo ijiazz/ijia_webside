@@ -56,11 +56,22 @@ test("账号绑定与解除关联", async function ({ page, browser }) {
 
   await expect(page.locator(".bind-list").locator(".ant-avatar-group>span"), "Alice 已被解除").toHaveCount(1);
 
+  await page.getByRole("checkbox", { name: "年度评论统计 question-circle" }).check();
+  await page.getByRole("combobox", { name: "班级 question-circle :" }).click();
+  await page.getByText("e2e-8").click();
+
+  await page.getByRole("button", { name: "保 存" }).click();
+  await expect(page.locator(".student-card-body").first()).toHaveText(/e2e-8/);
+
   await page.locator(".ant-avatar-group").getByText("Bob").hover();
   await page.getByRole("button", { name: "解除关联" }).click();
   await page.getByRole("button", { name: "确 定" }).click();
 
   await expect(page.getByRole("checkbox", { name: "年度评论统计 question-circle" })).toBeDisabled();
+  await expect(
+    page.getByRole("checkbox", { name: "年度评论统计 question-circle" }),
+    "全部解除关联后，年度评论统计功能被禁用",
+  ).not.toBeChecked();
 });
 
 test("修改基础配置", async function ({ page, browser }) {

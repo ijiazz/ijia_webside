@@ -6,7 +6,6 @@ import {
   Platform,
   PUBLIC_CLASS_ROOT_ID,
   user,
-  user_avatar,
   user_class_bind,
   user_platform_bind,
 } from "@ijia/data/db";
@@ -63,12 +62,6 @@ describe("bind", function () {
     });
   });
   test("绑定", async function ({ api }) {
-    function AliceBind(api: Api, account: BindPlatformParam["account"]) {
-      return api["/user/bind_platform"].post({
-        body: { account },
-        [JWT_KEY]: AliceToken,
-      });
-    }
     await AliceBind(api, { platform: Platform.douYin, pla_uid: "d0" });
     await expect(getUserBindCount(AliceId), "成功绑定第1个账号").resolves.toBe(1);
 
@@ -77,6 +70,28 @@ describe("bind", function () {
 
     await expect(AliceBind(api, { platform: Platform.douYin, pla_uid: "d2" })).responseStatus(403);
     await expect(getUserBindCount(AliceId)).resolves.toBe(2);
+  });
+  test("后一个账号解除绑定需要删除选择的公共班级和评论统计", async function ({ api }) {
+    await AliceBind(api, { platform: Platform.douYin, pla_uid: "d0" });
+    const classes = await dclass
+      .insert([{ class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID }, { class_name: "4" }])
+      .returning("*")
+      .queryRows()
+      .then((res) => res.map((item) => item.id));
+
+    await api["/user/profile"].patch({
+      body: { comment_stat_enabled: true, primary_class_id: classes[0] },
+      [JWT_KEY]: AliceToken,
+    });
+    await user_class_bind.insert([{ class_id: classes[1], user_id: AliceId }]).queryCount(); // 绑定一个非公共班级
+
+    await api["/user/bind_platform"].delete({
+      body: { bindKey: `${Platform.douYin}-d0` },
+      [JWT_KEY]: AliceToken,
+    }); // 解除绑定
+
+    await expect(getUserBindCount(AliceId), "成功解绑").resolves.toBe(0);
+    await expect(getUserClassId(AliceId), "解绑后只删除了公共班级，非公共班级保留").resolves.toEqual([classes[1]]);
   });
   // 暂时不处理
   test.skip("绑定自己已绑定的", async function ({ api }) {
@@ -147,6 +162,12 @@ describe("bind", function () {
       .select("*")
       .where(`user_id=${v(userId)}`)
       .queryCount();
+  }
+  function AliceBind(api: Api, account: BindPlatformParam["account"]) {
+    return api["/user/bind_platform"].post({
+      body: { account },
+      [JWT_KEY]: AliceToken,
+    });
   }
 });
 describe("用户信息", function () {
@@ -234,16 +255,24 @@ describe("用户信息", function () {
   function updateProfile(api: Api, body: UpdateUserProfileParam) {
     return api["/user/profile"].patch({ body: body, [JWT_KEY]: AliceToken });
   }
-  function getUserPublicClassId(user_id: number): Promise<number[]> {
-    return user_class_bind
-      .fromAs("bind")
-      .innerJoin(dclass, "class", [
-        `bind.user_id=${v(user_id)}`,
-        `class.parent_class_id=${PUBLIC_CLASS_ROOT_ID}`,
-        "class.id=bind.class_id",
-      ])
-      .select("bind.*")
-      .queryRows()
-      .then((res) => res.map((item) => item.class_id));
-  }
 });
+function getUserPublicClassId(user_id: number): Promise<number[]> {
+  return user_class_bind
+    .fromAs("bind")
+    .innerJoin(dclass, "class", [
+      `bind.user_id=${v(user_id)}`,
+      `class.parent_class_id=${PUBLIC_CLASS_ROOT_ID}`,
+      "class.id=bind.class_id",
+    ])
+    .select("bind.*")
+    .queryRows()
+    .then((res) => res.map((item) => item.class_id));
+}
+function getUserClassId(user_id: number): Promise<number[]> {
+  return user_class_bind
+    .fromAs("bind")
+    .innerJoin(dclass, "class", [`bind.user_id=${v(user_id)}`, "class.id=bind.class_id"])
+    .select("bind.*")
+    .queryRows()
+    .then((res) => res.map((item) => item.class_id));
+}
