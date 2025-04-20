@@ -1,7 +1,12 @@
 import { ProLayoutProps } from "@ant-design/pro-components";
 import { MenuDataItem } from "@ant-design/pro-components";
+import { UserOutlined, SecurityScanOutlined } from "@ant-design/icons";
+import React from "react";
 
 export type MenuRoute = NonNullable<ProLayoutProps["route"]>;
+
+// 二菜单需要考虑图标，否则菜单收起后不是很好看
+
 export const menus: MenuDataItem = {
   children: [
     {
@@ -28,10 +33,12 @@ export const menus: MenuDataItem = {
         {
           path: "center",
           name: "个人中心",
+          icon: <UserOutlined />,
         },
         {
           path: "security",
           name: "安全设置",
+          icon: <SecurityScanOutlined />,
         },
       ],
     },

@@ -3,7 +3,7 @@ import { ProLayout, ProLayoutProps } from "@ant-design/pro-components";
 import { IjiaLogo } from "../../common/site-logo.tsx";
 import { Button, MenuProps } from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
-import { menus } from "./menus.ts";
+import { menus } from "./menus.tsx";
 import { getUserToken, useCurrentUser } from "@/common/user.ts";
 import { avatarDropdownRender } from "./avatar.tsx";
 import { useAntdStatic } from "@/hooks/antd.ts";
