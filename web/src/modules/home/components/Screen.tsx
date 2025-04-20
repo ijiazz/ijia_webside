@@ -153,7 +153,7 @@ export function Screen(props: AvatarListProps) {
             const index = py * res.columns + px;
 
             item = res.list[index];
-            isActive = res.userId !== undefined && item.userId === res.userId;
+            isActive = res.userId !== undefined && item?.userId === res.userId;
 
             return (
               <Image
