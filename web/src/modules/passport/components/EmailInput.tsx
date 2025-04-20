@@ -1,4 +1,4 @@
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, Tooltip } from "antd";
 import React, { useRef, useState } from "react";
 import { ImageCaptchaPopover } from "@/common/capthca/ImageCaptcha.tsx";
 function useCooling(coolingTime = 60) {
@@ -41,9 +41,11 @@ export function EmailInput(props: {
           return props.onCaptchaSubmit?.(email!, sessionId, select).then(cooling.start);
         }}
       >
-        <Button disabled={!emailIsValid || cooling.time > 0 || props.disabled}>
-          发送验证码{cooling.time > 0 ? `${cooling.time}` : undefined}
-        </Button>
+        <Tooltip title="如果收不到验证码，可以试试查看垃圾箱">
+          <Button disabled={!emailIsValid || cooling.time > 0 || props.disabled}>
+            发送验证码{cooling.time > 0 ? `${cooling.time}` : undefined}
+          </Button>
+        </Tooltip>
       </ImageCaptchaPopover>
     </div>
   );

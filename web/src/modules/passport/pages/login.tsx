@@ -182,6 +182,11 @@ const StyledPage = styled.div`
         margin-block-end: 24px;
         display: flex;
         justify-content: space-between;
+        font-weight: bold;
+        a {
+          color: #fff;
+          text-shadow: #707070 0px 0px 2px;
+        }
       }
     }
     .ant-pro-form-login-container {
