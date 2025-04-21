@@ -8,7 +8,7 @@ export type UserAvatarDto = {
   width?: number;
   height?: number;
 };
-export type ScreenAvatarRes = ListDto<UserAvatarDto>;
+export type ScreenAvatarRes = ListDto<UserAvatarDto> & { limit: number };
 
 export type HomePageRes = {
   god_user: GodUserDto;

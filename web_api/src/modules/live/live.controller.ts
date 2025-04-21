@@ -7,6 +7,7 @@ import { pla_user } from "@ijia/data/db";
 import { redisPool } from "@ijia/data/cache";
 import { dbPool } from "@ijia/data/yoursql";
 import { list } from "./home_extra.ts";
+import { Context } from "hono";
 
 @autoBody
 @Controller({})
@@ -15,32 +16,41 @@ class LiveController {
     return ctx.body(result, { headers: { "Content-Type": "application/json" } });
   })
   @Get("/live/screen/avatar")
-  getLiveList(): Promise<string> {
+  async getLiveList(ctx: Context): Promise<string> {
     if (!this.#screenAvatarCache) {
       this.#screenAvatarCache = this.getScreenAvatarTryCache().finally(() => {
         this.#screenAvatarCache = undefined;
       });
     }
-    return this.#screenAvatarCache;
+    const { data, zeroMs } = await this.#screenAvatarCache;
+    if (zeroMs) ctx.header("Cache-Control", `public, max-age=${Math.floor(zeroMs / 1000)}`);
+    return data;
   }
-  #screenAvatarCache?: Promise<string>;
-  async getScreenAvatarTryCache(): Promise<string> {
+  #screenAvatarCache?: Promise<{ data: string; zeroMs?: number }>;
+  async getScreenAvatarTryCache(): Promise<{ data: string; zeroMs?: number }> {
     using conn = await redisPool.connect();
     const key = "live:avatar";
     let cache = await conn.get(key);
+    let expMs: undefined | number;
     if (!cache) {
       const limit = 400;
       const items = await genScreenAvatar(limit);
       const data: ScreenAvatarRes = {
         items: items,
         total: items.length,
+        limit: limit,
       };
       cache = JSON.stringify(data);
-      // 次日零点过期。如果数量不到limit，则不缓存
-      if (items.length >= limit) await conn.set(key, cache, { EX: getZeroMs() });
-    }
 
-    return cache;
+      if (items.length >= limit) {
+        expMs = getZeroMs(); // 次日零点过期。如果数量不到limit
+      } else {
+        expMs = 1000 * 60;
+      }
+      await conn.set(key, cache, { EX: Math.floor(expMs / 1000) });
+    } else expMs = getZeroMs();
+
+    return { data: cache, zeroMs: expMs };
   }
   @PipeInput((ctx) => {
     const queries = ctx.req.query();
