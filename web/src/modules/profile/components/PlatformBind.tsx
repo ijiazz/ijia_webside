@@ -15,6 +15,7 @@ export function PlatformBind(props: { userId?: number; onBindSuccess?(): void })
   const { onBindSuccess, userId } = props;
   const { api } = useHoFetch();
   const { message } = useContext(AndContext);
+  const theme = useThemeToken();
   const { result, run, reset } = useAsync(function (platform: Platform, url: string) {
     return api["/user/bind_platform/check"].post({
       body: { platformList: [{ platform, userHomeLink: url }] },
@@ -39,7 +40,8 @@ export function PlatformBind(props: { userId?: number; onBindSuccess?(): void })
         {userId !== undefined && (
           <div>
             为了证明抖音账号是你的，请将 <Tag bordered={false} color="blue">{`IJIA学号：<${userId}>`}</Tag>
-            插入简介的任意位置（<b>无法检测私密账号</b>），在绑定成功后，可以自行删除。 需要注意的是，
+            插入简介的任意位置（<span style={{ color: theme.colorError }}>包括前面的“IJIA学号”，无法检测私密账号</span>
+            ），在绑定成功后，可以自行删除。 需要注意的是，
             <b>一个抖音账号只能绑定一个学号</b>。 检测通过后，
             <b>IJIA学院将保存该账号在抖音的头像、昵称和简介，用于该学号在IJIA学院网站的展示</b>
           </div>
@@ -69,6 +71,10 @@ export function PlatformBind(props: { userId?: number; onBindSuccess?(): void })
         <Popover title="如何获取个人分享链接" content={<TutorialModal />} trigger="hover">
           <QuestionCircleOutlined />
         </Popover>
+      </div>
+      <div style={{ marginTop: 8 }}>
+        <span style={{ color: theme.colorError }}>输入抖音号首页链接，不是抖音号。</span>
+        如何获取首页链接请点击右边小问号
       </div>
       {checkResult && (
         <BindCheckResult
