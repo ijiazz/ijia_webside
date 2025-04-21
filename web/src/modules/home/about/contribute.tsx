@@ -1,4 +1,8 @@
-import { Typography } from "antd";
+import { ContributorInfo } from "@/api.ts";
+import { useAsync } from "@/hooks/async.ts";
+import { useHoFetch } from "@/hooks/http.ts";
+import { VLink } from "@/lib/components/VLink.tsx";
+import { Avatar, Popover, Timeline, TimelineItemProps, Tooltip, Typography } from "antd";
 import React from "react";
 import { Link } from "react-router";
 const { Title, Paragraph } = Typography;
@@ -40,6 +44,55 @@ export function Contribute() {
       <Paragraph>
         您可以直接赞助作者，无论多少，都是对作者莫大的鼓励。赞助渠道见<Link to="#author">关于作者</Link>
       </Paragraph>
+      <Title level={2}>贡献者</Title>
+      <Contributor />
     </Typography>
+  );
+}
+function Contributor() {
+  const { api } = useHoFetch();
+  const { result } = useAsync(
+    async () => {
+      const list = await api["/app/contributors"].get().then((res) => res.items);
+      const map = new Map<number | string, { info: ContributorInfo; items: TimelineItemProps[] }>();
+      const timeline: TimelineItemProps[] = new Array(list.length);
+      for (let i = 0; i < list.length; i++) {
+        const info = list[i];
+        let item = map.get(info.id);
+        if (!item) {
+          item = { info, items: [] };
+          map.set(info.id, item);
+        }
+        item.items.push({
+          children: (
+            <div>
+              {info.date}&nbsp;
+              {info.description}
+            </div>
+          ),
+        });
+      }
+
+      return Array.from(map.values());
+    },
+    { autoRunArgs: [] },
+  );
+  const contributor = result.value;
+  return (
+    <div>
+      <Avatar.Group>
+        {contributor?.map((item) => {
+          const { info, items } = item;
+
+          return (
+            <VLink to={info.link} target="_blank" key={info.id}>
+              <Popover content={<Timeline style={{ margin: "14px 0" }} items={items}></Timeline>}>
+                <Avatar src={info.avatar}>{info.name}</Avatar>
+              </Popover>
+            </VLink>
+          );
+        })}
+      </Avatar.Group>
+    </div>
   );
 }
