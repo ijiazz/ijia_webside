@@ -46,7 +46,7 @@ export function BasicInfoPage() {
     if (!time) return undefined;
     const date = new Date(time);
 
-    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
   }, [value]);
 
   return (
@@ -189,7 +189,7 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserInfoDto>; onProfil
             <Checkbox>
               <Space>
                 接收直播通知
-                <Tooltip title="佳佳直播时，将通过邮件发送通知">
+                <Tooltip title="佳佳直播时，将通过邮件发送通知。你可能需要将 school@ijiazz.cn 添加到白名单">
                   <QuestionCircleOutlined />
                 </Tooltip>
               </Space>

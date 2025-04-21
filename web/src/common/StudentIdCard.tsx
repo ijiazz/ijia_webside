@@ -41,7 +41,7 @@ export function StudentIdCard(props: StudentIdCardInfo & { scale?: number }) {
           shape="square"
           size={85 * scale}
           src={props.avatarUrl}
-          style={{ borderWidth: 2 * scale }}
+          style={{ borderWidth: 2 * scale, minWidth: 85 * scale }}
         >
           {props.name}
         </Avatar>
@@ -86,9 +86,15 @@ const StudentIdCardCSS = styled.div`
       border: 0 solid #fff;
     }
     &-info-core {
+      color: #000;
       line-height: 2;
       font-size: 100%;
+      overflow: hidden;
       .student-card-name {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+
         font-weight: bold;
       }
     }
@@ -146,6 +152,7 @@ const StudentIdCardBackCSS = styled.div`
   border-radius: ${borderRadius}px;
   margin: 8px;
   .student-card-body {
+    color: #000;
     height: 100%;
     display: flex;
     align-items: center;

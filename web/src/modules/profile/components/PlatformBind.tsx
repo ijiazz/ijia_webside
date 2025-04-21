@@ -39,8 +39,9 @@ export function PlatformBind(props: { userId?: number; onBindSuccess?(): void })
         {userId !== undefined && (
           <div>
             为了证明抖音账号是你的，请将 <Tag bordered={false} color="blue">{`IJIA学号：<${userId}>`}</Tag>
-            插入简介的任意位置，在绑定成功后，可以自行删除。 需要注意的是，<b>一个抖音账号只能绑定一个学号</b>。
-            检测通过后，<b>IJIA学院将保存该账号在抖音的头像、昵称和简介，用于该学号在IJIA学院网站的展示</b>
+            插入简介的任意位置（<b>无法检测私密账号</b>），在绑定成功后，可以自行删除。 需要注意的是，
+            <b>一个抖音账号只能绑定一个学号</b>。 检测通过后，
+            <b>IJIA学院将保存该账号在抖音的头像、昵称和简介，用于该学号在IJIA学院网站的展示</b>
           </div>
         )}
       </div>

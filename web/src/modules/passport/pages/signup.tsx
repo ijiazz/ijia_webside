@@ -59,10 +59,10 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
   });
   const { message } = useContext(AndContext);
   return (
-    <div style={{ padding: 32 }}>
+    <div style={{ padding: 28 }} className="basic-info">
       <Form
-        labelCol={{ span: 6 }}
-        wrapperCol={{ span: 18 }}
+        labelCol={{ span: 7 }}
+        wrapperCol={{ span: 17 }}
         form={form}
         onFinish={onSubmit}
         disabled={!config.signupEnabled}
