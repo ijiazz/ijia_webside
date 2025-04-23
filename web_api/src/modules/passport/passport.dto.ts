@@ -50,7 +50,7 @@ export type RequestSignupEmailCaptchaParam = {
 };
 export type ChangePasswordParam = {
   newPassword: string;
-  oldPassword: string;
+  oldPassword?: string;
   passwordNoHash?: boolean;
   // userId?: string;
 };

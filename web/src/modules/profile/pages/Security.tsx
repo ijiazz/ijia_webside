@@ -2,7 +2,6 @@ import { Form, Input, Button } from "antd";
 import { useAsync } from "@/hooks/async.ts";
 import { useHoFetch } from "@/hooks/http.ts";
 import { useAntdStatic } from "@/hooks/antd.ts";
-import { ChangePasswordParam } from "@/api.ts";
 import { CAN_HASH_PASSWORD, hashPassword } from "@/modules/passport/util/pwd_hash.ts";
 import { Developing } from "@/common/page_state/Developing.tsx";
 import { PagePadding } from "@/lib/components/Page.tsx";
@@ -21,7 +20,7 @@ export function ChangePassport() {
   const {
     result: { loading },
     run: onFinish,
-  } = useAsync(async function (body: ChangePasswordParam) {
+  } = useAsync(async function (body: { newPassword: string; oldPassword: string }) {
     let { newPassword, oldPassword } = body;
     if (CAN_HASH_PASSWORD) {
       newPassword = await hashPassword(newPassword);

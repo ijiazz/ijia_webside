@@ -3,8 +3,8 @@ import { IGNORE_UNAUTHORIZED_REDIRECT, IGNORE_ERROR_MSG, useHoFetch } from "@/ho
 import { useAsync } from "@/hooks/async.ts";
 import { useEffect, useMemo } from "react";
 import { toFileUrl } from "./http.ts";
-import Cookie from "js-cookie";
 import { getUrlByRoute } from "@/app.ts";
+import { ijiaCookie } from "@/stores/cookie.ts";
 
 export type UserProfileBasic = UserBasicDto & {
   userIdStr: string;
@@ -64,14 +64,14 @@ export function useCurrentUser(option: { manual?: boolean } = {}): UseCurrentUse
   }, [result]);
 }
 export function getUserToken(): string | undefined {
-  return Cookie.get("jwt-token");
+  return ijiaCookie.jwtToken;
 }
 export function userLogout() {
-  Cookie.remove("jwt-token");
+  ijiaCookie.jwtToken = undefined;
   location.href = getUrlByRoute("/passport/login");
 }
 export function loginByAccessToken(jwtToken: string) {
-  Cookie.set("jwt-token", jwtToken);
+  ijiaCookie.jwtToken = jwtToken;
 }
 export function getCurrentUserId(): number | undefined {
   const token = getUserToken();

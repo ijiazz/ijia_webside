@@ -34,4 +34,9 @@ export interface PassportApi {
   "GET /passport/config": {
     response: PassportConfig;
   };
+  /** 召唤回密码发送验证码 */
+  "POST /passport/find-account/email_captcha": {
+    response: EmailCaptchaQuestion;
+    body: RequestSignupEmailCaptchaParam;
+  };
 }
