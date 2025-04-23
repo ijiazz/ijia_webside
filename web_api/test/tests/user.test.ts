@@ -15,6 +15,7 @@ import { bindPlatformAccount } from "@/modules/user/user.service.ts";
 
 import { passportService } from "@/modules/passport/services/passport.service.ts";
 import { v } from "@ijia/data/yoursql";
+import { signLoginJwt } from "@/global/jwt.ts";
 
 describe("bind", function () {
   const JWT_KEY = Symbol("jwtToken");
@@ -22,7 +23,7 @@ describe("bind", function () {
   let AliceToken: string;
   beforeEach<Context>(async ({ hono, hoFetch, ijiaDbPool }) => {
     AliceId = await passportService.createUser("abc@qq.com", {});
-    AliceToken = await passportService.signJwt(AliceId, 60 * 100);
+    AliceToken = await signLoginJwt(AliceId, 60 * 100);
     hoFetch.use(async function (ctx, next) {
       const token = ctx[JWT_KEY];
       if (token) ctx.headers.set("cookie", "jwt-token=" + token);
@@ -110,7 +111,7 @@ describe("bind", function () {
     await userBind(AliceToken, { platform: Platform.douYin, pla_uid: "d1" });
 
     const BobId = await passportService.createUser("bind_existed@qq.com", {});
-    const BobToken = await passportService.signJwt(BobId, 60);
+    const BobToken = await signLoginJwt(BobId, 60);
 
     await expect(updateSignature("d1", `IJIA学号：<${BobId}>`)).resolves.toBe(1);
 
@@ -176,7 +177,7 @@ describe("用户信息", function () {
   let AliceToken: string;
   beforeEach<Context>(async ({ hono, hoFetch, ijiaDbPool }) => {
     AliceId = await passportService.createUser("abc@qq.com", {});
-    AliceToken = await passportService.signJwt(AliceId, 60 * 100);
+    AliceToken = await signLoginJwt(AliceId, 60 * 100);
     hoFetch.use(async function (ctx, next) {
       const token = ctx[JWT_KEY];
       if (token) ctx.headers.set("cookie", "jwt-token=" + token);

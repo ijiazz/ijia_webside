@@ -24,26 +24,14 @@ export function FindAccount(props: FindAccountProps) {
         current={step}
         items={[
           {
-            title: "验证邮箱",
-          },
-          {
             title: "重置密码",
           },
           { title: "完成" },
         ]}
       />
       <main>
-        {step < 2 ? (
-          <>
-            <Email disabled={step !== 0} onOk={() => setStep(1)} />
-            <ChangePassword
-              disabled={step !== 1}
-              onOk={() => {
-                setStep(2);
-                timer.start();
-              }}
-            />
-          </>
+        {step < 1 ? (
+          <Email disabled={step !== 0} onOk={() => setStep(1)} />
         ) : (
           <Result
             status="success"
@@ -70,14 +58,28 @@ const PageCSS = styled.div`
 function Email(props: { disabled?: boolean; onOk?: () => void }) {
   const { disabled, onOk } = props;
   const { api } = useHoFetch();
-  const { run: sendEmailCaptcha } = useAsync((email: string, sessionId: string, selected: number[]) =>
-    api["/passport/find-account/email_captcha"].post({
-      body: { email, captchaReply: { sessionId, selectedIndex: selected } },
-    }),
+  const { run: sendEmailCaptcha, result: emailCaptcha } = useAsync(
+    (email: string, sessionId: string, selected: number[]) =>
+      api["/passport/reset_password/email_captcha"].post({
+        body: { email, captchaReply: { sessionId, selectedIndex: selected } },
+      }),
   );
-  const { run: submit, result } = useAsync(({ email_code }: { email_code: string }) => {
-    // TODO
-    console.log(email_code);
+
+  const { run: submit, result } = useAsync(async (formData: ChangePasswordForm) => {
+    const res = await tryHashPassword(formData.newPassword);
+    const captcha = emailCaptcha.value;
+    if (!captcha) throw new Error("缺少验证码");
+    await api["/passport/reset_password"].post({
+      body: {
+        email: formData.email,
+        emailCaptcha: { sessionId: captcha.sessionId, code: formData.email_code },
+        newPassword: res.password,
+        passwordNoHash: res.passwordNoHash,
+      },
+    });
+    ijiaCookie.securityToken = undefined;
+    message.success("密码已修改");
+    onOk?.();
     onOk?.();
   });
   const { message } = useContext(AndContext);
@@ -99,29 +101,6 @@ function Email(props: { disabled?: boolean; onOk?: () => void }) {
       <Form.Item label="邮件验证码" name="email_code" rules={[{ required: true }]}>
         <Input />
       </Form.Item>
-      <Form.Item style={{ display: "flex", justifyContent: "end" }}>
-        <Button type="primary" htmlType="submit" disabled={disabled} loading={result.loading}>
-          确认
-        </Button>
-      </Form.Item>
-    </Form>
-  );
-}
-function ChangePassword(props: { disabled?: boolean; onOk?: () => void }) {
-  const { disabled, onOk } = props;
-  const { message } = useContext(AndContext);
-  const { api } = useHoFetch();
-  const { run, result } = useAsync(async (data: ChangePasswordForm) => {
-    const res = await tryHashPassword(data.newPassword);
-    await api["/passport/change_password"].post({
-      body: { newPassword: res.password, passwordNoHash: res.passwordNoHash },
-    });
-    ijiaCookie.securityToken = undefined;
-    message.success("密码已修改");
-    onOk?.();
-  });
-  return (
-    <Form disabled={disabled} wrapperCol={{ span: 18 }} labelCol={{ span: 6 }} onFinish={run}>
       <Form.Item name="newPassword" label="新密码" rules={[{ required: true }]}>
         <Input.Password placeholder="请输入新密码" />
       </Form.Item>
@@ -141,14 +120,17 @@ function ChangePassword(props: { disabled?: boolean; onOk?: () => void }) {
         <Input.Password placeholder="确认密码" />
       </Form.Item>
       <Form.Item style={{ display: "flex", justifyContent: "end" }}>
-        <Button type="primary" htmlType="submit" loading={result.loading}>
+        <Button type="primary" htmlType="submit" disabled={disabled} loading={result.loading}>
           确认
         </Button>
       </Form.Item>
     </Form>
   );
 }
+
 type ChangePasswordForm = {
+  email: string;
+  email_code: string;
   newPassword: string;
   confirmPassword: string;
 };

@@ -22,7 +22,7 @@ class CookieStore {
   }
 
   get securityToken(): string | undefined {
-    return this.get("reset_password_token");
+    return this.get("security_token");
   }
   set securityToken(value: string | undefined) {
     if (value) {

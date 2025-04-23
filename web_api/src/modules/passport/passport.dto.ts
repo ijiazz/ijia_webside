@@ -44,16 +44,27 @@ export enum LoginType {
   email = "email",
 }
 
-export type RequestSignupEmailCaptchaParam = {
+export type RequestSendEmailCaptchaParam = {
   captchaReply: ImageCaptchaReply;
   email: string;
 };
 export type ChangePasswordParam = {
   newPassword: string;
-  oldPassword?: string;
+  oldPassword: string;
   passwordNoHash?: boolean;
-  // userId?: string;
 };
+
+export type ResetPasswordParam = {
+  email: string;
+  emailCaptcha: EmailCaptchaReply;
+  newPassword: string;
+  passwordNoHash?: boolean;
+};
+export type ChangeEmailParam = {
+  email: string;
+  emailCaptcha: EmailCaptchaReply;
+};
+
 export type PassportConfig = {
   signupTip?: string | null;
   /** 是否开启注册 */

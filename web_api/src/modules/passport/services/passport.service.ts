@@ -1,7 +1,5 @@
 import { user, user_profile } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
-import { signJwt } from "@/global/jwt.ts";
-import { ENV } from "@/config.ts";
 import { hashPasswordBackEnd } from "./password.ts";
 import { HttpError } from "@/global/errors.ts";
 function selectUser(where: string) {
@@ -43,11 +41,6 @@ export class PassportService {
     const user = await getUserByEmail(email);
     return loginCheck(user, password);
   }
-  signJwt(userId: number, minute: number): Promise<string> {
-    const liveMs = minute * 60 * 1000;
-    const exp = Date.now() + liveMs;
-    return signJwt(userId.toString(), ENV.JWT_KEY, exp);
-  }
   async createUser(email: string, userInfo: { password?: string }) {
     let password: string | undefined;
     let salt: string | undefined;
@@ -56,16 +49,19 @@ export class PassportService {
       password = await hashPasswordBackEnd(userInfo.password, salt);
     }
     await using conn = await dbPool.begin();
-    const userId = await conn
-      .queryRows(
-        user.insert({ email, password: password, pwd_salt: salt }).returning<{ user_id: number }>({ user_id: "id" }),
-      )
-      .then((rows) => rows[0].user_id);
+    const insert = user
+      .insert({ email, password: password, pwd_salt: salt })
+      .onConflict(["email"])
+      .doNotThing()
+      .returning<{ user_id: number }>({ user_id: "id" });
+    const userId = await conn.queryRows(insert).then((rows): number | undefined => rows[0]?.user_id);
+    if (!userId) throw new HttpError(406, "邮箱已注册");
+
     await conn.queryCount(user_profile.insert({ user_id: userId }));
     await conn.commit();
     return userId;
   }
-  async changePassword(uid: number, oldPwd: string, newPwd: string) {
+  async changePasswordVerifyOld(uid: number, oldPwd: string, newPwd: string) {
     const salt = crypto.randomUUID().replaceAll("-", ""); //16byte
     const password = await hashPasswordBackEnd(newPwd, salt);
 
@@ -78,6 +74,32 @@ export class PassportService {
     await expectPasswordIsEqual(userInfo, oldPwd);
     await conn.queryCount(user.update({ password: v(password), pwd_salt: v(salt) }).where(`id=${v(uid)}`));
     await conn.commit();
+  }
+  async resetPassword(email: string, newPwd: string) {
+    const salt = crypto.randomUUID().replaceAll("-", ""); //16byte
+    const password = await hashPasswordBackEnd(newPwd, salt);
+
+    const count = await user
+      .update({ password: v(password), pwd_salt: v(salt) })
+      .where(`email=${v(email)}`)
+      .queryCount();
+    if (count === 0) {
+      throw new HttpError(409, { message: "用户不存在" });
+    }
+  }
+  async changeEmail(userId: number, newEmail: string) {
+    const count = await user
+      .update({ email: v(newEmail) })
+      .where(
+        `id=${v(userId)} AND NOT EXISTS ${user
+          .select("*")
+          .where(`email=${v(newEmail)}`)
+          .toSelect()}`,
+      )
+      .queryCount();
+    if (count === 0) {
+      throw new HttpError(406, { message: "用户不存在" });
+    }
   }
 }
 export const passportService = new PassportService();

@@ -9,17 +9,21 @@ class EmailCaptchaService {
     return code.toString();
   }
   readonly session = new SessionManager<EmailCaptchaSessionData>("Captcha:code", 5 * 60);
-  async sendEmailCaptcha(config: CaptchaEmail) {
+
+  async sendEmailCaptcha(config: CaptchaEmail, type: EmailCaptchaType) {
     await getEmailSender().sendEmail({
       targetEmail: config.recipient,
       title: config.title,
       html: config.html,
       text: config.text,
     });
-    return this.createSession(config);
+    return this.createSession(config, type);
   }
-  async createSession(config: CaptchaEmail): Promise<EmailCaptchaQuestion> {
-    const sessionId = await this.session.set({ code: config.code, email: config.recipient }, { EX: config.expire });
+  async createSession(config: CaptchaEmail, type: EmailCaptchaType): Promise<EmailCaptchaQuestion> {
+    const sessionId = await this.session.set(
+      { code: config.code, email: config.recipient, type },
+      { EX: config.expire },
+    );
     return {
       title: "请输入邮箱验证码",
       sessionId,
@@ -29,13 +33,19 @@ class EmailCaptchaService {
   async getAnswer(sessionId: string) {
     return this.session.get(sessionId);
   }
-  async verify(reply: EmailCaptchaReply, email: string): Promise<boolean> {
+  async verify(reply: EmailCaptchaReply, email: string, type: EmailCaptchaType): Promise<boolean> {
     const data = await this.session.get(reply.sessionId);
     if (!data) return false;
-    const pass = data.code === reply.code && data.email === email;
+    const pass = data.code === reply.code && data.email === email && data.type === type;
     if (pass) await this.session.delete(reply.sessionId);
     return pass;
   }
+}
+
+export enum EmailCaptchaType {
+  signup = "signup",
+  resetPassword = "resetPassword",
+  changeEmail = "changeEmail",
 }
 
 export const emailCaptchaService = new EmailCaptchaService();
@@ -53,4 +63,5 @@ export type CaptchaEmail = {
 type EmailCaptchaSessionData = {
   code: string;
   email: string;
+  type: EmailCaptchaType;
 };

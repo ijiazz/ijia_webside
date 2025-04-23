@@ -1,7 +1,7 @@
-import { jwtManage, SignInfo } from "@/global/jwt.ts";
+import { verifyLoginJwt, SignInfo } from "@/global/jwt.ts";
 import { user, user_role_bind } from "@ijia/data/db";
 import { v } from "@ijia/data/yoursql";
-import { HttpError, RequiredLoginError } from "../errors.ts";
+import { RequiredLoginError } from "../errors.ts";
 
 async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
   if (!roles.length) return false;
@@ -54,7 +54,7 @@ export class UserInfo {
   async getJwtInfo(): Promise<SignInfo> {
     if (!this.jwtToken) throw new RequiredLoginError();
     if (!this.#jwtInfo) {
-      this.#jwtInfo = jwtManage.verify(this.jwtToken).catch((e) => {
+      this.#jwtInfo = verifyLoginJwt(this.jwtToken).catch((e) => {
         throw new RequiredLoginError("身份认证已过期");
       });
     }
