@@ -1,5 +1,4 @@
 import {
-  ChangeEmailParam,
   LoginType,
   RequestSendEmailCaptchaParam,
   ResetPasswordParam,
@@ -7,12 +6,12 @@ import {
   type CreateUserProfileParam,
   type CreateUserProfileResult,
 } from "./passport.dto.ts";
-import { optional, array, stringMatch, integer } from "@asla/wokao";
+import { optional, array, integer } from "@asla/wokao";
 import { passportService } from "./services/passport.service.ts";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
-import { Controller, Get, PipeInput, PipeOutput, Post, ToArguments, Use } from "@asla/hono-decorator";
-import { checkValue, checkValueAsync } from "@/global/check.ts";
+import { Controller, Get, PipeInput, PipeOutput, Post, ToArguments } from "@asla/hono-decorator";
+import { checkValue, checkValueAsync, emailChecker } from "@/global/check.ts";
 import {
   imageCaptchaReplyChecker,
   imageCaptchaController,
@@ -25,16 +24,11 @@ import { autoBody } from "@/global/pipe.ts";
 import { Context } from "hono";
 import { appConfig } from "@/config.ts";
 import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/errors.ts";
-import { rolesGuard } from "@/global/auth.ts";
-import { HonoContext } from "@/hono/type.ts";
 import { PassportConfig } from "./passport.dto.ts";
-import {
-  sendChangeEmailCaptcha,
-  sendResetPassportCaptcha,
-  sendSignUpEmailCaptcha,
-} from "./services/send_email_captcha.ts";
+import { sendResetPassportCaptcha, sendSignUpEmailCaptcha } from "./services/send_email_captcha.ts";
 import { signLoginJwt } from "@/global/jwt.ts";
-const emailCheck = stringMatch(/^[^@]+@.+?\..+$/);
+import { user } from "@ijia/data/db";
+import v from "@ijia/data/yoursql";
 
 @autoBody
 @Controller({})
@@ -57,7 +51,7 @@ export class PassportController {
     if (!appConfig.passport?.signupEnabled) throw new HttpError(403, "禁止注册");
     const body = await ctx.req.json();
     const param = checkValue(body, {
-      email: emailCheck,
+      email: emailChecker,
       password: optional.string,
       passwordNoHash: optional.boolean,
       classId: optional(array.number),
@@ -91,7 +85,7 @@ export class PassportController {
     const body = await ctx.req.json();
     return checkValue(body, {
       captchaReply: imageCaptchaReplyChecker(),
-      email: emailCheck,
+      email: emailChecker,
     });
   })
   @Post("/passport/signup/email_captcha")
@@ -169,32 +163,6 @@ export class PassportController {
     };
   }
 
-  @Use(rolesGuard)
-  @ToArguments(async function (ctx: HonoContext) {
-    const userInfo = ctx.get("userInfo");
-    const userId = await userInfo.getJwtInfo().then((res) => +res.userId);
-
-    const param = await checkValueAsync(ctx.req.json(), {
-      newPassword: "string",
-      oldPassword: "string",
-      passwordNoHash: optional.boolean,
-    });
-
-    if (param.passwordNoHash) {
-      const res = await Promise.all([
-        hashPasswordFrontEnd(param.newPassword),
-        hashPasswordFrontEnd(param.oldPassword!),
-      ]);
-      param.newPassword = res[0];
-      param.newPassword = res[1];
-    }
-    return [userId, param.newPassword, param.oldPassword];
-  })
-  @Post("/passport/change_password")
-  async changePassword(userId: number, newPwd: string, oldPwd: string): Promise<void> {
-    await passportService.changePasswordVerifyOld(+userId, oldPwd, newPwd);
-  }
-
   @ToArguments(async function (ctx) {
     const param = await checkValueAsync(ctx.req.json(), {
       email: "string",
@@ -214,62 +182,25 @@ export class PassportController {
     await passportService.resetPassword(body.email, body.newPassword);
   }
 
-  @PipeInput(async function (ctx) {
-    const body = await ctx.req.json();
-    return checkValue(body, {
+  @PipeInput(function (ctx) {
+    return checkValueAsync(ctx.req.json(), {
       captchaReply: imageCaptchaReplyChecker(),
-      email: emailCheck,
+      email: emailChecker,
     });
   })
   @Post("/passport/reset_password/email_captcha")
   async resetPasswordSendCaptcha({ captchaReply, email }: RequestSendEmailCaptchaParam): Promise<EmailCaptchaQuestion> {
     const pass = await imageCaptchaController.verify(captchaReply);
     if (!pass) throw new HttpCaptchaError();
-    return sendResetPassportCaptcha(email);
-  }
 
-  @Use(rolesGuard)
-  @ToArguments(async function (ctx: HonoContext) {
-    const userId = await ctx
-      .get("userInfo")
-      .getUserInfo()
-      .then((item) => +item.user_id);
-    const param = await checkValueAsync(ctx.req.json(), {
-      email: "string",
-      emailCaptcha: emailCaptchaReplyChecker(),
-    });
+    const [account] = await user
+      .select<{ email: string; id: number }>({ email: true, id: true })
+      .where(`email=${v(email)}`)
+      .limit(1)
+      .queryRows();
+    if (!account) throw new HttpError(406, "账号不存在");
 
-    return [userId, param];
-  })
-  @Post("/passport/change_email")
-  async changeEmail(userId: number, body: ChangeEmailParam): Promise<void> {
-    await emailCaptchaService.verify(body.emailCaptcha, body.email, EmailCaptchaType.changeEmail);
-    await passportService.changeEmail(userId, body.email);
-  }
-
-  @Use(rolesGuard)
-  @ToArguments(async function (ctx: HonoContext) {
-    const userId = await ctx
-      .get("userInfo")
-      .getUserInfo()
-      .then((item) => +item.user_id);
-    const body = await ctx.req.json();
-    return [
-      userId,
-      checkValue(body, {
-        captchaReply: imageCaptchaReplyChecker(),
-        email: emailCheck,
-      }),
-    ];
-  })
-  @Post("/passport/change_email/email_captcha")
-  async changeEmailSendCaptcha(
-    userId: number,
-    { captchaReply, email }: RequestSendEmailCaptchaParam,
-  ): Promise<EmailCaptchaQuestion> {
-    const pass = await imageCaptchaController.verify(captchaReply);
-    if (!pass) throw new HttpCaptchaError();
-    return sendChangeEmailCaptcha(email, userId);
+    return sendResetPassportCaptcha(email, account.id);
   }
 }
 

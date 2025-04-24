@@ -36,7 +36,8 @@ describe("注册用户", function () {
         emailCaptcha: { code: "123", sessionId: "111" },
       }),
     ).rejects.throwErrorMatchBody(403, { message: "验证码错误" });
-
+  });
+  test("不能使用 david 的邮箱验证码注册 bob 的邮箱", async function ({ api }) {
     const emailAnswer = await mockSignUpSendEmailCaptcha(api, "david@ijiazz.cn");
     await expect(
       signup(api, { email: "bob@ijiazz.cn", password: AlicePassword, emailCaptcha: emailAnswer }),
@@ -108,7 +109,6 @@ describe("登录", function () {
     return api["/passport/login"].post({ body: { ...body, captcha } });
   }
 });
-
 test("修改密码", async ({ api }) => {
   const aliceToken = await signLoginJwt(AliceId, 60);
   const newPassword = await hashPasswordFrontEnd("newPassword123");
@@ -159,55 +159,6 @@ describe("重置密码", function () {
   });
 });
 
-describe("修改邮箱", async function () {
-  test("修改邮箱", async function ({ api }) {
-    const aliceToken = await signLoginJwt(AliceId, 60);
-    const newEmail = "news@ijiazz.cn";
-    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail, aliceToken);
-    await api["/passport/change_email"].post({
-      body: { email: newEmail, emailCaptcha: emailCaptchaAnswer },
-      [JWT_TOKEN_KEY]: aliceToken,
-    });
-    await expect(getUserEmail(AliceId), "成功修改邮箱").resolves.toBe(newEmail);
-  });
-  test("没有登录不能修改邮箱", async function ({ api }) {
-    const aliceToken = await signLoginJwt(AliceId, 60);
-    const newEmail = "news@ijiazz.cn";
-    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail, aliceToken);
-
-    await expect(
-      api["/passport/change_email"].post({
-        body: { email: newEmail, emailCaptcha: emailCaptchaAnswer },
-      }),
-    ).responseStatus(401);
-  });
-  test("不能修改已注册的邮箱", async function ({ api }) {
-    const aliceToken = await signLoginJwt(AliceId, 60);
-    const BobEmail = "bob@ijiazz.cn";
-    const newEmail = "news@ijiazz.cn";
-    const BobId = await passportService.createUser(BobEmail, { password: AlicePassword });
-    await expect(mockChangeEmailSendEmailCaptcha(api, AliceEmail, aliceToken)).responseStatus(406);
-
-    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail, aliceToken);
-    // 获取验证码后立即抢注一个账号
-    const newsId = await passportService.createUser(newEmail, { password: AlicePassword });
-    await expect(
-      api["/passport/change_email"].post({
-        body: { email: newEmail, emailCaptcha: emailCaptchaAnswer },
-        [JWT_TOKEN_KEY]: aliceToken,
-      }),
-    ).responseStatus(406);
-  });
-
-  function getUserEmail(id: number) {
-    return user
-      .select({ email: true })
-      .where(`id=${v(id)}`)
-      .queryRows()
-      .then((u) => u[0].email);
-  }
-});
-
 async function aliceLoin(api: Api, password: string) {
   const captcha = await createCaptchaSession();
   return api["/passport/login"].post({
@@ -233,17 +184,6 @@ async function mockResetPasswordSendEmailCaptcha(api: Api, email: string) {
 
   return { code: emailAnswer!.code, sessionId };
 }
-async function mockChangeEmailSendEmailCaptcha(api: Api, email: string, token: string) {
-  const captchaReply = await createCaptchaSession();
-  const { sessionId } = await api["/passport/change_email/email_captcha"].post({
-    body: { captchaReply, email: email },
-    [JWT_TOKEN_KEY]: token,
-  });
-  const emailAnswer = await emailCaptchaService.getAnswer(sessionId);
-
-  return { code: emailAnswer!.code, sessionId };
-}
-
 function signup(api: Api, param: CreateUserProfileParam) {
   return api["/passport/signup"].post({
     body: param,

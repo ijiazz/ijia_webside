@@ -5,6 +5,7 @@ import { errorHandler } from "../global/http_error.ts";
 
 import { userController } from "./user/mod.ts";
 import { passportController } from "./passport/mod.ts";
+import accountController from "./passport/account.controller.ts";
 import { classController } from "./class/mod.ts";
 import { imageCaptchaController } from "./captcha/mod.ts";
 import { postController } from "./post/mod.ts";
@@ -14,6 +15,8 @@ import { appController } from "./app/app.controller.ts";
 export function createHonoApp(option: { static?: boolean } = {}) {
   const hono = createHono(option);
   applyController(hono, passportController);
+  applyController(hono, accountController);
+
   applyController(hono, imageCaptchaController);
   applyController(hono, userController);
   applyController(hono, classController);

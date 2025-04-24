@@ -43,7 +43,7 @@ class PostController {
 
     const isAdmin: boolean = await ctx
       .get("userInfo")
-      .getRoles()
+      .getRolesFromDb()
       .then(
         ({ role_id_list }) => role_id_list.includes(Role.Admin),
         () => false,

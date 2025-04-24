@@ -35,6 +35,7 @@ export async function getUserBasic(userId: number): Promise<UserBasicDto> {
     .fromAs("u")
     .select<UserBasicDto>({
       user_id: "id",
+      email: "email",
       avatar_url: "'/file/avatar/'||avatar",
       nickname: true,
       is_official: `(SELECT EXISTS ${getUserBindAccount(userId).toSelect()})`,
@@ -55,6 +56,7 @@ export async function getUserProfile(userId: number): Promise<UserInfoDto> {
     .fromAs("u")
     .select<UserInfoDto>({
       user_id: "id",
+      email: "email",
       avatar_url: "'/file/avatar/'||avatar",
       nickname: true,
       primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,

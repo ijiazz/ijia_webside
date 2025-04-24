@@ -2,6 +2,7 @@ import type { Platform } from "@ijia/data/db";
 
 export type UserBasicDto = {
   user_id: number;
+  email: string;
   nickname?: string;
   avatar_url?: string;
   /** 是否已认证 */

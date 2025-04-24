@@ -60,10 +60,6 @@ export type ResetPasswordParam = {
   newPassword: string;
   passwordNoHash?: boolean;
 };
-export type ChangeEmailParam = {
-  email: string;
-  emailCaptcha: EmailCaptchaReply;
-};
 
 export type PassportConfig = {
   signupTip?: string | null;

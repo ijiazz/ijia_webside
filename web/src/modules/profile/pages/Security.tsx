@@ -1,11 +1,15 @@
-import { Form, Input, Button } from "antd";
+import { Form, Input, Button, Steps, Modal, Space } from "antd";
 import { useAsync } from "@/hooks/async.ts";
 import { useHoFetch } from "@/hooks/http.ts";
 import { useAntdStatic } from "@/hooks/antd.ts";
 import { CAN_HASH_PASSWORD, hashPassword } from "@/modules/passport/util/pwd_hash.ts";
-import { Developing } from "@/common/page_state/Developing.tsx";
 import { PagePadding } from "@/lib/components/Page.tsx";
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { EmailInput } from "@/modules/passport/components/EmailInput.tsx";
+import { isHttpErrorCode } from "@/common/http.ts";
+import { MailOutlined } from "@ant-design/icons";
+import { useCurrentUser } from "@/common/user.ts";
+import { HoFetchStatusError } from "@asla/hofetch";
 export function Security() {
   return (
     <PagePadding>
@@ -14,7 +18,7 @@ export function Security() {
     </PagePadding>
   );
 }
-export function ChangePassport() {
+function ChangePassport() {
   const { api } = useHoFetch();
   const { message } = useAntdStatic();
   const {
@@ -67,36 +71,172 @@ export function ChangePassport() {
   );
 }
 
-function ChangeEmail() {
-  const { api } = useHoFetch();
-  const { message } = useAntdStatic();
-  const { result, run: onEmailChange } = useAsync(async function (body: { newEmail: string; code: string }) {
-    message.success("邮箱已修改");
-  });
+function ChangeEmail(props: {}) {
+  const { value: user, refresh } = useCurrentUser();
+  const [open, setOpen] = useState(false);
 
+  if (!user) return;
   return (
     <div style={{ maxWidth: 400 }}>
       <h3>修改邮箱</h3>
-      <Developing />
-      {/* <Form name="change_email" onFinish={onEmailChange} layout="vertical" style={{ maxWidth: 400 }}>
-        <Form.Item name="newEmail" label="新邮箱" rules={[{ required: true, type: "email" }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" onClick={() => sendVerificationCode(Form.useForm().getFieldValue("newEmail"))}>
-            发送验证码
-          </Button>
-        </Form.Item>
-        <Form.Item name="code" label="验证码" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={emailLoading}>
-            确认修改
-          </Button>
-        </Form.Item>
-      </Form> */}
+      <Space>
+        <MailOutlined />
+        <Input className="e2e-current-user" value={user.email} disabled />
+        <Button onClick={() => setOpen(true)}>修改</Button>
+      </Space>
+      <ChangeEmailModal open={open} oldEmail={user.email} onClose={() => setOpen(false)} onOk={refresh} />
     </div>
+  );
+}
+
+function ChangeEmailModal(props: { oldEmail?: string; open?: boolean; onClose?: () => void; onOk?: () => void }) {
+  const { onClose, onOk, open, oldEmail } = props;
+  const { api } = useHoFetch();
+  const { message } = useAntdStatic();
+  const [token, setToken] = useState<string | null>();
+  const step = useMemo(() => (token ? 1 : 0), [token]);
+  const { run: sendNewEmailCaptcha, result: newEmailCaptcha } = useAsync(
+    (email: string, sessionId: string, selected: number[]) =>
+      api["/passport/change_email/email_captcha"].post({
+        body: { email, captchaReply: { sessionId, selectedIndex: selected } },
+      }),
+  );
+  const { run: changeEmail, result } = useAsync(async (code: string, sessionId: string, newEmail: string) => {
+    if (!token) {
+      message.error("请先验证原邮箱");
+      return;
+    }
+    if (!newEmailCaptcha.value) {
+      message.error("请先获取验证码");
+      return;
+    }
+    try {
+      await api["/passport/change_email"].post({
+        body: {
+          emailCaptcha: { sessionId: sessionId, code: code },
+          accountToken: token,
+          newEmail,
+        },
+      });
+      message.success("修改成功");
+      onOk?.();
+      onClose?.();
+    } catch (error) {
+      if (error instanceof HoFetchStatusError && error.status === 401) {
+        console.dir(error);
+        setToken(null);
+      } else throw error;
+    }
+  });
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      onCancel={onClose}
+      title="修改邮箱"
+      footer={null}
+      destroyOnClose
+      maskClosable={false}
+    >
+      <div style={{ maxWidth: 400 }}>
+        <Steps
+          current={step}
+          items={[{ title: "验证原有邮箱" }, { title: "修改邮箱" }]}
+          size="small"
+          style={{ paddingBottom: "14px" }}
+        />
+        {step === 0 && <EmailAuthentication onOk={setToken} email={oldEmail} />}
+        {step === 1 && (
+          <Form
+            onFinish={(formData) => changeEmail(formData.code, newEmailCaptcha.value!.sessionId, formData.newEmail)}
+          >
+            <Form.Item name="newEmail" label="新邮箱" rules={[{ required: true, type: "email" }]}>
+              <EmailInput
+                onCaptchaSubmit={async (email, sessionId, selected) => {
+                  try {
+                    await sendNewEmailCaptcha(email, sessionId, selected);
+                    message.success("已发送");
+                  } catch (error) {
+                    if (isHttpErrorCode(error, "CAPTCHA_ERROR")) message.error("验证码错误");
+                    throw error;
+                  }
+                }}
+              />
+            </Form.Item>
+            <Form.Item name="code" label="验证码" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                确认
+              </Button>
+            </Form.Item>
+          </Form>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+function EmailAuthentication(props: {
+  emailLabel?: string;
+  email?: string;
+  userId?: number;
+  onOk?: (token: string) => void;
+}) {
+  const { email, onOk } = props;
+
+  const { api } = useHoFetch();
+  const { message } = useAntdStatic();
+  const { run: sendEmailCaptcha, result: emailCaptcha } = useAsync(async (sessionId: string, selected: number[]) => {
+    return api["/passport/sign_account_token/email_captcha"].post({
+      body: { captchaReply: { sessionId, selectedIndex: selected } },
+    });
+  });
+  const { run: getAccountToken } = useAsync(async (sessionId: string, code: string) => {
+    const result = await api["/passport/sign_account_token"].post({
+      body: { emailCaptcha: { sessionId: sessionId, code: code } },
+    });
+    // 暂时不保存，需要检测过期
+    // ijiaSessionStorage.emailAuthToken = result.account_token;
+    onOk?.(result.account_token);
+  });
+
+  return (
+    <Form
+      onFinish={(formData) => {
+        if (!emailCaptcha.value) {
+          message.error("请先获取验证码");
+          return;
+        }
+        getAccountToken(emailCaptcha.value.sessionId, formData.code);
+      }}
+      initialValues={{ email }}
+      labelCol={{ span: 4 }}
+    >
+      <Form.Item name="email" label="旧邮箱">
+        <EmailInput
+          disabledInput
+          onCaptchaSubmit={async (email, sessionId, selected) => {
+            try {
+              await sendEmailCaptcha(sessionId, selected);
+              message.success("已发送");
+            } catch (error) {
+              if (isHttpErrorCode(error, "CAPTCHA_ERROR")) message.error("验证码错误");
+              throw error;
+            }
+          }}
+        />
+      </Form.Item>
+      <Form.Item name="code" label="验证码" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+      <Form.Item>
+        <Button type="primary" htmlType="submit">
+          下一步
+        </Button>
+      </Form.Item>
+    </Form>
   );
 }
 

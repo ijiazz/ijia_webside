@@ -98,7 +98,7 @@ export class PassportService {
       )
       .queryCount();
     if (count === 0) {
-      throw new HttpError(406, { message: "用户不存在" });
+      throw new HttpError(406, { message: "账号不存在" });
     }
   }
 }

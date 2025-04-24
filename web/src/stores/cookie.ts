@@ -20,17 +20,6 @@ class CookieStore {
   get jwtToken(): string | undefined {
     return this.get("jwt-token");
   }
-
-  get securityToken(): string | undefined {
-    return this.get("security_token");
-  }
-  set securityToken(value: string | undefined) {
-    if (value) {
-      this.set("security_token", value);
-    } else {
-      this.remove("security_token");
-    }
-  }
 }
 
 export const ijiaCookie = new CookieStore();

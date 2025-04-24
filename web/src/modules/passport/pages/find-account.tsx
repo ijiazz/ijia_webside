@@ -11,7 +11,6 @@ import { Link, useNavigate } from "react-router";
 import { ROUTES } from "@/app.ts";
 import { useTimeoutJump } from "@/hooks/timeout_jump.ts";
 import { tryHashPassword } from "../util/pwd_hash.ts";
-import { ijiaCookie } from "@/stores/cookie.ts";
 type FindAccountProps = {};
 
 export function FindAccount(props: FindAccountProps) {
@@ -77,7 +76,6 @@ function Email(props: { disabled?: boolean; onOk?: () => void }) {
         passwordNoHash: res.passwordNoHash,
       },
     });
-    ijiaCookie.securityToken = undefined;
     message.success("密码已修改");
     onOk?.();
     onOk?.();

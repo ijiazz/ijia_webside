@@ -1,4 +1,10 @@
 import { EmailCaptchaQuestion } from "../captcha/captcha.dto.ts";
+import {
+  AccountAuthenticateToken,
+  ChangeEmailParam,
+  GetAccountAuthTokenParam,
+  AccountSendEmailCaptchaParam,
+} from "./account.dto.ts";
 import type {
   CreateUserProfileParam,
   CreateUserProfileResult,
@@ -8,7 +14,6 @@ import type {
   ChangePasswordParam,
   PassportConfig,
   ResetPasswordParam,
-  ChangeEmailParam,
 } from "./passport.dto.ts";
 
 export interface PassportApi {
@@ -31,21 +36,36 @@ export interface PassportApi {
     response: EmailCaptchaQuestion;
     body: RequestSendEmailCaptchaParam;
   };
-  /** 修改密码 */
-  "POST /passport/change_password": {
-    response: null;
-    body: ChangePasswordParam;
-  };
+
   /** 重置密码 */
   "POST /passport/reset_password": {
     response: null;
     body: ResetPasswordParam;
   };
-  /** 找回密码发送验证码 */
+  /** 重置密码发送验证码 */
   "POST /passport/reset_password/email_captcha": {
     response: EmailCaptchaQuestion;
     body: RequestSendEmailCaptchaParam;
   };
+}
+export interface PassportApi {
+  /** 修改密码 */
+  "POST /passport/change_password": {
+    response: null;
+    body: ChangePasswordParam;
+  };
+
+  /** 发送获取 accountToken 的邮箱验证码 */
+  "POST /passport/sign_account_token/email_captcha": {
+    response: EmailCaptchaQuestion;
+    body: AccountSendEmailCaptchaParam;
+  };
+  /** 获取 accountToken。 */
+  "POST /passport/sign_account_token": {
+    response: AccountAuthenticateToken;
+    body: GetAccountAuthTokenParam;
+  };
+
   /** 修改邮箱 */
   "POST /passport/change_email": {
     response: null;
