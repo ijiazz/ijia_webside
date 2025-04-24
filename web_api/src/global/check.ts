@@ -8,6 +8,7 @@ import {
   integer,
   TypeCheckFn,
   CheckTypeError,
+  stringMatch,
 } from "@asla/wokao";
 import { HttpParamsCheckError } from "./errors.ts";
 
@@ -30,6 +31,7 @@ export function checkValueAsync<T extends ExpectType>(
   return input.then((data) => checkValue(data, expectType, option));
 }
 
+export const emailChecker = stringMatch(/^[^@]+@.+?\..+$/);
 export const optionalPositiveInt = optional(integer.positive);
 export const date: TypeCheckFn<Date> = function (input: unknown) {
   switch (typeof input) {

@@ -25,16 +25,29 @@ function useCooling(coolingTime = 60) {
 export function EmailInput(props: {
   value?: string;
   disabled?: boolean;
+  disabledInput?: boolean;
   onChange?(value: string): void;
   onCaptchaSubmit: (email: string, sessionId: string, selected: number[]) => Promise<void>;
+  sendBtnText?: string;
 }) {
+  const { disabled, disabledInput, sendBtnText = "发送验证码", ...reset } = props;
   const cooling = useCooling();
-  const form = Form.useFormInstance();
-  const email: string | undefined = Form.useWatch("email", form);
-  const emailIsValid = /[^@]+?@[^@]+/.test(email ?? "");
+  const [email, setValue] = useState<string | undefined>();
+
+  const value = props.value ?? email;
+  const emailIsValid = /[^@]+?@[^@]+/.test(value ?? "");
+
   return (
     <div style={{ display: "flex", gap: 12 }}>
-      <Input {...props} onChange={(e) => props.onChange?.(e.currentTarget.value)} />
+      <Input
+        {...reset}
+        value={value}
+        disabled={disabledInput || disabled}
+        onChange={(e) => {
+          setValue(e.currentTarget.value);
+          props.onChange?.(e.currentTarget.value);
+        }}
+      />
       <ImageCaptchaPopover
         disabled={!emailIsValid}
         onSubmit={(sessionId, select) => {
@@ -43,7 +56,8 @@ export function EmailInput(props: {
       >
         <Tooltip title="如果收不到验证码，可以试试查看垃圾箱">
           <Button disabled={!emailIsValid || cooling.time > 0 || props.disabled}>
-            发送验证码{cooling.time > 0 ? `${cooling.time}` : undefined}
+            {sendBtnText}
+            {cooling.time > 0 ? `${cooling.time}` : undefined}
           </Button>
         </Tooltip>
       </ImageCaptchaPopover>

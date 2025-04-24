@@ -9,12 +9,15 @@ import { HTTPException } from "hono/http-exception";
 import { getCookie } from "hono/cookie";
 import { UserInfo } from "./userInfo.ts";
 import { RequiredLoginError } from "../errors.ts";
+import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
+
 async function checkRoles(userInfo: UserInfo, requiredAnyRoles: Set<string>) {
   if (!userInfo) throw new RequiredLoginError();
   if (requiredAnyRoles.size === 0) {
-    await userInfo.getUserInfo();
+    const userId = await userInfo.getUserId();
+    await getValidUserSampleInfoByUserId(userId);
   } else {
-    const { role_id_list } = await userInfo.getRoles();
+    const { role_id_list } = await userInfo.getRolesFromDb();
     if (!role_id_list.some((role) => requiredAnyRoles.has(role))) {
       throw new HTTPException(403);
     }
