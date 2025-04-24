@@ -4,7 +4,7 @@ import { useHoFetch } from "@/hooks/http.ts";
 import { useAntdStatic } from "@/hooks/antd.ts";
 import { CAN_HASH_PASSWORD, hashPassword } from "@/modules/passport/util/pwd_hash.ts";
 import { PagePadding } from "@/lib/components/Page.tsx";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { EmailInput } from "@/modules/passport/components/EmailInput.tsx";
 import { isHttpErrorCode } from "@/common/http.ts";
 import { MailOutlined } from "@ant-design/icons";
@@ -128,6 +128,9 @@ function ChangeEmailModal(props: { oldEmail?: string; open?: boolean; onClose?: 
       } else throw error;
     }
   });
+  useEffect(() => {
+    if (open) setToken(null);
+  }, [open]);
   return (
     <Modal
       open={open}
@@ -167,7 +170,7 @@ function ChangeEmailModal(props: { oldEmail?: string; open?: boolean; onClose?: 
               <Input />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" loading={result.loading}>
                 确认
               </Button>
             </Form.Item>
@@ -193,7 +196,7 @@ function EmailAuthentication(props: {
       body: { captchaReply: { sessionId, selectedIndex: selected } },
     });
   });
-  const { run: getAccountToken } = useAsync(async (sessionId: string, code: string) => {
+  const { run: getAccountToken, result: getTokenResult } = useAsync(async (sessionId: string, code: string) => {
     const result = await api["/passport/sign_account_token"].post({
       body: { emailCaptcha: { sessionId: sessionId, code: code } },
     });
@@ -232,7 +235,7 @@ function EmailAuthentication(props: {
         <Input />
       </Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" loading={getTokenResult.loading}>
           下一步
         </Button>
       </Form.Item>
