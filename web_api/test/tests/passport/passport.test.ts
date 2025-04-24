@@ -1,15 +1,13 @@
 import { expect, beforeEach, describe } from "vitest";
-import { test, Context, Api, JWT_TOKEN_KEY } from "../fixtures/hono.ts";
+import { test, Context, Api } from "../../fixtures/hono.ts";
 import { user } from "@ijia/data/db";
 import { CreateUserProfileParam, LoginType, passportController, UserLoginParamDto } from "@/modules/passport/mod.ts";
 import { applyController } from "@asla/hono-decorator";
 import { emailCaptchaService } from "@/modules/captcha/mod.ts";
 
-import { createCaptchaSession, initCaptcha } from "../__mocks__/captcha.ts";
+import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { passportService } from "@/modules/passport/services/passport.service.ts";
 import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
-import { signLoginJwt } from "@/global/jwt.ts";
-import v from "@ijia/data/yoursql";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
 const AliceEmail = "alice@ijiazz.cn";
@@ -108,16 +106,6 @@ describe("登录", function () {
     const captcha = await createCaptchaSession();
     return api["/passport/login"].post({ body: { ...body, captcha } });
   }
-});
-test("修改密码", async ({ api }) => {
-  const aliceToken = await signLoginJwt(AliceId, 60);
-  const newPassword = await hashPasswordFrontEnd("newPassword123");
-  await api["/passport/change_password"].post({
-    body: { oldPassword: AlicePassword, newPassword: newPassword },
-    [JWT_TOKEN_KEY]: aliceToken,
-  });
-  await expect(aliceLoin(api, newPassword), "新密码登录成功").resolves.toBeTypeOf("object");
-  await expect(aliceLoin(api, AlicePassword), "旧密码登录失败").responseStatus(401);
 });
 
 describe("重置密码", function () {

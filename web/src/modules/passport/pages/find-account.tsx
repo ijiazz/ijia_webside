@@ -30,13 +30,23 @@ export function FindAccount(props: FindAccountProps) {
       />
       <main>
         {step < 1 ? (
-          <Email disabled={step !== 0} onOk={() => setStep(1)} />
+          <Email
+            disabled={step !== 0}
+            onOk={() => {
+              timer.start();
+              setStep(1);
+            }}
+          />
         ) : (
           <Result
             status="success"
             title="完成"
             subTitle="密码已重置"
-            extra={<Link to={ROUTES.Login}>转跳到登录（{timer.resetTime}）</Link>}
+            extra={
+              <Link className="e2e-go-to-login" to={ROUTES.Login}>
+                转跳到登录（{timer.resetTime}）
+              </Link>
+            }
           ></Result>
         )}
       </main>

@@ -91,6 +91,23 @@ describe("修改邮箱", async function () {
     return getValidUserSampleInfoByUserId(id).then((res) => res.email);
   }
 });
+test("修改密码", async ({ api }) => {
+  const aliceToken = await signLoginJwt(AliceId, 60);
+  const newPassword = await hashPasswordFrontEnd("newPassword123");
+  await api["/passport/change_password"].post({
+    body: { oldPassword: AlicePassword, newPassword: newPassword },
+    [JWT_TOKEN_KEY]: aliceToken,
+  });
+  await expect(aliceLoin(api, newPassword), "新密码登录成功").resolves.toBeTypeOf("object");
+  await expect(aliceLoin(api, AlicePassword), "旧密码登录失败").responseStatus(401);
+});
+
+async function aliceLoin(api: Api, password: string) {
+  const captcha = await createCaptchaSession();
+  return api["/passport/login"].post({
+    body: { email: AliceEmail, method: LoginType.email, password: password, captcha },
+  });
+}
 
 async function mockChangeEmailSendEmailCaptcha(api: Api, email: string, token: string) {
   const captchaReply = await createCaptchaSession();

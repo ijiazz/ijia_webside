@@ -116,7 +116,7 @@ test("重置密码", async function ({ page }) {
   await page.getByRole("textbox", { name: "* 新密码 :" }).fill("new");
   await page.getByRole("textbox", { name: "* 确认密码 :" }).fill("new");
   await page.getByRole("button", { name: "确 认" }).click();
-  await page.getByRole("link", { name: "转跳到登录（5）" }).click();
+  await page.locator(".e2e-go-to-login").click();
 
   await login(page, Alice.email, "new");
   await expect(page, "使用新密码成功登录").toHaveURL(/\/live/);
