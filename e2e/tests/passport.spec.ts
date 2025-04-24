@@ -103,7 +103,7 @@ test("修改密码", async function ({ page }) {
 
 test("重置密码", async function ({ page }) {
   const Alice = await initAlice();
-  await page.goto("http://localhost:5173/passport/login");
+  await page.goto(getAppUrlFromRoute("/passport/login"));
   await page.getByRole("link", { name: "忘记密码" }).click();
 
   await page.getByRole("textbox", { name: "* 电子邮箱 :" }).fill(Alice.email);
