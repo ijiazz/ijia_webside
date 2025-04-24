@@ -1,7 +1,8 @@
-import { jwtManage, SignInfo } from "@/global/jwt.ts";
+import { verifyLoginJwt, SignInfo } from "@/global/jwt.ts";
 import { user, user_role_bind } from "@ijia/data/db";
 import { v } from "@ijia/data/yoursql";
 import { HttpError, RequiredLoginError } from "../errors.ts";
+import { getValidUserSampleInfoByUserId, SampleUserInfo } from "@/sql/user.ts";
 
 async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
   if (!roles.length) return false;
@@ -21,11 +22,13 @@ async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
   }
   return count > 0;
 }
-async function getUserRoleNameList(userId: number): Promise<{ user_id: number; role_id_list: string[] }> {
+async function getUserRoleNameList(userId: number): Promise<UserWithRole> {
   const [userInfo] = await user
     .fromAs("u")
-    .select({
+    .select<UserWithRole>({
       user_id: "u.id",
+      email: "u.email",
+      nickname: "u.nickname",
       role_id_list: user_role_bind
         .fromAs("bind")
         .select<{ role_id: "string" }>({ role_id: "array_agg(bind.role_id)" })
@@ -34,14 +37,16 @@ async function getUserRoleNameList(userId: number): Promise<{ user_id: number; r
     })
     .where("NOT u.is_deleted")
     .queryRows();
-  return { role_id_list: userInfo.role_id_list || [], user_id: userInfo.user_id };
+  if (!userInfo) throw new HttpError(400, "账号不存在");
+  if (!userInfo.role_id_list) userInfo.role_id_list = [];
+  return userInfo;
 }
 export class UserInfo {
   constructor(private jwtToken?: string) {}
 
   #roleNameList?: Promise<UserWithRole>;
   /** 获取有效用户的角色列表 */
-  async getRoles(): Promise<UserWithRole> {
+  async getRolesFromDb(): Promise<UserWithRole> {
     if (!this.#roleNameList) {
       this.#roleNameList = this.getJwtInfo().then(({ userId }) => getUserRoleNameList(+userId));
     }
@@ -54,25 +59,26 @@ export class UserInfo {
   async getJwtInfo(): Promise<SignInfo> {
     if (!this.jwtToken) throw new RequiredLoginError();
     if (!this.#jwtInfo) {
-      this.#jwtInfo = jwtManage.verify(this.jwtToken).catch((e) => {
+      this.#jwtInfo = verifyLoginJwt(this.jwtToken).catch((e) => {
         throw new RequiredLoginError("身份认证已过期");
       });
     }
     return this.#jwtInfo;
   }
-  /** 从数据库获取有效用户信息 */
-  async getUserInfo(): Promise<{ user_id: number }> {
-    const baseInfo = await this.getJwtInfo();
-    const [info] = await user
-      .select<{ user_id: number }>({ user_id: "id" })
-      .where(`id=${v(+baseInfo.userId)} AND NOT is_deleted`)
-      .queryRows();
-    if (!user) throw new RequiredLoginError("用户不存在");
+  async getUserId(): Promise<number> {
+    const { userId } = await this.getJwtInfo();
+    return +userId;
+  }
 
-    return { user_id: info.user_id };
+  #userInfo?: Promise<SampleUserInfo>;
+  async getValidUserSampleInfo(): Promise<SampleUserInfo> {
+    if (!this.#userInfo) {
+      this.#userInfo = this.getJwtInfo().then(({ userId }) => getValidUserSampleInfoByUserId(+userId));
+    }
+    return this.#userInfo;
   }
 }
-export type UserWithRole = {
+export type UserWithRole = SampleUserInfo & {
   user_id: number;
   role_id_list: string[];
 };

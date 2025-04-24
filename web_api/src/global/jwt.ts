@@ -5,11 +5,20 @@ export interface SignInfo {
   exp?: number;
 }
 
-export function signJwt(uname: string, key: string, exp?: number): Promise<string> {
-  if (!uname || typeof uname !== "string") throw TypeError("uname 必须是一个字符串");
-  const body: SignInfo = { userId: uname, exp: exp };
-  return jwtLib.sign(body as Record<string, any>, key, "HS256");
+export function signLoginJwt(uname: number, minute: number): Promise<string> {
+  const liveMs = minute * 60 * 1000;
+  const body: SignInfo = { userId: uname.toString(), exp: Date.now() + liveMs };
+  return signSysJWT(body);
 }
+export async function verifyLoginJwt(token: string): Promise<SignInfo> {
+  const data: SignInfo = (await parseSysJWT(token)) as any;
+  if (data.exp && data.exp < Date.now()) {
+    throw new Error("身份验证已过期");
+  }
+  if (!data.userId) throw new Error("缺少用户名");
+  return data;
+}
+
 export async function hashPwd(pwd: string, salt: string = "") {
   const data = await crypto.subtle.digest("SHA-512", new TextEncoder().encode(salt + pwd));
   const u8Arr = new Uint8Array(data, 0, data.byteLength);
@@ -19,26 +28,12 @@ export async function hashPwd(pwd: string, salt: string = "") {
   }
   return str;
 }
-export class Jwt<T extends {}> {
-  constructor(private key: string) {}
-  sign(data: T) {
-    return jwtLib.sign(data, data, "HS256");
-  }
-  async verify(jwtToken: string): Promise<SignInfo> {
-    const content: Partial<SignInfo> = await jwtLib.verify(jwtToken, this.key);
-    if (content.exp && content.exp < Date.now()) {
-      throw new Error("身份验证已过期");
-    }
-    if (!content.userId) throw new Error("缺少用户名");
-    return content as unknown as SignInfo;
-  }
-}
-let jwtKey: string;
-if (ENV.JWT_KEY) jwtKey = ENV.JWT_KEY;
-else if (ENV.IS_PROD) jwtKey = crypto.randomUUID().replaceAll("-", "");
-else {
-  console.warn("缺少环境变量 JWT_KEY, 将使用默认值");
-  jwtKey = "abcd108";
-}
 
-export const jwtManage = new Jwt(jwtKey);
+const JWT_KEY = ENV.JWT_KEY;
+
+export function signSysJWT(data: Record<string, any>) {
+  return jwtLib.sign(data, JWT_KEY, "HS256");
+}
+export async function parseSysJWT(jwtToken: string): Promise<Record<string, any>> {
+  return jwtLib.verify(jwtToken, JWT_KEY, "HS256");
+}
