@@ -7,7 +7,6 @@ import {
   type CreateUserProfileResult,
 } from "./passport.dto.ts";
 import { optional, array, integer } from "@asla/wokao";
-import { passportService } from "./services/passport.service.ts";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
 import { Controller, Get, PipeInput, PipeOutput, Post, ToArguments } from "@asla/hono-decorator";
@@ -29,6 +28,9 @@ import { sendResetPassportCaptcha, sendSignUpEmailCaptcha } from "./services/sen
 import { signLoginJwt } from "@/global/jwt.ts";
 import { user } from "@ijia/data/db";
 import v from "@ijia/data/yoursql";
+import { accountLoginByEmail, accountLoginById, updateLastLoginTime } from "./sql/login.ts";
+import { createUser } from "./sql/signup.ts";
+import { resetAccountPassword } from "./sql/account.ts";
 
 @autoBody
 @Controller({})
@@ -76,7 +78,7 @@ export class PassportController {
       }
     }
 
-    const userId = await passportService.createUser(body.email, { password: body.password });
+    const userId = await createUser(body.email, { password: body.password });
     const { token } = await this.signToken(userId);
     return { userId, jwtKey: token };
   }
@@ -114,7 +116,7 @@ export class PassportController {
     }
 
     const method = body.method;
-    let user: {
+    let account: {
       userId: number;
       message?: string;
     };
@@ -126,8 +128,8 @@ export class PassportController {
           passwordNoHash: optional.boolean,
         });
         if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
-        const uid = await passportService.loginById(+params.id, params.password);
-        user = { userId: uid };
+        const uid = await accountLoginById(+params.id, params.password);
+        account = { userId: uid };
         break;
       }
       case LoginType.email: {
@@ -138,16 +140,16 @@ export class PassportController {
           passwordNoHash: optional.boolean,
         });
         if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
-        const uid = await passportService.loginByEmail(params.email, params.password);
-        user = { userId: uid };
+        const uid = await accountLoginByEmail(params.email, params.password);
+        account = { userId: uid };
         break;
       }
       default:
         throw new HttpError(400, { message: "方法不允许" });
     }
 
-    const jwtKey = await this.signToken(user.userId);
-
+    const jwtKey = await this.signToken(account.userId);
+    await updateLastLoginTime(account.userId);
     return {
       success: true,
       message: "登录成功",
@@ -179,7 +181,7 @@ export class PassportController {
   async resetPassword(body: ResetPasswordParam): Promise<void> {
     const pass = await emailCaptchaService.verify(body.emailCaptcha, body.email, EmailCaptchaType.resetPassword);
     if (!pass) throw new HttpError(409, "验证码错误");
-    await passportService.resetPassword(body.email, body.newPassword);
+    await resetAccountPassword(body.email, body.newPassword);
   }
 
   @PipeInput(function (ctx) {
