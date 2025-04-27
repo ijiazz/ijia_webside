@@ -28,7 +28,7 @@ import { sendResetPassportCaptcha, sendSignUpEmailCaptcha } from "./services/sen
 import { signLoginJwt } from "@/global/jwt.ts";
 import { user } from "@ijia/data/db";
 import v from "@ijia/data/yoursql";
-import { accountLoginByEmail, accountLoginById } from "./sql/login.ts";
+import { accountLoginByEmail, accountLoginById, updateLastLoginTime } from "./sql/login.ts";
 import { createUser } from "./sql/signup.ts";
 import { resetAccountPassword } from "./sql/account.ts";
 
@@ -116,7 +116,7 @@ export class PassportController {
     }
 
     const method = body.method;
-    let user: {
+    let account: {
       userId: number;
       message?: string;
     };
@@ -129,7 +129,7 @@ export class PassportController {
         });
         if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
         const uid = await accountLoginById(+params.id, params.password);
-        user = { userId: uid };
+        account = { userId: uid };
         break;
       }
       case LoginType.email: {
@@ -141,15 +141,15 @@ export class PassportController {
         });
         if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
         const uid = await accountLoginByEmail(params.email, params.password);
-        user = { userId: uid };
+        account = { userId: uid };
         break;
       }
       default:
         throw new HttpError(400, { message: "方法不允许" });
     }
 
-    const jwtKey = await this.signToken(user.userId);
-
+    const jwtKey = await this.signToken(account.userId);
+    await updateLastLoginTime(account.userId);
     return {
       success: true,
       message: "登录成功",

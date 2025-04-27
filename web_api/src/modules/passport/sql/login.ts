@@ -11,7 +11,12 @@ export async function accountLoginByEmail(email: string, password: string): Prom
   const user = await selectUser(`email=${v(email)}`);
   return loginCheck(user, password);
 }
-
+export async function updateLastLoginTime(id: number) {
+  await user
+    .update({ last_login_time: "now()" })
+    .where([`id=${v(id)}`, "last_login_time < now()"])
+    .queryCount();
+}
 async function loginCheck(user: LoginUserInfo | undefined, password: string): Promise<number> {
   if (!user) throw new HttpError(401, { message: "账号或密码错误" });
 
