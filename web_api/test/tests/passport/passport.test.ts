@@ -6,8 +6,8 @@ import { applyController } from "@asla/hono-decorator";
 import { emailCaptchaService } from "@/modules/captcha/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
-import { passportService } from "@/modules/passport/services/passport.service.ts";
 import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
+import { createUser } from "@/modules/passport/sql/signup.ts";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
 const AliceEmail = "alice@ijiazz.cn";
@@ -15,7 +15,7 @@ let AliceId!: number;
 
 beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
   ijiaDbPool; // 初始化数据库
-  AliceId = await passportService.createUser(AliceEmail, { password: AlicePassword });
+  AliceId = await createUser(AliceEmail, { password: AlicePassword });
   await initCaptcha();
   applyController(hono, passportController);
 });
@@ -59,12 +59,12 @@ describe("注册用户", function () {
   });
   test("已注册不能再注册", async function ({ api }) {
     const BobEmail = "bob@ijiazz.cn";
-    const BobId = await passportService.createUser(BobEmail, { password: AlicePassword });
+    const BobId = await createUser(BobEmail, { password: AlicePassword });
     await expect(mockSignUpSendEmailCaptcha(api, BobEmail)).responseStatus(406);
 
     const TestEmail = "test@ijiazz.cn";
     const emailAnswer = await mockSignUpSendEmailCaptcha(api, TestEmail);
-    const TestId = await passportService.createUser(TestEmail, { password: AlicePassword }); // 立即抢注
+    const TestId = await createUser(TestEmail, { password: AlicePassword }); // 立即抢注
     await expect(signup(api, { password: AlicePassword, emailCaptcha: emailAnswer, email: TestEmail })).responseStatus(
       406,
     );
@@ -79,7 +79,7 @@ describe("登录", function () {
     ).rejects.throwErrorMatchBody(403, { code: "CAPTCHA_ERROR" });
   });
   test("密码错误，应返回提示", async function ({ api }) {
-    await passportService.createUser("bob@ijiazz.cn", { password: "bob123" });
+    await createUser("bob@ijiazz.cn", { password: "bob123" });
     const captcha = await createCaptchaSession();
     await expect(
       loginUseCaptcha(api, {
@@ -120,7 +120,7 @@ describe("重置密码", function () {
   });
   test("重置密码必须传正确的验证码", async function ({ api }) {
     const BobEmail = "bob@ijiazz.cn";
-    const BobId = await passportService.createUser(BobEmail, { password: AlicePassword });
+    const BobId = await createUser(BobEmail, { password: AlicePassword });
     const newPassword = await hashPasswordFrontEnd("newPassword123"); // 想重置 bob 的密码为 newPassword123
 
     const emailCaptchaAnswer = await mockResetPasswordSendEmailCaptcha(api, AliceEmail); // 给 Alice 发重置密码的验证码
@@ -144,6 +144,17 @@ describe("重置密码", function () {
 
     await expect(aliceLoin(api, newPassword), "新密码登录成功").resolves.toBeTypeOf("object");
     await expect(aliceLoin(api, AlicePassword), "旧密码登录失败").responseStatus(401);
+  });
+  test("已注销账号不能重置密码", async function ({ api }) {
+    await user.update({ is_deleted: "true" }).where(`id=${AliceId}`).query();
+    const emailCaptchaAnswer = await mockResetPasswordSendEmailCaptcha(api, AliceEmail);
+    const newPassword = await hashPasswordFrontEnd("newPassword123");
+    await expect(
+      api["/passport/reset_password"].post({
+        body: { newPassword: newPassword, email: AliceEmail, emailCaptcha: emailCaptchaAnswer },
+      }),
+      "已注销账号不能重置密码",
+    ).responseStatus(409);
   });
 });
 

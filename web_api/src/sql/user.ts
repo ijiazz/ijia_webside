@@ -9,7 +9,7 @@ export async function getValidUserSampleInfoByUserId(userId: number) {
     .where([`id=${v(userId)}`])
     .queryRows();
   if (!info) throw new HttpError(400, "账号不存在");
-  if (info.is_deleted) throw new HttpError(400, "账号已被冻结");
+  if (info.is_deleted) throw new HttpError(423, "账号已被冻结");
   delete info.is_deleted;
 
   return info as SampleUserInfo;

@@ -17,10 +17,10 @@ import { rolesGuard, UserInfo } from "@/global/auth.ts";
 import { HonoContext } from "@/hono/type.ts";
 import { signSysJWT, parseSysJWT } from "@/global/jwt.ts";
 import { sendAccountAuthEmailCaptcha, sendChangeEmailCaptcha } from "./services/send_email_captcha.ts";
-import { passportService } from "./services/passport.service.ts";
 import { AccountAuthenticateToken, ChangeEmailParam, GetAccountAuthTokenParam } from "./account.dto.ts";
 import { optional } from "@asla/wokao";
 import { hashPasswordFrontEnd } from "./services/password.ts";
+import { changeAccountEmail, changeAccountPassword } from "./sql/account.ts";
 
 @Use(rolesGuard)
 @autoBody
@@ -91,7 +91,7 @@ export class AccountController {
   async changeEmail(userId: number, body: ChangeEmailParam): Promise<void> {
     const pass = await emailCaptchaService.verify(body.emailCaptcha, body.newEmail, EmailCaptchaType.changeEmail);
     if (!pass) throw new HttpCaptchaError();
-    await passportService.changeEmail(userId, body.newEmail);
+    await changeAccountEmail(userId, body.newEmail);
   }
 
   @ToArguments(async function (ctx: HonoContext) {
@@ -134,7 +134,7 @@ export class AccountController {
   })
   @Post("/passport/change_password")
   async changePassword(userId: number, newPwd: string, oldPwd: string): Promise<void> {
-    await passportService.changePasswordVerifyOld(+userId, oldPwd, newPwd);
+    await changeAccountPassword(+userId, oldPwd, newPwd);
   }
 }
 
