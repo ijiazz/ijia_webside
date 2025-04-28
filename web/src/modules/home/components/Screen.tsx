@@ -204,7 +204,7 @@ const ScreenCSS = styled.div`
       gap: 14px;
       flex-direction: column;
       width: 100%;
-      justify-content: space-around;
+      justify-content: space-between;
       align-items: center;
       height: 100%;
       background-color: #00000030;
