@@ -34,14 +34,14 @@ importers:
   deps/ijia-data:
     dependencies:
       '@asla/yoursql':
-        specifier: ^0.8.7
-        version: 0.8.7
+        specifier: ^0.8.9
+        version: 0.8.9
       '@redis/client':
         specifier: ^1.6.0
         version: 1.6.0
       evlib:
-        specifier: ^3.1.2
-        version: 3.1.2
+        specifier: ^3.1.3
+        version: 3.1.3
       pg:
         specifier: ^8.13.1
         version: 8.14.0
@@ -77,8 +77,8 @@ importers:
         specifier: ^22.13.8
         version: 22.13.10
       evlib:
-        specifier: ^3.0.2
-        version: 3.1.1
+        specifier: ^3.1.3
+        version: 3.1.3
 
   web:
     dependencies:
@@ -113,8 +113,8 @@ importers:
         specifier: ^1.11.13
         version: 1.11.13
       evlib:
-        specifier: ^3.1.2
-        version: 3.1.2
+        specifier: ^3.1.3
+        version: 3.1.3
       fireworks-js:
         specifier: ^2.10.8
         version: 2.10.8
@@ -198,8 +198,8 @@ importers:
         specifier: npm:@jsr/std__media-types@^1.1.0
         version: '@jsr/std__media-types@1.1.0'
       evlib:
-        specifier: ^3.1.2
-        version: 3.1.2
+        specifier: ^3.1.3
+        version: 3.1.3
       hono:
         specifier: ^4.7.2
         version: 4.7.4
@@ -356,8 +356,8 @@ packages:
     peerDependencies:
       hono: ^4.7.2
 
-  '@asla/yoursql@0.8.7':
-    resolution: {integrity: sha512-Bd+KMM7KoI8OQoLLu8bEQf1xnAr8fxRtXPfEY/3THmUC9RH3qkrlUcnUf3KtUhSbKYeYS6frU3IblQfVIrnRcg==}
+  '@asla/yoursql@0.8.9':
+    resolution: {integrity: sha512-bVIxt+btZYJISwjQkyYt7gkZVFIjczQfwfgXTKpLUEorJ6l3iIj/54o7wGQLn30pl2TNxMKoCz7vbkzSJJswCw==}
     engines: {node: '>=18'}
 
   '@babel/code-frame@7.26.2':
@@ -1840,11 +1840,8 @@ packages:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
 
-  evlib@3.1.1:
-    resolution: {integrity: sha512-shu8/CUz1SvulKeGxt7rrF2mamoeWZa5iFibhmEr+yFspiOUCdFejlKxlAcorD24Ug5WJJZ6Gy1eYQZmOkGbXA==}
-
-  evlib@3.1.2:
-    resolution: {integrity: sha512-nHxYzb7TEZ31xbFI/MoyYXqwPAfHjKoUULVR211bY0HCf6Rb02b3/B+isv0FwRh828nrxQxdOkJVCMuUMGWqHg==}
+  evlib@3.1.3:
+    resolution: {integrity: sha512-c1xz7uPyOeWSrXEmtMxBPTo5/rj8VHZLpU36jyIRG3810UWRy+ilTqhtfKTE/mZtwtAYqE7hi/drdE78h64yaQ==}
 
   expect-type@1.2.0:
     resolution: {integrity: sha512-80F22aiJ3GLyVnS/B3HzgR6RelZVumzj9jkL0Rhz4h0xYbNW9PjlQz5h3J/SShErbXBc295vseR4/MIbVmUbeA==}
@@ -3138,7 +3135,7 @@ snapshots:
     dependencies:
       hono: 4.7.4
 
-  '@asla/yoursql@0.8.7': {}
+  '@asla/yoursql@0.8.9': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:
@@ -4764,9 +4761,7 @@ snapshots:
 
   esutils@2.0.3: {}
 
-  evlib@3.1.1: {}
-
-  evlib@3.1.2: {}
+  evlib@3.1.3: {}
 
   expect-type@1.2.0: {}
 

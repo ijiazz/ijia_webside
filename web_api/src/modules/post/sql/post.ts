@@ -1,25 +1,22 @@
-import { ConditionParam, Selection, v, YourTable, dbPool } from "@ijia/data/yoursql";
+import { ConditionParam, Selection, v, dbPool } from "@ijia/data/yoursql";
 import {
   pla_asset,
   pla_comment,
   pla_user,
   Platform,
-  asset_audio,
-  asset_image,
-  asset_video,
-  DbAssetAudio,
-  DbAssetImage,
-  DbAssetVideo,
+  pla_asset_media,
+  DbPlaAssetMedia,
   MediaLevel,
   TextStructure,
   watching_pla_user,
   USER_LEVEL,
+  AssetMediaType,
 } from "@ijia/data/db";
 import { createSearch, jsonb_build_object } from "@/global/sql_util.ts";
 import { GetListOption } from "@/modules/dto_common.ts";
 import { AssetItemDto, PostUserInfo } from "../post.dto.ts";
-import { AudioAssetDto, ImageAssetDto, ImageInfoDto, MulFormat, VideoAssetDto } from "../common.dto.ts";
-import { audioToDto, getPostAssetsType, imageToDto, videoToDto } from "./media.ts";
+import { AssetMediaDto, MulFormat, AssetImage } from "../common.dto.ts";
+import { getPostAssetsType, assetMediaToDto } from "./media.ts";
 
 export type GetAssetListOption = GetListOption & {
   platform?: Platform;
@@ -30,12 +27,9 @@ export type GetAssetListOption = GetListOption & {
   sort?: Record<"digg_total" | "forward_total" | "collection_num", "ASC" | "DESC">;
 };
 
-function selectAssetResource(
-  setKey: string,
-  table: YourTable<{ platform: Platform | null; asset_id: string | null }>,
-  keys?: Record<string, string | boolean>,
-) {
-  return Selection.from(table, "media")
+function selectAssetResource(setKey: string, keys?: Record<string, string | boolean>) {
+  return pla_asset_media
+    .fromAs("media")
     .select(`json_agg(${keys ? jsonb_build_object(keys, "media") : "media"})`)
     .where(`media.platform=${setKey}.platform AND media.asset_id=${setKey}.asset_id AND index IS NOT NULL`);
 }
@@ -48,9 +42,7 @@ type SelectAssetList = {
   content_text: string | null;
   content_text_structure: TextStructure[] | null;
   author: PostUserInfo & { extra: Record<string, any> };
-  audio: DbAssetAudio[] | null;
-  video: DbAssetVideo[] | null;
-  image: DbAssetImage[] | null;
+  media: DbPlaAssetMedia[] | null;
 };
 async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total: number; items: SelectAssetList[] }> {
   const { number = 20, offset = 0, platform, userId, sort, includeHidden } = option;
@@ -88,9 +80,7 @@ async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total
         avatar_url: "'/file/avatar/'||u.avatar",
         extra: "u.extra",
       }),
-      audio: selectAssetResource("p", asset_audio).toSelect(),
-      video: selectAssetResource("p", asset_video).toSelect(),
-      image: selectAssetResource("p", asset_image).toSelect(),
+      media: selectAssetResource("p").toSelect(),
     })
     .where((): ConditionParam => {
       const searchWhere: string[] = [];
@@ -131,44 +121,30 @@ function toPostListDto(list: SelectAssetList[]) {
   return list.map((item): AssetItemDto => {
     const type = getPostAssetsType(item.type);
 
-    const videoFormats = moveArr(groupByIndex(item.video ?? []), 1).map((items) =>
-      items ? toFormats(items, videoToDto) : {},
-    );
-    const [cover, ...imageFormats] = groupByIndex(item.image ?? []).map((items) =>
-      items ? toFormats(items, imageToDto) : {},
-    );
-    const audioFormats = moveArr(groupByIndex(item.audio ?? []), 1).map((items) =>
-      items ? toFormats(items, audioToDto) : {},
-    );
+    const groups = groupByIndex(item.media ?? []);
 
-    const imageList = imageFormats.map((item): ImageAssetDto | undefined => {
-      const { [MediaLevel.origin]: origin, ...formats } = item;
-      if (!origin) return undefined;
-      return { formats, origin };
-    });
+    const setCover = groups[0];
+    const covers = setCover ? toFormats(setCover.data, assetMediaToDto) : undefined;
 
-    const videoList = videoFormats.map((item, index): VideoAssetDto | undefined => {
-      const { [MediaLevel.origin]: origin, ...formats } = item;
-      if (!origin) return undefined;
-      const covers = index === 0 ? cover : undefined;
+    const medias = moveArr(groups).map((indexGroup): AssetMediaDto | undefined => {
+      if (!indexGroup) return undefined;
+      const group = indexGroup.data;
+      const formats = toFormats(group, assetMediaToDto);
+      let cover: AssetImage | undefined;
+      if (indexGroup.type === AssetMediaType.image) {
+        cover = getCover(formats as MulFormat<AssetImage>);
+      } else if (covers) {
+        cover = getCover(covers as MulFormat<AssetImage>);
+      }
       return {
-        covers,
-        cover: covers ? getCover(covers) : undefined,
-        origin,
-        formats,
+        type: indexGroup.type,
+        formats: formats as any,
+        origin: formats[MediaLevel.origin]! as any,
+        cover: cover,
+        covers: covers as any,
       };
     });
-    const audioList = audioFormats.map((item, index): AudioAssetDto | undefined => {
-      const { [MediaLevel.origin]: origin, ...formats } = item;
-      if (!origin) return undefined;
-      const covers = index === 0 ? cover : undefined;
-      return {
-        covers,
-        cover: covers ? getCover(covers) : undefined,
-        formats,
-        origin,
-      };
-    });
+
     const authRaw = item.author;
     const author: AssetItemDto["author"] = {
       user_name: authRaw.user_name,
@@ -205,7 +181,7 @@ function toPostListDto(list: SelectAssetList[]) {
 
     return {
       asset_id: item.asset_id,
-
+      media: medias,
       author,
       content_text: item.content_text,
       content_text_structure: item.content_text_structure,
@@ -213,20 +189,12 @@ function toPostListDto(list: SelectAssetList[]) {
       ip_location: item.ip_location,
       platform: item.platform,
       type,
-      videoList,
-      audioList,
-      imageList,
       url,
     };
   });
 }
-function getCover(format: MulFormat<ImageInfoDto>) {
-  const formats = [MediaLevel.thumb, MediaLevel.origin];
-  for (const item of formats) {
-    if (format[item]) return format[item];
-  }
-}
-function moveArr<T>(arr: T[], offset: number) {
+
+function moveArr<T>(arr: T[]) {
   if (arr.length) {
     // 向左移动一位，因为 index 0 是封面
     arr[0] = arr[1];
@@ -234,7 +202,7 @@ function moveArr<T>(arr: T[], offset: number) {
     for (let i = 0; i < max; i++) {
       arr[i] = arr[i + 1];
     }
-    arr.length -= offset;
+    arr.length -= 1;
   }
   return arr;
 }
@@ -260,22 +228,23 @@ export type AssetStat = {
   collection_num: number;
 };
 
-function groupByIndex<T extends { index: number | null; level: string | null }>(list: T[]): (T[] | undefined)[] {
-  const group: (T[] | undefined)[] = [];
+function groupByIndex<T extends { index: number; level?: string | null; type: AssetMediaType }>(
+  list: T[],
+): ({ type: AssetMediaType; data: T[] } | undefined)[] {
+  const groups: ({ type: AssetMediaType; data: T[] } | undefined)[] = [];
   for (const item of list) {
     const index = item.index;
     if (index === null) continue;
-    if (!group[index]) group[index] = [];
-    group[index].push(item);
+    if (!groups[index]) groups[index] = { type: item.type, data: [] };
+    groups[index].data.push(item);
   }
-
-  return group;
+  return groups;
 }
 
-function toFormats<C, T extends { level: string | null }>(
+function toFormats<C, T extends { level?: string | null }>(
   list: T[],
   mapFn: (item: T) => C,
-): Record<string, C | undefined> {
+): Record<MediaLevel, C | undefined> {
   const map: Record<string, C> = {};
   for (const item of list) {
     const level = item.level as MediaLevel;
@@ -283,4 +252,10 @@ function toFormats<C, T extends { level: string | null }>(
     map[level] = mapFn(item);
   }
   return map;
+}
+function getCover(format: MulFormat<AssetImage>): AssetImage | undefined {
+  const formats = [MediaLevel.thumb, MediaLevel.origin];
+  for (const item of formats) {
+    if (format[item]) return format[item];
+  }
 }
