@@ -14,7 +14,8 @@ import {
 } from "@ijia/data/db";
 import { createSearch, jsonb_build_object } from "@/global/sql_util.ts";
 import { GetListOption } from "@/modules/dto_common.ts";
-import { AssetItemDto, PostUserInfo } from "../post.dto.ts";
+import { PlatformPostItemDto } from "../platform_post.dto.ts";
+import { PostUserInfo } from "../post.dto.ts";
 import { AssetMediaDto, MulFormat, AssetImage } from "../common.dto.ts";
 import { getPostAssetsType, assetMediaToDto } from "./media.ts";
 
@@ -118,7 +119,7 @@ async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total
   };
 }
 function toPostListDto(list: SelectAssetList[]) {
-  return list.map((item): AssetItemDto => {
+  return list.map((item): PlatformPostItemDto => {
     const type = getPostAssetsType(item.type);
 
     const groups = groupByIndex(item.media ?? []);
@@ -146,7 +147,7 @@ function toPostListDto(list: SelectAssetList[]) {
     });
 
     const authRaw = item.author;
-    const author: AssetItemDto["author"] = {
+    const author: PlatformPostItemDto["author"] = {
       user_name: authRaw.user_name,
       user_id: authRaw.user_id,
       avatar_url: authRaw.avatar_url,

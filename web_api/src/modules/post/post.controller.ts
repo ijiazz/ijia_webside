@@ -1,6 +1,6 @@
 import { Controller, Get, ToArguments, Use } from "@asla/hono-decorator";
 import { getGodPost } from "./sql/post.ts";
-import { GetPostListParam, LivePostResponse } from "./post.dto.ts";
+import { GetPlatformPostListParam, PlatformPostResponse } from "./platform_post.dto.ts";
 import { autoBody } from "@/global/pipe.ts";
 import { enumPlatform } from "@ijia/data/db";
 import { checkValue } from "@/global/check.ts";
@@ -13,7 +13,7 @@ import { getCheckerServer } from "@/services/douyin.ts";
 @autoBody
 @Controller({})
 class PostController {
-  async getPostList(option: GetPostListParam = {}, userId?: number): Promise<LivePostResponse> {
+  async getPostList(option: GetPlatformPostListParam = {}, userId?: number): Promise<PlatformPostResponse> {
     const DEFAULT_NUMBER = 10;
     const LIMIT = 10;
     if (option.offset === undefined) option.offset = 0;

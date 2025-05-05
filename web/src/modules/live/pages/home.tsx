@@ -1,4 +1,4 @@
-import { AssetItemDto } from "@/api.ts";
+import { PlatformPostItemDto } from "@/api.ts";
 import { THIRD_PART } from "@/common/third_part_account.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useHoFetch } from "@/hooks/http.ts";
@@ -46,7 +46,7 @@ export function HomePage() {
     run(param);
   }, [param.page]);
   const data = result.value || { items: [], total: 0, needLogin: false };
-  const items: AssetItemDto[] = data.items;
+  const items: PlatformPostItemDto[] = data.items;
   const theme = useThemeToken();
   return (
     <HomePageCSS>
@@ -102,7 +102,7 @@ export function HomePage() {
     </HomePageCSS>
   );
 }
-function PostHeader(props: { item: AssetItemDto }) {
+function PostHeader(props: { item: PlatformPostItemDto }) {
   const { item } = props;
   const theme = useThemeToken();
   return (
