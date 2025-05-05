@@ -1,29 +1,15 @@
-import { DbAssetAudio, DbAssetImage, DbAssetVideo } from "@ijia/data/db";
-import { AudioInfoDto, ImageInfoDto, VideoInfoDto } from "../common.dto.ts";
+import { DbPlaAssetMedia } from "@ijia/data/db";
+import { AssetMediaDto } from "../common.dto.ts";
 import { getBucket } from "@ijia/data/oss";
 import { PostAssetType } from "../post.dto.ts";
 
-export function audioToDto(item: DbAssetAudio): AudioInfoDto {
+const prefix = "/file/" + getBucket().PLA_POST_MEDIA + "/";
+export function assetMediaToDto(item: DbPlaAssetMedia): AssetMediaDto["origin"] {
+  const filename = item.file_id + (item.ext ? "." + item.ext : "");
   return {
-    url: "/file/" + getBucket().ASSET_AUDIO + "/" + item.uri,
-    duration: item.duration,
-    size: item.size,
-  };
-}
-export function videoToDto(item: DbAssetVideo): VideoInfoDto {
-  return {
-    url: "/file/" + getBucket().ASSET_VIDEO + "/" + item.uri,
-    format: item.format,
-    height: item.height,
-    width: item.width,
-    size: item.size,
-  };
-}
-export function imageToDto(item: DbAssetImage): ImageInfoDto {
-  return {
-    url: "/file/" + getBucket().ASSET_IMAGES + "/" + item.uri,
-    height: item.height,
-    width: item.width,
+    url: prefix + filename + "?" + item.hash_type + "=" + item.hash,
+    size: item.size!,
+    meta: item.meta as any,
   };
 }
 export function getPostAssetsType(typeBit: string): PostAssetType {

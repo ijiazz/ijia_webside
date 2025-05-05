@@ -6,7 +6,7 @@ import { enumPlatform } from "@ijia/data/db";
 import { checkValue } from "@/global/check.ts";
 import { enumType, integer, optional } from "@asla/wokao";
 import { HonoContext } from "@/hono/type.ts";
-import { Role, rolesGuard } from "@/global/auth.ts";
+import { Role, rolesGuard, UserInfo } from "@/global/auth.ts";
 import { getCheckerServer } from "@/services/douyin.ts";
 
 @Use(rolesGuard)
@@ -40,20 +40,20 @@ class PostController {
       s_content: optional.string,
       s_author: optional.string,
     });
+    const uInfo = ctx.get("userInfo");
 
-    const isAdmin: boolean = await ctx
-      .get("userInfo")
-      .getRolesFromDb()
-      .then(
-        ({ role_id_list }) => role_id_list.includes(Role.Admin),
-        () => false,
-      );
-
-    return [params, isAdmin];
+    return [params, uInfo];
   })
   @Get("/post/god_list")
-  async getPostNewest(option: GetPostListParam, isAdmin: boolean) {
-    if (isAdmin) return this.getPostList(option);
+  async getPostNewest(option: GetPostListParam, uInfo: UserInfo) {
+    const isAdmin: boolean = await uInfo.getRolesFromDb().then(
+      ({ role_id_list }) => role_id_list.includes(Role.Admin),
+      () => false,
+    );
+    if (isAdmin) {
+      const userId = await uInfo.getUserId();
+      return this.getPostList(option, userId);
+    }
     return getCheckerServer().getNewsPost();
   }
 }

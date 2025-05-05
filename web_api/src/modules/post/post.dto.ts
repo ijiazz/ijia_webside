@@ -1,6 +1,6 @@
 import { Platform, TextStructure } from "@ijia/data/db";
 import { GetListOption, ListDto } from "../dto_common.ts";
-import { ImageAssetDto, AudioAssetDto, VideoAssetDto } from "./common.dto.ts";
+import { AssetMediaDto } from "./common.dto.ts";
 
 export type LivePostResponse = ListDto<AssetItemDto> & { needLogin?: boolean };
 export type GetPostListParam = GetListOption & {
@@ -29,10 +29,7 @@ export interface AssetItemDto {
   publish_time?: string | null;
   ip_location: string | null;
   url?: string;
-
-  videoList?: (VideoAssetDto | undefined)[];
-  audioList?: (AudioAssetDto | undefined)[];
-  imageList?: (ImageAssetDto | undefined)[];
+  media: (AssetMediaDto | undefined)[];
 }
 export type PostUserInfo = {
   user_name: string;

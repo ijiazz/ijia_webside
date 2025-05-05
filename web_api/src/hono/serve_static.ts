@@ -20,9 +20,7 @@ export async function addServeStatic(hono: Hono) {
   const oos = getBucket();
   const bucketTest = {
     AVATAR: new RegExp(`^/${oos.AVATAR}/`),
-    ASSET_IMAGES: new RegExp(`^/${oos.ASSET_IMAGES}/`),
-    ASSET_VIDEO: new RegExp(`^/${oos.ASSET_VIDEO}/`),
-    ASSET_AUDIO: new RegExp(`^/${oos.ASSET_AUDIO}/`),
+    PLA_POST_MEDIA: new RegExp(`^/${oos.PLA_POST_MEDIA}/`),
   };
   hono.use(
     "/file/*",
@@ -34,7 +32,7 @@ export async function addServeStatic(hono: Hono) {
           c.header("Cache-Control", "private, max-age=" + 86400 * 3);
           return;
         }
-        if (bucketTest.ASSET_IMAGES.test(rel)) {
+        if (bucketTest.PLA_POST_MEDIA.test(rel)) {
           c.header("Cache-Control", "private, max-age=86400");
           const userInfo = new UserInfo(getCookie(c, "jwt-token"));
           await userInfo.getJwtInfo();
@@ -47,7 +45,10 @@ export async function addServeStatic(hono: Hono) {
         if (rel.startsWith(`/${oos.AVATAR}/`)) {
           return rel;
         }
-        if (/^\/(height_image)\//.test(rel)) return rel;
+        if (bucketTest.PLA_POST_MEDIA.test(rel)) {
+          //TODO 需要鉴权
+          return rel;
+        }
         throw new HTTPException(404, { res: new Response("访问不存在的资源地址") });
       },
       root: rootDirRelative,

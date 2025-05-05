@@ -32,7 +32,7 @@ E2E测试: [Playwright](https://playwright.dev/)
 
 ### 前端
 
-见 [/web_api/README.md](./web_api/README.md)
+见 [/web/README.md](./web/README.md)
 
 ### 后端
 
