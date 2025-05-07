@@ -115,9 +115,9 @@ export function PostContent(props: { item: AssetItemDto }) {
             );
           })}
         </PostMediaMultipleCSS>
-      ) : (
+      ) : mediaList.length ? (
         <div className="post-single">{getSingleMedia(mediaList[0])}</div>
-      )}
+      ) : undefined}
     </PostContentCSS>
   );
 }
