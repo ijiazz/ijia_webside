@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { animate, JSAnimation } from "animejs";
+import { useElementOverScreen } from "@/hooks/dom/observer.ts";
 
 export function useShakeAnimation(config: {
   /** 传入一个元素的ref,当这个元素离开屏幕后停止播放动画 */
@@ -36,29 +37,14 @@ export function useShakeAnimation(config: {
       animation.revert();
     };
   }, [widthRange, heightRange]);
-  useEffect(() => {
-    const element = targetRef?.current;
-    if (!element) return;
-    let isFirst = true;
-    const observer = new IntersectionObserver((entries) => {
-      if (isFirst) {
-        isFirst = false;
-        return;
-      }
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          animationCtrlRef.current?.play();
-        } else {
-          animationCtrlRef.current?.pause();
-        }
-      });
-    });
-    observer.observe(element);
 
-    return () => {
-      observer.disconnect();
-    };
-  }, [targetRef]);
+  useElementOverScreen((isIntersecting) => {
+    if (isIntersecting) {
+      animationCtrlRef.current?.play();
+    } else {
+      animationCtrlRef.current?.pause();
+    }
+  }, targetRef);
 
   return {
     isPlay,
