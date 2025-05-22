@@ -85,10 +85,7 @@ export function LoginPage() {
       <div className={classNames("main", { center: isCenter })}>
         <div className="left-desc"> </div>
 
-        <div
-          className="login-form-container"
-          style={{ maxWidth: 400, padding: windowSize && windowSize.width > 448 ? "0 24px" : undefined }}
-        >
+        <div className="login-form-container">
           <LoginForm
             logo={
               <Link to="/" title="首页" viewTransition>
@@ -164,6 +161,7 @@ export function LoginPage() {
 }
 const StyledPage = styled.div`
   height: 100%;
+
   .main {
     display: flex;
     justify-content: space-between;
@@ -175,6 +173,8 @@ const StyledPage = styled.div`
       font-weight: bold;
     }
     .login-form-container {
+      max-width: 400px;
+
       > * {
         box-shadow: 0 0 2px #9b9b9b;
       }
@@ -199,6 +199,11 @@ const StyledPage = styled.div`
     justify-content: center;
     .left-desc {
       display: none;
+    }
+  }
+  @media (min-width: 448px) {
+    .login-form-container {
+      padding: 0 24px;
     }
   }
 `;
