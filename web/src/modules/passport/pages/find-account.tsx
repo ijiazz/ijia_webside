@@ -11,6 +11,8 @@ import { Link, useNavigate } from "react-router";
 import { ROUTES } from "@/app.ts";
 import { useTimeoutJump } from "@/hooks/timeout_jump.ts";
 import { tryHashPassword } from "../util/pwd_hash.ts";
+import { MaskBoard } from "../components/MaskBoard.tsx";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 type FindAccountProps = {};
 
 export function FindAccount(props: FindAccountProps) {
@@ -19,48 +21,65 @@ export function FindAccount(props: FindAccountProps) {
   const timer = useTimeoutJump({ timeoutSecond: 5, callback: () => navigate(ROUTES.Login) });
   return (
     <PageCSS>
-      <Steps
-        current={step}
-        items={[
-          {
-            title: "重置密码",
-          },
-          { title: "完成" },
-        ]}
-      />
-      <main>
-        {step < 1 ? (
-          <Email
-            disabled={step !== 0}
-            onOk={() => {
-              timer.start();
-              setStep(1);
-            }}
+      <MaskBoard>
+        <Link to="/passport/login" viewTransition>
+          <Button type="text" icon={<ArrowLeftOutlined />}>
+            返回登录
+          </Button>
+        </Link>
+        <div className="container">
+          <Steps
+            current={step}
+            items={[
+              {
+                title: "重置密码",
+              },
+              { title: "完成" },
+            ]}
           />
-        ) : (
-          <Result
-            status="success"
-            title="完成"
-            subTitle="密码已重置"
-            extra={
-              <Link className="e2e-go-to-login" to={ROUTES.Login}>
-                转跳到登录（{timer.resetTime}）
-              </Link>
-            }
-          ></Result>
-        )}
-      </main>
+          <main>
+            {step < 1 ? (
+              <Email
+                disabled={step !== 0}
+                onOk={() => {
+                  timer.start();
+                  setStep(1);
+                }}
+              />
+            ) : (
+              <Result
+                status="success"
+                title="完成"
+                subTitle="密码已重置"
+                extra={
+                  <Link className="e2e-go-to-login" to={ROUTES.Login}>
+                    转跳到登录（{timer.resetTime}）
+                  </Link>
+                }
+              ></Result>
+            )}
+          </main>
+        </div>
+      </MaskBoard>
     </PageCSS>
   );
 }
 
 const PageCSS = styled.div`
-  max-width: 400px;
-  margin: auto;
-  padding: 24px;
-  main {
-    margin: auto;
-    margin-top: 48px;
+  background: url("/main/bg-login.webp");
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .container {
+    padding: 24px;
+    main {
+      margin: auto;
+      margin-top: 48px;
+    }
   }
 `;
 

@@ -12,14 +12,21 @@ import { getPathByRoute } from "@/app.ts";
 import { useCurrentUser } from "@/common/user.ts";
 import { EmailInput } from "../components/EmailInput.tsx";
 import { PassportConfig } from "@/api.ts";
-import { useRouteLoaderData } from "react-router";
+import { Link, useRouteLoaderData } from "react-router";
+import { MaskBoard } from "../components/MaskBoard.tsx";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 export function Signup() {
   const config = useRouteLoaderData<PassportConfig>("/passport") ?? {};
   const theme = useThemeToken();
   return (
     <StyledPage>
-      <div className="main">
+      <MaskBoard>
+        <Link to="/passport/login" viewTransition>
+          <Button type="text" icon={<ArrowLeftOutlined />}>
+            返回登录
+          </Button>
+        </Link>
         <div className="header">
           <Space>
             <IjiaLogo />
@@ -28,7 +35,7 @@ export function Signup() {
           <div style={{ color: theme.colorTextDescription, fontSize: theme.fontSize }}>{config.signupTip}</div>
         </div>
         <BasicInfo passportConfig={config} />
-      </div>
+      </MaskBoard>
     </StyledPage>
   );
 }
@@ -132,15 +139,5 @@ const StyledPage = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-  }
-  .main {
-    margin: 12px;
-    max-width: 600px;
-    border-radius: 6px;
-    box-shadow: 0 0 2px #d7d7d7;
-    padding: 24px;
-
-    background-color: #fff8;
-    backdrop-filter: blur(6px);
   }
 `;
