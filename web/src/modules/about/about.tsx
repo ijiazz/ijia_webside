@@ -1,9 +1,9 @@
 import React from "react";
 import { Tabs, TabsProps } from "antd";
 import { useLocation, useNavigate } from "react-router";
-import { AboutSite } from "./about-site.tsx";
-import { Contribute } from "./contribute.tsx";
-import { AboutAuthor } from "./author.tsx";
+import { AboutSite } from "./pages/site/about-site.tsx";
+import { Contribute } from "./pages/site/contribute.tsx";
+import { AboutAuthor } from "./pages/site/author.tsx";
 import { Footer } from "@/common/Footer.tsx";
 
 export function About() {

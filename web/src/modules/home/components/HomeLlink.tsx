@@ -33,7 +33,7 @@ export function HomeLinks(props: HomeLinkProps) {
                 })),
               }}
             >
-              <span>
+              <span className="link-item">
                 {item.icon} {item.title}
               </span>
             </Dropdown>
@@ -42,7 +42,7 @@ export function HomeLinks(props: HomeLinkProps) {
       }
       return (
         <Hover color={color} key={key}>
-          <Link to={item.href} viewTransition target={item.open ? "_blank" : undefined}>
+          <Link className="link-item" to={item.href} viewTransition target={item.open ? "_blank" : undefined}>
             {item.icon}
             {item.title}
           </Link>
@@ -83,8 +83,8 @@ type ChildrenLink = {
 
 const links: ChildrenLink[] = [
   { title: "IJIA 学院", href: "./live" },
-  { title: "入学指南", href: "./guide/join" },
-  { title: "学院简介", href: "./guide" },
+  { title: "入学指南", href: "./about/guide", open: true },
+  { title: "学院简介", href: "./about/introduction", open: true },
   {
     title: "友链",
     href: "./live",
@@ -92,7 +92,7 @@ const links: ChildrenLink[] = [
     children: [
       {
         href: "https://jiajiazi.love",
-        title: "佳佳子的网站",
+        title: "佳时光",
         open: true,
       },
     ],
@@ -107,16 +107,21 @@ const HomeLinksCSS = styled.div<{ blackMode?: boolean; background?: string }>`
   pointer-events: all;
   background-color: ${({ background }) => background || "transparent"};
   a {
-    color: ${({ blackMode }) => (blackMode ? "#fff" : "#000")};
     text-decoration: none;
     cursor: pointer;
   }
+
   .home-link {
-    padding: 6px 12px;
+    padding: 8px 12px;
     display: flex;
     > * {
-      padding-left: max(12px, 4%);
-      padding-right: max(12px, 4%);
+      padding-left: max(4px, 4%);
+      padding-right: max(4px, 4%);
+    }
+    .link-item {
+      color: ${({ blackMode }) => (blackMode ? "#fff" : "#000")};
+      font-weight: 500;
+      font-size: 14px;
     }
   }
   .home-link-left {
