@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { Button, Form, Input, Space } from "antd";
-import React, { useContext } from "react";
+import { Button, Checkbox, Form, Input, Space } from "antd";
+import React, { useContext, useState } from "react";
 import { tryHashPassword } from "../util/pwd_hash.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { AndContext, useThemeToken } from "@/hooks/antd.ts";
@@ -107,6 +107,32 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
           ]}
         >
           <Input.Password />
+        </Form.Item>
+        <Form.Item
+          label=" "
+          colon={false}
+          name="agreement"
+          rules={[
+            {
+              async validator(rule, value, callback) {
+                if (!value) throw new Error("请先关注佳佳子_zZ");
+              },
+            },
+          ]}
+          valuePropName="checked"
+        >
+          <Checkbox value="agree" style={{ marginBottom: 8 }}>
+            我已在抖音关注&nbsp;
+            <b>
+              <a
+                target="_blank"
+                href="https://www.douyin.com/user/MS4wLjABAAAA0AiK9Q4FlkTxKHo-b6Vi1ckA2Ybq-WNgJ-b5xXlULtI"
+                style={{ color: "#003674" }}
+              >
+                佳佳子_zZ
+              </a>
+            </b>
+          </Checkbox>
         </Form.Item>
       </Form>
       <div style={{ display: "flex", justifyContent: "end" }}>
