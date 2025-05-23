@@ -58,6 +58,23 @@ const ProLayoutCSS = styled(ProLayout)`
   .ant-pro-layout-container {
     min-height: 100%;
   }
+  @media (max-width: 600px) {
+    .ant-pro-top-nav-header-logo {
+      h1 {
+        display: none;
+      }
+    }
+    .ant-pro-global-header-header-actions-avatar {
+      .ant-avatar + span {
+        display: none;
+      }
+    }
+  }
+  @media (max-width: 400px) {
+    .ant-pro-top-nav-header-logo {
+      display: none;
+    }
+  }
 `;
 const IS_DEV = import.meta.env?.DEV;
 export function UserLayout(props: PropsWithChildren<{}>) {
