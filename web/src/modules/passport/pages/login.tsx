@@ -1,5 +1,5 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { LoginForm, ProFormText } from "@ant-design/pro-components";
+import { LoginForm, ProFormCheckbox, ProFormText } from "@ant-design/pro-components";
 import { Alert, Space, Tabs } from "antd";
 import React, { useContext } from "react";
 import { useState } from "react";
@@ -131,19 +131,41 @@ export function LoginPage() {
               activeKey={loginType}
               onChange={(activeKey) => setLoginType(activeKey as LoginType)}
             />
-
-            <div className="login-operation">
-              {/* <ProFormCheckbox noStyle name="saveUser">
+            <div className="actions">
+              <div className="login-operation">
+                {/* <ProFormCheckbox noStyle name="saveUser">
                 记住账号
               </ProFormCheckbox> */}
-              <Space>
-                <Link to="../find-account" style={{ float: "right" }} viewTransition>
-                  忘记密码
-                </Link>
-                <Link to="../signup" style={{ float: "right" }} viewTransition>
-                  注册账号
-                </Link>
-              </Space>
+                <Space>
+                  <Link to="../find-account" style={{ float: "right" }} viewTransition>
+                    忘记密码
+                  </Link>
+                  <Link to="../signup" style={{ float: "right" }} viewTransition>
+                    注册账号
+                  </Link>
+                </Space>
+              </div>
+              <ProFormCheckbox
+                name="agreement"
+                rules={[
+                  {
+                    async validator(rule, value, callback) {
+                      if (!value) throw new Error("请先关注佳佳子_zZ");
+                    },
+                  },
+                ]}
+              >
+                我已在抖音关注&nbsp;
+                <b>
+                  <a
+                    target="_blank"
+                    href="https://www.douyin.com/user/MS4wLjABAAAA0AiK9Q4FlkTxKHo-b6Vi1ckA2Ybq-WNgJ-b5xXlULtI"
+                    style={{ color: "#003674" }}
+                  >
+                    佳佳子_zZ
+                  </a>
+                </b>
+              </ProFormCheckbox>
             </div>
           </LoginForm>
           <ImageCaptchaModal
@@ -175,11 +197,19 @@ const StyledPage = styled.div`
     .login-form-container {
       max-width: 400px;
 
+      .ant-checkbox-label {
+        color: #fff;
+      }
+
       > * {
         box-shadow: 0 0 2px #9b9b9b;
       }
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
       .login-operation {
-        margin-block-end: 24px;
         display: flex;
         justify-content: space-between;
         font-weight: bold;

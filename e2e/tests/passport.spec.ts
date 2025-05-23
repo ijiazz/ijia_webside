@@ -30,6 +30,7 @@ test("注册账号", async function ({ page, webInfo }) {
   await page.getByRole("textbox", { name: "* 密码 :" }).fill("123");
   await page.getByRole("textbox", { name: "* 确认密码 :" }).click();
   await page.getByRole("textbox", { name: "* 确认密码 :" }).fill("123");
+  await page.getByRole("checkbox", { name: "我已在抖音关注 佳佳子_zZ" }).check();
   await page.getByRole("button", { name: "提 交" }).click();
 
   await page.getByRole("textbox", { name: "* 邮件验证码 :" }).click();
@@ -68,12 +69,8 @@ test("切换账号", async function ({ page }) {
   await page.locator(".e2e-avatar").hover();
   await page.getByText("退出登录").click();
 
-  await page.getByRole("textbox", { name: "学号或邮箱" }).click();
-  await page.getByRole("textbox", { name: "学号或邮箱" }).fill(Bob.email);
-  await page.getByRole("textbox", { name: "密码" }).click();
-  await page.getByRole("textbox", { name: "密码" }).fill(Bob.password);
-  await page.getByRole("button", { name: "登 录" }).click();
-  await selectCaptcha(page);
+  await login(page, Bob.email, Bob.password);
+  await expect(page, "登录后导航到首页").toHaveURL(/\/live/, {});
 });
 
 test("修改密码", async function ({ page }) {
@@ -138,6 +135,7 @@ test("修改邮箱", async function ({ page }) {
 
   await page.getByRole("button", { name: "确 定" }).click();
   await page.getByRole("textbox", { name: "* 验证码 :" }).fill("1234");
+  await new Promise((r) => setTimeout(r, 500));
   await page.getByRole("button", { name: "下一步" }).click();
   await page.getByRole("textbox", { name: "* 新邮箱 :" }).fill(changeEmail);
 
@@ -148,6 +146,7 @@ test("修改邮箱", async function ({ page }) {
 
   await page.getByRole("button", { name: "确 定" }).click();
   await page.getByRole("textbox", { name: "* 验证码 :" }).fill("1234");
+  await new Promise((r) => setTimeout(r, 500));
   await page.getByRole("button", { name: "确 认" }).click();
 
   await expect(page.locator(".e2e-current-user"), "断言输入框的值为修改后的邮箱").toHaveValue(changeEmail);
@@ -164,6 +163,7 @@ async function login(page: Page, emailOrUserId: string, password: string) {
   await page.getByRole("textbox", { name: "学号或邮箱" }).fill(emailOrUserId);
   await page.getByRole("textbox", { name: "密码" }).click();
   await page.getByRole("textbox", { name: "密码" }).fill(password);
+  await page.getByRole("checkbox", { name: "我已在抖音关注 佳佳子_zZ" }).check();
   await page.getByRole("button", { name: "登 录" }).click();
   await selectCaptcha(page);
 }
