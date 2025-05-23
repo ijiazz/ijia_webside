@@ -7,18 +7,16 @@ import { lazyPage } from "@/common/lazy_load_component.tsx";
 import liveRoutes from "./modules/live/routes.tsx";
 import { notFoundRouter } from "./common/page_state/NotFound.tsx";
 import { getPathByRoute, remoteLoading } from "./app.ts";
+import aboutRouters from "./modules/about/routes.tsx";
 const coreRoutes: RouteObject[] = [
   {
     index: true,
     lazy: () => import("./modules/home/routers-home.tsx").then((mod) => mod.page),
   },
+  { path: "about", children: aboutRouters },
   {
-    path: "about/*",
-    Component: lazyPage(() => import("./modules/home/about/about.tsx").then((mod) => mod.About)),
-  },
-  {
-    path: "story",
-    Component: lazyPage(() => import("./modules/home/story/story-page.tsx").then((mod) => mod.StoryPage)),
+    // path: "story",
+    // Component: lazyPage(() => import("./modules/home/story/story-page.tsx").then((mod) => mod.StoryPage)),
   },
   { path: "passport", children: passportRoutes },
   {
