@@ -8,7 +8,7 @@ export class ClassController {
   @Get("/class/public")
   async getPublicClass(): Promise<ListDto<ClassOption>> {
     const items = await dclass
-      .select<ClassOption>({ class_id: "id", class_name: true })
+      .select<ClassOption>({ class_id: "id", class_name: true, description: true })
       .where(`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`)
       .queryRows();
 
@@ -18,5 +18,5 @@ export class ClassController {
     };
   }
 }
-type ClassOption = { class_id: number; class_name: string };
+type ClassOption = { class_id: number; class_name: string; description?: string | null };
 export const classController = new ClassController();
