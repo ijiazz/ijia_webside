@@ -26,6 +26,7 @@ import { BindAccountDto, UserInfoDto } from "@/api.ts";
 import { toFileUrl } from "@/common/http.ts";
 import dayjs, { Dayjs } from "dayjs";
 import { PagePadding } from "@/lib/components/Page.tsx";
+import { useThemeToken } from "@/hooks/antd.ts";
 
 export function BasicInfoPage() {
   const { api } = useHoFetch();
@@ -316,6 +317,7 @@ const BindAccountListCSS = styled.div`
 
 function PublicClassSelect(props: { value?: number; onChange?(value: number): void; disabled?: boolean }) {
   const api = useHoFetch().api;
+  const token = useThemeToken();
   const { result } = useAsync(
     async function (search?: string) {
       const { items } = await api["/class/public"].get();
@@ -324,7 +326,9 @@ function PublicClassSelect(props: { value?: number; onChange?(value: number): vo
         label: (
           <Space>
             <span>{item.class_name}</span>
-            {item.description ? <span>({item.description})</span> : undefined}
+            {item.description ? (
+              <span style={{ fontSize: token.fontSizeSM, color: token.colorTextDescription }}>{item.description}</span>
+            ) : undefined}
           </Space>
         ),
         value: item.class_id,
