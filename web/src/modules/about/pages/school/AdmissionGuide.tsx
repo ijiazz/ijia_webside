@@ -21,8 +21,8 @@ const AdmissionGuide: React.FC = () => (
       <li>在抖音关注“佳佳子_zZ”，这是获取学院最新资讯的重要渠道哦。</li>
       <li>
         准备好一个邮箱，前往IJIA学院网站注册页面{" "}
-        <a href="https://ijiazz.cn/passport/signin" target="_blank" rel="noopener noreferrer">
-          https://ijiazz.cn/passport/signin
+        <a href="https://ijiazz.cn/passport/signup" target="_blank" rel="noopener noreferrer">
+          https://ijiazz.cn/passport/signup
         </a>
         ，按照页面提示填写相关信息进行注册。
       </li>
