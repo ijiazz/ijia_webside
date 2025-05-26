@@ -1,4 +1,4 @@
-import { lazyComponent } from "@/lib/lazy_component.ts";
+import { lazyComponent } from "@/lib/lazy_component.tsx";
 import React, { ComponentType, Suspense } from "react";
 import { PageLoading } from "./page_state/Loading.tsx";
 
