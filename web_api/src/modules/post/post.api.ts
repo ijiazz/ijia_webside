@@ -44,3 +44,11 @@ export interface PostApi {
     };
   };
 }
+export interface ReviewPostApi {
+  /** 获取审核摘要 */
+  "GET /review/stat": {};
+  /** 获取下一个审核项 */
+  "GET /review/post/content": {};
+  /** 审核作品 */
+  "POST /review/post/content": {};
+}
