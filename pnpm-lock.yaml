@@ -34,8 +34,8 @@ importers:
   deps/ijia-data:
     dependencies:
       '@asla/yoursql':
-        specifier: ^0.8.9
-        version: 0.8.9
+        specifier: ^0.8.10
+        version: 0.8.10
       '@redis/client':
         specifier: ^1.6.0
         version: 1.6.0
@@ -356,8 +356,8 @@ packages:
     peerDependencies:
       hono: ^4.7.2
 
-  '@asla/yoursql@0.8.9':
-    resolution: {integrity: sha512-bVIxt+btZYJISwjQkyYt7gkZVFIjczQfwfgXTKpLUEorJ6l3iIj/54o7wGQLn30pl2TNxMKoCz7vbkzSJJswCw==}
+  '@asla/yoursql@0.8.10':
+    resolution: {integrity: sha512-m/IKYaZBQqGzxcGIqNCOBAll6GEVwD/xginSSnXN/IcmNTAs83bEcd5JD5v9njYajpU9sLqus4aPzxVfY9gy1A==}
     engines: {node: '>=18'}
 
   '@babel/code-frame@7.26.2':
@@ -3135,7 +3135,7 @@ snapshots:
     dependencies:
       hono: 4.7.4
 
-  '@asla/yoursql@0.8.9': {}
+  '@asla/yoursql@0.8.10': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:

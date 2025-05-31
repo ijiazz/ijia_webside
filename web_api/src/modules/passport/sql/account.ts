@@ -13,7 +13,6 @@ export async function changeAccountPassword(uid: number, oldPwd: string, newPwd:
     .select<LoginUserInfo>({
       password: true,
       pwd_salt: true,
-      login_ban: "get_bit(status, 0)",
     })
     .where([`id=${v(uid)}`, "NOT is_deleted"])
     .limit(1);
@@ -67,5 +66,4 @@ async function expectPasswordIsEqual(user: LoginUserInfo, inputPassword: string)
 type LoginUserInfo = {
   password?: string;
   pwd_salt?: string;
-  login_ban: boolean;
 };
