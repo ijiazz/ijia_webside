@@ -4,7 +4,7 @@ import passportRoutes from "./modules/passport/routes.tsx";
 import profileRoutes from "./modules/profile/routes.tsx";
 import { routes as examinationRoutes } from "./modules/examination/routes.tsx";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
-import liveRoutes from "./modules/live/routes.tsx";
+import wallRoutes from "./modules/post/routes.tsx";
 import { notFoundRouter } from "./common/page_state/NotFound.tsx";
 import { getPathByRoute, remoteLoading } from "./app.ts";
 import aboutRouters from "./modules/about/routes.tsx";
@@ -22,7 +22,8 @@ const coreRoutes: RouteObject[] = [
   {
     Component: lazyPage(() => import("./modules/layout/UserLayout.tsx").then((mod) => mod.UserLayout)),
     children: [
-      { path: "live", children: liveRoutes },
+      { path: "live", children: wallRoutes },
+      { path: "wall", children: wallRoutes },
       { path: "profile", children: profileRoutes },
       { path: "examination", children: examinationRoutes },
       notFoundRouter,

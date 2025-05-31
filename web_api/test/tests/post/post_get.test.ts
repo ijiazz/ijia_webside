@@ -1,0 +1,101 @@
+import { beforeEach, expect } from "vitest";
+import { test, Context, Api, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
+import { applyController } from "@asla/hono-decorator";
+import { post } from "@ijia/data/db";
+
+import { postController } from "@/modules/post/mod.ts";
+import { prepareUser } from "../../fixtures/user.ts";
+import { PostItemDto, PostUserInfo } from "@/api.ts";
+import { createPostGroup } from "./utils/prepare_post.ts";
+beforeEach<Context>(async ({ hono }) => {
+  applyController(hono, postController);
+});
+
+test("匿名帖子只有自己能看到用户信息", async function ({ api, ijiaDbPool }) {
+  const alice = await prepareUser("alice");
+  const bob = await prepareUser("bob");
+  await api["/post/content"].put({ body: { content_text: "匿名", is_anonymous: true }, [JWT_TOKEN_KEY]: alice.token });
+
+  const { items: aliceList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: alice.token });
+  const aliceView = aliceList[0];
+  expect(aliceView.author, "自己可以看到自己发布的匿名作品的用户信息").toMatchObject({
+    user_id: alice.id.toString(),
+    user_name: alice.nickname,
+  } satisfies Partial<PostUserInfo>);
+  expect(aliceView.config.is_anonymous).toBe(true);
+  {
+    const { items: bobList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: bob.token });
+    const bobView = bobList[0];
+    expect(bobView.author, "bob不能看到别人发布发布的匿名作品的用户信息").toBeNull();
+    expect(bobView.config.is_anonymous).toBe(true);
+    expect(bobView.config.is_anonymous).toBe(true);
+  }
+  {
+    const { items: list } = await api["/post/list"].get({});
+    const view = list[0];
+    expect(view.author, "未登录不能看到别人发布发布的匿名作品的用户信息").toBeNull();
+    expect(view.config.is_anonymous).toBe(true);
+    expect(view.config.is_anonymous).toBe(true);
+  }
+});
+
+test("审核中的帖子只有自己能查看", async function ({ api, ijiaDbPool }) {
+  const alice = await prepareUser("alice");
+  const bob = await prepareUser("bob");
+  const groupId = await createPostGroup(ijiaDbPool, "test1");
+  const { id } = await api["/post/content"].put({
+    body: { content_text: "test1分组", group_id: groupId },
+    [JWT_TOKEN_KEY]: alice.token,
+  });
+  const { items: aliceList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: alice.token });
+  const aliceView = aliceList[0];
+  expect(aliceView.asset_id).toBe(id);
+  expect(aliceList.length, "审核中的帖子，自己可以查看").toBe(1);
+  expect(aliceView.status).toMatchObject({
+    is_reviewing: true,
+    review_pass: null,
+  } satisfies Partial<PostItemDto["status"]>);
+
+  const { items: bobList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: bob.token });
+  expect(bobList.length, "审核中的帖子，其他人无法查看").toBe(0);
+  const { items: visitorList } = await api["/post/list"].get({});
+  expect(visitorList.length, "审核中的帖子，游客无法查看").toBe(0);
+});
+test("审核失败的帖子只有自己能查看", async function ({ api, ijiaDbPool }) {
+  const alice = await prepareUser("alice");
+  const bob = await prepareUser("bob");
+  const { id } = await api["/post/content"].put({
+    body: { content_text: "test1分组", is_hide: true },
+    [JWT_TOKEN_KEY]: alice.token,
+  });
+  await post
+    .update({ is_review_pass: "false" })
+    .where([`id=${id}`])
+    .query();
+
+  const { items: aliceList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: alice.token });
+  expect(aliceList.length).toBe(1);
+  expect(aliceList[0].status.review_pass).toBe(false);
+
+  const { items: bobList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: bob.token });
+  expect(bobList.length).toBe(0);
+  const { items: visitorList } = await api["/post/list"].get({});
+  expect(visitorList.length, "游客无法查看").toBe(0);
+});
+
+test("已隐藏的帖子只有自己能查看", async function ({ api, ijiaDbPool }) {
+  const alice = await prepareUser("alice");
+  const bob = await prepareUser("bob");
+  const { id } = await api["/post/content"].put({
+    body: { content_text: "test1分组", is_hide: true },
+    [JWT_TOKEN_KEY]: alice.token,
+  });
+  const { items: aliceList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: alice.token });
+  expect(aliceList.length).toBe(1);
+
+  const { items: bobList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: bob.token });
+  expect(bobList.length).toBe(0);
+
+  const { items: visitorList } = await api["/post/list"].get({});
+  expect(visitorList.length, "游客无法查看").toBe(0);
+});

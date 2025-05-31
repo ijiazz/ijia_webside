@@ -1,9 +1,9 @@
-import { AssetImage, AssetMediaDto, AssetVideo, TextStructure } from "@/api.ts";
+import { AssetImage, AssetMediaDto, AssetVideo, PlatformPostItemDto, TextStructure } from "@/api.ts";
 import { useThemeToken } from "@/hooks/antd.ts";
 import styled from "@emotion/styled";
 import React, { CSSProperties, useMemo } from "react";
 import { PropsWithChildren, ReactNode } from "react";
-import { AssetItemDto, AssetMediaType } from "@/api.ts";
+import { AssetMediaType } from "@/api.ts";
 import { FileImageOutlined } from "@ant-design/icons";
 
 export type PostCardProps = {
@@ -64,7 +64,7 @@ const PostTextCSS = styled.div`
   }
   margin-bottom: 12px;
 `;
-export function PostContent(props: { item: AssetItemDto }) {
+export function PostContent(props: { item: PlatformPostItemDto }) {
   const { item } = props;
   const total = item.media?.length ?? 0;
   const theme = useThemeToken();

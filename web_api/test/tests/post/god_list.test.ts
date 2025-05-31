@@ -1,13 +1,13 @@
 import { expect, beforeEach } from "vitest";
-import { test, Context, JWT_TOKEN_KEY, Api } from "../fixtures/hono.ts";
+import { test, Context, JWT_TOKEN_KEY, Api } from "../../fixtures/hono.ts";
 import { applyController } from "@asla/hono-decorator";
 import { watching_pla_user, pla_user, USER_LEVEL, Platform, DbPlaUserCreate } from "@ijia/data/db";
 
-import { postController } from "@/modules/post/post.controller.ts";
-import { insertPosts } from "../__mocks__/posts.ts";
+import { platformPostController } from "@/modules/post/mod.ts";
+import { insertPosts } from "../../__mocks__/posts.ts";
 import { signLoginJwt } from "@/global/jwt.ts";
 beforeEach<Context>(async ({ hono, hoFetch, ijiaDbPool }) => {
-  applyController(hono, postController);
+  applyController(hono, platformPostController);
 });
 const getPosts = (api: Api, option: { number: number; offset: number; token?: string }) => {
   return api["/post/god_list"].get({
@@ -42,7 +42,7 @@ test.skip("只能查看 god 用户发布的帖子", async function ({ api, ijiaD
   const posts = await getPosts(api, { number: 10, offset: 0, token });
   const postsUser = posts.items.reduce(
     (s, c) => {
-      s[c.author.user_id] = true;
+      s[c.author!.user_id] = true;
       return s;
     },
     {} as Record<string, boolean>,
