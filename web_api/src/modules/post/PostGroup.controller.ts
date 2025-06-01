@@ -8,10 +8,10 @@ import { PostGroupResponse } from "./post.dto.ts";
 @autoBody
 @Controller({})
 class PostGroupController {
-  @Get("/group/list")
+  @Get("/post/group/list")
   async getGroupList(): Promise<PostGroupResponse> {
     const list = await post_group
-      .select({ description: "group_desc", id: "group_id", name: "group_name" })
+      .select({ group_desc: "description", group_id: "id", group_name: "name" })
       .orderBy({ public_sort: true })
       .queryRows();
 

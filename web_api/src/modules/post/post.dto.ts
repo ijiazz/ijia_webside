@@ -50,15 +50,13 @@ export type UpdatePostParam = {
 };
 
 export type PostGroupItem = {
-  group_id: string;
+  group_id: number;
   group_name: string;
   group_desc?: string;
 };
 export type PostGroupResponse = ListDto<PostGroupItem>;
 
 export type PostItemBase = {
-  /** 作者信息 */
-  author: PostUserInfo;
   /** 作品类型 */
   type: PostAssetType;
   content_text: string | null;

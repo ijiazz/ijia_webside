@@ -19,7 +19,7 @@ test("发布一条帖子", async function ({ api, ijiaDbPool }) {
   const post = await createPost(api, { content_text: "你好" }, alice.token);
 
   const item = await testGetPost(api, post.id);
-  expect(item.author.user_id).toBe(alice.id.toString());
+  expect(item.author!.user_id).toBe(alice.id.toString());
   expect(item.stat).toMatchObject({
     comment_total: 0,
     like_total: 0,

@@ -1,10 +1,19 @@
 import { RouteObject } from "react-router";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
-
+import { api } from "@/common/http.ts";
 const routes: RouteObject[] = [
   {
-    index: true,
-    Component: lazyPage(() => import("./pages/home.tsx").then((mod) => mod.HomePage)),
+    async loader() {
+      return api["/post/group/list"].get().catch(() => undefined);
+    },
+    Component: lazyPage(() => import("./layout/WallLayout.tsx").then((mod) => mod.PostLayout)),
+    children: [
+      {
+        path: ":groupId?",
+        index: true,
+        Component: lazyPage(() => import("./pages/wall.tsx").then((mod) => mod.PostListPage)),
+      },
+    ],
   },
   {
     path: "publish",

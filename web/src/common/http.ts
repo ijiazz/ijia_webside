@@ -1,5 +1,6 @@
-import { HoFetch, createFetchSuite, InferFetchSuite, FetchSuiteBase } from "@asla/hofetch";
+import { HoFetch, createFetchSuite, InferFetchSuite, FetchSuiteBase, HoContext, HoResponse } from "@asla/hofetch";
 import { ApiDefined } from "@/api.ts";
+import { IGNORE_ERROR_MSG } from "@/hooks/http.ts";
 
 export type Api = {
   [x: string]: FetchSuiteBase;
@@ -9,9 +10,36 @@ export function createHoFetch() {
   const API_PREFIX = "/api";
   const http = new HoFetch({ bodyParser: {} });
   const api: Api = createFetchSuite<ApiDefined>(http, { basePath: API_PREFIX });
+
   return { http, API_PREFIX, api };
 }
 const { http, API_PREFIX, api } = createHoFetch();
+export const apiEvent = new EventTarget();
+
+export enum ApiEvent {
+  error = "error",
+}
+export class ApiErrorEvent extends Event {
+  constructor(
+    readonly ctx: HoContext,
+    readonly response: HoResponse,
+    public body?: unknown,
+  ) {
+    super(ApiEvent.error);
+  }
+}
+
+http.use(async function (ctx, next) {
+  if (ctx.allowFailed === true || ctx[IGNORE_ERROR_MSG]) return next();
+  const res = await next();
+  if (res.ok) return res;
+  if (ctx.allowFailed instanceof Array && ctx.allowFailed.includes(res.status)) return res;
+
+  const body = await res.parseBody();
+  apiEvent.dispatchEvent(new ApiErrorEvent(ctx, res, body));
+
+  return res;
+});
 
 export { http, API_PREFIX, api };
 

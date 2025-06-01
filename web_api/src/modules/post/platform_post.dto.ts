@@ -1,6 +1,6 @@
 import { Platform } from "@ijia/data/db";
 import { ListDto } from "../dto_common.ts";
-import { PostItemBase } from "./post.dto.ts";
+import { PostItemBase, PostUserInfo } from "./post.dto.ts";
 
 export type PlatformPostResponse = ListDto<PlatformPostItemDto> & { needLogin?: boolean };
 
@@ -20,6 +20,8 @@ export type GetPlatformPostListParam = {
 };
 
 export interface PlatformPostItemDto extends PostItemBase {
+  /** 作者信息 */
+  author: PostUserInfo;
   asset_id: string;
   platform: Platform;
   url?: string;

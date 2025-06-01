@@ -1,4 +1,4 @@
-import { AssetImage, AssetMediaDto, AssetVideo, PlatformPostItemDto, TextStructure } from "@/api.ts";
+import { AssetImage, AssetMediaDto, AssetVideo, TextStructure } from "@/api.ts";
 import { useThemeToken } from "@/hooks/antd.ts";
 import styled from "@emotion/styled";
 import React, { CSSProperties, useMemo } from "react";
@@ -64,19 +64,24 @@ const PostTextCSS = styled.div`
   }
   margin-bottom: 12px;
 `;
-export function PostContent(props: { item: PlatformPostItemDto }) {
-  const { item } = props;
-  const total = item.media?.length ?? 0;
+
+export type PostContentProps = {
+  text: string | null;
+  textStruct: TextStructure[] | null;
+  media: (AssetMediaDto | undefined)[];
+};
+export function PostContent(props: PostContentProps) {
+  const total = props.media?.length ?? 0;
   const theme = useThemeToken();
   const mediaList = useMemo(() => {
-    if (!item.media) return [];
-    let list = item.media;
+    if (!props.media) return [];
+    let list = props.media;
     if (list.length >= 9) list = list.slice(0, 9);
     return list;
-  }, [item.media]);
+  }, [props.media]);
   return (
     <PostContentCSS>
-      <PostText text={item.content_text} structure={item.content_text_structure} />
+      <PostText text={props.text} structure={props.textStruct} />
       {mediaList.length > 1 ? (
         <PostMediaMultipleCSS>
           {mediaList.map((item, index) => {

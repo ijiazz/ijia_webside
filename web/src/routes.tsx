@@ -8,6 +8,7 @@ import wallRoutes from "./modules/post/routes.tsx";
 import { notFoundRouter } from "./common/page_state/NotFound.tsx";
 import { getPathByRoute, remoteLoading } from "./app.ts";
 import aboutRouters from "./modules/about/routes.tsx";
+import type { LazyRoute } from "./type.ts";
 const coreRoutes: RouteObject[] = [
   {
     index: true,
@@ -22,7 +23,10 @@ const coreRoutes: RouteObject[] = [
   {
     Component: lazyPage(() => import("./modules/layout/UserLayout.tsx").then((mod) => mod.UserLayout)),
     children: [
-      { path: "live", children: wallRoutes },
+      {
+        path: "live",
+        lazy: () => import("./modules/post/pages/home.tsx").then((mod): LazyRoute => ({ Component: mod.HomePage })),
+      },
       { path: "wall", children: wallRoutes },
       { path: "profile", children: profileRoutes },
       { path: "examination", children: examinationRoutes },

@@ -10,7 +10,7 @@ export interface PostApi {
 }
 export interface PostApi {
   /** 获取作品分组 */
-  "GET /post/group": {
+  "GET /post/group/list": {
     response: PostGroupResponse;
   };
   /** 获取作品列表 */

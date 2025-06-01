@@ -2,7 +2,7 @@ import { PlatformPostItemDto } from "@/api.ts";
 import { THIRD_PART } from "@/common/third_part_account.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useHoFetch } from "@/hooks/http.ts";
-import { Avatar, List, Space, Button } from "antd";
+import { Avatar, List, Button } from "antd";
 import styled from "@emotion/styled";
 import { useThemeToken } from "@/hooks/antd.ts";
 import { VLink } from "@/lib/components/VLink.tsx";
@@ -11,6 +11,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { Link, useSearchParams } from "react-router";
 import { ExportOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
+import { PostHeader } from "../components/PostHeader.tsx";
 const DEFAULT_PAGE_SIZE = 10;
 export function HomePage() {
   const { api } = useHoFetch();
@@ -90,9 +91,27 @@ export function HomePage() {
                       <Avatar src={item.author.avatar_url} />
                     </VLink>
                   }
-                  header={<PostHeader item={item} />}
+                  header={
+                    <PostHeader
+                      userName={item.author.user_name}
+                      ipLocation={item.ip_location}
+                      publishTime={item.publish_time?.toLocaleString()}
+                      platformIcon={THIRD_PART[item.platform]?.iconOutline}
+                      extra={
+                        item.url && (
+                          <VLink to={item.url} style={{ color: "inherit" }} target="_blank">
+                            <Button type="text" icon={<ExportOutlined />}></Button>
+                          </VLink>
+                        )
+                      }
+                    />
+                  }
                 >
-                  <PostContent item={item} />
+                  <PostContent
+                    text={item.content_text}
+                    textStruct={item.content_text_structure}
+                    media={item.media}
+                  />
                 </PostCardLayout>
               </List.Item>
             );
@@ -100,33 +119,6 @@ export function HomePage() {
         />
       </PostListCSS>
     </HomePageCSS>
-  );
-}
-function PostHeader(props: { item: PlatformPostItemDto }) {
-  const { item } = props;
-  const theme = useThemeToken();
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <div>
-        <Space>
-          <b>{item.author.user_name}</b>
-          <span>{THIRD_PART[item.platform]?.iconOutline}</span>
-        </Space>
-        <div style={{ color: theme.colorTextDescription, fontSize: theme.fontSizeSM }}>
-          <Space>
-            {item.publish_time?.toLocaleString()}
-            <span> {item.ip_location ? "IP: " + item.ip_location : undefined}</span>
-          </Space>
-        </div>
-      </div>
-      <div>
-        {item.url && (
-          <VLink to={item.url} style={{ color: "inherit" }} target="_blank">
-            <Button type="text" icon={<ExportOutlined />}></Button>
-          </VLink>
-        )}
-      </div>
-    </div>
   );
 }
 const HomePageCSS = styled.div`
