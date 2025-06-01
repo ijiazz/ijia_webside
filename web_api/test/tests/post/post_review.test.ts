@@ -5,7 +5,7 @@ import { post } from "@ijia/data/db";
 
 import { CreatePostParam, postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "test/fixtures/user.ts";
-import { createPostGroup, testGetPost } from "./utils/prepare_post.ts";
+import { createPostGroup, preparePost, testGetPost } from "./utils/prepare_post.ts";
 import v from "@ijia/data/yoursql";
 
 beforeEach<Context>(async ({ hono }) => {

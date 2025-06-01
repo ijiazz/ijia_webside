@@ -4,9 +4,17 @@ import { applyController } from "@asla/hono-decorator";
 
 import { postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "../../fixtures/user.ts";
-import { deletePost, preparePost, testGetPost } from "./utils/prepare_post.ts";
+import {
+  deletePost,
+  getPostReviewStatus,
+  preparePost,
+  reportPost,
+  ReviewStatus,
+  testGetPost,
+} from "./utils/prepare_post.ts";
 import { updatePost } from "./utils/prepare_post.ts";
 import { post } from "@ijia/data/db";
+
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
 });
@@ -30,63 +38,138 @@ test("已隐藏的帖子只有自己能点赞", async function ({ api, ijiaDbPoo
 
   await expect(getPostLikeCount(post.id)).resolves.toBe(0);
 
+  await setPostLike(api, post.id, bob.token);
+  await expect(getPostLikeCount(post.id), "bob 无法点赞").resolves.toBe(0);
+
   await setPostLike(api, post.id, alice.token);
-  await expect(getPostLikeCount(post.id)).resolves.toBe(1);
+  await expect(getPostLikeCount(post.id), "alice 可以点赞").resolves.toBe(1);
 });
 test("不能点赞已删除的帖子", async function ({ api, ijiaDbPool }) {
   const { post, alice } = await preparePost(api);
 
   await deletePost(api, post.id, alice.token);
 
-  await expect(setPostLike(api, post.id, alice.token)).responseStatus(404);
+  const res = await setPostLike(api, post.id, alice.token);
+  await expect(res.success).toBeFalsy();
   await expect(getPostLikeCount(post.id)).resolves.toBe(0);
 });
-test("已删除的帖子可以取消点赞", async function ({ api, ijiaDbPool }) {
+test("重复点赞或取消点赞将忽略", async function ({ api, ijiaDbPool }) {
+  const { post, alice } = await preparePost(api);
+
+  {
+    const res1 = await setPostLike(api, post.id, alice.token);
+    expect(res1.success).toBeTruthy();
+    await expect(getPostLikeCount(post.id)).resolves.toBe(1);
+
+    const res2 = await setPostLike(api, post.id, alice.token);
+    expect(res2.success, "重复点赞将忽略").toBeFalsy();
+    await expect(getPostLikeCount(post.id)).resolves.toBe(1);
+  }
+
+  {
+    const rp1 = await cancelPostLike(api, post.id, alice.token);
+    expect(rp1.success).toBeTruthy();
+    await expect(getPostLikeCount(post.id)).resolves.toBe(0);
+
+    const rp2 = await cancelPostLike(api, post.id, alice.token);
+    expect(rp2.success, "重复取消点赞将忽略").toBeFalsy();
+    await expect(getPostLikeCount(post.id)).resolves.toBe(0);
+  }
+});
+
+test("举报作品", async function ({ api, ijiaDbPool }) {
   const { post: p, alice } = await preparePost(api);
   const bob = await prepareUser("bob");
-  await setPostLike(api, p.id, bob.token);
-  await deletePost(api, p.id, alice.token); //删除帖子
 
-  await cancelPostLike(api, p.id, alice.token);
+  const res = await reportPost(api, p.id, bob.token, "测试举报");
+  expect(res.success).toBeTruthy();
+  await expect(getPostReportCount(p.id)).resolves.toBe(1);
 
-  await expect(getPostLikeCount(p.id)).resolves.toBe(0); //取消点赞后，点赞数归零
+  const info = await testGetPost(api, p.id, bob.token);
+  expect(info.is_report).toBeTruthy();
 });
 
-test("已隐藏的帖子可以取消点赞", async function ({ api, ijiaDbPool }) {
-  const { post, alice } = await preparePost(api);
-  const bob = await prepareUser("bob");
-  await setPostLike(api, post.id, bob.token);
-  await updatePost(api, post.id, { is_hide: true }, alice.token);
-  await expect(getPostLikeCount(post.id)).resolves.toBe(1);
-
-  await cancelPostLike(api, post.id, bob.token);
-  await expect(getPostLikeCount(post.id)).resolves.toBe(0); //取消点赞后，点赞数归零
-});
-test("重复点赞将忽略", async function ({ api, ijiaDbPool }) {
-  const { post, alice } = await preparePost(api);
-
-  await setPostLike(api, post.id, alice.token);
-  await expect(getPostLikeCount(post.id)).resolves.toBe(1);
-
-  await setPostLike(api, post.id, alice.token);
-  await expect(getPostLikeCount(post.id)).resolves.toBe(1);
-});
-test("重复取消点赞", async function ({ api, ijiaDbPool }) {
+test("点赞后的作品再举报，将删除点赞", async function ({ api, ijiaDbPool }) {
   const { post, alice } = await preparePost(api);
   await setPostLike(api, post.id, alice.token);
-
-  await expect(getPostLikeCount(post.id)).resolves.toBe(1);
-
-  await cancelPostLike(api, post.id, alice.token);
+  await reportPost(api, post.id, alice.token, "测试举报");
   await expect(getPostLikeCount(post.id)).resolves.toBe(0);
-
-  await cancelPostLike(api, post.id, alice.token); //重复点赞将忽略
-  await expect(getPostLikeCount(post.id)).resolves.toBe(0);
+  await expect(getPostReportCount(post.id)).resolves.toBe(1);
+  const info = await testGetPost(api, post.id, alice.token);
+  expect(info.is_like, "点赞状态被删除").toBeFalsy();
+  expect(info.is_report, "仍然是已举报状态").toBeTruthy();
 });
 
-test("点赞后的作品再举报，将删除点赞", async function () {});
+test("有效举报人数达到3人，帖子将进入审核状态", async function ({ api, ijiaDbPool }) {
+  const { post: p, alice } = await preparePost(api);
 
-test("举报后的作品再点赞，将取消举报，举报认识将恢复", async function () {});
+  const bo2 = await prepareUser("bob2");
+  const list = [alice, bo2];
+  for (let i = 0; i < list.length; i++) {
+    await reportPost(api, p.id, list[i].token, "测试举报");
+  }
+
+  await expect(getPostReportCount(p.id)).resolves.toBe(2);
+  const status1 = await getPostReviewStatus(p.id);
+  expect(status1.is_reviewing).toBeFalsy();
+
+  const bob3 = await prepareUser("bob3");
+  await reportPost(api, p.id, bob3.token, "测试举报");
+  await expect(getPostReportCount(p.id)).resolves.toBe(3);
+
+  const status = await getPostReviewStatus(p.id);
+  expect(status).toMatchObject({
+    is_review_pass: null,
+    is_reviewing: true,
+    review_fail_count: 0,
+    review_pass_count: 0,
+  } satisfies Partial<ReviewStatus>);
+});
+test("审核通过的帖子，举报达到3人后，帖子仍然是审核通过", async function ({ api, ijiaDbPool }) {
+  const { post: p, alice } = await preparePost(api);
+
+  await post.update({ is_review_pass: "true" }).where(`id=${p.id}`).queryCount();
+
+  const bo2 = await prepareUser("bob2");
+  const bob3 = await prepareUser("bob3");
+  await reportPost(api, p.id, alice.token, "测试举报");
+  await reportPost(api, p.id, bo2.token, "测试举报");
+  await reportPost(api, p.id, bob3.token, "测试举报");
+
+  const status = await getPostReviewStatus(p.id);
+  expect(status).toMatchObject({
+    is_review_pass: true,
+    is_reviewing: false,
+    review_fail_count: 0,
+    review_pass_count: 0,
+  } satisfies Partial<ReviewStatus>);
+});
+test("已举报的帖子尝试取消点赞，不应删除举报记录", async function ({ api, ijiaDbPool }) {
+  const { post: p, alice } = await preparePost(api);
+
+  await reportPost(api, p.id, alice.token, "cc");
+
+  {
+    const rp1 = await cancelPostLike(api, p.id, alice.token);
+    expect(rp1.success).toBeFalsy();
+    await expect(getPostLikeCount(p.id)).resolves.toBe(0);
+    const info = await testGetPost(api, p.id, alice.token);
+    expect(info.is_report, "仍是已举报状态").toBeTruthy();
+    await expect(getPostReportCount(p.id), "举报数没有变化").resolves.toBe(1);
+  }
+});
+test("已举报的帖子，不能再点赞", async function ({ api, ijiaDbPool }) {
+  const { post: p, alice } = await preparePost(api);
+
+  await reportPost(api, p.id, alice.token, "测试举报");
+
+  const rp1 = await setPostLike(api, p.id, alice.token);
+  expect(rp1.success).toBeFalsy();
+  const info = await testGetPost(api, p.id, alice.token);
+  expect(info.stat.like_total, "点赞数为0").toBe(0);
+  expect(info.is_like, "点赞状态为false").toBeFalsy();
+  expect(info.is_report, "仍是已举报状态").toBeTruthy();
+});
 
 async function setPostLike(api: Api, postId: number, token: string) {
   return api["/post/like/:postId"].post({
@@ -108,3 +191,10 @@ const getPostLikeCount = (postId: number) => {
     .queryFirstRow()
     .then((item) => item.like_count);
 };
+function getPostReportCount(postId: number) {
+  return post
+    .select({ report_count: "ROUND(dislike_count::NUMERIC /100, 2)" })
+    .where(`id=${postId}`)
+    .queryFirstRow()
+    .then((item) => +item.report_count);
+}

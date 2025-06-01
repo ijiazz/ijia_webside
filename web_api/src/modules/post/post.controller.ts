@@ -10,6 +10,7 @@ import {
   updatePost,
   cancelPostLike,
   setPostLike,
+  reportPost,
 } from "./sql/post.ts";
 import { checkValue, checkValueAsync } from "@/global/check.ts";
 import { CheckTypeError, getBasicType, integer, optional } from "@asla/wokao";
@@ -116,16 +117,28 @@ class PostController {
     return [userId, postId, isCancel];
   })
   @Post("/post/like/:postId")
-  async likePost(userId: number, postId: number, isCancel?: boolean): Promise<void> {
+  async likePost(userId: number, postId: number, isCancel?: boolean): Promise<{ success: boolean }> {
     let count: number;
     if (isCancel) {
       count = await cancelPostLike(userId, postId);
     } else {
       count = await setPostLike(userId, postId);
     }
-    if (count === 0) {
-      throw new HttpError(404, `ID 为 ${postId} 的帖子不存在`);
-    }
+    return { success: count > 0 };
+  }
+  @ToArguments(async (c: HonoContext) => {
+    const userInfo = c.get("userInfo");
+    const userId = await userInfo.getUserId();
+    const postId = checkValue(c.req.param("postId"), integer.positive);
+    const data = await checkValueAsync(c.req.json(), {
+      reason: optional.string,
+    });
+    return [userId, postId, data];
+  })
+  @Put("/post/report/:postId")
+  async reportPost(userId: number, postId: number, data: { reason?: string }): Promise<{ success: boolean }> {
+    const count = await reportPost(postId, userId, data.reason);
+    return { success: count > 0 };
   }
 }
 

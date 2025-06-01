@@ -36,11 +36,17 @@ export interface PostApi {
     query?: {
       isCancel?: boolean;
     };
+    response: {
+      success: boolean;
+    };
   };
   /** 举报作品 */
-  "POST /post/report/:postId": {
+  "PUT /post/report/:postId": {
     body?: {
       reason?: string;
+    };
+    response: {
+      success: boolean;
     };
   };
 }

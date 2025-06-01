@@ -28,12 +28,12 @@ export async function getPostList(
       : `(CASE WHEN (get_bit(p.options, 0)::BOOL)
           THEN NULL ELSE ${author} END)`;
 
-  const isLike =
+  const likeWeight =
     currentUserId === undefined
-      ? "FALSE"
-      : `EXISTS ${post_like
-          .select("1")
-          .where(["post_id=p.id", `user_id=${v(currentUserId)}`, `is_like=TRUE`])
+      ? "NULL"
+      : `${post_like
+          .select("weight")
+          .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
           .toSelect()}`;
 
   const qSql = post
@@ -44,7 +44,7 @@ export async function getPostList(
       asset_id: "p.id",
       author: authorCheck,
       publish_time: "p.publish_time",
-      is_like: isLike,
+      like_weight: likeWeight,
       create_time: "p.create_time",
       update_time: "p.update_time",
       type: getPostContentType("p.content_type"),
@@ -53,12 +53,16 @@ export async function getPostList(
       ip_location: "null", //TODO
       media: "null", //TODO
       group: jsonb_build_object({ group_id: "g.id", group_name: "g.name" }),
-      stat: jsonb_build_object({ like_total: "p.like_count", comment_total: "comment_num" }),
-      status: jsonb_build_object({ review_pass: "p.is_review_pass", is_reviewing: "p.is_reviewing" }),
+      stat: jsonb_build_object({
+        like_total: "p.like_count",
+        dislike_total: "ROUND(p.dislike_count::NUMERIC /100, 2)",
+        comment_total: "comment_num",
+      }),
       config: jsonb_build_object({
         is_anonymous: "get_bit(p.options, 0)::BOOL",
         self_visible: "p.is_hide",
       }),
+      status: jsonb_build_object({ review_pass: "p.is_review_pass", is_reviewing: "p.is_reviewing" }),
     })
     .where(() => {
       const where: string[] = [`NOT p.is_delete`];
@@ -94,11 +98,19 @@ export async function getPostList(
    *  因为 publish_time 可能为 null，如果 publish_time 为 null，仅使用 id 作为指针
    */
 
-  const list = (await qSql.queryRows()) as PostItemDto[];
+  const list = await qSql.queryRows();
+  list.forEach((item) => {
+    const weight = item.like_weight;
+    delete item.like_weight; // 删除不需要的字段
+    if (weight) {
+      item.is_like = weight > 0; // 是否点赞
+      item.is_report = weight < 0; // 是否举报
+    }
+  });
 
   const last = list[list.length - 1];
   return {
-    items: list,
+    items: list as PostItemDto[],
     has_more: list.length >= number,
     next_cursor: last
       ? toTimestampCursor({
@@ -234,16 +246,18 @@ export async function deletePost(postId: number, userId?: number) {
   return q.queryCount();
 }
 export async function setPostLike(postId: number, userId: number) {
-  const values = post
-    .select(["TRUE as is_like", "id AS post_id", `${v(userId)} AS user_id`])
-    .where([`id=${v(postId)}`, `(NOT is_delete)`]);
-
   const insertRecord = post_like
-    .insert("is_like, post_id, user_id", values.toString())
+    .insert("weight, post_id, user_id", () => {
+      return post
+        .select(["100 as weight", "id AS post_id", `${v(userId)} AS user_id`])
+        .where([`id=${v(postId)}`, `(NOT is_delete)`])
+        .toString();
+    })
     .onConflict(["post_id", "user_id"])
     .doNotThing()
     .returning("1");
 
+  // 成功插入更新计数
   const updateCount = post
     .update({ like_count: "like_count + 1" })
     .where([`id=${v(postId)}`, `EXISTS (SELECT 1 FROM tmp)`]);
@@ -252,16 +266,58 @@ export async function setPostLike(postId: number, userId: number) {
 
   return count;
 }
-export async function cancelPostLike(postId: number, userId: number) {
-  const deleteRecord = post_like.delete({ where: [`post_id=${v(postId)}`, `user_id=${v(userId)}`] }).returning("1");
 
+function cancelPostLikeSql(postId: number, userId: number) {
+  const deleteRecord = post_like
+    .delete({ where: [`post_id=${v(postId)}`, `user_id=${v(userId)}`, "weight>0"] })
+    .returning("1");
+  // 成功删除则更新计数
   const updateCount = post
-    .update({ like_count: "like_count + 1" })
+    .update({ like_count: "like_count - 1" })
+    .where([`id=${v(postId)}`, `EXISTS (SELECT 1 FROM tmp)`]);
+  const sql = `WITH tmp AS (${deleteRecord})\n${updateCount.toString()}`;
+
+  return sql;
+}
+export async function cancelPostLike(postId: number, userId: number) {
+  const sql = cancelPostLikeSql(postId, userId);
+  return dbPool.queryCount(sql);
+}
+export async function reportPost(postId: number, userId: number, reason?: string) {
+  const cancelLikeSql = cancelPostLikeSql(postId, userId);
+  const reviewThreshold = 300;
+  const insertRecord = post_like
+    .insert("weight, post_id, user_id, reason", () => {
+      return post
+        .select([
+          "-100 as weight", //todo 根据用户获取权重
+          "id AS post_id",
+          `${v(userId)} AS user_id`,
+          `${reason ? v(reason) : "NULL"} AS reason`,
+        ])
+        .where([`id=${v(postId)}`, `(NOT is_delete)`])
+        .toString();
+    })
+    .returning("1");
+
+  const setReviewing = `(CASE 
+  WHEN (is_review_pass IS NULL AND (dislike_count + 100) >=${v(reviewThreshold)}) THEN TRUE 
+  ELSE is_reviewing
+  END)`;
+
+  // 成功插入更新计数
+  const updateCount = post
+    .update({
+      dislike_count: "dislike_count + 100", //todo 根据用户获取权重
+      is_reviewing: setReviewing,
+    })
     .where([`id=${v(postId)}`, `EXISTS (SELECT 1 FROM tmp)`]);
 
-  const count = await dbPool.queryCount(`WITH tmp AS (${deleteRecord})\n${updateCount.toString()}`);
+  const sql = `WITH tmp AS (${insertRecord})\n${updateCount.toString()}`;
 
-  return count;
+  const [cancel, insert] = await dbPool.multipleQuery([cancelLikeSql, sql].join(";\n"));
+
+  return insert.rowCount;
 }
 
 export async function getUserDateCount(userId: number) {

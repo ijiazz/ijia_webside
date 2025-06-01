@@ -82,6 +82,8 @@ export type PostItemDto = PostItemBase & {
   } | null;
   stat: {
     like_total: number;
+    /** 举报人数。可能不是整数 */
+    dislike_total: number;
     comment_total: number;
   };
   status: {
