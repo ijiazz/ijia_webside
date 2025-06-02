@@ -19,7 +19,7 @@ export async function getPostList(
   let curr_user: string | undefined;
   if (typeof currentUserId === "number") {
     curr_user = jsonb_build_object({
-      can_update: `p.id=${v(currentUserId)}`,
+      can_update: `u.id=${v(currentUserId)}`,
       can_comment: "true",
 
       /** like_weight 用量计算 is_like 和 is_report */

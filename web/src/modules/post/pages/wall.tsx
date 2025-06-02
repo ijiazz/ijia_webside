@@ -1,6 +1,6 @@
-import { PostGroupResponse, PostItemDto } from "@/api.ts";
+import { PostGroupResponse, PostItemDto, UpdatePostParam } from "@/api.ts";
 import { useAsync } from "@/hooks/async.ts";
-import { Avatar, Button, List, Menu, MenuProps, Modal, Tag } from "antd";
+import { Avatar, Button, Dropdown, List, Menu, MenuProps, Modal, Space, Tag, Tooltip } from "antd";
 import styled from "@emotion/styled";
 import { useThemeToken } from "@/hooks/antd.ts";
 import { VLink } from "@/lib/components/VLink.tsx";
@@ -8,7 +8,15 @@ import { PostCardLayout, PostContent } from "../components/posts.tsx";
 import React, { useMemo, useRef, useState } from "react";
 import { useParams, useRouteLoaderData, useSearchParams } from "react-router";
 import { PostHeader } from "../components/PostHeader.tsx";
-import { PlusOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  MehOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  UserOutlined,
+  WarningOutlined,
+} from "@ant-design/icons";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
 import { api } from "@/common/http.ts";
 
@@ -38,11 +46,21 @@ function PostList(props: { groupId?: string; groupOptions?: PostGroupOption[] })
   const { groupId, groupOptions } = props;
   const [search, setSearch] = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
-
+  const [editItem, setEditItem] = useState<(UpdatePostParam & { id: number }) | undefined>(undefined);
   const onOpenPublish = () => {
     //TODO: 检测是否已登录
     setModalOpen(true);
   };
+  const onEditPost = (item: PostItemDto) => {
+    setEditItem({
+      id: item.asset_id,
+      content_text: item.content_text,
+      content_text_structure: item.content_text_structure,
+      is_hide: item.config.self_visible,
+    });
+    setModalOpen(true);
+  };
+  const onDeletePost = (item: PostItemDto) => {};
   const pageRef = useRef<HTMLDivElement>(null);
 
   const { result, run, reset } = useAsync(
@@ -78,7 +96,23 @@ function PostList(props: { groupId?: string; groupOptions?: PostGroupOption[] })
           renderItem={(item, index) => {
             const isAnonymous = item.config.is_anonymous;
             const author = item.author;
-            const userName = isAnonymous ? <Tag>匿名用户</Tag> : author?.user_name;
+            const userName = isAnonymous ? (
+              <Tag bordered={false} color={theme.colorTextSecondary}>
+                匿名
+              </Tag>
+            ) : (
+              author?.user_name
+            );
+
+            const moreMenus: MenuProps["items"] = [{ icon: <WarningOutlined />, label: "举报", key: "report" }];
+            if (item.curr_user) {
+              if (item.curr_user.can_update) {
+                moreMenus.unshift(
+                  { icon: <EditOutlined />, label: "编辑", key: "edit", onClick: () => onEditPost(item) },
+                  { icon: <DeleteOutlined />, label: "删除", key: "delete", onClick: () => onDeletePost(item) },
+                );
+              }
+            }
             return (
               <List.Item
                 ref={index === 0 ? pageRef : undefined}
@@ -88,7 +122,7 @@ function PostList(props: { groupId?: string; groupOptions?: PostGroupOption[] })
                 <PostCardLayout
                   icon={
                     <VLink to={undefined} target="_blank">
-                      <Avatar src={author?.avatar_url} />
+                      <Avatar icon={author ? undefined : <UserOutlined />} src={author?.avatar_url} />
                     </VLink>
                   }
                   header={
@@ -96,6 +130,16 @@ function PostList(props: { groupId?: string; groupOptions?: PostGroupOption[] })
                       userName={userName}
                       ipLocation={item.ip_location}
                       publishTime={item.publish_time?.toLocaleString()}
+                      extra={
+                        <Space size="small">
+                          {item.config.self_visible && <Tag>仅自己可见</Tag>}
+                          {item.curr_user && (
+                            <Dropdown menu={{ items: moreMenus }}>
+                              <Button type="text" icon={<MoreOutlined />}></Button>
+                            </Dropdown>
+                          )}
+                        </Space>
+                      }
                     />
                   }
                 >
@@ -108,17 +152,21 @@ function PostList(props: { groupId?: string; groupOptions?: PostGroupOption[] })
       </PostListCSS>
 
       <Modal
-        title="发布"
+        title={editItem ? "编辑" : "发布"}
         open={modalOpen}
         maskClosable={false}
         onCancel={() => setModalOpen(false)}
         footer={null}
+        afterClose={() => setEditItem(undefined)}
+        destroyOnClose
         width={600}
       >
         <Publish
-          onOk={() => {
+          editId={editItem?.id}
+          initValues={editItem}
+          onOk={(isChange) => {
             setModalOpen(false);
-            run();
+            if (isChange) run();
           }}
           groupOptions={groupOptions}
         />

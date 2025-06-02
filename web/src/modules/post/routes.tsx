@@ -6,6 +6,7 @@ const routes: RouteObject[] = [
     async loader() {
       return api["/post/group/list"].get().catch(() => undefined);
     },
+    id: "/wall",
     Component: lazyPage(() => import("./layout/WallLayout.tsx").then((mod) => mod.PostLayout)),
     children: [
       {

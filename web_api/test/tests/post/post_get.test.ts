@@ -6,7 +6,7 @@ import { post } from "@ijia/data/db";
 import { postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "../../fixtures/user.ts";
 import { PostItemDto, PostUserInfo } from "@/api.ts";
-import { createPost, createPostGroup, testGetPost } from "./utils/prepare_post.ts";
+import { createPost, createPostGroup, preparePost, testGetPost } from "./utils/prepare_post.ts";
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
 });
@@ -93,4 +93,14 @@ test("已隐藏的帖子只有自己能查看", async function ({ api, ijiaDbPoo
 
   const { items: visitorList } = await api["/post/list"].get({});
   expect(visitorList.length, "游客无法查看").toBe(0);
+});
+test("获取帖子的可编辑状态", async function ({ api, ijiaDbPool }) {
+  const { alice, post } = await preparePost(api);
+  const bob = await prepareUser("bob");
+
+  const bobView = await testGetPost(api, post.id, bob.token);
+  expect(bobView.curr_user!.can_update).toBeFalsy();
+
+  const aliceView = await testGetPost(api, post.id, alice.token);
+  expect(aliceView.curr_user!.can_update).toBeTruthy();
 });
