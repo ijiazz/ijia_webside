@@ -1,7 +1,7 @@
 import { CreatePostParam, UpdatePostParam } from "@/api.ts";
+import { api } from "@/common/http.ts";
 import { useAntdStatic } from "@/hooks/antd.ts";
 import { useAsync } from "@/hooks/async.ts";
-import { useHoFetch } from "@/hooks/http.ts";
 import { Button, Form, Input, Select, Switch } from "antd";
 import React from "react";
 
@@ -13,7 +13,6 @@ export function PublishPost(props: {
   groupOptions?: { label: string; value: number }[];
 }) {
   const { initValues, onOk, groupOptions, defaultGroup, groupLoading } = props;
-  const { api } = useHoFetch();
   const { message } = useAntdStatic();
   const { run, reset, result } = useAsync(async (data: CreatePostParam) => {
     if (isEdit) {

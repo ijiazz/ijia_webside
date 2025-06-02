@@ -13,28 +13,24 @@ export async function getPostList(
   option: { currentUserId?: number } = {},
 ): Promise<CursorListDto<PostItemDto, string>> {
   const { number = 20, cursor: cursorStr, userId, group_id, post_id, s_content, s_author } = params;
-  const { currentUserId } = option;
+  const { currentUserId = null } = option;
   const cursor = cursorStr ? parserTimestampCursor(cursorStr) : null;
 
-  const author = jsonb_build_object({
-    user_name: "u.nickname",
-    user_id: "u.id ::TEXT",
-    avatar_url: "'/file/avatar/'||u.avatar",
-  } satisfies { [key in keyof PostUserInfo]: string });
-  const authorCheck =
-    currentUserId !== undefined
-      ? `(CASE WHEN (get_bit(p.options, 0)::BOOL AND u.id!=${v(currentUserId)})
-          THEN NULL ELSE ${author} END)`
-      : `(CASE WHEN (get_bit(p.options, 0)::BOOL)
-          THEN NULL ELSE ${author} END)`;
+  let curr_user: string | undefined;
+  if (typeof currentUserId === "number") {
+    curr_user = jsonb_build_object({
+      can_update: `p.id=${v(currentUserId)}`,
+      can_comment: "true",
 
-  const likeWeight =
-    currentUserId === undefined
-      ? "NULL"
-      : `${post_like
-          .select("weight")
-          .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
-          .toSelect()}`;
+      /** like_weight 用量计算 is_like 和 is_report */
+      like_weight: `${post_like
+        .select("weight")
+        .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
+        .toSelect()}`,
+    });
+  } else {
+    curr_user = "null";
+  }
 
   const qSql = post
     .fromAs("p")
@@ -42,9 +38,18 @@ export async function getPostList(
     .leftJoin(post_group, "g", "g.id=p.group_id")
     .select({
       asset_id: "p.id",
-      author: authorCheck,
+      author: `CASE WHEN (get_bit(p.options, 0)='0' OR u.id=${v(currentUserId)})
+              THEN ${jsonb_build_object({
+                user_name: "u.nickname",
+                user_id: "u.id ::TEXT",
+                avatar_url: "'/file/avatar/'||u.avatar",
+              } satisfies { [key in keyof PostUserInfo]: string })}
+              ELSE NULL END`,
       publish_time: "p.publish_time",
-      like_weight: likeWeight,
+      like_weight: `${post_like
+        .select("weight")
+        .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
+        .toSelect()}`,
       create_time: "p.create_time",
       update_time: "p.update_time",
       type: getPostContentType("p.content_type"),
@@ -52,6 +57,7 @@ export async function getPostList(
       content_text_structure: "p.content_text_struct",
       ip_location: "null", //TODO
       media: "null", //TODO
+      curr_user: curr_user,
       group: jsonb_build_object({ group_id: "g.id", group_name: "g.name" }),
       stat: jsonb_build_object({
         like_total: "p.like_count",
@@ -100,11 +106,15 @@ export async function getPostList(
 
   const list = await qSql.queryRows();
   list.forEach((item) => {
-    const weight = item.like_weight;
-    delete item.like_weight; // 删除不需要的字段
-    if (weight) {
-      item.is_like = weight > 0; // 是否点赞
-      item.is_report = weight < 0; // 是否举报
+    const currUser = item.curr_user;
+    if (currUser) {
+      const weight = currUser.like_weight;
+      delete currUser.like_weight; // 删除不需要的字段
+      const postItem = currUser as NonNullable<PostItemDto["curr_user"]>;
+      if (weight) {
+        postItem.is_like = weight > 0; // 是否点赞
+        postItem.is_report = weight < 0; // 是否举报
+      }
     }
   });
 

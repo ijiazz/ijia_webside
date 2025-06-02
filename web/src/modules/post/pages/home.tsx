@@ -1,7 +1,6 @@
 import { PlatformPostItemDto } from "@/api.ts";
 import { THIRD_PART } from "@/common/third_part_account.tsx";
 import { useAsync } from "@/hooks/async.ts";
-import { useHoFetch } from "@/hooks/http.ts";
 import { Avatar, List, Button } from "antd";
 import styled from "@emotion/styled";
 import { useThemeToken } from "@/hooks/antd.ts";
@@ -12,9 +11,9 @@ import { Link, useSearchParams } from "react-router";
 import { ExportOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
 import { PostHeader } from "../components/PostHeader.tsx";
+import { api } from "@/common/http.ts";
 const DEFAULT_PAGE_SIZE = 10;
 export function HomePage() {
-  const { api } = useHoFetch();
   const [search, setSearch] = useSearchParams();
   const pageRef = useRef<HTMLDivElement>(null);
   const param = useMemo(() => {
@@ -107,11 +106,7 @@ export function HomePage() {
                     />
                   }
                 >
-                  <PostContent
-                    text={item.content_text}
-                    textStruct={item.content_text_structure}
-                    media={item.media}
-                  />
+                  <PostContent text={item.content_text} textStruct={item.content_text_structure} media={item.media} />
                 </PostCardLayout>
               </List.Item>
             );

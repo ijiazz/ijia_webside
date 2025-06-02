@@ -72,8 +72,14 @@ export type PostItemDto = PostItemBase & {
   asset_id: number;
   /** 作者信息 */
   author: PostUserInfo | null;
-  is_like?: boolean; // 是否点赞
-  is_report?: boolean; // 是否举报
+  /** 当前请求用户的相关数据 */
+  curr_user?: {
+    can_update?: boolean; // 是否可以删除或删除
+    can_comment?: boolean; // 是否可以评论
+
+    is_like: boolean; // 是否点赞
+    is_report: boolean; // 是否已举报
+  } | null;
   group?: {
     group_id: string;
     group_name: string;

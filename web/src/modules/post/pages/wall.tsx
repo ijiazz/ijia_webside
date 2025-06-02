@@ -1,6 +1,5 @@
 import { PostGroupResponse, PostItemDto } from "@/api.ts";
 import { useAsync } from "@/hooks/async.ts";
-import { useHoFetch } from "@/hooks/http.ts";
 import { Avatar, Button, List, Menu, MenuProps, Modal, Tag } from "antd";
 import styled from "@emotion/styled";
 import { useThemeToken } from "@/hooks/antd.ts";
@@ -11,6 +10,7 @@ import { useParams, useRouteLoaderData, useSearchParams } from "react-router";
 import { PostHeader } from "../components/PostHeader.tsx";
 import { PlusOutlined } from "@ant-design/icons";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
+import { api } from "@/common/http.ts";
 
 export function PostListPage() {
   const data = useRouteLoaderData<PostGroupResponse | undefined>("/wall");
@@ -36,7 +36,6 @@ type PostGroupOption = {
 };
 function PostList(props: { groupId?: string; groupOptions?: PostGroupOption[] }) {
   const { groupId, groupOptions } = props;
-  const { api } = useHoFetch();
   const [search, setSearch] = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
 
