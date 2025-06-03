@@ -6,7 +6,7 @@ import { InfiniteWall } from "@/lib/Infinite-wall/react.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "./shake_animation.ts";
 import classNames from "classnames";
-import { getCurrentUserId } from "@/common/user.ts";
+import { getUserInfoFromToken } from "@/common/user.ts";
 
 type AvatarItem = {
   key: string;
@@ -46,7 +46,7 @@ export function Screen(props: AvatarListProps) {
         userId: item.id,
         name: item.name,
       }));
-      const currentUserId = getCurrentUserId();
+      const currentUserId = getUserInfoFromToken()?.userId;
       if (items.length < limit) {
         columns = Math.ceil(Math.sqrt(items.length));
         rows = columns;

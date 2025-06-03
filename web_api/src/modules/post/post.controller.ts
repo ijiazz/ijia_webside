@@ -94,13 +94,14 @@ class PostController {
   @ToArguments(async (c: HonoContext) => {
     const userInfo = c.get("userInfo");
     const userId = await userInfo.getUserId().catch(() => undefined);
-    const res = checkValue(c.req.param(), {
+    const queries = c.req.query();
+    const res = checkValue(queries, {
       cursor: optional.string,
-      number: optional(integer.positive),
+      number: optional(integer({ acceptString: true, min: 1, max: 100 })),
       userId: optional(integer.positive),
       post_id: optional(integer.positive),
 
-      group_id: optional.number,
+      group_id: optional(integer({ acceptString: true })),
     });
     return [res, userId];
   })

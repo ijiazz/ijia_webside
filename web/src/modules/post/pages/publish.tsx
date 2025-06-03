@@ -2,8 +2,10 @@ import { CreatePostParam, UpdatePostParam } from "@/api.ts";
 import { api } from "@/common/http.ts";
 import { useAntdStatic } from "@/hooks/antd.ts";
 import { useAsync } from "@/hooks/async.ts";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Select, Switch } from "antd";
 import React from "react";
+import { useNavigate } from "react-router";
 
 export function PublishPost(props: {
   editId?: number;
@@ -78,5 +80,20 @@ function diffUpdateValue(news: UpdatePostParam, old?: UpdatePostParam): UpdatePo
 }
 
 export function PublishPostPage() {
-  return <PublishPost />;
+  const navigate = useNavigate();
+  const onBack = () => {
+    navigate(-1);
+  };
+  return (
+    <div>
+      <div>
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={onBack}>
+          返回
+        </Button>
+      </div>
+      <div style={{ padding: "12px" }}>
+        <PublishPost />
+      </div>
+    </div>
+  );
 }

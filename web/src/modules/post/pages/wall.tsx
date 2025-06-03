@@ -1,17 +1,15 @@
 import { PostGroupResponse, PostItemDto, UpdatePostParam } from "@/api.ts";
-import { useAsync } from "@/hooks/async.ts";
-import { Avatar, Button, Dropdown, List, Menu, MenuProps, Modal, Space, Tag, Tooltip } from "antd";
+import { Avatar, Button, Dropdown, List, MenuProps, Modal, Space, Spin, Tag } from "antd";
 import styled from "@emotion/styled";
 import { useThemeToken } from "@/hooks/antd.ts";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { PostCardLayout, PostContent } from "../components/posts.tsx";
-import React, { useMemo, useRef, useState } from "react";
-import { useParams, useRouteLoaderData, useSearchParams } from "react-router";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate, useRouteLoaderData, useSearchParams } from "react-router";
 import { PostHeader } from "../components/PostHeader.tsx";
 import {
   DeleteOutlined,
   EditOutlined,
-  MehOutlined,
   MoreOutlined,
   PlusOutlined,
   UserOutlined,
@@ -19,10 +17,14 @@ import {
 } from "@ant-design/icons";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
 import { api } from "@/common/http.ts";
+import { CurrentPostGroupContext } from "../layout/WallLayout.tsx";
+import { AdaptiveLayoutContext, LayoutDirection } from "@/modules/layout/AdaptiveMenuLayout.tsx";
+import { getUserInfoFromToken } from "@/common/user.ts";
+import { ROUTES } from "@/app.ts";
+import { useInfiniteLoad } from "@/lib/components/InfiniteLoad.tsx";
 
 export function PostListPage() {
   const data = useRouteLoaderData<PostGroupResponse | undefined>("/wall");
-  const { groupId } = useParams();
   const { option, menus } = useMemo(() => {
     const option = data?.items.map((item) => ({
       label: item.group_name,
@@ -35,21 +37,27 @@ export function PostListPage() {
 
     return { option, menus };
   }, [data]);
-  return <PostList groupOptions={option} groupId={groupId} />;
+  return <PostList groupOptions={option} />;
 }
 const Publish = lazyPage(() => import("./publish.tsx").then((mod) => mod.PublishPost));
 type PostGroupOption = {
   label: string;
   value: number;
 };
-function PostList(props: { groupId?: string; groupOptions?: PostGroupOption[] }) {
-  const { groupId, groupOptions } = props;
+function PostList(props: { groupOptions?: PostGroupOption[] }) {
+  const { groupOptions } = props;
+  const currGroup = useContext(CurrentPostGroupContext);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch] = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<(UpdatePostParam & { id: number }) | undefined>(undefined);
   const onOpenPublish = () => {
-    //TODO: 检测是否已登录
-    setModalOpen(true);
+    if (getUserInfoFromToken()?.valid) {
+      setModalOpen(true);
+    } else {
+      navigate(ROUTES.Login + `?redirect=${location.pathname}`);
+    }
   };
   const onEditPost = (item: PostItemDto) => {
     setEditItem({
@@ -63,34 +71,44 @@ function PostList(props: { groupId?: string; groupOptions?: PostGroupOption[] })
   const onDeletePost = (item: PostItemDto) => {};
   const pageRef = useRef<HTMLDivElement>(null);
 
-  const { result, run, reset } = useAsync(
-    (params: { cursor?: string; number?: number } = {}) => {
-      const { cursor, number } = params;
-      return api["/post/list"].get({ query: { cursor, number } }).then((item) => {
-        const items = item.items.map((item) => ({
-          ...item,
-          publish_time: item.publish_time ? new Date(item.publish_time).toLocaleString() : null,
-        }));
-        return {
-          ...item,
-          items,
-        };
-      });
+  const postData = useInfiniteLoad({
+    loadMore: async (cursor?: string) => {
+      const groupId = currGroup?.groupId;
+      const res = await api["/post/list"].get({ query: { cursor, group_id: groupId } });
+      const items = res.items.map((item) => ({
+        ...item,
+        publish_time: item.publish_time ? new Date(item.publish_time).toISOString() : null,
+      }));
+
+      return {
+        items: items,
+        hasMore: res.has_more,
+        nextParam: res.next_cursor,
+      };
     },
-    { autoRunArgs: [{}] },
-  );
-  const data = result.value || { items: [], total: 0, needLogin: false };
-  const items: PostItemDto[] = data.items;
+  });
+
+  useEffect(() => {
+    postData.setData(undefined);
+  }, [currGroup]);
+
+  const data = postData.data || { items: [], needLogin: false };
+  const items: PostItemDto[] = postData.data || [];
+
+  const isVertical = useContext(AdaptiveLayoutContext) === LayoutDirection.Vertical;
+
   const theme = useThemeToken();
   return (
-    <PostListCSS>
+    <HomePageCSS>
       <PostListCSS>
-        <Button type="primary" icon={<PlusOutlined />} onClick={onOpenPublish} style={{ marginBottom: 12 }}>
-          发布
-        </Button>
+        <div style={{ display: isVertical ? "none" : "block", marginBottom: 12 }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={onOpenPublish}>
+            发布
+          </Button>
+        </div>
+        <div></div>
         <List
           style={{ backgroundColor: theme.colorBgLayout }}
-          loading={result.loading}
           dataSource={items}
           itemLayout="vertical"
           renderItem={(item, index) => {
@@ -149,6 +167,7 @@ function PostList(props: { groupId?: string; groupOptions?: PostGroupOption[] })
             );
           }}
         />
+        {postData.ref}
       </PostListCSS>
 
       <Modal
@@ -166,12 +185,14 @@ function PostList(props: { groupId?: string; groupOptions?: PostGroupOption[] })
           initValues={editItem}
           onOk={(isChange) => {
             setModalOpen(false);
-            if (isChange) run();
+            if (isChange) {
+              //TODO 刷新
+            }
           }}
           groupOptions={groupOptions}
         />
       </Modal>
-    </PostListCSS>
+    </HomePageCSS>
   );
 }
 const HomePageCSS = styled.div`
@@ -181,7 +202,6 @@ const PostListCSS = styled.div`
   max-width: 650px;
   min-width: 300px;
   margin: 0 auto;
-
   .ant-list-items {
     display: flex;
     flex-direction: column;

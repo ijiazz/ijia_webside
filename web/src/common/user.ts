@@ -73,22 +73,31 @@ export function userLogout() {
 export function loginByAccessToken(jwtToken: string) {
   ijiaCookie.jwtToken = jwtToken;
 }
-export function getCurrentUserId(): number | undefined {
+
+export function getUserInfoFromToken(): null | JwtUserInfo {
   const token = getUserToken();
-  if (!token) return;
-  let data: { userId: string };
+  if (!token) return null;
   try {
-    data = parseJwt(token) as { userId: string };
+    const info = parseJwt(token);
+    const userId = +info.userId;
+    if (!Number.isInteger(userId)) return null; // 确保 userId 是整数
+    const isExpired = info.exp && Date.now() > info.exp;
+    return {
+      userId,
+      valid: !isExpired,
+      isExpired,
+    };
   } catch (error) {
     console.error("JWT 解析失败", error);
-    return;
+    return null;
   }
-  const userId = +data.userId;
-
-  if (!Number.isInteger(userId)) return;
-  return userId;
 }
 
+export type JwtUserInfo = {
+  userId: number;
+  valid: boolean;
+  isExpired?: boolean;
+};
 function parseJwt(token: string) {
   const content = token.split(".")[1];
   const raw = content.replaceAll("-", "+").replaceAll("_", "/");

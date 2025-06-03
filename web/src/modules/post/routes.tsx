@@ -3,7 +3,7 @@ import { lazyPage } from "@/common/lazy_load_component.tsx";
 import { api } from "@/common/http.ts";
 const routes: RouteObject[] = [
   {
-    async loader() {
+    async loader(data, ctx) {
       return api["/post/group/list"].get().catch(() => undefined);
     },
     id: "/wall",

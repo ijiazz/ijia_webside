@@ -12,12 +12,12 @@ export async function getPostList(
   params: GetPostListParam = {},
   option: { currentUserId?: number } = {},
 ): Promise<CursorListDto<PostItemDto, string>> {
-  const { number = 20, cursor: cursorStr, userId, group_id, post_id, s_content, s_author } = params;
+  const { number = 10, cursor: cursorStr, userId, group_id, post_id, s_content, s_author } = params;
   const { currentUserId = null } = option;
   const cursor = cursorStr ? parserTimestampCursor(cursorStr) : null;
 
   let curr_user: string | undefined;
-  if (typeof currentUserId === "number") {
+  if (currentUserId !== null) {
     curr_user = jsonb_build_object({
       can_update: `u.id=${v(currentUserId)}`,
       can_comment: "true",
@@ -74,7 +74,7 @@ export async function getPostList(
       const where: string[] = [`NOT p.is_delete`];
 
       const exclude = `(p.publish_time IS NULL OR p.is_reviewing OR p.is_review_pass IS FALSE OR p.is_hide)`; // 审核中和审核不通过和已隐藏
-      if (currentUserId !== undefined) {
+      if (currentUserId !== null) {
         where.push(`(NOT (${exclude} AND p.user_id!=${v(currentUserId)}))`);
       } else {
         where.push(`(NOT ${exclude})`);
@@ -84,19 +84,19 @@ export async function getPostList(
       if (post_id !== undefined) where.push(`p.id = ${v(post_id)}`);
       if (cursor) {
         const ts = cursor.timestamp;
-        if (ts === null) {
-          where.push(`(p.publish_time=${v(ts)} AND p.id < ${v(cursor.id)})`);
+        if (typeof ts !== "number") {
+          where.push(`(p.publish_time IS NULL AND p.id < ${v(cursor.id)})`);
         } else {
-          where.push(`(p.publish_time < ${v(ts)} OR (p.publish_time=${v(ts)} AND p.id < ${v(cursor.id)}))`);
+          const timestamp = v(ts / 1000);
+          where.push(
+            `(p.publish_time < to_timestamp(${timestamp}) OR (p.publish_time = to_timestamp(${timestamp}) AND p.id < ${v(cursor.id)}))`,
+          );
         }
       }
 
       return where;
     })
-    .orderBy([
-      { key: "p.publish_time", asc: false, nullLast: false },
-      { key: "p.id", asc: false },
-    ])
+    .orderBy(["p.publish_time DESC NULLS FIRST", "p.id DESC"])
     .limit(number);
   /**
    *  使用指针分页
@@ -125,7 +125,7 @@ export async function getPostList(
     next_cursor: last
       ? toTimestampCursor({
           id: +last.asset_id,
-          timestamp: last.update_time ? new Date(last.update_time).getTime() : null,
+          timestamp: last.publish_time ? new Date(last.publish_time).getTime() : null,
         })
       : null,
   };
