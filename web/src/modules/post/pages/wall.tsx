@@ -22,6 +22,7 @@ import { AdaptiveLayoutContext, LayoutDirection } from "@/modules/layout/Adaptiv
 import { getUserInfoFromToken } from "@/common/user.ts";
 import { ROUTES } from "@/app.ts";
 import { useInfiniteLoad } from "@/lib/components/InfiniteLoad.tsx";
+import { afterTime } from "evlib";
 
 export function PostListPage() {
   const data = useRouteLoaderData<PostGroupResponse | undefined>("/wall");
@@ -73,8 +74,9 @@ function PostList(props: { groupOptions?: PostGroupOption[] }) {
 
   const postData = useInfiniteLoad({
     loadMore: async (cursor?: string) => {
+      await afterTime(1000);
       const groupId = currGroup?.groupId;
-      const res = await api["/post/list"].get({ query: { cursor, group_id: groupId } });
+      const res = await api["/post/list"].get({ query: { cursor, group_id: groupId, number: 2 } });
       const items = res.items.map((item) => ({
         ...item,
         publish_time: item.publish_time ? new Date(item.publish_time).toISOString() : null,
@@ -87,12 +89,12 @@ function PostList(props: { groupOptions?: PostGroupOption[] }) {
       };
     },
   });
-
+  const isFirstRender = useRef(true);
   useEffect(() => {
-    postData.setData(undefined);
+    if (!isFirstRender.current) postData.reset();
+    isFirstRender.current = false;
   }, [currGroup]);
 
-  const data = postData.data || { items: [], needLogin: false };
   const items: PostItemDto[] = postData.data || [];
 
   const isVertical = useContext(AdaptiveLayoutContext) === LayoutDirection.Vertical;
@@ -167,7 +169,7 @@ function PostList(props: { groupOptions?: PostGroupOption[] }) {
             );
           }}
         />
-        {postData.ref}
+        <div>{postData.ref}</div>
       </PostListCSS>
 
       <Modal
