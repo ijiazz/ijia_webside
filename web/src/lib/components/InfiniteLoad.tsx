@@ -1,109 +1,143 @@
-import { useAsync } from "@/hooks/async.ts";
-import { Spin } from "antd";
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import { Button, Spin } from "antd";
+import React, { useState, useRef, useCallback, useEffect, useImperativeHandle } from "react";
 
-type InfiniteLoadResult<T, P = unknown> = {
+export type InfiniteLoadResult<T, P = unknown> = {
   items: T[];
   hasMore?: boolean;
+  /** 下次调用 loadMore() 是的参数 */
   nextParam: P;
 };
-export type InfiniteScrollProps<T = unknown, P = unknown> = {
-  loadMore: (param: P) => InfiniteLoadResult<T> | Promise<InfiniteLoadResult<T>>;
+export type InfiniteScrollHandle<P = unknown> = {
+  reset(): void;
+  nextParam?: P;
+};
+export type InfiniteScrollLoadProps<T = unknown, P = unknown> = {
+  loadMore: (param: P | undefined, signal: AbortSignal) => Promise<InfiniteLoadResult<T>>;
+  /** 数据加载完成时触发提交 */
+  onPush?: (data: T[]) => void;
+  /** 滚动距离底部多少像素时触发滚动，如果不设定，则需要手动加载 */
+  bottomThreshold?: number;
   noMoreRender?: React.ReactNode;
   errorRender?: React.ReactNode;
   loadingRender?: React.ReactNode;
-  defaultData?: InfiniteLoadResult<T, P> | (() => InfiniteLoadResult<T, P>);
-};
-export function useInfiniteLoad<T = unknown, P = unknown>(props: InfiniteScrollProps<T, P>): InfiniteLoadResultType<T> {
-  const { loadMore, defaultData, errorRender, loadingRender, noMoreRender } = props;
-  const [data, setData] = useState<InfiniteLoadResult<T, P> | undefined>(defaultData);
+  children?: React.ReactNode;
+  ref?: React.RefObject<InfiniteScrollHandle | null>;
 
-  const { loading, error, run } = useAsync(async () => {
-    const res = await loadMore(data?.nextParam as P);
-    if (!res) return { items: [], hasMore: false, nextParam: undefined } as any;
-    setData((prev): InfiniteLoadResult<T, P> => {
-      if (!prev) return res as any;
-      return {
-        items: prev.items.concat(res.items),
-        hasMore: res.hasMore,
-        nextParam: res.nextParam as any,
-      };
-    });
+  footerStyle?: React.CSSProperties;
+  footerClassName?: string;
+
+  style?: React.CSSProperties;
+  className?: string;
+};
+export function InfiniteScrollLoad<T = unknown, P = unknown>(props: InfiniteScrollLoadProps<T, P>) {
+  const {
+    loadMore,
+    onPush,
+    errorRender,
+    loadingRender,
+    noMoreRender,
+    bottomThreshold,
+    children,
+    footerClassName,
+    footerStyle,
+    className,
+    style,
+  } = props;
+  const bottomAutoLoad = bottomThreshold !== undefined && bottomThreshold > 0;
+  useImperativeHandle(props.ref, () => {
+    return ref;
   });
 
-  const observer = useRef<IntersectionObserver>(null);
-  const lastInView = useRef<HTMLElement | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ hasMore: boolean; error?: boolean }>({ hasMore: true });
+  const { current: ref } = useRef<InfiniteScrollHandle<P> & { pending?: AbortController }>({
+    nextParam: undefined,
+    reset() {
+      setResult({ hasMore: true });
+      setLoading(false);
+      ref.nextParam = null as any;
+      if (ref.pending) {
+        ref.pending.abort();
+        ref.pending = undefined;
+      }
+    },
+  });
 
-  const onIntoViewRef = useRef<() => void>(null as any);
-  onIntoViewRef.current = () => {
-    if (data && !data.hasMore) return;
-    run();
-  };
-
-  const lastElementRef = useCallback((node: HTMLDivElement) => {
-    if (observer.current) observer.current.disconnect();
-    if (loading) return;
-    if (!node) return;
-    observer.current = new IntersectionObserver((entries) => {
-      const inView = entries.some((item) => item.isIntersecting);
-      lastInView.current = node;
-      console.log("IntersectionObserver", inView, entries);
-      if (inView) onIntoViewRef.current();
-    });
-
-    observer.current.observe(node);
-  }, []);
-  const setDataCore = useCallback((data: T[] | ((old: T[]) => T[])) => {
-    if (typeof data === "function") {
-      setData((old) => {
-        const newData = data(old?.items || []);
-        return { ...old, items: newData } as InfiniteLoadResult<T, P>;
-      });
+  const load = function () {
+    if (!loadMore) return;
+    if (ref.pending) {
+      ref.pending.abort();
     } else {
-      setData((old) => ({ ...old, items: data }) as InfiniteLoadResult<T, P>);
+      setLoading(true);
     }
-  }, []);
-  const reset = useCallback(() => {
-    setData(undefined);
-  }, []);
+    const abc = new AbortController();
+    ref.pending = abc;
+
+    const promise = loadMore(ref.nextParam as P, abc.signal).then(
+      (res) => {
+        if (ref.pending !== abc) return;
+        ref.pending = undefined;
+        setLoading(false);
+        const hasMore = !!res.hasMore;
+        setResult({ hasMore });
+        ref.nextParam = res.nextParam as P;
+
+        onPush?.(res.items);
+      },
+      (e) => {
+        if (ref.pending !== abc) return;
+        ref.pending = undefined;
+        setLoading(false);
+        setResult((res) => ({ ...res, error: true }));
+        console.error(e);
+      },
+    );
+  };
+  const { containerRef, isInBottom, isInTop } = useScrollLoad({
+    bottomThreshold,
+    onScrollBottom() {
+      if (ref.pending || !result.hasMore) return;
+
+      if (bottomAutoLoad) load();
+    },
+  });
+
   useEffect(() => {
-    if (lastInView.current && observer.current) {
-      const rec = observer.current.takeRecords();
-      observer.current.disconnect();
+    if (loading || !result.hasMore) return;
+    if (bottomAutoLoad && isInBottom()) load();
+  }, [loading, result, bottomAutoLoad]);
 
-      observer.current = new IntersectionObserver((entries) => {
-        const inView = entries.some((item) => item.isIntersecting);
-        lastInView.current = inView;
-        console.log("ccc", inView, entries);
-        if (inView) onIntoViewRef.current();
-      });
-      // observer.current.observe(rec.target);
-    }
-  }, [data]);
-
-  return {
-    loading,
-    data: data?.items,
-    hasMore: data?.hasMore ?? false,
-    setData: setDataCore,
-    reset,
-    ref: (
+  useEffect(() => {
+    return () => {
+      if (ref.pending) {
+        ref.pending.abort();
+        ref.pending = undefined;
+      }
+    };
+  }, []);
+  return (
+    <div ref={containerRef} className={className} style={style}>
+      {children}
       <div
-        ref={lastElementRef}
-        style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "8px 0" }}
+        className={footerClassName}
+        style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "8px 0", ...footerStyle }}
       >
-        {!data || data.hasMore ? (
-          error ? (
-            !loading && <div style={{ color: "red" }}>{errorRender ?? "加载失败"}</div>
+        {result.hasMore ? (
+          result.error && !loading ? (
+            (errorRender ?? <div style={{ color: "red" }}>加载失败</div>)
+          ) : loading ? (
+            (loadingRender ?? <Spin />)
           ) : (
-            <Spin style={{ visibility: loading ? "visible" : "hidden" }}>{loadingRender ?? "加载中"}</Spin>
+            <Button type="link" onClick={() => load()}>
+              加载更多
+            </Button>
           )
         ) : (
           (noMoreRender ?? "没有更多数据")
         )}
       </div>
-    ),
-  };
+    </div>
+  );
 }
 
 export type InfiniteLoadResultType<T> = {
@@ -114,41 +148,84 @@ export type InfiniteLoadResultType<T> = {
   hasMore: boolean;
   loading: boolean;
 };
+
 export type ScrollLoadParam = {
   onScrollBottom?: () => void;
   bottomThreshold?: number;
   onScrollTop?: () => void;
   topThreshold?: number;
 };
-export type ScrollLoadResult<T> = {
-  refElement: (element: HTMLDivElement | null) => void;
+export type ScrollLoadResult = {
+  containerRef: (element: HTMLDivElement | null) => void;
+  isInTop(): boolean;
+  isInBottom(): boolean;
 };
-export function useScrollLoad(param: ScrollLoadParam) {
-  const { onScrollBottom, bottomThreshold = 10, onScrollTop, topThreshold = 10 } = param;
-  const container = useRef<{ dom: HTMLDivElement | null; listener: (this: HTMLElement) => void }>({ dom: null } as any);
-  container.current.listener = function (this: HTMLElement) {
-    const { scrollTop, scrollHeight, clientHeight } = this;
-    const scrollBottom = scrollHeight - scrollTop - clientHeight;
-    if (onScrollBottom && scrollBottom < bottomThreshold) {
-      onScrollBottom();
+export function useScrollLoad(param: ScrollLoadParam = {}): ScrollLoadResult {
+  const { onScrollBottom, onScrollTop } = param;
+  const { current: container } = useRef<{
+    dom: HTMLDivElement | null;
+    lastListener?: (this: HTMLElement) => void;
+    checker: (this: HTMLElement) => void;
+    bottomVisible?: boolean;
+    topVisible?: boolean;
+    bottomThreshold: number;
+    topThreshold: number;
+  }>({ dom: null, bottomThreshold: param.bottomThreshold ?? 10, topThreshold: param.topThreshold ?? 10 } as any);
+  container.checker = function (this: HTMLElement) {
+    const { bottomThreshold, bottomVisible, topThreshold, topVisible } = container;
+    if (isBottom(this, bottomThreshold)) {
+      if (!bottomVisible) {
+        container.bottomVisible = true;
+        onScrollBottom?.();
+      }
+    } else {
+      if (bottomVisible) container.bottomVisible = false;
     }
-    if (onScrollTop && scrollTop < topThreshold) {
-      onScrollTop();
+
+    if (isTop(this, topThreshold)) {
+      if (!topVisible) {
+        container.topVisible = true;
+        onScrollTop?.();
+      }
+    } else {
+      if (topVisible) container.topVisible = false;
     }
   };
 
   const containerRef = useCallback((element: HTMLDivElement | null) => {
-    if (container.current.dom) {
-      container.current.dom.removeEventListener("scroll", container.current.listener);
-      container.current.dom = null;
+    if (container.dom && container.lastListener) {
+      container.dom.removeEventListener("scroll", container.lastListener);
+      container.dom = null;
     }
     if (!element) return;
-    container.current.dom = element;
-    element.addEventListener("scroll", container.current.listener);
+    container.dom = element;
+    container.lastListener = function () {
+      container.checker.call(this);
+    };
+    element.addEventListener("scroll", container.lastListener);
   }, []);
 
-  return containerRef;
+  const isInBottom = useCallback((): boolean => {
+    if (!container.dom) return false;
+    return isBottom(container.dom, container.bottomThreshold);
+  }, []);
+  const isInTop = useCallback((): boolean => {
+    if (!container.dom) return false;
+    return isBottom(container.dom, container.topThreshold);
+  }, []);
+
+  return { containerRef: containerRef, isInBottom, isInTop };
 }
+
+function isTop(dom: HTMLElement, topThreshold: number) {
+  return dom.scrollTop < topThreshold;
+}
+function isBottom(dom: HTMLElement, bottomThreshold: number) {
+  const { scrollTop, scrollHeight, clientHeight } = dom;
+  const scrollBottom = scrollHeight - scrollTop - clientHeight;
+  return scrollBottom < bottomThreshold;
+}
+
 /* 
 
 

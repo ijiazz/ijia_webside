@@ -66,6 +66,7 @@ export function PostLayout() {
           <Menu
             mode={isVertical ? "horizontal" : "vertical"}
             style={{
+              flex: 1,
               minWidth: "150px",
               height: "100%",
               backgroundColor: isVertical ? undefined : "#0000",
