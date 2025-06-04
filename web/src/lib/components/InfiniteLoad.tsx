@@ -114,7 +114,41 @@ export type InfiniteLoadResultType<T> = {
   hasMore: boolean;
   loading: boolean;
 };
+export type ScrollLoadParam = {
+  onScrollBottom?: () => void;
+  bottomThreshold?: number;
+  onScrollTop?: () => void;
+  topThreshold?: number;
+};
+export type ScrollLoadResult<T> = {
+  refElement: (element: HTMLDivElement | null) => void;
+};
+export function useScrollLoad(param: ScrollLoadParam) {
+  const { onScrollBottom, bottomThreshold = 10, onScrollTop, topThreshold = 10 } = param;
+  const container = useRef<{ dom: HTMLDivElement | null; listener: (this: HTMLElement) => void }>({ dom: null } as any);
+  container.current.listener = function (this: HTMLElement) {
+    const { scrollTop, scrollHeight, clientHeight } = this;
+    const scrollBottom = scrollHeight - scrollTop - clientHeight;
+    if (onScrollBottom && scrollBottom < bottomThreshold) {
+      onScrollBottom();
+    }
+    if (onScrollTop && scrollTop < topThreshold) {
+      onScrollTop();
+    }
+  };
 
+  const containerRef = useCallback((element: HTMLDivElement | null) => {
+    if (container.current.dom) {
+      container.current.dom.removeEventListener("scroll", container.current.listener);
+      container.current.dom = null;
+    }
+    if (!element) return;
+    container.current.dom = element;
+    element.addEventListener("scroll", container.current.listener);
+  }, []);
+
+  return containerRef;
+}
 /* 
 
 
