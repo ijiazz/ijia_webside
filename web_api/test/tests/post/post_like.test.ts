@@ -18,17 +18,35 @@ import { post } from "@ijia/data/db";
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
 });
-test("点赞后返回的帖子信息包含点赞状态，取消点赞后点赞状态为false", async function ({ api, ijiaDbPool }) {
+test("自己作品点赞：点赞后返回的帖子信息包含点赞状态，取消点赞后点赞状态为false", async function ({ api, ijiaDbPool }) {
   const { post, alice } = await preparePost(api);
 
   const item1 = await testGetPost(api, post.id, alice.token);
   expect(item1.curr_user?.is_like).toBeFalsy();
-  await setPostLike(api, post.id, alice.token);
+  const likeRes = await setPostLike(api, post.id, alice.token);
+  expect(likeRes.success).toBeTruthy();
   const item2 = await testGetPost(api, post.id, alice.token);
   expect(item2.curr_user?.is_like).toBeTruthy();
 
-  await cancelPostLike(api, post.id, alice.token);
+  const cancelRes = await cancelPostLike(api, post.id, alice.token);
+  expect(cancelRes.success).toBeTruthy();
   const item3 = await testGetPost(api, post.id, alice.token);
+  expect(item3.curr_user?.is_like).toBeFalsy();
+});
+test("他人作品点赞：点赞后返回的帖子信息包含点赞状态，取消点赞后点赞状态为false", async function ({ api, ijiaDbPool }) {
+  const { post, alice } = await preparePost(api);
+  const bob = await prepareUser("bob");
+
+  const item1 = await testGetPost(api, post.id, bob.token);
+  expect(item1.curr_user?.is_like).toBeFalsy();
+  const likeRes = await setPostLike(api, post.id, bob.token);
+  expect(likeRes.success).toBeTruthy();
+  const item2 = await testGetPost(api, post.id, bob.token);
+  expect(item2.curr_user?.is_like).toBeTruthy();
+
+  const cancelRes = await cancelPostLike(api, post.id, bob.token);
+  expect(cancelRes.success).toBeTruthy();
+  const item3 = await testGetPost(api, post.id, bob.token);
   expect(item3.curr_user?.is_like).toBeFalsy();
 });
 test("已隐藏的帖子只有自己能点赞", async function ({ api, ijiaDbPool }) {

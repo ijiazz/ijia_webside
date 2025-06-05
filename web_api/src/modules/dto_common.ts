@@ -12,6 +12,7 @@ export type ListDto<T> = {
 export type CursorListDto<T, C> = {
   items: T[];
   has_more: boolean;
+  before_cursor?: C | null;
   next_cursor?: C | null;
 };
 

@@ -14,6 +14,8 @@ export type GetPostListParam = {
   number?: number;
   /** timestamp-id */
   cursor?: string;
+  /** 指针向前获取。 forward 只能获取 publish_time 不为空的数据 */
+  forward?: boolean;
 
   post_id?: number;
   userId?: string | number;
@@ -93,6 +95,7 @@ export type PostItemDto = PostItemBase & {
   status: {
     review_pass: null | boolean; // 是否审核通过 null: 未审核，true: 审核中，false: 生活不通过
     is_reviewing: boolean; // 是否正在审核
+    reason?: string; // 审核不通过的原因
   };
   config: {
     /** 是否匿名 */

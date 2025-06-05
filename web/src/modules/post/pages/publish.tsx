@@ -9,15 +9,19 @@ import { useNavigate } from "react-router";
 
 export function PublishPost(props: {
   editId?: number;
+  disableEditContent?: boolean;
+  disableSetting?: boolean;
   initValues?: UpdatePostParam;
-  onOk?: (isChange?: boolean) => void;
+  onEditOk?: (id: number) => void;
+  onCreateOk?: (id: number) => void;
   groupLoading?: boolean;
   groupOptions?: { label: string; value: number }[];
 }) {
-  const { initValues, onOk, groupOptions, editId, groupLoading } = props;
+  const { initValues, onEditOk, onCreateOk, groupOptions, editId, groupLoading, disableEditContent, disableSetting } =
+    props;
   const { message } = useAntdStatic();
   const isEdit = editId !== undefined;
-  const { run, reset, result } = useAsync(async (data: CreatePostParam) => {
+  const { run, reset, loading } = useAsync(async (data: CreatePostParam) => {
     if (isEdit) {
       const updateValue: UpdatePostParam = diffUpdateValue(
         {
@@ -29,14 +33,22 @@ export function PublishPost(props: {
       );
       const isChange = Object.keys(updateValue).length;
       if (isChange) {
+        if (disableEditContent) {
+          delete updateValue.content_text;
+          delete updateValue.content_text_structure;
+        }
+        if (disableSetting) {
+          delete updateValue.is_hide;
+        }
+
         await api["/post/content/:postId"].patch({ params: { postId: editId }, body: updateValue });
         message.success("已修改");
       }
-      onOk?.(!!isChange);
+      onEditOk?.(editId);
     } else {
-      await api["/post/content"].put({ body: data });
+      const { id } = await api["/post/content"].put({ body: data });
       message.success("已发布");
-      onOk?.();
+      onCreateOk?.(id);
     }
   });
 
@@ -46,17 +58,22 @@ export function PublishPost(props: {
         <Form.Item hidden={isEdit} label="内容分类" name="group_id">
           <Select disabled={isEdit} options={groupOptions} loading={groupLoading} allowClear></Select>
         </Form.Item>
-        <Form.Item label="发布内容" name="content_text" rules={[{ required: true, message: "请输入内容" }]}>
+        <Form.Item
+          hidden={disableEditContent}
+          label="发布内容"
+          name="content_text"
+          rules={[{ required: true, message: "请输入内容" }]}
+        >
           <Input.TextArea placeholder="请输入内容" autoSize={{ minRows: 4, maxRows: 10 }} style={{ width: "100%" }} />
         </Form.Item>
-        <Form.Item label="仅自己可见" name="is_hide">
+        <Form.Item hidden={disableSetting} label="仅自己可见" name="is_hide">
           <Switch></Switch>
         </Form.Item>
         <Form.Item hidden={isEdit} label="匿名发布" name="is_anonymous">
           <Switch></Switch>
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={result.loading}>
+          <Button type="primary" htmlType="submit" loading={loading}>
             {isEdit ? "确认" : "发布"}
           </Button>
         </Form.Item>

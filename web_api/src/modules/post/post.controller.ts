@@ -67,7 +67,7 @@ class PostController {
     let count: number;
 
     try {
-      count = await updatePost(userId, postId, params);
+      count = await updatePost(postId, userId, params);
     } catch (error) {
       if (error instanceof CheckTypeError) throw new HttpError(400, error.message);
       throw error;
@@ -121,9 +121,9 @@ class PostController {
   async likePost(userId: number, postId: number, isCancel?: boolean): Promise<{ success: boolean }> {
     let count: number;
     if (isCancel) {
-      count = await cancelPostLike(userId, postId);
+      count = await cancelPostLike(postId, userId);
     } else {
-      count = await setPostLike(userId, postId);
+      count = await setPostLike(postId, userId);
     }
     return { success: count > 0 };
   }

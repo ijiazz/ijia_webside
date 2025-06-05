@@ -12,7 +12,7 @@ export async function getPostList(
   params: GetPostListParam = {},
   option: { currentUserId?: number } = {},
 ): Promise<CursorListDto<PostItemDto, string>> {
-  const { number = 10, cursor: cursorStr, userId, group_id, post_id, s_content, s_author } = params;
+  const { number = 10, cursor: cursorStr, userId, group_id, post_id, forward, s_content, s_author } = params;
   const { currentUserId = null } = option;
   const cursor = cursorStr ? parserTimestampCursor(cursorStr) : null;
 
@@ -46,12 +46,12 @@ export async function getPostList(
               } satisfies { [key in keyof PostUserInfo]: string })}
               ELSE NULL END`,
       publish_time: "p.publish_time",
+      create_time: "p.create_time",
+      update_time: "CASE WHEN p.update_time=p.create_time THEN NULL ELSE p.update_time END",
       like_weight: `${post_like
         .select("weight")
         .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
         .toSelect()}`,
-      create_time: "p.create_time",
-      update_time: "p.update_time",
       type: getPostContentType("p.content_type"),
       content_text: "p.content_text",
       content_text_structure: "p.content_text_struct",
@@ -85,18 +85,25 @@ export async function getPostList(
       if (cursor) {
         const ts = cursor.timestamp;
         if (typeof ts !== "number") {
-          where.push(`(p.publish_time IS NULL AND p.id < ${v(cursor.id)})`);
+          if (forward) throw new HttpError(400, "向前的 cursor 必须存在 publish_time 时间戳");
+          else where.push(`(p.publish_time IS NULL AND p.id < ${v(cursor.id)})`);
         } else {
           const timestamp = v(ts / 1000);
-          where.push(
-            `(p.publish_time < to_timestamp(${timestamp}) OR (p.publish_time = to_timestamp(${timestamp}) AND p.id < ${v(cursor.id)}))`,
-          );
+          if (forward) {
+            where.push(
+              `(p.publish_time > to_timestamp(${timestamp}) OR (p.publish_time = to_timestamp(${timestamp}) AND p.id > ${v(cursor.id)}))`,
+            );
+          } else {
+            where.push(
+              `(p.publish_time < to_timestamp(${timestamp}) OR (p.publish_time = to_timestamp(${timestamp}) AND p.id < ${v(cursor.id)}))`,
+            );
+          }
         }
       }
 
       return where;
     })
-    .orderBy(["p.publish_time DESC NULLS FIRST", "p.id DESC"])
+    .orderBy(forward ? ["p.publish_time ASC NULLS LAST", "p.id ASC"] : ["p.publish_time DESC NULLS FIRST", "p.id DESC"])
     .limit(number);
   /**
    *  使用指针分页
@@ -117,11 +124,17 @@ export async function getPostList(
       }
     }
   });
-
+  const firstPublishTime = list.find((item) => item.publish_time);
   const last = list[list.length - 1];
   return {
     items: list as PostItemDto[],
     has_more: list.length >= number,
+    before_cursor: firstPublishTime
+      ? toTimestampCursor({
+          id: +firstPublishTime.asset_id,
+          timestamp: firstPublishTime.publish_time ? new Date(firstPublishTime.publish_time).getTime() : null,
+        })
+      : null,
     next_cursor: last
       ? toTimestampCursor({
           id: +last.asset_id,
@@ -130,6 +143,7 @@ export async function getPostList(
       : null,
   };
 }
+
 function parserTimestampCursor(cursorStr: string): PostCursor {
   const [timestampStr, idStr] = cursorStr.split("-");
   if (!timestampStr || !idStr) throw new Error("cursor 格式错误");
@@ -174,7 +188,7 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
 
   return row;
 }
-export async function updatePost(userId: number, postId: number, param: UpdatePostParam) {
+export async function updatePost(postId: number, userId: number, param: UpdatePostParam) {
   const struct = checkTypeCopy(param.content_text_structure, optional(textStructChecker, "nullish"));
 
   let update_content_text: string | undefined;
@@ -260,7 +274,7 @@ export async function setPostLike(postId: number, userId: number) {
     .insert("weight, post_id, user_id", () => {
       return post
         .select(["100 as weight", "id AS post_id", `${v(userId)} AS user_id`])
-        .where([`id=${v(postId)}`, `(NOT is_delete)`])
+        .where([`id=${v(postId)}`, `(NOT is_delete)`, `(user_id=${v(userId)} OR NOT is_hide)`])
         .toString();
     })
     .onConflict(["post_id", "user_id"])

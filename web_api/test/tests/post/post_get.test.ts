@@ -7,6 +7,7 @@ import { postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "../../fixtures/user.ts";
 import { PostItemDto, PostUserInfo } from "@/api.ts";
 import { createPost, createPostGroup, preparePost, testGetPost } from "./utils/prepare_post.ts";
+import { getPostList } from "@/modules/post/sql/post.ts";
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
 });
@@ -153,4 +154,36 @@ test("分页获取帖子列表", async function ({ api, ijiaDbPool }) {
   function getPostList(cursor: string | undefined, number?: number) {
     return api["/post/list"].get({ query: { cursor, number }, [JWT_TOKEN_KEY]: alice.token });
   }
+});
+test("向前分页", async function ({ api, ijiaDbPool }) {
+  const alice = await prepareUser("alice");
+
+  const values: DbPostCreate[] = new Array(101);
+  let baseDate = new Date("2023-01-01T00:00:00Z").getTime();
+
+  const f = {
+    user_id: alice.id,
+    content_text: "test",
+    publish_time: new Date(baseDate), // 插入一个时间重复的
+  };
+  await post.insert(f).query();
+
+  const { before_cursor } = await getPostList();
+
+  const oneDay = 24 * 60 * 60 * 1000; // 一天的毫秒数
+  for (let i = 0; i < values.length; i++) {
+    values[i] = {
+      user_id: alice.id,
+      content_text: `test${i}`,
+      publish_time: new Date(baseDate),
+    };
+    baseDate += oneDay; // 每个帖子的发布时间间隔1秒
+  }
+  await post.insert(values).query();
+
+  const list1 = await getPostList({ cursor: before_cursor ?? undefined, forward: true, number: 2 });
+
+  expect(list1.items[0].content_text).toBe("test0");
+  expect(list1.items[1].content_text).toBe("test1");
+  expect(list1.items.length).toBe(2);
 });
