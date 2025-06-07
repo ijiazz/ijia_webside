@@ -2,39 +2,10 @@ import { AssetImage, AssetMediaDto, AssetVideo, TextStructure } from "@/api.ts";
 import { useThemeToken } from "@/hooks/antd.ts";
 import styled from "@emotion/styled";
 import React, { CSSProperties, useMemo } from "react";
-import { PropsWithChildren, ReactNode } from "react";
+import { ReactNode } from "react";
 import { AssetMediaType } from "@/api.ts";
 import { FileImageOutlined } from "@ant-design/icons";
 
-export type PostCardProps = {
-  icon?: ReactNode;
-  header?: ReactNode;
-  style?: React.CSSProperties;
-};
-export function PostCardLayout(props: PropsWithChildren<PostCardProps>) {
-  return (
-    <UserMetaCSS>
-      {props.icon}
-      {props.header}
-      {props.children}
-    </UserMetaCSS>
-  );
-}
-const UserMetaCSS = styled.div`
-  overflow: hidden;
-  margin: 8px 12px;
-
-  display: grid;
-  gap: 8px;
-  align-items: center;
-  place-items: stretch;
-  grid-template-columns: 40px auto;
-  > div:last-of-type {
-    grid-column-start: span 2;
-  }
-  .text {
-  }
-`;
 function PostText(props: { text?: string | null; structure?: TextStructure[] | null }) {
   const { structure, text } = props;
   const theme = useThemeToken();
@@ -55,7 +26,11 @@ function PostText(props: { text?: string | null; structure?: TextStructure[] | n
     return list;
   }, [structure, text]);
 
-  return <PostTextCSS color={theme.colorWarning}>{split}</PostTextCSS>;
+  return (
+    <PostTextCSS className="post-content-text" color={theme.colorWarning}>
+      {split}
+    </PostTextCSS>
+  );
 }
 
 const PostTextCSS = styled.div`

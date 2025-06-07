@@ -6,7 +6,7 @@ import { DbPostCreate, post } from "@ijia/data/db";
 import { postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "../../fixtures/user.ts";
 import { PostItemDto, PostUserInfo } from "@/api.ts";
-import { createPost, createPostGroup, preparePost, testGetPost } from "./utils/prepare_post.ts";
+import { createPost, createPostGroup, preparePost, testGetPost, testGetSelfPost } from "./utils/prepare_post.ts";
 import { getPostList } from "@/modules/post/sql/post.ts";
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -42,23 +42,22 @@ test("匿名帖子只有自己能看到用户信息", async function ({ api, iji
 test("审核中的帖子只有自己能查看", async function ({ api, ijiaDbPool }) {
   const alice = await prepareUser("alice");
   const bob = await prepareUser("bob");
-  const groupId = await createPostGroup(ijiaDbPool, "test1");
 
-  const { id } = await createPost(api, { content_text: "test1分组", group_id: groupId }, alice.token);
-
-  const { items: aliceList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: alice.token });
-  const aliceView = aliceList[0];
+  const { id } = await createPost(api, { content_text: "test1分组" }, alice.token);
+  await post
+    .update({ is_reviewing: "true" })
+    .where([`id=${id}`])
+    .queryCount();
+  const aliceView = await testGetSelfPost(api, id, alice.token);
   expect(aliceView.asset_id).toBe(id);
-  expect(aliceList.length, "审核中的帖子，自己可以查看").toBe(1);
   expect(aliceView.status).toMatchObject({
     is_reviewing: true,
     review_pass: null,
   } satisfies Partial<PostItemDto["status"]>);
 
-  const { items: bobList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: bob.token });
-  expect(bobList.length, "审核中的帖子，其他人无法查看").toBe(0);
-  const { items: visitorList } = await api["/post/list"].get({});
-  expect(visitorList.length, "审核中的帖子，游客无法查看").toBe(0);
+  await expect(testGetPost(api, id, alice.token), "审核中的帖子，自己不能在公共查询中获取").resolves.toBe(undefined);
+  await expect(testGetPost(api, id, bob.token), "审核中的帖子，其他人无法查看").resolves.toBe(undefined);
+  await expect(testGetPost(api, id), "审核中的帖子，游客无法查看").resolves.toBe(undefined);
 });
 test("审核失败的帖子只有自己能查看", async function ({ api, ijiaDbPool }) {
   const alice = await prepareUser("alice");
@@ -70,30 +69,34 @@ test("审核失败的帖子只有自己能查看", async function ({ api, ijiaDb
     .where([`id=${id}`])
     .query();
 
-  const { items: aliceList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: alice.token });
-  expect(aliceList.length).toBe(1);
-  expect(aliceList[0].status.review_pass).toBe(false);
+  const aliceView = await testGetSelfPost(api, id, alice.token);
+  expect(aliceView.asset_id).toBe(id);
+  expect(aliceView.status).toMatchObject({
+    is_reviewing: false,
+    review_pass: false,
+  } satisfies Partial<PostItemDto["status"]>);
 
-  const { items: bobList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: bob.token });
-  expect(bobList.length).toBe(0);
-  const { items: visitorList } = await api["/post/list"].get({});
-  expect(visitorList.length, "游客无法查看").toBe(0);
+  await expect(testGetPost(api, id, alice.token), "审核失败的帖子，自己不能在公共查询中获取").resolves.toBe(undefined);
+  await expect(testGetPost(api, id, bob.token), "审核失败的帖子，其他人无法查看").resolves.toBe(undefined);
+  await expect(testGetPost(api, id), "审核失败的帖子，游客无法查看").resolves.toBe(undefined);
 });
 
 test("已隐藏的帖子只有自己能查看", async function ({ api, ijiaDbPool }) {
   const alice = await prepareUser("alice");
   const bob = await prepareUser("bob");
 
-  await createPost(api, { content_text: "test1", is_hide: true }, alice.token);
+  const { id } = await createPost(api, { content_text: "test1", is_hide: true }, alice.token);
 
-  const { items: aliceList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: alice.token });
-  expect(aliceList.length).toBe(1);
+  const aliceView = await testGetSelfPost(api, id, alice.token);
+  expect(aliceView.asset_id).toBe(id);
+  expect(aliceView.status).toMatchObject({
+    is_reviewing: false,
+    review_pass: null,
+  } satisfies Partial<PostItemDto["status"]>);
 
-  const { items: bobList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: bob.token });
-  expect(bobList.length).toBe(0);
-
-  const { items: visitorList } = await api["/post/list"].get({});
-  expect(visitorList.length, "游客无法查看").toBe(0);
+  await expect(testGetPost(api, id, alice.token), "已隐藏的帖子，自己不能在公共查询中获取").resolves.toBe(undefined);
+  await expect(testGetPost(api, id, bob.token), "已隐藏的帖子，其他人无法查看").resolves.toBe(undefined);
+  await expect(testGetPost(api, id), "已隐藏的帖子，游客无法查看").resolves.toBe(undefined);
 });
 test("获取帖子的可编辑状态", async function ({ api, ijiaDbPool }) {
   const { alice, post } = await preparePost(api);
@@ -117,14 +120,9 @@ test("分页获取帖子列表", async function ({ api, ijiaDbPool }) {
     content_text: "test0",
     publish_time: new Date(baseDate), // 插入一个时间重复的
   };
-  values[1] = {
-    user_id: alice.id,
-    content_text: "test1",
-    publish_time: null, // 插入一个时间为 null 的帖子
-  };
 
   const oneDay = 24 * 60 * 60 * 1000; // 一天的毫秒数
-  for (let i = 2; i < values.length; i++) {
+  for (let i = 1; i < values.length; i++) {
     values[i] = {
       user_id: alice.id,
       content_text: `test${i}`,
@@ -138,11 +136,10 @@ test("分页获取帖子列表", async function ({ api, ijiaDbPool }) {
   expect(list1.items.length).toBe(10);
   const content = list1.items.map((item) => item.content_text);
 
-  // test0 和 test2 的发布时间相同，test1 的发布时间为 null，且发布顺序为 0,1,2. 所以获取顺序为 2,1,0,3,4,5,6,7,8,9
+  // test0 和 test2 的发布时间相同，且发布顺序为 0,1,2. 所以获取顺序为 1,0,2,3,4,5,6,7,8,9
   expect(content[0]).toBe("test1");
-  expect(content[1]).toBe("test2");
-  expect(content[2]).toBe("test0");
-  expect(content[3]).toBe("test3");
+  expect(content[1]).toBe("test0");
+  expect(content[2]).toBe("test2");
   expect(content[9]).toBe("test9");
   expect(list1.next_cursor).toBeTypeOf("string");
 

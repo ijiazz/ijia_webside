@@ -1,18 +1,32 @@
 import { PostGroupResponse } from "@/api.ts";
 import { AdaptiveMenuLayout, LayoutDirection } from "@/modules/layout/AdaptiveMenuLayout.tsx";
-import { Button, ButtonProps, Menu, MenuProps, Result } from "antd";
+import { Button, ButtonProps, ConfigProvider, ConfigProviderProps, Menu, MenuProps, Result } from "antd";
 import React, { useMemo } from "react";
 import { Outlet, useLoaderData, useLocation, useNavigate, useParams } from "react-router";
 import styled from "@emotion/styled";
-import { getUserInfoFromToken } from "@/common/user.ts";
+import { getUserInfoFromToken, useCurrentUser } from "@/common/user.ts";
 import { PlusOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
-export type PostGroupContextType = {
-  groupId: number;
-  groupName: string;
+export type PostQueryFilter = {
+  group?: {
+    id: number;
+    name: string;
+  };
+  self?: boolean;
 };
-export const CurrentPostGroupContext = React.createContext<PostGroupContextType | null>(null);
+export const PostQueryFilterContext = React.createContext<PostQueryFilter>({});
 
+const THEME: ConfigProviderProps["theme"] = {
+  cssVar: true,
+
+  token: {
+    colorPrimary: "#f1a2a8",
+    colorInfo: "#f1a2a8",
+    colorSuccess: "#1faabd",
+    colorWarning: "#fccf52",
+    colorError: "#c12d39",
+  },
+};
 export function PostLayout() {
   const data = useLoaderData<PostGroupResponse | undefined>();
   const { groupId } = useParams();
@@ -26,24 +40,37 @@ export function PostLayout() {
     }
   };
   const menus = useMemo(() => {
-    const menus: MenuProps["items"] = data?.items.map((item) => ({
-      key: item.group_id.toString(),
-      label: item.group_name,
-    }));
-    menus?.unshift({
-      key: "all",
-      label: "全部",
-    });
+    const menus: MenuProps["items"] =
+      data?.items.map((item) => ({
+        key: item.group_id.toString(),
+        label: item.group_name,
+      })) ?? [];
+
+    const info = getUserInfoFromToken();
+
+    if (info?.valid) {
+      menus.unshift({ key: "self", label: "我的" });
+    }
+    menus.unshift({ key: "all", label: "全部" });
+
     return menus;
   }, [data]);
 
-  const currentGroup = useMemo((): PostGroupContextType | null => {
-    if (!data || !groupId) return null;
+  const filter = useMemo((): PostQueryFilter => {
+    if (!data || !groupId) return {};
+    const isSelf = groupId === "self";
+    if (isSelf) {
+      return {
+        self: true,
+      };
+    }
     const current = data.items.find((item) => item.group_id.toString() === groupId);
-    if (!current) return null;
+    if (!current) return {};
     return {
-      groupId: current.group_id,
-      groupName: current.group_name,
+      group: {
+        id: current.group_id,
+        name: current.group_name,
+      },
     };
   }, [data, groupId]);
 
@@ -58,40 +85,45 @@ export function PostLayout() {
     );
   if (data.items.length === 0) return <Outlet />;
   return (
-    <AdaptiveMenuLayout
-      style={{ height: "100%" }}
-      menu={(direction) => {
-        const isVertical = direction === LayoutDirection.Vertical;
-        const menu = (
-          <Menu
-            mode={isVertical ? "horizontal" : "vertical"}
-            style={{
-              flex: 1,
-              minWidth: "150px",
-              height: "100%",
-              backgroundColor: isVertical ? undefined : "#0000",
-            }}
-            items={menus}
-            selectedKeys={[groupId || "all"]}
-            activeKey={groupId}
-            onClick={(e) => {
-              changeGroupId(e.keyPath[0]);
-            }}
-          />
-        );
+    <ConfigProvider theme={THEME}>
+      <AdaptiveMenuLayout
+        style={{ height: "100%" }}
+        menu={(direction) => {
+          const isVertical = direction === LayoutDirection.Vertical;
+          const menu = (
+            <Menu
+              mode={isVertical ? "horizontal" : "vertical"}
+              style={{
+                flex: 1,
+                minWidth: "150px",
+                height: "100%",
+                backgroundColor: isVertical ? undefined : "#0000",
+              }}
+              items={menus}
+              selectedKeys={[groupId || "all"]}
+              activeKey={groupId}
+              onClick={(e) => {
+                changeGroupId(e.keyPath[0]);
+              }}
+            />
+          );
 
-        return (
-          <NavigationTabCSS isVertical={isVertical}>
-            {menu}
-            <PublishBtn style={{ marginRight: 12, display: isVertical ? undefined : "none" }} type="text"></PublishBtn>
-          </NavigationTabCSS>
-        );
-      }}
-    >
-      <CurrentPostGroupContext.Provider value={currentGroup}>
-        <Outlet />
-      </CurrentPostGroupContext.Provider>
-    </AdaptiveMenuLayout>
+          return (
+            <NavigationTabCSS isVertical={isVertical}>
+              {menu}
+              <PublishBtn
+                style={{ marginRight: 12, display: isVertical ? undefined : "none" }}
+                type="text"
+              ></PublishBtn>
+            </NavigationTabCSS>
+          );
+        }}
+      >
+        <PostQueryFilterContext.Provider value={filter}>
+          <Outlet />
+        </PostQueryFilterContext.Provider>
+      </AdaptiveMenuLayout>
+    </ConfigProvider>
   );
 }
 

@@ -67,10 +67,18 @@ export async function createPostGroup(pool: DbPool, name: string): Promise<numbe
   const result = await pool.queryRows(sql);
   return result[0].id;
 }
-/** 访客获取一个指定帖子 */
+/** 获取一个指定帖子 */
 export async function testGetPost(api: Api, postId: number, token?: string): Promise<PostItemDto> {
   const { items } = await api["/post/list"].get({
     query: { post_id: postId },
+    [JWT_TOKEN_KEY]: token,
+  });
+  return items[0];
+}
+/** 获取自己的一个指定帖子 */
+export async function testGetSelfPost(api: Api, postId: number, token: string): Promise<PostItemDto> {
+  const { items } = await api["/post/list"].get({
+    query: { post_id: postId, self: true },
     [JWT_TOKEN_KEY]: token,
   });
   return items[0];

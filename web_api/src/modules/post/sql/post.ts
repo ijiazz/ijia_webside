@@ -10,9 +10,9 @@ import { HttpError } from "@/global/errors.ts";
 
 export async function getPostList(
   params: GetPostListParam = {},
-  option: { currentUserId?: number } = {},
+  option: { currentUserId?: number; self?: boolean } = {},
 ): Promise<CursorListDto<PostItemDto, string>> {
-  const { number = 10, cursor: cursorStr, userId, group_id, post_id, forward, s_content, s_author } = params;
+  const { number = 10, cursor: cursorStr, userId, group_id, post_id, forward, self, s_content, s_author } = params;
   const { currentUserId = null } = option;
   const cursor = cursorStr ? parserTimestampCursor(cursorStr) : null;
 
@@ -74,8 +74,8 @@ export async function getPostList(
       const where: string[] = [`NOT p.is_delete`];
 
       const exclude = `(p.publish_time IS NULL OR p.is_reviewing OR p.is_review_pass IS FALSE OR p.is_hide)`; // 审核中和审核不通过和已隐藏
-      if (currentUserId !== null) {
-        where.push(`(NOT (${exclude} AND p.user_id!=${v(currentUserId)}))`);
+      if (currentUserId !== null && self) {
+        where.push(`(NOT ${exclude} OR p.user_id=${v(currentUserId)})`);
       } else {
         where.push(`(NOT ${exclude})`);
       }

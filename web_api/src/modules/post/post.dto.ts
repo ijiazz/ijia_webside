@@ -17,6 +17,9 @@ export type GetPostListParam = {
   /** 指针向前获取。 forward 只能获取 publish_time 不为空的数据 */
   forward?: boolean;
 
+  /** 是否仅获取当前用户的帖子。如果为 true，则包含自己隐藏的、审核中、审核不通过的帖子 */
+  self?: boolean;
+
   post_id?: number;
   userId?: string | number;
   s_content?: string;
@@ -35,12 +38,6 @@ export type CreatePostParam = {
   is_hide?: boolean;
   /** 是否匿名发布 */
   is_anonymous?: boolean;
-};
-
-export type PostDiggParam = {
-  is_cancel?: boolean;
-  is_report?: boolean;
-  report_reason?: string;
 };
 
 export type UpdatePostParam = {

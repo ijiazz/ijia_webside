@@ -103,7 +103,7 @@ export function InfiniteScrollLoad<T = unknown, P = unknown>(props: InfiniteScro
   });
 
   useEffect(() => {
-    if (loading || !result.hasMore) return;
+    if (loading || !result.hasMore || result.error) return;
     if (bottomAutoLoad && isInBottom()) load();
   }, [loading, result, bottomAutoLoad]);
 

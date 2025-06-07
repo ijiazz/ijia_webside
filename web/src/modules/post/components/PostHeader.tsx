@@ -1,32 +1,42 @@
 import { useThemeToken } from "@/hooks/antd.ts";
+import styled from "@emotion/styled";
 import { Space } from "antd";
-import React from "react";
+import React, { CSSProperties } from "react";
 
 export type PostHeaderProps = {
   userName?: React.ReactNode;
   platformIcon?: React.ReactNode;
-  publishTime?: React.ReactNode;
+  publishTime?: string | null;
+  updateTime?: string | null;
   ipLocation?: string | null;
-  extra?: React.ReactNode;
+
+  style?: CSSProperties;
 };
 
 export function PostHeader(props: PostHeaderProps) {
   const theme = useThemeToken();
   return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <div>
+    <PostHeaderCSS style={props.style}>
+      <Space>
+        <span className="post-header-owner-name">{props.userName}</span>
+        <span className="post-header-platform">{props.platformIcon}</span>
+      </Space>
+      <div className="post-header-subtitle" style={{ color: theme.colorTextDescription, fontSize: theme.fontSizeSM }}>
         <Space>
-          <b>{props.userName}</b>
-          <span>{props.platformIcon}</span>
+          {props.publishTime}
+          {props.updateTime ? `更新于 ${props.updateTime}` : undefined}
+          <span> {props.ipLocation ? "IP: " + props.ipLocation : undefined}</span>
         </Space>
-        <div style={{ color: theme.colorTextDescription, fontSize: theme.fontSizeSM }}>
-          <Space>
-            {props.publishTime}
-            <span> {props.ipLocation ? "IP: " + props.ipLocation : undefined}</span>
-          </Space>
-        </div>
       </div>
-      <div>{props.extra}</div>
-    </div>
+    </PostHeaderCSS>
   );
 }
+const PostHeaderCSS = styled.div`
+  .post-header {
+    &-owner-name {
+      font-weight: 500;
+    }
+    &-platform {
+    }
+  }
+`;

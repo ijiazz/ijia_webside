@@ -5,7 +5,7 @@ import { post, TextStructureType } from "@ijia/data/db";
 
 import { postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "test/fixtures/user.ts";
-import { createPostGroup, testGetPost } from "./utils/prepare_post.ts";
+import { createPostGroup, testGetPost, testGetSelfPost } from "./utils/prepare_post.ts";
 import { getPostReviewStatus, markReviewed, preparePost, ReviewStatus, updatePost } from "./utils/prepare_post.ts";
 
 beforeEach<Context>(async ({ hono }) => {
@@ -40,7 +40,7 @@ test("更新自己的发布的帖子的可见状态", async function ({ api, iji
   await updatePost(api, post.id, { is_hide: true }, alice.token);
   await expect(testGetPost(api, post.id), "帖子应该对访客不可见").resolves.toBe(undefined);
 
-  const aliceView = await testGetPost(api, post.id, alice.token);
+  const aliceView = await testGetSelfPost(api, post.id, alice.token);
   expect(aliceView.config.self_visible, "帖子应该对自己可见").toBeTruthy();
   expect(aliceView.update_time, "时间不应该被更新").toEqual(base.update_time);
   expect(aliceView.content_text).toBe("12");

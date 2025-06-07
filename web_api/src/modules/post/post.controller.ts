@@ -97,6 +97,7 @@ class PostController {
     const queries = c.req.query();
     const res = checkValue(queries, {
       cursor: optional.string,
+      self: optional((value) => value === "true"),
       number: optional(integer({ acceptString: true, min: 1, max: 100 })),
       userId: optional(integer.positive),
       post_id: optional(integer.positive),

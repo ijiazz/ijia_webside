@@ -1,31 +1,31 @@
 import { GetPostListParam, PostGroupResponse, PostItemDto, UpdatePostParam } from "@/api.ts";
-import { Affix, Avatar, Button, Dropdown, List, MenuProps, Modal, Space, Spin, Tag, Tooltip } from "antd";
+import { Avatar, Button, Dropdown, List, MenuProps, Modal, Space, Tag, Tooltip } from "antd";
 import styled from "@emotion/styled";
 import { useAntdStatic, useThemeToken } from "@/hooks/antd.ts";
 import { VLink } from "@/lib/components/VLink.tsx";
-import { PostCardLayout, PostContent } from "../components/posts.tsx";
+import { PostContent } from "../components/PostContent.tsx";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useRouteLoaderData, useSearchParams } from "react-router";
 import {
   DeleteOutlined,
   EditOutlined,
-  MessageOutlined,
   MoreOutlined,
-  PlusOutlined,
   SettingOutlined,
   UserOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
 import { api } from "@/common/http.ts";
-import { CurrentPostGroupContext } from "../layout/WallLayout.tsx";
+import { PostQueryFilterContext, PostQueryFilter } from "../layout/WallLayout.tsx";
 import { AdaptiveLayoutContext, LayoutDirection } from "@/modules/layout/AdaptiveMenuLayout.tsx";
 import { getUserInfoFromToken } from "@/common/user.ts";
 import { ROUTES } from "@/app.ts";
 import { InfiniteScrollHandle, InfiniteScrollLoad } from "@/lib/components/InfiniteLoad.tsx";
-import { LikeButton } from "../components/LikeButton.tsx";
-// import wallCoverSrc from "../img/wall_cover.png";
-const wallCoverSrc=""
+import wallCoverSrc from "../img/wall_cover.webp";
+import { PinkPostCard } from "../components/PinkCard.tsx";
+import { CreatePostBtn } from "../components/PublishBtn.tsx";
+import { ImageFitCover } from "@/lib/components/ImgFitCover.tsx";
+import { PostFooter } from "../components/PostFooter.tsx";
 
 export function PostListPage() {
   const data = useRouteLoaderData<PostGroupResponse | undefined>("/wall");
@@ -48,26 +48,11 @@ type PostGroupOption = {
   label: string;
   value: number;
 };
-function Cover() {
-  return (
-    <CoverCSS>
-      <img className="bg-cover" src={wallCoverSrc} />
-    </CoverCSS>
-  );
-}
 
-const CoverCSS = styled.div`
-  margin-bottom: 8px;
-  .bg-cover {
-    width: 100%;
-    object-fit: cover;
-  }
-`;
-
-function PostList(props: { groupOptions?: PostGroupOption[] }) {
+function PostList(props: { groupOptions?: PostGroupOption[]; currGroup?: PostQueryFilter | null; self?: boolean }) {
   const { groupOptions } = props;
+  const filter = useContext(PostQueryFilterContext);
   const { modal, message } = useAntdStatic();
-  const currGroup = useContext(CurrentPostGroupContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [search, setSearch] = useSearchParams();
@@ -75,6 +60,9 @@ function PostList(props: { groupOptions?: PostGroupOption[] }) {
   const [editItem, setEditItem] = useState<(UpdatePostParam & { id: number; updateContent?: boolean }) | undefined>(
     undefined,
   );
+
+  const itemsCtrl = useItemData({ filter });
+  const items = itemsCtrl.items;
   const onOpenPublish = () => {
     if (getUserInfoFromToken()?.valid) {
       setModalOpen(true);
@@ -97,60 +85,16 @@ function PostList(props: { groupOptions?: PostGroupOption[] }) {
       title: "删除确认",
       onOk: () => {
         return api["/post/content/:postId"].delete({ params: { postId: item.asset_id } }).then(() => {
-          setItems((prev) => prev.filter((i) => i.asset_id !== item.asset_id));
+          itemsCtrl.deleteItem(item.asset_id);
           message.success("删除成功");
         });
       },
     });
   };
-  const onPostLike = async (id: number, isCancel: boolean) => {
-    setItems((prev) => {
-      const index = prev.findIndex((i) => i.asset_id === id);
-      if (index === -1) return prev;
-      const item = prev[index].curr_user;
-      if (!item) return prev;
-      item.is_like = !isCancel;
-      return [...prev];
-    });
-    try {
-      await api["/post/like/:postId"].post({ params: { postId: id }, query: { isCancel } });
-    } catch (error) {
-      console.error(error);
-      message.error(isCancel ? "取消点赞失败" : "点赞失败");
-    }
-    await reloadItem(id);
-  };
+
   const pageRef = useRef<HTMLDivElement>(null);
   const scrollLoadRef = useRef<InfiniteScrollHandle>(null);
 
-  const [items, setItems] = useState<PostItemDto[]>([]);
-  const loadOldMore = async (cursor?: string) => {
-    const groupId = currGroup?.groupId;
-    return getPostList({ cursor, group_id: groupId });
-  };
-  const loadNewest = async (id?: number) => {
-    if (typeof id === "number") {
-      // 创建
-      const { items } = await getPostList({ post_id: id });
-      if (items.length > 0) {
-        setItems((prev) => {
-          const newItem = items[0];
-          return [newItem, ...prev];
-        });
-      }
-    } else {
-      //TODO 获取最新
-    }
-  };
-  const reloadItem = async (id: number) => {
-    const { items } = await getPostList({ post_id: id });
-    const item = items[0];
-    if (item) {
-      setItems((prev) => {
-        return prev.map((i) => (i.asset_id === item.asset_id ? item : i));
-      });
-    }
-  };
   const isFirstRender = useRef(true);
   useEffect(() => {
     if (isFirstRender.current) {
@@ -158,8 +102,8 @@ function PostList(props: { groupOptions?: PostGroupOption[] }) {
       return;
     }
     scrollLoadRef.current?.reset();
-    setItems([]);
-  }, [currGroup]);
+    itemsCtrl.setItems([]);
+  }, [filter]);
 
   const isVertical = useContext(AdaptiveLayoutContext) === LayoutDirection.Vertical;
 
@@ -170,23 +114,26 @@ function PostList(props: { groupOptions?: PostGroupOption[] }) {
         ref={scrollLoadRef}
         noMoreRender="可恶，到底了"
         className="post-list"
-        loadMore={loadOldMore}
+        loadMore={itemsCtrl.loadOldMore}
         onPush={(items) => {
-          setItems((prev) => prev.concat(items));
+          itemsCtrl.setItems((prev) => prev.concat(items));
         }}
         bottomThreshold={50}
       >
         <PostListCSS style={{ position: "relative" }}>
-          <Cover />
-          <div style={{ display: isVertical ? "none" : "block", marginBottom: 12 }}>
-            <Button type="primary" icon={<PlusOutlined />} onClick={onOpenPublish}>
-              发布
-            </Button>
-          </div>
+          <ImageFitCover
+            src={wallCoverSrc}
+            style={{ display: "flex", flexDirection: "column-reverse", alignItems: "end", padding: 12 }}
+          >
+            <div style={{ display: isVertical ? "none" : "block" }}>
+              <CreatePostBtn icon={<EditOutlined />} onClick={onOpenPublish}>
+                说点什么
+              </CreatePostBtn>
+            </div>
+          </ImageFitCover>
           <div></div>
           <List
             locale={{ emptyText: "-- 暂无数据 --" }}
-            style={{ backgroundColor: theme.colorBgLayout }}
             dataSource={items}
             itemLayout="vertical"
             renderItem={(item, index) => {
@@ -216,62 +163,56 @@ function PostList(props: { groupOptions?: PostGroupOption[] }) {
                 }
               }
               return (
-                <List.Item
-                  ref={index === 0 ? pageRef : undefined}
-                  key={item.asset_id}
-                  style={{ background: theme.colorBgBase }}
-                >
-                  <PostCardLayout
+                <List.Item ref={index === 0 ? pageRef : undefined} key={item.asset_id}>
+                  <PinkPostCard
                     icon={
                       <VLink to={undefined} target="_blank">
                         <Avatar icon={author ? undefined : <UserOutlined />} src={author?.avatar_url} />
                       </VLink>
                     }
-                    header={
-                      <PostHeader
-                        userName={userName}
-                        ipLocation={item.ip_location}
-                        publishTime={item.publish_time}
-                        updateTime={item.update_time}
-                        extra={
-                          <Space size={0}>
-                            {item.config.self_visible && <Tag>仅自己可见</Tag>}
-                            {item.status.is_reviewing && <Tag color="blue">审核中</Tag>}
-                            {item.status.review_pass === false && (
-                              <Tooltip title={item.status.reason}>
-                                <Tag color="red">审核不通过</Tag>
-                              </Tooltip>
-                            )}
-                            {item.curr_user && (
-                              <Dropdown menu={{ items: moreMenus }}>
-                                <Button type="text" icon={<MoreOutlined />}></Button>
-                              </Dropdown>
-                            )}
-                          </Space>
-                        }
+                    header={{
+                      userName,
+                      ipLocation: item.ip_location,
+                      publishTime: item.publish_time,
+                      updateTime: item.update_time,
+                    }}
+                    extra={
+                      <Space size={0}>
+                        {item.group?.group_name ? <Tag color="pink">{item.group.group_name}</Tag> : null}
+                        {item.config.self_visible && <Tag>仅自己可见</Tag>}
+                        {item.status.is_reviewing && <Tag color="blue">审核中</Tag>}
+                        {item.status.review_pass === false && (
+                          <Tooltip title={item.status.reason}>
+                            <Tag color="red">审核不通过</Tag>
+                          </Tooltip>
+                        )}
+                        {item.curr_user && (
+                          <Dropdown menu={{ items: moreMenus }}>
+                            <Button type="text" icon={<MoreOutlined />}></Button>
+                          </Dropdown>
+                        )}
+                      </Space>
+                    }
+                    footer={
+                      <PostFooter
+                        commentCount={item.stat.comment_total}
+                        commentDisabled={!item.curr_user?.can_comment}
+                        isLike={item.curr_user?.is_like}
+                        likeCount={item.stat.like_total}
+                        likeDisabled={!item.curr_user}
+                        onPostLike={(isCancel) => itemsCtrl.onPostLike(item.asset_id, isCancel)}
+                        onOpenComment={() => {}}
                       />
                     }
                   >
-                    <Space>
-                      <LikeButton
-                        disabled={!item.curr_user?.can_update}
-                        isLike={item.curr_user?.is_like}
-                        onTrigger={(isCancel) => onPostLike(item.asset_id, isCancel)}
-                      >
-                        {item.stat.like_total}
-                      </LikeButton>
-                      <Button
-                        disabled={!item.curr_user?.can_comment}
-                        size="small"
-                        icon={<MessageOutlined />}
-                        type="text"
-                      >
-                        {item.stat.comment_total}
-                      </Button>
-                      {item.group?.group_name ? <Tag color="pink">{item.group.group_name}</Tag> : null}
-                    </Space>
-                    <PostContent text={item.content_text} textStruct={item.content_text_structure} media={item.media} />
-                  </PostCardLayout>
+                    <div>
+                      <PostContent
+                        text={item.content_text}
+                        textStruct={item.content_text_structure}
+                        media={item.media}
+                      />
+                    </div>
+                  </PinkPostCard>
                 </List.Item>
               );
             }}
@@ -295,11 +236,11 @@ function PostList(props: { groupOptions?: PostGroupOption[] }) {
           editId={editItem?.id}
           initValues={editItem}
           onCreateOk={(id) => {
-            loadNewest(id);
+            itemsCtrl.loadNewest(id);
             setModalOpen(false);
           }}
           onEditOk={(id) => {
-            reloadItem(id);
+            itemsCtrl.reloadItem(id);
             setModalOpen(false);
           }}
           groupOptions={groupOptions}
@@ -309,35 +250,107 @@ function PostList(props: { groupOptions?: PostGroupOption[] }) {
   );
 }
 
-export type PostHeaderProps = {
-  userName?: React.ReactNode;
-  platformIcon?: React.ReactNode;
-  publishTime?: React.ReactNode;
-  updateTime?: React.ReactNode;
-  ipLocation?: string | null;
-  extra?: React.ReactNode;
-};
+function useItemData(option: { filter?: PostQueryFilter } = {}) {
+  const { filter = {} } = option;
+  const [items, setItems] = useState<PostItemDto[]>([]);
+  const reloadingRef = useRef<Record<number, Promise<any>>>({});
+  const loadOldMore = (cursor?: string) => {
+    return getPostList({ cursor, group_id: filter.group?.id, self: filter.self });
+  };
+  const loadNewest = async (id?: number) => {
+    if (typeof id === "number") {
+      // 创建
+      const { items } = await getPostList({ post_id: id, group_id: filter.group?.id, self: filter.self });
+      if (items.length > 0) {
+        setItems((prev) => {
+          const newItem = items[0];
+          return [newItem, ...prev];
+        });
+      }
+    } else {
+      //TODO 获取最新
+    }
+  };
+  const reloadItem = (id: number) => {
+    const reloadIng = reloadingRef.current;
+    const promise = getPostList({ post_id: id, group_id: filter.group?.id, self: filter.self })
+      .then((res) => {
+        if (reloadIng[id] === undefined) return; // 已被后调用来的更新
 
-export function PostHeader(props: PostHeaderProps) {
-  const theme = useThemeToken();
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <div>
-        <Space>
-          <b>{props.userName}</b>
-          <span>{props.platformIcon}</span>
-        </Space>
-        <div style={{ color: theme.colorTextDescription, fontSize: theme.fontSizeSM }}>
-          <Space>
-            {props.publishTime}
-            {props.updateTime ? <span>更新于 {props.updateTime}</span> : undefined}
-            <span> {props.ipLocation ? "IP: " + props.ipLocation : undefined}</span>
-          </Space>
-        </div>
-      </div>
-      <div>{props.extra}</div>
-    </div>
-  );
+        const item = res.items[0];
+        if (!item) return;
+
+        setItems((prev) => {
+          return prev.map((i) => (i.asset_id === item.asset_id ? item : i));
+        });
+      })
+      .finally(() => {
+        if (reloadIng[id] === promise) delete reloadIng[id];
+      });
+    reloadIng[id] = promise;
+    return promise;
+  };
+  const deleteItem = (id: number) => {
+    setItems((prev) => prev.filter((i) => i.asset_id !== id));
+  };
+  const replaceItem = (postId: number, replaceFn: (old: PostItemDto) => PostItemDto) => {
+    setItems((prev) => {
+      return prev.map((item) => {
+        if (item.asset_id === postId) {
+          return replaceFn(item);
+        }
+        return item;
+      });
+    });
+  };
+
+  const { message } = useAntdStatic();
+  const onPostLike = (id: number, isCancel: boolean) => {
+    replaceItem(id, (old) => {
+      const c = old.curr_user;
+      if (c) {
+        c.is_like = !isCancel;
+        if (isCancel) old.stat.like_total--;
+        else old.stat.like_total++;
+      }
+      return old;
+    });
+    const reloading = reloadingRef.current;
+    const promise = api["/post/like/:postId"].post({ params: { postId: id }, query: { isCancel } });
+    if (!reloading[id]) {
+      reloading[id] = promise;
+    }
+
+    promise
+      .then(
+        (res) => res.success,
+        (error) => {
+          console.error(error);
+          message.error(isCancel ? "取消点赞失败" : "点赞失败");
+          return false;
+        },
+      )
+      .then((success: boolean) => {
+        if (reloading[id] === promise) {
+          //这个过程这个帖子没有被请求刷新过
+          delete reloading[id];
+          if (!success) {
+            replaceItem(id, (old) => {
+              const c = old.curr_user;
+              if (c) {
+                c.is_like = !c.is_like;
+                if (isCancel) old.stat.like_total++;
+                else old.stat.like_total--;
+              }
+              return old;
+            });
+          }
+        } else {
+          return reloadItem(id);
+        }
+      });
+  };
+  return { items, setItems, loadOldMore, loadNewest, reloadItem, deleteItem, replaceItem, onPostLike };
 }
 async function getPostList(param?: GetPostListParam) {
   return api["/post/list"].get({ query: param }).then((res) => {
@@ -360,7 +373,7 @@ async function getPostList(param?: GetPostListParam) {
 const HomePageCSS = styled.div`
   height: 100%;
   .post-list {
-    padding: 12px 12px 4px 12px;
+    padding: 0 12px 4px 12px;
     height: 100%;
     overflow: auto;
   }
@@ -375,6 +388,7 @@ const PostListCSS = styled.div`
     gap: 12px;
     > .ant-list-item {
       border-radius: 8px;
+      padding: 0;
     }
   }
 `;

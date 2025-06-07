@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { createBrowserRouter, Outlet, RouteObject, RouterProvider } from "react-router";
 import passportRoutes from "./modules/passport/routes.tsx";
 import profileRoutes from "./modules/profile/routes.tsx";
@@ -62,7 +62,8 @@ const routes: RouteObject[] = [
 export default routes;
 
 function Router() {
-  return <RouterProvider router={createBrowserRouter(routes, { basename: getPathByRoute("/") })} />;
+  const router = useMemo(() => createBrowserRouter(routes, { basename: getPathByRoute("/") }), []);
+  return <RouterProvider router={router} />;
 }
 
 export function SpaRoot() {

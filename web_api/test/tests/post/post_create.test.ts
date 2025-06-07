@@ -1,13 +1,14 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 import { applyController } from "@asla/hono-decorator";
-import { TextStructure, TextStructureType, TextStructureUser } from "@ijia/data/db";
+import { post, TextStructure, TextStructureType, TextStructureUser } from "@ijia/data/db";
 
 import { postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "../../fixtures/user.ts";
 import { PostItemDto } from "@/api.ts";
 import { createPostGroup, testGetPost } from "./utils/prepare_post.ts";
 import { createPost } from "./utils/prepare_post.ts";
+import v from "@ijia/data/yoursql";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -73,11 +74,14 @@ test("发布帖子，如果选择了分组，发布后将直接进入审核状�
 
   const { id } = await createPost(api, { content_text: "test1分组", group_id: groupId }, alice.token);
 
-  const item = await testGetPost(api, id, alice.token);
+  const info = await post
+    .select({ is_reviewing: true, create_time: true, publish_time: true })
+    .where(`id = ${v(id)}`)
+    .queryFirstRow();
 
-  expect(item.status.is_reviewing).toBe(true);
-  expect(item.create_time).not.toBe(null);
-  expect(item.publish_time).toBe(null);
+  expect(info.is_reviewing).toBe(true);
+  expect(info.create_time).not.toBe(null);
+  expect(info.publish_time).toBe(null);
 });
 test("发布的文本限制5000个字符", async function ({ ijiaDbPool, api }) {
   const alice = await prepareUser("alice");

@@ -1,23 +1,21 @@
 import { HeartFilled } from "@ant-design/icons";
 import { Button } from "antd";
+import { ButtonProps } from "antd/lib/index.js";
 import React from "react";
 
-export type LikeButtonProps = {
-  disabled?: boolean;
+export type LikeButtonProps = Pick<ButtonProps, "style" | "size" | "disabled"> & {
   isLike?: boolean;
   children?: number;
   onTrigger?: (isCancel: boolean) => void;
 };
 export function LikeButton(props: LikeButtonProps) {
+  const { onTrigger, isLike, ...reset } = props;
   return (
     <Button
-      disabled={props.disabled}
+      {...reset}
       type="text"
-      size="small"
-      icon={<HeartFilled style={{ color: props.isLike ? "red" : "gray" }} />}
-      onClick={() => props.onTrigger?.(!!props.isLike)}
-    >
-      {props.children}
-    </Button>
+      icon={<HeartFilled style={{ color: isLike ? "red" : "gray" }} />}
+      onClick={() => onTrigger?.(!!isLike)}
+    />
   );
 }
