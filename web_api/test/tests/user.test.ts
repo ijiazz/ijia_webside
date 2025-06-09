@@ -18,7 +18,7 @@ import { signLoginJwt } from "@/global/jwt.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
 
 describe("bind", function () {
-  const JWT_KEY = Symbol("jwtToken");
+  const JWT_KEY = Symbol("accessToken");
   let AliceId: number;
   let AliceToken: string;
   beforeEach<Context>(async ({ hono, hoFetch, ijiaDbPool }) => {
@@ -26,7 +26,7 @@ describe("bind", function () {
     AliceToken = await signLoginJwt(AliceId, 60 * 100);
     hoFetch.use(async function (ctx, next) {
       const token = ctx[JWT_KEY];
-      if (token) ctx.headers.set("cookie", "jwt-token=" + token);
+      if (token) ctx.headers.set("cookie", "access_token=" + token);
       return next();
     });
     await pla_user
@@ -172,7 +172,7 @@ describe("bind", function () {
   }
 });
 describe("用户信息", function () {
-  const JWT_KEY = Symbol("jwtToken");
+  const JWT_KEY = Symbol("accessToken");
   let AliceId: number;
   let AliceToken: string;
   beforeEach<Context>(async ({ hono, hoFetch, ijiaDbPool }) => {
@@ -180,7 +180,7 @@ describe("用户信息", function () {
     AliceToken = await signLoginJwt(AliceId, 60 * 100);
     hoFetch.use(async function (ctx, next) {
       const token = ctx[JWT_KEY];
-      if (token) ctx.headers.set("cookie", "jwt-token=" + token);
+      if (token) ctx.headers.set("cookie", "access_token=" + token);
       return next();
     });
     applyController(hono, userController);

@@ -64,14 +64,14 @@ export function useCurrentUser(option: { manual?: boolean } = {}): UseCurrentUse
   }, [result]);
 }
 export function getUserToken(): string | undefined {
-  return ijiaCookie.jwtToken;
+  return ijiaCookie.accessToken;
 }
 export function userLogout() {
-  ijiaCookie.jwtToken = undefined;
+  ijiaCookie.accessToken = undefined;
   location.href = getUrlByRoute("/passport/login");
 }
-export function loginByAccessToken(jwtToken: string) {
-  ijiaCookie.jwtToken = jwtToken;
+export function loginByAccessToken(accessToken: string) {
+  ijiaCookie.accessToken = accessToken;
 }
 
 export function getUserInfoFromToken(): null | JwtUserInfo {

@@ -34,6 +34,6 @@ const JWT_KEY = ENV.JWT_KEY;
 export function signSysJWT(data: Record<string, any>) {
   return jwtLib.sign(data, JWT_KEY, "HS256");
 }
-export async function parseSysJWT(jwtToken: string): Promise<Record<string, any>> {
-  return jwtLib.verify(jwtToken, JWT_KEY, "HS256");
+export async function parseSysJWT(accessToken: string): Promise<Record<string, any>> {
+  return jwtLib.verify(accessToken, JWT_KEY, "HS256");
 }

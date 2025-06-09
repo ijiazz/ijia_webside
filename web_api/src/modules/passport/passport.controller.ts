@@ -98,7 +98,7 @@ export class PassportController {
   }
 
   @PipeOutput(function (value, ctx) {
-    if (value.success) setCookie(ctx, "jwt-token", value.token);
+    if (value.success) setCookie(ctx, "access_token", value.token);
     return ctx.json(value, 200);
   })
   @PipeInput(function (ctx: Context) {

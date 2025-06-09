@@ -27,7 +27,7 @@ async function checkRoles(userInfo: UserInfo, requiredAnyRoles: Set<string>) {
  * 装饰后，会根据添加 userInfo 到 HonoContext 上
  */
 export async function rolesGuard(ctx: HonoContext, next: () => Promise<void>): Promise<void | Response> {
-  const userInfo = new UserInfo(getCookie(ctx, "jwt-token"));
+  const userInfo = new UserInfo(getCookie(ctx, "access_token"));
   ctx.set("userInfo", userInfo);
 
   const endpointCtx = getEndpointContext(ctx);

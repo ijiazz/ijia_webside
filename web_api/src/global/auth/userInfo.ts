@@ -42,7 +42,7 @@ async function getUserRoleNameList(userId: number): Promise<UserWithRole> {
   return userInfo;
 }
 export class UserInfo {
-  constructor(private jwtToken?: string) {}
+  constructor(private accessToken?: string) {}
 
   #roleNameList?: Promise<UserWithRole>;
   /** 获取有效用户的角色列表 */
@@ -57,9 +57,9 @@ export class UserInfo {
    * 可能要考虑用后被注销或禁用
    */
   async getJwtInfo(): Promise<SignInfo> {
-    if (!this.jwtToken) throw new RequiredLoginError();
+    if (!this.accessToken) throw new RequiredLoginError();
     if (!this.#jwtInfo) {
-      this.#jwtInfo = verifyLoginJwt(this.jwtToken).catch((e) => {
+      this.#jwtInfo = verifyLoginJwt(this.accessToken).catch((e) => {
         throw new RequiredLoginError("身份认证已过期");
       });
     }

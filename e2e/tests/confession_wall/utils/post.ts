@@ -17,5 +17,5 @@ export async function createPostGroup(name: string, description?: string) {
 }
 
 export async function createPost(postParam: CreatePostParam, token: string) {
-  await api["/post/content"].put({ body: postParam, headers: { cookie: `jwt-token=${token}` } });
+  await api["/post/content"].put({ body: postParam, headers: { cookie: `access_token=${token}` } });
 }
