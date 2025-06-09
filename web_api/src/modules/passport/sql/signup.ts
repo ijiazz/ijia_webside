@@ -3,7 +3,8 @@ import v, { dbPool } from "@ijia/data/yoursql";
 import { HttpError } from "@/global/errors.ts";
 import { hashPasswordBackEnd } from "../services/password.ts";
 //TODO 账号注销后重新注册 (is_deleted = true). 需要清除账号数据
-export async function createUser(email: string, userInfo: { password?: string }) {
+export async function createUser(email: string, userInfo: { password?: string; nickname?: string }): Promise<number> {
+  const { nickname } = userInfo;
   let password: string | undefined;
   let salt: string | undefined;
   if (typeof userInfo.password === "string") {
@@ -12,7 +13,7 @@ export async function createUser(email: string, userInfo: { password?: string })
   }
   await using conn = await dbPool.begin();
   const insert = user
-    .insert({ email, password: password, pwd_salt: salt })
+    .insert({ email, password: password, pwd_salt: salt, nickname })
     .onConflict(["email"])
     .doNotThing()
     .returning<{ user_id: number }>({ user_id: "id" });

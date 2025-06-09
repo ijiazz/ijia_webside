@@ -1,8 +1,8 @@
 import { ConfigProvider, theme, message, notification, Modal } from "antd";
-import React, { PropsWithChildren, useContext, useMemo } from "react";
+import React, { PropsWithChildren, useContext, useEffect, useMemo } from "react";
 import { AndContext } from "@/hooks/antd.ts";
-import { ApiContext, IGNORE_ERROR_MSG, IGNORE_UNAUTHORIZED_REDIRECT } from "@/hooks/http.ts";
-import { createHoFetch, getResponseErrorInfo } from "@/common/http.ts";
+import { ApiContext, IGNORE_UNAUTHORIZED_REDIRECT } from "@/hooks/http.ts";
+import { getResponseErrorInfo, apiEvent, ApiEvent, ApiErrorEvent, API_PREFIX, api, http } from "@/common/http.ts";
 import { useNavigate } from "react-router";
 import { getUrlByRoute, ROUTES } from "./app.ts";
 export const useToken = theme.useToken;
@@ -30,19 +30,13 @@ export function AntdProvider(props: PropsWithChildren<{}>) {
     </ConfigProvider>
   );
 }
-function useCreateHoFetch() {
+
+export function HoFetchProvider(props: PropsWithChildren<{}>) {
   const { message } = useContext(AndContext);
   const navigate = useNavigate();
-  return useMemo(() => {
-    const hoFetch = createHoFetch();
-    hoFetch.http.use(async function (ctx, next) {
-      if (ctx.allowFailed === true || ctx[IGNORE_ERROR_MSG]) return next();
-      const res = await next();
-      if (res.ok) return res;
-      if (ctx.allowFailed instanceof Array && ctx.allowFailed.includes(res.status)) return res;
-
-      const body = await res.parseBody();
-
+  useEffect(() => {
+    const error = (event: Event) => {
+      const { ctx, body, response: res } = event as ApiErrorEvent;
       const err = getResponseErrorInfo(body);
       if (err) {
         const isHtml = res.headers.get("content-type")?.startsWith("text/html");
@@ -60,15 +54,15 @@ function useCreateHoFetch() {
           navigate(ROUTES.Login + "?" + s.toString(), { viewTransition: true });
         }
       }
+    };
+    apiEvent.addEventListener(ApiEvent.error, error);
+    return () => {
+      apiEvent.removeEventListener(ApiEvent.error, error);
+    };
+  }, []);
 
-      return res;
-    });
-
-    return hoFetch;
-  }, [message]);
-}
-
-export function HoFetchProvider(props: PropsWithChildren<{}>) {
-  const hoFetch = useCreateHoFetch();
+  const hoFetch = useMemo(() => {
+    return { API_PREFIX, api, http };
+  }, []);
   return <ApiContext value={hoFetch}>{props.children}</ApiContext>;
 }

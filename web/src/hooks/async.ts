@@ -3,6 +3,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export type UseAsync<T, A extends any[]> = {
   run(...args: A): Promise<T>;
   reset(result?: T, error?: any): void;
+  loading: boolean;
+  error?: any;
+  data?: T;
+  /** @deprecated 已废弃 */
   result: UseAsyncResult<T>;
 };
 export type UserAsyncOption<T, Args extends any[] = []> = {
@@ -20,6 +24,7 @@ export function useAsync<T, Args extends any[] = []>(
 ): UseAsync<T, Args> {
   const { defaultState = { loading: false }, autoRunArgs } = option;
   const [result, setResult] = useState<UseAsyncResult<T>>(defaultState);
+
   const fnRef = useRef(fn);
   fnRef.current = fn;
   const loadingPromise = useRef<Promise<any>>(undefined);
@@ -52,7 +57,10 @@ export function useAsync<T, Args extends any[] = []>(
     }
     return Promise.resolve(promise);
   }, []);
-
+  const reset = useCallback((result: T, error: any) => {
+    loadingPromise.current = undefined;
+    setResult({ error, loading: false, value: result });
+  }, []);
   useEffect(() => {
     if (autoRunArgs) run.apply(undefined, autoRunArgs);
     return () => {
@@ -60,11 +68,11 @@ export function useAsync<T, Args extends any[] = []>(
     };
   }, []);
   return {
-    reset: (result, error) => {
-      loadingPromise.current = undefined;
-      setResult({ error, loading: false, value: result });
-    },
+    reset,
     run,
     result,
+    loading: result.loading, //TODO 将 loading 状态拆分
+    error: result.error,
+    data: result.value,
   };
 }

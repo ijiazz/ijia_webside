@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router";
+import { useLocation, useSearchParams } from "react-router";
 
 export type RedirectOption = {
   /** url 查询参数的 key */

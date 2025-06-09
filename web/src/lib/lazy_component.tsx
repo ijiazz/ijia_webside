@@ -13,6 +13,7 @@ export function lazyComponent(load: () => Promise<any>, pick?: (mod: any) => Com
         return { default: pick ? pick(res) : res };
       },
       (e) => {
+        console.error(e);
         return {
           default: () => <LazyLoadError error={e} />,
         };

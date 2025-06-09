@@ -10,6 +10,10 @@ export type MenuRoute = NonNullable<ProLayoutProps["route"]>;
 export const menus: MenuDataItem = {
   children: [
     {
+      path: "wall",
+      name: "表白墙",
+    },
+    {
       path: "live",
       name: "动态",
     },

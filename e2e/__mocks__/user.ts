@@ -49,10 +49,10 @@ export async function createOverwriteUser(
 }
 
 export function initAlice() {
-  return createOverwriteUser(100, "alice@ijiazz.cn");
+  return createOverwriteUser(100, "alice@ijiazz.cn", { name: "Alice" });
 }
 export function initBob() {
-  return createOverwriteUser(101, "bob@ijiazz.cn");
+  return createOverwriteUser(101, "bob@ijiazz.cn", { name: "Bob" });
 }
 
 export async function loginGetToken(email: string, pwd: string) {
