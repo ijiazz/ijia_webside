@@ -16,6 +16,7 @@ import { checkValue, checkValueAsync } from "@/global/check.ts";
 import { CheckTypeError, getBasicType, integer, optional } from "@asla/wokao";
 import { HonoContext } from "@/hono/type.ts";
 import { HttpError } from "@/global/errors.ts";
+import { appConfig } from "@/config.ts";
 
 @Use(rolesGuard)
 @autoBody
@@ -38,8 +39,10 @@ class PostController {
   })
   @Put("/post/content")
   async create(userId: number, params: CreatePostParam): Promise<{ id: number }> {
+    const maximumDailyCount = appConfig.post?.maximumDailyCount ?? 50;
+    if (maximumDailyCount <= 0) throw new HttpError(403, "发帖功能已关闭");
     const count = await getUserDateCount(userId);
-    if (count >= 50) throw new HttpError(403, "每日发布数量已达上限，请明天再试");
+    if (count >= maximumDailyCount) throw new HttpError(403, `每日发布数量已达上限${count}个，请明天再试`);
     try {
       return await createPost(userId, params);
     } catch (error) {
