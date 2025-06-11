@@ -5,6 +5,7 @@ import { applyController } from "@asla/hono-decorator";
 import { HoFetch } from "@asla/hofetch";
 import { signAccessToken } from "@/global/jwt.ts";
 import { afterTime } from "evlib";
+import { user } from "@ijia/data/db";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, userController);
@@ -25,7 +26,8 @@ test("过期的token请求后应返回删除 cookie", async function ({ hoFetch 
   expect(setCookie, "时间应设置为0").toMatch(/Max-Age=0;/);
 });
 
-test("刷新 token 后应返回新的 token", async function ({ hoFetch }) {
+test("刷新 token 后应返回新的 token", async function ({ hoFetch, ijiaDbPool }) {
+  await user.insert({ id: 1, email: "test@example" }).query();
   const token = await signAccessToken(1, { survivalSeconds: 0.05, refreshSurvivalSeconds: 2 });
   await afterTime(50);
   const res = await getInfo(hoFetch, token.token);
