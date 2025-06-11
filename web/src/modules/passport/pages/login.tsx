@@ -121,7 +121,6 @@ export function LoginPage() {
                         name="password"
                         fieldProps={{ prefix: <LockOutlined /> }}
                         placeholder="密码"
-                        rules={[{ required: true }]}
                       />
                     </>
                   ),
@@ -240,11 +239,11 @@ const StyledPage = styled.div`
 
 type EmailLoginParam = {
   email: string;
-  password: string;
+  password?: string;
 };
 type IdLoginParam = {
   id: string;
-  password: string;
+  password?: string;
 };
 async function getLoinParam(loginType: LoginType, param: IdLoginParam) {
   let loginParam: UserLoginParamDto | undefined;
@@ -254,15 +253,16 @@ async function getLoinParam(loginType: LoginType, param: IdLoginParam) {
     loginParam = {
       method: LoginType.id,
       id: (param as IdLoginParam).id,
-      ...(await tryHashPassword(param.password)),
     };
   } else {
     loginParam = {
       method: LoginType.email,
       email: id,
-      ...(await tryHashPassword(param.password)),
     };
   }
-
+  if (param.password) {
+    const p = await tryHashPassword(param.password);
+    Object.assign(loginParam, p);
+  }
   return loginParam;
 }

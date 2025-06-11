@@ -124,10 +124,10 @@ export class PassportController {
       case LoginType.id: {
         const params = checkValue(body, {
           id: integer({ acceptString: true }),
-          password: "string",
+          password: optional.string,
           passwordNoHash: optional.boolean,
         });
-        if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
+        if (params.passwordNoHash && params.password) params.password = await hashPasswordFrontEnd(params.password);
         const uid = await accountLoginById(+params.id, params.password);
         account = { userId: uid };
         break;
@@ -136,10 +136,10 @@ export class PassportController {
         const params = checkValue(body, {
           method: "string",
           email: "string",
-          password: "string",
+          password: optional.string,
           passwordNoHash: optional.boolean,
         });
-        if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
+        if (params.passwordNoHash && params.password) params.password = await hashPasswordFrontEnd(params.password);
         const uid = await accountLoginByEmail(params.email, params.password);
         account = { userId: uid };
         break;
