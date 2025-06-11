@@ -24,7 +24,7 @@ import { Controller, Delete, Get, Patch, PipeInput, Post, ToArguments, Use } fro
 import { HonoContext } from "@/hono/type.ts";
 import { checkValue, checkValueAsync, date } from "@/global/check.ts";
 import { autoBody } from "@/global/pipe.ts";
-import { rolesGuard } from "@/global/auth.ts";
+import { identity } from "@/global/auth.ts";
 import { HttpError } from "@/global/errors.ts";
 import { getCheckerServer, getUerSecIdFromShareUrl, PlatformUserBasicInfoCheckResult } from "@/services/douyin.ts";
 import {
@@ -38,7 +38,7 @@ import {
 import { toErrorStr } from "evlib";
 import { ENV } from "@/config.ts";
 
-@Use(rolesGuard)
+@Use(identity)
 @autoBody
 @Controller({})
 export class UserController {

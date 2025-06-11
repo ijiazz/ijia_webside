@@ -1,10 +1,10 @@
 import { Controller, Get, Use } from "@asla/hono-decorator";
 import { autoBody } from "@/global/pipe.ts";
-import { rolesGuard } from "@/global/auth.ts";
+import { identity } from "@/global/auth.ts";
 import { post_group } from "@ijia/data/db";
 import { PostGroupItem, PostGroupResponse } from "./post.dto.ts";
 
-@Use(rolesGuard)
+@Use(identity)
 @autoBody
 @Controller({})
 class PostGroupController {

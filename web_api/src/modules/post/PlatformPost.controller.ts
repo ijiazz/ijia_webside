@@ -6,11 +6,11 @@ import { enumPlatform } from "@ijia/data/db";
 import { checkValue } from "@/global/check.ts";
 import { enumType, integer, optional } from "@asla/wokao";
 import { HonoContext } from "@/hono/type.ts";
-import { Role, rolesGuard, UserInfo } from "@/global/auth.ts";
+import { Role, identity, UserInfo } from "@/global/auth.ts";
 import { getCheckerServer } from "@/services/douyin.ts";
 import { GetPostListParam } from "./post.dto.ts";
 
-@Use(rolesGuard)
+@Use(identity)
 @autoBody
 @Controller({})
 class PlatformPostController {

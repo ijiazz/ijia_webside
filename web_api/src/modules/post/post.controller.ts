@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Patch, Post, Put, ToArguments, Use } from "@asla/hono-decorator";
 import { autoBody } from "@/global/pipe.ts";
-import { rolesGuard } from "@/global/auth.ts";
+import { identity } from "@/global/auth.ts";
 import { CreatePostParam, GetPostListParam, PostResponse, UpdatePostParam } from "./post.dto.ts";
 import {
   createPost,
@@ -18,7 +18,7 @@ import { HonoContext } from "@/hono/type.ts";
 import { HttpError } from "@/global/errors.ts";
 import { appConfig } from "@/config.ts";
 
-@Use(rolesGuard)
+@Use(identity)
 @autoBody
 @Controller({})
 class PostController {
