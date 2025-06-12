@@ -1,5 +1,4 @@
 import { PostGroupItem, PostGroupResponse } from "@/api.ts";
-import { AdaptiveMenuLayout, LayoutDirection } from "@/modules/layout/AdaptiveMenuLayout.tsx";
 import { Button, ButtonProps, ConfigProvider, ConfigProviderProps, Menu, MenuProps, Result } from "antd";
 import React, { useMemo } from "react";
 import { Outlet, useLoaderData, useLocation, useNavigate, useParams } from "react-router";
@@ -7,6 +6,8 @@ import styled from "@emotion/styled";
 import { getUserInfoFromToken } from "@/common/user.ts";
 import { PlusOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
+import { AdaptiveMenuLayout } from "@/modules/layout/AdaptiveMenuLayout.tsx";
+import { LayoutDirection } from "@/global-provider.tsx";
 export type PostQueryFilter = {
   group?: PostGroupItem;
   self?: boolean;

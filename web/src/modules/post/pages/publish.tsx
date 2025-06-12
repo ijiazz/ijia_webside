@@ -1,6 +1,6 @@
 import { CreatePostParam, UpdatePostParam } from "@/api.ts";
 import { api } from "@/common/http.ts";
-import { useAntdStatic } from "@/hooks/antd.ts";
+import { useAntdStatic } from "@/global-provider.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Alert, Button, Form, Input, Select, Switch, SelectProps, Space } from "antd";

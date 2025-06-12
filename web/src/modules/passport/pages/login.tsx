@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Link, useRouteLoaderData } from "react-router";
 import { LoginType, PassportConfig, UserLoginParamDto } from "@/api.ts";
 import { CAN_HASH_PASSWORD, tryHashPassword } from "../util/pwd_hash.ts";
-import { useAntdStatic } from "@/hooks/antd.ts";
+import { useAntdStatic } from "@/global-provider.tsx";
 import { IjiaLogo } from "@/common/site-logo.tsx";
 import styled from "@emotion/styled";
 import { useAsync } from "@/hooks/async.ts";

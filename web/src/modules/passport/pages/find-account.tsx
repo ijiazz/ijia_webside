@@ -4,7 +4,7 @@ import { useState } from "react";
 import styled from "@emotion/styled";
 import { EmailInput } from "../components/EmailInput.tsx";
 import { useAsync } from "@/hooks/async.ts";
-import { useAntdStatic } from "@/hooks/antd.ts";
+import { useAntdStatic } from "@/global-provider.tsx";
 import { api, isHttpErrorCode } from "@/common/http.ts";
 import { Link, useNavigate } from "react-router";
 import { ROUTES } from "@/app.ts";

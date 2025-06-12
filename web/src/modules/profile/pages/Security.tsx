@@ -1,6 +1,6 @@
 import { Form, Input, Button, Steps, Modal, Space } from "antd";
 import { useAsync } from "@/hooks/async.ts";
-import { useAntdStatic } from "@/hooks/antd.ts";
+import { useAntdStatic } from "@/global-provider.tsx";
 import { CAN_HASH_PASSWORD, hashPassword } from "@/modules/passport/util/pwd_hash.ts";
 import { PagePadding } from "@/lib/components/Page.tsx";
 import React, { useEffect, useMemo, useState } from "react";

@@ -25,7 +25,7 @@ import { BindAccountDto, UserInfoDto } from "@/api.ts";
 import { api, toFileUrl } from "@/common/http.ts";
 import dayjs, { Dayjs } from "dayjs";
 import { PagePadding } from "@/lib/components/Page.tsx";
-import { useThemeToken } from "@/hooks/antd.ts";
+import { useThemeToken } from "@/global-provider.tsx";
 
 export function BasicInfoPage() {
   const { data, loading, run } = useAsync(

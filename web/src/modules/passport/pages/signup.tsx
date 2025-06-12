@@ -3,7 +3,7 @@ import { Button, Checkbox, Form, Input, Space } from "antd";
 import React from "react";
 import { tryHashPassword } from "../util/pwd_hash.ts";
 import { useAsync } from "@/hooks/async.ts";
-import { useAntdStatic, useThemeToken } from "@/hooks/antd.ts";
+import { useAntdStatic, useThemeToken } from "@/global-provider.tsx";
 import { IjiaLogo } from "@/common/site-logo.tsx";
 import { useRedirect } from "@/hooks/redirect.ts";
 import { api, isHttpErrorCode } from "@/common/http.ts";

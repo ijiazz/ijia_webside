@@ -3,7 +3,7 @@ import { THIRD_PART } from "@/common/third_part_account.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { Avatar, List, Button } from "antd";
 import styled from "@emotion/styled";
-import { useThemeToken } from "@/hooks/antd.ts";
+import { useThemeToken } from "@/global-provider.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { PostContent } from "../components/PostContent.tsx";
 import React, { useEffect, useMemo, useRef } from "react";

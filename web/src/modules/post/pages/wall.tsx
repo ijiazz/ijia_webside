@@ -1,7 +1,7 @@
 import { GetPostListParam, PostGroupResponse, PostItemDto, UpdatePostParam } from "@/api.ts";
 import { Avatar, Button, Dropdown, List, MenuProps, Modal, Space, Tag, Tooltip } from "antd";
 import styled from "@emotion/styled";
-import { useAntdStatic, useThemeToken } from "@/hooks/antd.ts";
+import { useAntdStatic, useThemeToken } from "@/global-provider.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { PostContent } from "../components/PostContent.tsx";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -17,7 +17,7 @@ import {
 import { lazyPage } from "@/common/lazy_load_component.tsx";
 import { api } from "@/common/http.ts";
 import { PostQueryFilterContext, PostQueryFilter } from "../layout/WallLayout.tsx";
-import { AdaptiveLayoutContext, LayoutDirection } from "@/modules/layout/AdaptiveMenuLayout.tsx";
+import { useLayoutDirection, LayoutDirection } from "@/global-provider.tsx";
 import { getUserInfoFromToken } from "@/common/user.ts";
 import { ROUTES } from "@/app.ts";
 import { InfiniteScrollHandle, InfiniteScrollLoad } from "@/lib/components/InfiniteLoad.tsx";
@@ -107,7 +107,7 @@ function PostList(props: { groupOptions?: PostGroupOption[]; currGroup?: PostQue
     itemsCtrl.setItems([]);
   }, [filter]);
 
-  const isVertical = useContext(AdaptiveLayoutContext) === LayoutDirection.Vertical;
+  const isVertical = useLayoutDirection() === LayoutDirection.Vertical;
   const theme = useThemeToken();
   return (
     <HomePageCSS>

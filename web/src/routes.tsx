@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { createBrowserRouter, Outlet, RouteObject, RouterProvider } from "react-router";
+import { createBrowserRouter, RouteObject, RouterProvider } from "react-router";
 import passportRoutes from "./modules/passport/routes.tsx";
 import profileRoutes from "./modules/profile/routes.tsx";
 import { routes as examinationRoutes } from "./modules/examination/routes.tsx";
@@ -40,17 +40,7 @@ const routes: RouteObject[] = [
   {
     path: "/",
     lazy: () => {
-      return import("./global-provider.tsx").then(({ AntdProvider, HoFetchProvider }) => ({
-        Component() {
-          return (
-            <AntdProvider>
-              <HoFetchProvider>
-                <Outlet />
-              </HoFetchProvider>
-            </AntdProvider>
-          );
-        },
-      }));
+      return import("./global-provider.tsx").then(({ GlobalProvider }): LazyRoute => ({ Component: GlobalProvider }));
     },
     HydrateFallback() {
       useEffect(() => remoteLoading, []);

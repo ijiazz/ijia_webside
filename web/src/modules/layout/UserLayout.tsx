@@ -6,7 +6,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import { menus } from "./menus.tsx";
 import { getUserToken, useCurrentUser } from "@/common/user.ts";
 import { avatarDropdownRender } from "./avatar.tsx";
-import { useAntdStatic } from "@/hooks/antd.ts";
+import { useAntdStatic } from "@/global-provider.tsx";
 import styled from "@emotion/styled";
 import { ROUTES } from "@/app.ts";
 
