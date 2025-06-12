@@ -1,7 +1,7 @@
 import { useAsync } from "@/hooks/async.ts";
 import { Avatar, Button, Input, Divider, Popover, Typography, Tag } from "antd";
-import React, { useContext, useState } from "react";
-import { useThemeToken, AndContext } from "@/hooks/antd.ts";
+import React, { useState } from "react";
+import { useAntdStatic, useThemeToken } from "@/hooks/antd.ts";
 import styled from "@emotion/styled";
 import { BindPlatformCheckDto, Platform } from "@/api.ts";
 import step1Path from "./PlatformBind/douyin-step-1.webp";
@@ -13,7 +13,7 @@ import { api } from "@/common/http.ts";
 
 export function PlatformBind(props: { userId?: number; onBindSuccess?(): void }) {
   const { onBindSuccess, userId } = props;
-  const { message } = useContext(AndContext);
+  const { message } = useAntdStatic();
   const theme = useThemeToken();
   const { result, run, reset } = useAsync(function (platform: Platform, url: string) {
     return api["/user/bind_platform/check"].post({

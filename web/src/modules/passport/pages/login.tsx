@@ -1,12 +1,12 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { LoginForm, ProFormCheckbox, ProFormText } from "@ant-design/pro-components";
 import { Alert, Space, Tabs } from "antd";
-import React, { useContext } from "react";
+import React from "react";
 import { useState } from "react";
 import { Link, useRouteLoaderData } from "react-router";
 import { LoginType, PassportConfig, UserLoginParamDto } from "@/api.ts";
 import { CAN_HASH_PASSWORD, tryHashPassword } from "../util/pwd_hash.ts";
-import { AndContext } from "@/hooks/antd.ts";
+import { useAntdStatic } from "@/hooks/antd.ts";
 import { IjiaLogo } from "@/common/site-logo.tsx";
 import styled from "@emotion/styled";
 import { useAsync } from "@/hooks/async.ts";
@@ -63,7 +63,7 @@ export function LoginPage() {
 
   const windowSize = useWindowResize();
 
-  const { modal } = useContext(AndContext);
+  const { modal } = useAntdStatic();
   const onClickLoinBtn = async (param: IdLoginParam) => {
     setMessage(defaultMessage);
 

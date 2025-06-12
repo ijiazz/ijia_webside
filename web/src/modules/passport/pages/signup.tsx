@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
 import { Button, Checkbox, Form, Input, Space } from "antd";
-import React, { useContext } from "react";
+import React from "react";
 import { tryHashPassword } from "../util/pwd_hash.ts";
 import { useAsync } from "@/hooks/async.ts";
-import { AndContext, useThemeToken } from "@/hooks/antd.ts";
+import { useAntdStatic, useThemeToken } from "@/hooks/antd.ts";
 import { IjiaLogo } from "@/common/site-logo.tsx";
 import { useRedirect } from "@/hooks/redirect.ts";
 import { api, isHttpErrorCode } from "@/common/http.ts";
@@ -62,7 +62,7 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
     refresh(jwtKey);
     go();
   });
-  const { message } = useContext(AndContext);
+  const { message } = useAntdStatic();
   return (
     <div style={{ padding: 28 }} className="basic-info">
       <Form

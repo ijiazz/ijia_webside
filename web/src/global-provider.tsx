@@ -1,6 +1,6 @@
-import { ConfigProvider, theme, message, notification, Modal } from "antd";
+import { ConfigProvider, message, notification, Modal } from "antd";
 import React, { PropsWithChildren, useContext, useEffect } from "react";
-import { AndContext } from "@/hooks/antd.ts";
+import { AntdContext } from "@/hooks/antd.ts";
 import {
   getResponseErrorInfo,
   apiEvent,
@@ -10,7 +10,6 @@ import {
 } from "@/common/http.ts";
 import { useNavigate } from "react-router";
 import { getUrlByRoute, ROUTES } from "./app.ts";
-export const useToken = theme.useToken;
 
 export function AntdProvider(props: PropsWithChildren<{}>) {
   const [messageApi, messageSlot] = message.useMessage({});
@@ -31,13 +30,13 @@ export function AntdProvider(props: PropsWithChildren<{}>) {
       {messageSlot}
       {noticeSlot}
       {modalSlot}
-      <AndContext value={{ message: messageApi, notice: noticeApi, modal: modalApi }}>{props.children}</AndContext>
+      <AntdContext value={{ message: messageApi, notice: noticeApi, modal: modalApi }}>{props.children}</AntdContext>
     </ConfigProvider>
   );
 }
 
 export function HoFetchProvider(props: PropsWithChildren<{}>) {
-  const { message } = useContext(AndContext);
+  const { message } = useContext(AntdContext);
   const navigate = useNavigate();
   useEffect(() => {
     const error = (event: Event) => {

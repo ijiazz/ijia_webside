@@ -1,10 +1,10 @@
 import { Button, Form, Input, Steps, Result } from "antd";
-import React, { useContext } from "react";
+import React from "react";
 import { useState } from "react";
 import styled from "@emotion/styled";
 import { EmailInput } from "../components/EmailInput.tsx";
 import { useAsync } from "@/hooks/async.ts";
-import { AndContext } from "@/hooks/antd.ts";
+import { useAntdStatic } from "@/hooks/antd.ts";
 import { api, isHttpErrorCode } from "@/common/http.ts";
 import { Link, useNavigate } from "react-router";
 import { ROUTES } from "@/app.ts";
@@ -107,7 +107,7 @@ function Email(props: { disabled?: boolean; onOk?: () => void }) {
     onOk?.();
     onOk?.();
   });
-  const { message } = useContext(AndContext);
+  const { message } = useAntdStatic();
   return (
     <Form disabled={disabled} wrapperCol={{ span: 18 }} labelCol={{ span: 6 }} onFinish={submit}>
       <Form.Item label="电子邮箱" name="email" rules={[{ required: true, type: "email" }]}>
