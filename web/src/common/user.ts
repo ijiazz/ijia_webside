@@ -22,7 +22,7 @@ const userEvent = new EventTarget();
 
 export function useCurrentUser(option: { manual?: boolean } = {}): UseCurrentUser {
   const { manual } = option;
-  const { result, run, reset } = useAsync(
+  const { loading, data, error, run, reset } = useAsync(
     (force?: boolean) => {
       if (!user || force) {
         if (!getUserToken()) return;
@@ -48,7 +48,9 @@ export function useCurrentUser(option: { manual?: boolean } = {}): UseCurrentUse
   }, []);
   return useMemo(() => {
     return {
-      ...result,
+      value: data,
+      loading: loading,
+      error: error,
       refresh: (token?: string) => {
         if (token) loginByAccessToken(token);
         return run(true).then(() => userEvent.dispatchEvent(new Event("refresh")));
@@ -59,7 +61,7 @@ export function useCurrentUser(option: { manual?: boolean } = {}): UseCurrentUse
         userLogout();
       },
     };
-  }, [result]);
+  }, [data, loading, error]);
 }
 export function getUserToken(): string | undefined {
   return ijiaCookie.accessToken;

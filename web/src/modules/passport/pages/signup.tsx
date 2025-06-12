@@ -44,19 +44,20 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
   const [form] = Form.useForm<FormValues>();
   const { refresh } = useCurrentUser({ manual: true });
   const go = useRedirect({ defaultPath: () => getPathByRoute("/profile/center") });
-  const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>
-    api["/passport/signup/email_captcha"].post({
-      body: { email, captchaReply: { sessionId, selectedIndex: selected } },
-    }),
+  const { run: sendEmailCaptcha, data: emailCaptcha } = useAsync(
+    (email: string, sessionId: string, selected: number[]) =>
+      api["/passport/signup/email_captcha"].post({
+        body: { email, captchaReply: { sessionId, selectedIndex: selected } },
+      }),
   );
-  const { result: submitState, run: onSubmit } = useAsync(async function (value: FormValues) {
+  const { loading: signupLoading, run: onSubmit } = useAsync(async function (value: FormValues) {
     const pwd = await tryHashPassword(value.password);
     const { userId, jwtKey } = await api["/passport/signup"].post({
       body: {
         email: value.email,
         password: pwd.password,
         passwordNoHash: pwd.passwordNoHash,
-        emailCaptcha: { code: value.email_code, sessionId: result.value?.sessionId! },
+        emailCaptcha: { code: value.email_code, sessionId: emailCaptcha?.sessionId! },
       },
     });
     refresh(jwtKey);
@@ -136,7 +137,7 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
       <div style={{ display: "flex", justifyContent: "end" }}>
         <Button
           disabled={!config.signupEnabled}
-          loading={submitState.loading}
+          loading={signupLoading}
           type="primary"
           htmlType="submit"
           onClick={() => form.submit()}

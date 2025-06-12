@@ -7,7 +7,9 @@ import { api, API_PREFIX } from "../http.ts";
 
 function useImageCaptcha(config: { onSubmit?: (sessionId: string, selected: number[]) => void | Promise<void> }) {
   const {
-    result: captchaResult,
+    loading: captchaLoading,
+    error: captchaError,
+    data: captchaQuestion,
     run: refresh,
     reset,
   } = useAsync(async (sessionId?: string) => {
@@ -15,8 +17,12 @@ function useImageCaptcha(config: { onSubmit?: (sessionId: string, selected: numb
       .post({ params: { sessionId } })
       .then((res) => ({ ...res, imageUrlList: res.imageUrlList.map((item) => API_PREFIX + item) }));
   });
-  const { result: submitResult, run: submit } = useAsync(async (selected: number[]) => {
-    const sessionId = captchaResult.value!.sessionId;
+  const {
+    loading: submitLoading,
+    error: submitError,
+    run: submit,
+  } = useAsync(async (selected: number[]) => {
+    const sessionId = captchaQuestion!.sessionId;
 
     try {
       await config.onSubmit?.(sessionId, selected);
@@ -27,10 +33,15 @@ function useImageCaptcha(config: { onSubmit?: (sessionId: string, selected: numb
   });
 
   return {
-    captchaResult,
-    submitResult,
+    captchaError,
+    captchaLoading,
+    captchaQuestion,
+
+    submitLoading,
+    submitError,
+
     submit,
-    refresh: () => refresh(captchaResult.value?.sessionId),
+    refresh: () => refresh(captchaQuestion?.sessionId),
   };
 }
 export type ImageCaptchaPopoverProps = PropsWithChildren<{
@@ -40,7 +51,7 @@ export type ImageCaptchaPopoverProps = PropsWithChildren<{
 }>;
 export function ImageCaptchaPopover(props: ImageCaptchaPopoverProps) {
   const { disabled } = props;
-  const { captchaResult, submitResult, submit, refresh } = useImageCaptcha({
+  const { captchaError, captchaLoading, captchaQuestion, submitLoading, submit, refresh } = useImageCaptcha({
     async onSubmit(sessionId, selected) {
       await props.onSubmit?.(sessionId, selected);
       setOpen(false);
@@ -48,9 +59,8 @@ export function ImageCaptchaPopover(props: ImageCaptchaPopoverProps) {
   });
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
-  const captchaQuestion = captchaResult.value;
 
-  const isError = captchaResult.error && !captchaResult.loading;
+  const isError = captchaError && !captchaLoading;
   useEffect(() => {
     if (open && !captchaQuestion) refresh();
   }, [open]);
@@ -64,7 +74,7 @@ export function ImageCaptchaPopover(props: ImageCaptchaPopoverProps) {
       }}
       content={
         <CssImageCaptchaPopover>
-          <Spin spinning={captchaResult.loading}>
+          <Spin spinning={captchaLoading}>
             <CaptchaPanel
               value={selected}
               title={captchaQuestion?.title}
@@ -74,7 +84,7 @@ export function ImageCaptchaPopover(props: ImageCaptchaPopoverProps) {
             />
             <div className="footer" style={{ display: "flex", gap: 12, justifyContent: "end" }}>
               <Button
-                disabled={disabled || submitResult.loading}
+                disabled={disabled || submitLoading}
                 onClick={() => {
                   refresh();
                   setSelected([]);
@@ -85,7 +95,7 @@ export function ImageCaptchaPopover(props: ImageCaptchaPopoverProps) {
               </Button>
               <Button
                 disabled={disabled}
-                loading={submitResult.loading}
+                loading={submitLoading}
                 type="primary"
                 size="small"
                 onClick={() => {
@@ -117,14 +127,13 @@ type ImageCaptchaModal = {
 };
 export function ImageCaptchaModal(props: PropsWithChildren<ImageCaptchaModal>) {
   const { open } = props;
-  const { captchaResult, submitResult, submit, refresh } = useImageCaptcha(props);
+  const { captchaError, captchaLoading, captchaQuestion, submitLoading, submit, refresh } = useImageCaptcha(props);
   const [selected, setSelected] = useState<number[]>([]);
-  const captchaQuestion = captchaResult.value;
   useEffect(() => {
     if (open && !captchaQuestion) refresh();
   }, [open]);
   const imageList = captchaQuestion?.imageUrlList ?? [];
-  const isError = captchaResult.error && !captchaResult.loading;
+  const isError = captchaError && !captchaLoading;
   return (
     <Modal
       maskClosable={false}
@@ -137,7 +146,7 @@ export function ImageCaptchaModal(props: PropsWithChildren<ImageCaptchaModal>) {
       width={365}
       cancelText="刷新"
       cancelButtonProps={{
-        disabled: submitResult.loading || captchaResult.loading,
+        disabled: submitLoading || captchaLoading,
         onClick: () => {
           setSelected([]);
           refresh();
@@ -147,10 +156,10 @@ export function ImageCaptchaModal(props: PropsWithChildren<ImageCaptchaModal>) {
         submit(selected);
         setSelected([]);
       }}
-      confirmLoading={submitResult.loading}
-      okButtonProps={{ disabled: isError || captchaResult.loading }}
+      confirmLoading={submitLoading}
+      okButtonProps={{ disabled: isError || captchaLoading }}
     >
-      <Spin spinning={captchaResult.loading}>
+      <Spin spinning={captchaLoading}>
         <CaptchaPanel
           title={captchaQuestion?.title}
           imageList={imageList}

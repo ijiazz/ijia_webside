@@ -30,7 +30,11 @@ export function HomePage() {
     setSearch(newSearch);
   };
 
-  const { result, run } = useAsync((params: { page: number; pageSize: number }) => {
+  const {
+    data = { items: [], total: 0, needLogin: false },
+    loading,
+    run,
+  } = useAsync((params: { page: number; pageSize: number }) => {
     const { page, pageSize } = params;
     return api["/post/god_list"].get({ query: { offset: (page - 1) * pageSize, number: pageSize } }).then((item) => {
       const items = item.items.map((item) => ({
@@ -46,7 +50,6 @@ export function HomePage() {
   useEffect(() => {
     run(param);
   }, [param.page]);
-  const data = result.value || { items: [], total: 0, needLogin: false };
   const items: PlatformPostItemDto[] = data.items;
   const theme = useThemeToken();
   return (
@@ -75,7 +78,7 @@ export function HomePage() {
                 }
               : undefined
           }
-          loading={result.loading}
+          loading={loading}
           dataSource={items}
           itemLayout="vertical"
           renderItem={(item, index) => {

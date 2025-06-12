@@ -36,7 +36,7 @@ export function LoginPage() {
   const [message, setMessage] = useState<Msg | undefined>(defaultMessage);
   const [loginParam, setLoginParam] = useState<UserLoginParamDto | undefined>();
   const [captchaModalOpen, setCaptchaModalOpen] = useState(false);
-  const { result: value, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {
+  const { loading: loginLoading, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {
     const result = await api["/passport/login"].post({ body: param, allowFailed: true, [IGNORE_ERROR_MSG]: true });
 
     if (!result.success) {
@@ -59,7 +59,6 @@ export function LoginPage() {
     }
   });
   const { refresh } = useCurrentUser({ manual: true });
-  const loginLoading = value.loading;
 
   const windowSize = useWindowResize();
 

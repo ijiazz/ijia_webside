@@ -84,16 +84,16 @@ const PageCSS = styled.div`
 
 function Email(props: { disabled?: boolean; onOk?: () => void }) {
   const { disabled, onOk } = props;
-  const { run: sendEmailCaptcha, result: emailCaptcha } = useAsync(
+  const { run: sendEmailCaptcha, data: emailCaptcha } = useAsync(
     (email: string, sessionId: string, selected: number[]) =>
       api["/passport/reset_password/email_captcha"].post({
         body: { email, captchaReply: { sessionId, selectedIndex: selected } },
       }),
   );
 
-  const { run: submit, result } = useAsync(async (formData: ChangePasswordForm) => {
+  const { run: submit, loading } = useAsync(async (formData: ChangePasswordForm) => {
     const res = await tryHashPassword(formData.newPassword);
-    const captcha = emailCaptcha.value;
+    const captcha = emailCaptcha;
     if (!captcha) throw new Error("缺少验证码");
     await api["/passport/reset_password"].post({
       body: {
@@ -145,7 +145,7 @@ function Email(props: { disabled?: boolean; onOk?: () => void }) {
         <Input.Password placeholder="确认密码" />
       </Form.Item>
       <Form.Item style={{ display: "flex", justifyContent: "end" }}>
-        <Button type="primary" htmlType="submit" disabled={disabled} loading={result.loading}>
+        <Button type="primary" htmlType="submit" disabled={disabled} loading={loading}>
           确认
         </Button>
       </Form.Item>

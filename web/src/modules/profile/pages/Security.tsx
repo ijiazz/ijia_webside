@@ -19,10 +19,7 @@ export function Security() {
 }
 function ChangePassport() {
   const { message } = useAntdStatic();
-  const {
-    result: { loading },
-    run: onFinish,
-  } = useAsync(async function (body: { newPassword: string; oldPassword: string }) {
+  const { loading, run: onFinish } = useAsync(async function (body: { newPassword: string; oldPassword: string }) {
     let { newPassword, oldPassword } = body;
     if (CAN_HASH_PASSWORD) {
       newPassword = await hashPassword(newPassword);
@@ -92,18 +89,18 @@ function ChangeEmailModal(props: { oldEmail?: string; open?: boolean; onClose?: 
   const { message } = useAntdStatic();
   const [token, setToken] = useState<string | null>();
   const step = useMemo(() => (token ? 1 : 0), [token]);
-  const { run: sendNewEmailCaptcha, result: newEmailCaptcha } = useAsync(
+  const { run: sendNewEmailCaptcha, data: newEmailCaptcha } = useAsync(
     (email: string, sessionId: string, selected: number[]) =>
       api["/passport/change_email/email_captcha"].post({
         body: { email, captchaReply: { sessionId, selectedIndex: selected } },
       }),
   );
-  const { run: changeEmail, result } = useAsync(async (code: string, sessionId: string, newEmail: string) => {
+  const { run: changeEmail, loading } = useAsync(async (code: string, sessionId: string, newEmail: string) => {
     if (!token) {
       message.error("请先验证原邮箱");
       return;
     }
-    if (!newEmailCaptcha.value) {
+    if (!newEmailCaptcha) {
       message.error("请先获取验证码");
       return;
     }
@@ -147,9 +144,7 @@ function ChangeEmailModal(props: { oldEmail?: string; open?: boolean; onClose?: 
         />
         {step === 0 && <EmailAuthentication onOk={setToken} email={oldEmail} />}
         {step === 1 && (
-          <Form
-            onFinish={(formData) => changeEmail(formData.code, newEmailCaptcha.value!.sessionId, formData.newEmail)}
-          >
+          <Form onFinish={(formData) => changeEmail(formData.code, newEmailCaptcha!.sessionId, formData.newEmail)}>
             <Form.Item name="newEmail" label="新邮箱" rules={[{ required: true, type: "email" }]}>
               <EmailInput
                 onCaptchaSubmit={async (email, sessionId, selected) => {
@@ -167,7 +162,7 @@ function ChangeEmailModal(props: { oldEmail?: string; open?: boolean; onClose?: 
               <Input />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit" loading={result.loading}>
+              <Button type="primary" htmlType="submit" loading={loading}>
                 确认
               </Button>
             </Form.Item>
@@ -187,12 +182,12 @@ function EmailAuthentication(props: {
   const { email, onOk } = props;
 
   const { message } = useAntdStatic();
-  const { run: sendEmailCaptcha, result: emailCaptcha } = useAsync(async (sessionId: string, selected: number[]) => {
+  const { run: sendEmailCaptcha, data: emailCaptcha } = useAsync(async (sessionId: string, selected: number[]) => {
     return api["/passport/sign_account_token/email_captcha"].post({
       body: { captchaReply: { sessionId, selectedIndex: selected } },
     });
   });
-  const { run: getAccountToken, result: getTokenResult } = useAsync(async (sessionId: string, code: string) => {
+  const { run: getAccountToken, loading: getTokenLoading } = useAsync(async (sessionId: string, code: string) => {
     const result = await api["/passport/sign_account_token"].post({
       body: { emailCaptcha: { sessionId: sessionId, code: code } },
     });
@@ -204,11 +199,11 @@ function EmailAuthentication(props: {
   return (
     <Form
       onFinish={(formData) => {
-        if (!emailCaptcha.value) {
+        if (!emailCaptcha) {
           message.error("请先获取验证码");
           return;
         }
-        getAccountToken(emailCaptcha.value.sessionId, formData.code);
+        getAccountToken(emailCaptcha.sessionId, formData.code);
       }}
       initialValues={{ email }}
       labelCol={{ span: 4 }}
@@ -231,7 +226,7 @@ function EmailAuthentication(props: {
         <Input />
       </Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit" loading={getTokenResult.loading}>
+        <Button type="primary" htmlType="submit" loading={getTokenLoading}>
           下一步
         </Button>
       </Form.Item>

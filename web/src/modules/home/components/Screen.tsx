@@ -33,7 +33,7 @@ function moveWallBlockToCenter(wall: InfiniteWallRender, x: number, y: number) {
 export function Screen(props: AvatarListProps) {
   const { children, showMask = true, avatar, head = <div />, text } = props;
 
-  const { result: data } = useAsync(
+  const { data } = useAsync(
     async () => {
       let rows = 20;
       let columns = 20;
@@ -77,7 +77,6 @@ export function Screen(props: AvatarListProps) {
     },
     { autoRunArgs: [] },
   );
-  const res = data.value;
 
   const wallRef = useRef<InfiniteWallRender>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -132,27 +131,27 @@ export function Screen(props: AvatarListProps) {
           deps={[data]}
           itemClassName="wall-block-item"
           renderItem={(element, wall) => {
-            if (!res) return <></>;
+            if (!data) return <></>;
             let px: number = element.wallX;
             let py: number = element.wallY;
             let item: AvatarItem | undefined;
             let isActive = false;
 
-            if (!res.repeat) {
-              if (px >= res.columns || px < 0 || py >= res.rows || py < 0) {
+            if (!data.repeat) {
+              if (px >= data.columns || px < 0 || py >= data.rows || py < 0) {
                 return <></>;
               }
             }
-            py = py % res.rows;
-            px = px % res.columns;
+            py = py % data.rows;
+            px = px % data.columns;
 
-            if (py < 0) py = py + res.rows;
-            if (px < 0) px = px + res.columns;
+            if (py < 0) py = py + data.rows;
+            if (px < 0) px = px + data.columns;
 
-            const index = py * res.columns + px;
+            const index = py * data.columns + px;
 
-            item = res.list[index];
-            isActive = res.userId !== undefined && item?.userId === res.userId;
+            item = data.list[index];
+            isActive = data.userId !== undefined && item?.userId === data.userId;
 
             return (
               <Image
