@@ -1,8 +1,7 @@
 import { UserBasicDto } from "@/api.ts";
-import { IGNORE_UNAUTHORIZED_REDIRECT, IGNORE_ERROR_MSG, useHoFetch } from "@/hooks/http.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { useEffect, useMemo } from "react";
-import { toFileUrl } from "./http.ts";
+import { api, IGNORE_ERROR_MSG, IGNORE_UNAUTHORIZED_REDIRECT, toFileUrl } from "./http.ts";
 import { getUrlByRoute } from "@/app.ts";
 import { ijiaCookie } from "@/stores/cookie.ts";
 
@@ -23,7 +22,6 @@ const userEvent = new EventTarget();
 
 export function useCurrentUser(option: { manual?: boolean } = {}): UseCurrentUser {
   const { manual } = option;
-  const { api } = useHoFetch();
   const { result, run, reset } = useAsync(
     (force?: boolean) => {
       if (!user || force) {

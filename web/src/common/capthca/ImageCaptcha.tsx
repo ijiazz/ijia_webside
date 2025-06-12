@@ -3,10 +3,9 @@ import { Modal, Popover, Spin, Button } from "antd";
 import { useAsync } from "@/hooks/async.ts";
 import React, { PropsWithChildren, useEffect, useState } from "react";
 import styled from "@emotion/styled";
-import { useHoFetch } from "@/hooks/http.ts";
+import { api, API_PREFIX } from "../http.ts";
 
 function useImageCaptcha(config: { onSubmit?: (sessionId: string, selected: number[]) => void | Promise<void> }) {
-  const { api, API_PREFIX } = useHoFetch();
   const {
     result: captchaResult,
     run: refresh,

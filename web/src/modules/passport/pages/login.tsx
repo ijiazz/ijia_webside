@@ -13,10 +13,10 @@ import { useAsync } from "@/hooks/async.ts";
 import { ImageCaptchaModal } from "@/common/capthca/ImageCaptcha.tsx";
 import classNames from "classnames";
 import { useWindowResize } from "@/hooks/window.ts";
-import { IGNORE_ERROR_MSG, useHoFetch } from "@/hooks/http.ts";
 import { useRedirect } from "@/hooks/redirect.ts";
 import { getPathByRoute } from "@/app.ts";
 import { useCurrentUser } from "@/common/user.ts";
+import { api, IGNORE_ERROR_MSG } from "@/common/http.ts";
 
 type Msg = {
   type?: "info" | "success" | "error" | "warning";
@@ -34,7 +34,6 @@ export function LoginPage() {
   const go = useRedirect({ defaultPath: () => getPathByRoute("/live") });
   const [loginType, setLoginType] = useState<LoginType>(LoginType.id);
   const [message, setMessage] = useState<Msg | undefined>(defaultMessage);
-  const { api } = useHoFetch();
   const [loginParam, setLoginParam] = useState<UserLoginParamDto | undefined>();
   const [captchaModalOpen, setCaptchaModalOpen] = useState(false);
   const { result: value, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {

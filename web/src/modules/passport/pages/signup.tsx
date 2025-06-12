@@ -1,13 +1,12 @@
 import styled from "@emotion/styled";
 import { Button, Checkbox, Form, Input, Space } from "antd";
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { tryHashPassword } from "../util/pwd_hash.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { AndContext, useThemeToken } from "@/hooks/antd.ts";
 import { IjiaLogo } from "@/common/site-logo.tsx";
 import { useRedirect } from "@/hooks/redirect.ts";
-import { useHoFetch } from "@/hooks/http.ts";
-import { isHttpErrorCode } from "@/common/http.ts";
+import { api, isHttpErrorCode } from "@/common/http.ts";
 import { getPathByRoute } from "@/app.ts";
 import { useCurrentUser } from "@/common/user.ts";
 import { EmailInput } from "../components/EmailInput.tsx";
@@ -43,7 +42,6 @@ export function Signup() {
 function BasicInfo(props: { passportConfig: PassportConfig }) {
   const { passportConfig: config } = props;
   const [form] = Form.useForm<FormValues>();
-  const { api } = useHoFetch();
   const { refresh } = useCurrentUser({ manual: true });
   const go = useRedirect({ defaultPath: () => getPathByRoute("/profile/center") });
   const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>

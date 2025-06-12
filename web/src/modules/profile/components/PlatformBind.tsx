@@ -1,5 +1,4 @@
 import { useAsync } from "@/hooks/async.ts";
-import { useHoFetch } from "@/hooks/http.ts";
 import { Avatar, Button, Input, Divider, Popover, Typography, Tag } from "antd";
 import React, { useContext, useState } from "react";
 import { useThemeToken, AndContext } from "@/hooks/antd.ts";
@@ -10,10 +9,10 @@ import step2Path from "./PlatformBind/douyin-step-2.jpg";
 import step3Path from "./PlatformBind/douyin-step-3.webp";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Meta } from "@/lib/components/Meta.tsx";
+import { api } from "@/common/http.ts";
 
 export function PlatformBind(props: { userId?: number; onBindSuccess?(): void }) {
   const { onBindSuccess, userId } = props;
-  const { api } = useHoFetch();
   const { message } = useContext(AndContext);
   const theme = useThemeToken();
   const { result, run, reset } = useAsync(function (platform: Platform, url: string) {

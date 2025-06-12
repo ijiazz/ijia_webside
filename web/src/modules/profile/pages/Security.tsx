@@ -1,12 +1,11 @@
 import { Form, Input, Button, Steps, Modal, Space } from "antd";
 import { useAsync } from "@/hooks/async.ts";
-import { useHoFetch } from "@/hooks/http.ts";
 import { useAntdStatic } from "@/hooks/antd.ts";
 import { CAN_HASH_PASSWORD, hashPassword } from "@/modules/passport/util/pwd_hash.ts";
 import { PagePadding } from "@/lib/components/Page.tsx";
 import React, { useEffect, useMemo, useState } from "react";
 import { EmailInput } from "@/modules/passport/components/EmailInput.tsx";
-import { isHttpErrorCode } from "@/common/http.ts";
+import { api, isHttpErrorCode } from "@/common/http.ts";
 import { MailOutlined } from "@ant-design/icons";
 import { useCurrentUser } from "@/common/user.ts";
 import { HoFetchStatusError } from "@asla/hofetch";
@@ -19,7 +18,6 @@ export function Security() {
   );
 }
 function ChangePassport() {
-  const { api } = useHoFetch();
   const { message } = useAntdStatic();
   const {
     result: { loading },
@@ -91,7 +89,6 @@ function ChangeEmail(props: {}) {
 
 function ChangeEmailModal(props: { oldEmail?: string; open?: boolean; onClose?: () => void; onOk?: () => void }) {
   const { onClose, onOk, open, oldEmail } = props;
-  const { api } = useHoFetch();
   const { message } = useAntdStatic();
   const [token, setToken] = useState<string | null>();
   const step = useMemo(() => (token ? 1 : 0), [token]);
@@ -189,7 +186,6 @@ function EmailAuthentication(props: {
 }) {
   const { email, onOk } = props;
 
-  const { api } = useHoFetch();
   const { message } = useAntdStatic();
   const { run: sendEmailCaptcha, result: emailCaptcha } = useAsync(async (sessionId: string, selected: number[]) => {
     return api["/passport/sign_account_token/email_captcha"].post({

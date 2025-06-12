@@ -1,6 +1,5 @@
 import { HoFetch, createFetchSuite, InferFetchSuite, FetchSuiteBase, HoContext, HoResponse } from "@asla/hofetch";
 import { ApiDefined } from "@/api.ts";
-import { IGNORE_ERROR_MSG } from "@/hooks/http.ts";
 
 export type Api = {
   [x: string]: FetchSuiteBase;
@@ -68,3 +67,5 @@ export function toFileUrl(path?: string | null): string | undefined {
   if (path.startsWith("/")) path = path.slice(1);
   return `${location.origin}/${path}`;
 }
+export const IGNORE_ERROR_MSG = Symbol("ignore error message");
+export const IGNORE_UNAUTHORIZED_REDIRECT = Symbol("ignore unauthorized redirect");

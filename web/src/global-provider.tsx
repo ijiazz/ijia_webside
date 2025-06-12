@@ -1,8 +1,13 @@
 import { ConfigProvider, theme, message, notification, Modal } from "antd";
-import React, { PropsWithChildren, useContext, useEffect, useMemo } from "react";
+import React, { PropsWithChildren, useContext, useEffect } from "react";
 import { AndContext } from "@/hooks/antd.ts";
-import { ApiContext, IGNORE_UNAUTHORIZED_REDIRECT } from "@/hooks/http.ts";
-import { getResponseErrorInfo, apiEvent, ApiEvent, ApiErrorEvent, API_PREFIX, api, http } from "@/common/http.ts";
+import {
+  getResponseErrorInfo,
+  apiEvent,
+  ApiEvent,
+  ApiErrorEvent,
+  IGNORE_UNAUTHORIZED_REDIRECT,
+} from "@/common/http.ts";
 import { useNavigate } from "react-router";
 import { getUrlByRoute, ROUTES } from "./app.ts";
 export const useToken = theme.useToken;
@@ -59,10 +64,6 @@ export function HoFetchProvider(props: PropsWithChildren<{}>) {
     return () => {
       apiEvent.removeEventListener(ApiEvent.error, error);
     };
-  }, []);
-
-  const hoFetch = useMemo(() => {
-    return { API_PREFIX, api, http };
-  }, []);
-  return <ApiContext value={hoFetch}>{props.children}</ApiContext>;
+  }, [apiEvent]);
+  return props.children;
 }

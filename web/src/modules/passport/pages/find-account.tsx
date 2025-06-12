@@ -4,9 +4,8 @@ import { useState } from "react";
 import styled from "@emotion/styled";
 import { EmailInput } from "../components/EmailInput.tsx";
 import { useAsync } from "@/hooks/async.ts";
-import { useHoFetch } from "@/hooks/http.ts";
 import { AndContext } from "@/hooks/antd.ts";
-import { isHttpErrorCode } from "@/common/http.ts";
+import { api, isHttpErrorCode } from "@/common/http.ts";
 import { Link, useNavigate } from "react-router";
 import { ROUTES } from "@/app.ts";
 import { useTimeoutJump } from "@/hooks/timeout_jump.ts";
@@ -85,7 +84,6 @@ const PageCSS = styled.div`
 
 function Email(props: { disabled?: boolean; onOk?: () => void }) {
   const { disabled, onOk } = props;
-  const { api } = useHoFetch();
   const { run: sendEmailCaptcha, result: emailCaptcha } = useAsync(
     (email: string, sessionId: string, selected: number[]) =>
       api["/passport/reset_password/email_captcha"].post({

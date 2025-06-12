@@ -1,5 +1,4 @@
 import React, { ReactNode, useMemo, useRef, useState } from "react";
-import { useHoFetch } from "@/hooks/http.ts";
 import styled from "@emotion/styled";
 import { InfiniteWallRender } from "@/lib/Infinite-wall/mod.ts";
 import { InfiniteWall } from "@/lib/Infinite-wall/react.tsx";
@@ -7,6 +6,7 @@ import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "./shake_animation.ts";
 import classNames from "classnames";
 import { getUserInfoFromToken } from "@/common/user.ts";
+import { api } from "@/common/http.ts";
 
 type AvatarItem = {
   key: string;
@@ -33,7 +33,6 @@ function moveWallBlockToCenter(wall: InfiniteWallRender, x: number, y: number) {
 export function Screen(props: AvatarListProps) {
   const { children, showMask = true, avatar, head = <div />, text } = props;
 
-  const { api, http } = useHoFetch();
   const { result: data } = useAsync(
     async () => {
       let rows = 20;

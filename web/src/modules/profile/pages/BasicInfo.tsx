@@ -1,6 +1,5 @@
 import { StudentIdCard, StudentIdCardBack } from "@/common/StudentIdCard.tsx";
 import { useAsync, UseAsyncResult } from "@/hooks/async.ts";
-import { useHoFetch } from "@/hooks/http.ts";
 import { PlusOutlined, QuestionCircleOutlined, ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 import {
   Avatar,
@@ -23,13 +22,12 @@ import { useCurrentUser } from "@/common/user.ts";
 import styled from "@emotion/styled";
 import { Meta } from "@/lib/components/Meta.tsx";
 import { BindAccountDto, UserInfoDto } from "@/api.ts";
-import { toFileUrl } from "@/common/http.ts";
+import { api, toFileUrl } from "@/common/http.ts";
 import dayjs, { Dayjs } from "dayjs";
 import { PagePadding } from "@/lib/components/Page.tsx";
 import { useThemeToken } from "@/hooks/antd.ts";
 
 export function BasicInfoPage() {
-  const { api } = useHoFetch();
   const { result, run } = useAsync(
     () => {
       return api["/user/profile"].get().then((res) => ({
@@ -91,7 +89,6 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserInfoDto>; onProfil
   const { profileResult, onProfileChange } = props;
   const profile = profileResult.value;
 
-  const { api } = useHoFetch();
   const { refresh: afterUpdate } = useCurrentUser();
   const [form] = Form.useForm<BasicFormData>();
   const [isChanged, setIsChanged] = useState(false);
@@ -218,7 +215,6 @@ function BindAccountList(props: { profileResult: UseAsyncResult<UserInfoDto>; on
   const accounts = profile?.bind_accounts ?? [];
 
   const { refresh: onAccountChange, value: user } = useCurrentUser();
-  const { api } = useHoFetch();
   const { run: onRemoveBind, result: removeBindResult } = useAsync(async (item: BindAccountDto) => {
     await api["/user/bind_platform"].delete({ body: { bindKey: item.key } });
     message.success("已解除");
@@ -316,7 +312,6 @@ const BindAccountListCSS = styled.div`
 `;
 
 function PublicClassSelect(props: { value?: number; onChange?(value: number): void; disabled?: boolean }) {
-  const api = useHoFetch().api;
   const token = useThemeToken();
   const { result } = useAsync(
     async function (search?: string) {
