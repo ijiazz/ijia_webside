@@ -381,6 +381,7 @@ async function getPostList(param?: GetPostListParam) {
 const HomePageCSS = styled.div`
   height: 100%;
   .post-list {
+    box-sizing: border-box;
     padding: 0 12px 4px 12px;
     height: 100%;
     overflow: auto;

@@ -1,13 +1,12 @@
 import { PostGroupItem, PostGroupResponse } from "@/api.ts";
-import { Button, ButtonProps, ConfigProvider, ConfigProviderProps, Menu, MenuProps, Result } from "antd";
+import { Button, ButtonProps, ConfigProvider, ConfigProviderProps, MenuProps, Result } from "antd";
 import React, { useMemo } from "react";
 import { Outlet, useLoaderData, useLocation, useNavigate, useParams } from "react-router";
-import styled from "@emotion/styled";
 import { getUserInfoFromToken } from "@/common/user.ts";
 import { PlusOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
 import { AdaptiveMenuLayout } from "@/modules/layout/AdaptiveMenuLayout.tsx";
-import { LayoutDirection } from "@/global-provider.tsx";
+import { LayoutDirection, useLayoutDirection } from "@/global-provider.tsx";
 export type PostQueryFilter = {
   group?: PostGroupItem;
   self?: boolean;
@@ -68,7 +67,7 @@ export function PostLayout() {
       group: current,
     };
   }, [data, groupId]);
-
+  const isVertical = useLayoutDirection() === LayoutDirection.Vertical;
   if (!data)
     return (
       <Result
@@ -85,37 +84,22 @@ export function PostLayout() {
   return (
     <ConfigProvider theme={THEME}>
       <AdaptiveMenuLayout
-        style={{ height: "100%" }}
-        menu={(direction) => {
-          const isVertical = direction === LayoutDirection.Vertical;
-          const menu = (
-            <Menu
-              mode={isVertical ? "horizontal" : "vertical"}
-              style={{
-                flex: 1,
-                minWidth: "150px",
-                height: "100%",
-                backgroundColor: isVertical ? undefined : "#0000",
-              }}
-              items={menus}
-              selectedKeys={[groupId || "all"]}
-              onClick={(e) => {
-                changeGroupId(e.keyPath[0]);
-              }}
-            />
-          );
-
-          return (
-            <NavigationTabCSS isVertical={isVertical}>
-              {menu}
-              <PublishBtn
-                className="e2e-publish-post-btn"
-                style={{ marginRight: 12, display: isVertical ? undefined : "none" }}
-                type="text"
-              ></PublishBtn>
-            </NavigationTabCSS>
-          );
+        style={{
+          minWidth: "150px",
+          height: "100%",
         }}
+        items={menus}
+        selectedKeys={[groupId || "all"]}
+        onClick={(e) => {
+          changeGroupId(e.keyPath[0]);
+        }}
+        rightExtra={
+          <PublishBtn
+            className="e2e-publish-post-btn"
+            style={{ marginRight: 12, display: isVertical ? undefined : "none" }}
+            type="text"
+          ></PublishBtn>
+        }
       >
         <PostQueryFilterContext.Provider value={filter}>
           <Outlet />
@@ -143,15 +127,3 @@ function PublishBtn(props: Omit<ButtonProps, "onClick" | "icon">) {
     />
   );
 }
-
-const NavigationTabCSS = styled.div<{ isVertical: boolean }>`
-  ${(props) =>
-    props.isVertical
-      ? `
-  display:flex;
-  gap:8px;
-  justify-content: space-between;
-  align-items: center;
-  `
-      : ""}
-`;
