@@ -27,11 +27,11 @@ test("删除", async function ({ page }) {
 
   await postItems.nth(2).getByRole("button", { name: "more" }).click();
   await page.getByRole("menuitem", { name: "删除" }).click();
-  await page.getByRole("button", { name: "OK", exact: true }).click();
+  await page.getByRole("button", { name: "确 定" }).click();
   await expect(postItems.nth(2).getByLabel("content4")).toHaveCount(1);
   await postItems.nth(2).getByRole("button", { name: "more" }).click();
   await page.getByRole("menuitem", { name: "删除" }).click();
-  await page.getByRole("button", { name: "OK", exact: true }).click();
+  await page.getByRole("button", { name: "确 定" }).click();
 
   await expect(postItems).toHaveCount(2);
 

@@ -9,7 +9,7 @@ import { ijiaLocalStorage } from "@/stores/local_store.ts";
 import zh_CN from "antd/es/locale/zh_CN.js";
 import type { Locale } from "antd/es/locale/index.js";
 
-function AntdStaticProvider(props: PropsWithChildren<{}>) {
+export function AntdStaticProvider(props: PropsWithChildren<{}>) {
   const [messageApi, messageSlot] = message.useMessage({});
   const [noticeApi, noticeSlot] = notification.useNotification({});
   const [modalApi, modalSlot] = Modal.useModal();

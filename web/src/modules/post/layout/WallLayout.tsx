@@ -6,7 +6,7 @@ import { getUserInfoFromToken } from "@/common/user.ts";
 import { PlusOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
 import { AdaptiveMenuLayout } from "@/modules/layout/AdaptiveMenuLayout.tsx";
-import { LayoutDirection, useLayoutDirection } from "@/global-provider.tsx";
+import { AntdStaticProvider, LayoutDirection, useLayoutDirection } from "@/global-provider.tsx";
 export type PostQueryFilter = {
   group?: PostGroupItem;
   self?: boolean;
@@ -83,28 +83,30 @@ export function PostLayout() {
     );
   return (
     <ConfigProvider theme={THEME}>
-      <AdaptiveMenuLayout
-        style={{
-          minWidth: "150px",
-          height: "100%",
-        }}
-        items={menus}
-        selectedKeys={[groupId || "all"]}
-        onClick={(e) => {
-          changeGroupId(e.keyPath[0]);
-        }}
-        rightExtra={
-          <PublishBtn
-            className="e2e-publish-post-btn"
-            style={{ marginRight: 12, display: isVertical ? undefined : "none" }}
-            type="text"
-          ></PublishBtn>
-        }
-      >
-        <PostQueryFilterContext.Provider value={filter}>
-          <Outlet />
-        </PostQueryFilterContext.Provider>
-      </AdaptiveMenuLayout>
+      <AntdStaticProvider>
+        <AdaptiveMenuLayout
+          style={{
+            minWidth: "150px",
+            height: "100%",
+          }}
+          items={menus}
+          selectedKeys={[groupId || "all"]}
+          onClick={(e) => {
+            changeGroupId(e.keyPath[0]);
+          }}
+          rightExtra={
+            <PublishBtn
+              className="e2e-publish-post-btn"
+              style={{ marginRight: 12, display: isVertical ? undefined : "none" }}
+              type="text"
+            ></PublishBtn>
+          }
+        >
+          <PostQueryFilterContext.Provider value={filter}>
+            <Outlet />
+          </PostQueryFilterContext.Provider>
+        </AdaptiveMenuLayout>
+      </AntdStaticProvider>
     </ConfigProvider>
   );
 }
