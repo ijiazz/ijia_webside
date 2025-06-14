@@ -126,6 +126,8 @@ function BasicForm(props: { profileData?: UserInfoDto; profileLoading?: boolean;
     afterUpdate?.();
   });
 
+  const theme = useThemeToken();
+
   return (
     <div>
       <Spin spinning={profileLoading}>
@@ -148,7 +150,9 @@ function BasicForm(props: { profileData?: UserInfoDto; profileLoading?: boolean;
             </Space>
           )}
         </Space>
-        {profile?.is_official || <div>部分信息需要绑定平台账号后才能修改</div>}
+        {profile?.is_official || (
+          <div style={{ color: theme.colorWarningText, margin: "0 0 14px 0" }}>部分信息需要绑定平台账号后才能修改</div>
+        )}
         <Form
           form={form}
           onValuesChange={(value, values) => {

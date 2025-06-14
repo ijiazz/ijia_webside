@@ -41,7 +41,7 @@ export function AvatarMenu(props: { noLogged?: boolean; logout?: () => void; use
       }}
     >
       <MenuAvatar hoverColor={theme.colorBgTextHover}>
-        <Avatar className="e2e-avatar" size={28} src={userUrl}>
+        <Avatar className="e2e-avatar" size={32} src={userUrl}>
           {userName}
         </Avatar>
         <span style={{ color: theme.colorTextSecondary }}>{userName}</span>
@@ -51,7 +51,7 @@ export function AvatarMenu(props: { noLogged?: boolean; logout?: () => void; use
 }
 
 const MenuAvatar = styled.div<{ hoverColor: string }>`
-  padding: 8px;
+  padding: 4px;
   display: flex;
   align-items: center;
   gap: 8px;
