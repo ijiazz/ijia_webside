@@ -1,13 +1,12 @@
 import styled from "@emotion/styled";
 import { Button, Checkbox, Form, Input, Space } from "antd";
-import React, { useContext, useState } from "react";
+import React from "react";
 import { tryHashPassword } from "../util/pwd_hash.ts";
 import { useAsync } from "@/hooks/async.ts";
-import { AndContext, useThemeToken } from "@/hooks/antd.ts";
+import { useAntdStatic, useThemeToken } from "@/global-provider.tsx";
 import { IjiaLogo } from "@/common/site-logo.tsx";
 import { useRedirect } from "@/hooks/redirect.ts";
-import { useHoFetch } from "@/hooks/http.ts";
-import { isHttpErrorCode } from "@/common/http.ts";
+import { api, isHttpErrorCode } from "@/common/http.ts";
 import { getPathByRoute } from "@/app.ts";
 import { useCurrentUser } from "@/common/user.ts";
 import { EmailInput } from "../components/EmailInput.tsx";
@@ -43,28 +42,28 @@ export function Signup() {
 function BasicInfo(props: { passportConfig: PassportConfig }) {
   const { passportConfig: config } = props;
   const [form] = Form.useForm<FormValues>();
-  const { api } = useHoFetch();
   const { refresh } = useCurrentUser({ manual: true });
   const go = useRedirect({ defaultPath: () => getPathByRoute("/profile/center") });
-  const { run: sendEmailCaptcha, result } = useAsync((email: string, sessionId: string, selected: number[]) =>
-    api["/passport/signup/email_captcha"].post({
-      body: { email, captchaReply: { sessionId, selectedIndex: selected } },
-    }),
+  const { run: sendEmailCaptcha, data: emailCaptcha } = useAsync(
+    (email: string, sessionId: string, selected: number[]) =>
+      api["/passport/signup/email_captcha"].post({
+        body: { email, captchaReply: { sessionId, selectedIndex: selected } },
+      }),
   );
-  const { result: submitState, run: onSubmit } = useAsync(async function (value: FormValues) {
+  const { loading: signupLoading, run: onSubmit } = useAsync(async function (value: FormValues) {
     const pwd = await tryHashPassword(value.password);
     const { userId, jwtKey } = await api["/passport/signup"].post({
       body: {
         email: value.email,
         password: pwd.password,
         passwordNoHash: pwd.passwordNoHash,
-        emailCaptcha: { code: value.email_code, sessionId: result.value?.sessionId! },
+        emailCaptcha: { code: value.email_code, sessionId: emailCaptcha?.sessionId! },
       },
     });
     refresh(jwtKey);
     go();
   });
-  const { message } = useContext(AndContext);
+  const { message } = useAntdStatic();
   return (
     <div style={{ padding: 28 }} className="basic-info">
       <Form
@@ -138,7 +137,7 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
       <div style={{ display: "flex", justifyContent: "end" }}>
         <Button
           disabled={!config.signupEnabled}
-          loading={submitState.loading}
+          loading={signupLoading}
           type="primary"
           htmlType="submit"
           onClick={() => form.submit()}

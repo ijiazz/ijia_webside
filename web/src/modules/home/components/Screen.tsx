@@ -1,12 +1,12 @@
 import React, { ReactNode, useMemo, useRef, useState } from "react";
-import { useHoFetch } from "@/hooks/http.ts";
 import styled from "@emotion/styled";
 import { InfiniteWallRender } from "@/lib/Infinite-wall/mod.ts";
 import { InfiniteWall } from "@/lib/Infinite-wall/react.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "./shake_animation.ts";
 import classNames from "classnames";
-import { getCurrentUserId } from "@/common/user.ts";
+import { getUserInfoFromToken } from "@/common/user.ts";
+import { api } from "@/common/http.ts";
 
 type AvatarItem = {
   key: string;
@@ -33,8 +33,7 @@ function moveWallBlockToCenter(wall: InfiniteWallRender, x: number, y: number) {
 export function Screen(props: AvatarListProps) {
   const { children, showMask = true, avatar, head = <div />, text } = props;
 
-  const { api, http } = useHoFetch();
-  const { result: data } = useAsync(
+  const { data } = useAsync(
     async () => {
       let rows = 20;
       let columns = 20;
@@ -46,7 +45,7 @@ export function Screen(props: AvatarListProps) {
         userId: item.id,
         name: item.name,
       }));
-      const currentUserId = getCurrentUserId();
+      const currentUserId = getUserInfoFromToken()?.userId;
       if (items.length < limit) {
         columns = Math.ceil(Math.sqrt(items.length));
         rows = columns;
@@ -78,7 +77,6 @@ export function Screen(props: AvatarListProps) {
     },
     { autoRunArgs: [] },
   );
-  const res = data.value;
 
   const wallRef = useRef<InfiniteWallRender>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -133,27 +131,27 @@ export function Screen(props: AvatarListProps) {
           deps={[data]}
           itemClassName="wall-block-item"
           renderItem={(element, wall) => {
-            if (!res) return <></>;
+            if (!data) return <></>;
             let px: number = element.wallX;
             let py: number = element.wallY;
             let item: AvatarItem | undefined;
             let isActive = false;
 
-            if (!res.repeat) {
-              if (px >= res.columns || px < 0 || py >= res.rows || py < 0) {
+            if (!data.repeat) {
+              if (px >= data.columns || px < 0 || py >= data.rows || py < 0) {
                 return <></>;
               }
             }
-            py = py % res.rows;
-            px = px % res.columns;
+            py = py % data.rows;
+            px = px % data.columns;
 
-            if (py < 0) py = py + res.rows;
-            if (px < 0) px = px + res.columns;
+            if (py < 0) py = py + data.rows;
+            if (px < 0) px = px + data.columns;
 
-            const index = py * res.columns + px;
+            const index = py * data.columns + px;
 
-            item = res.list[index];
-            isActive = res.userId !== undefined && item?.userId === res.userId;
+            item = data.list[index];
+            isActive = data.userId !== undefined && item?.userId === data.userId;
 
             return (
               <Image

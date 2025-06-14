@@ -1,12 +1,11 @@
 import { Button, Form, Input, Steps, Result } from "antd";
-import React, { useContext } from "react";
+import React from "react";
 import { useState } from "react";
 import styled from "@emotion/styled";
 import { EmailInput } from "../components/EmailInput.tsx";
 import { useAsync } from "@/hooks/async.ts";
-import { useHoFetch } from "@/hooks/http.ts";
-import { AndContext } from "@/hooks/antd.ts";
-import { isHttpErrorCode } from "@/common/http.ts";
+import { useAntdStatic } from "@/global-provider.tsx";
+import { api, isHttpErrorCode } from "@/common/http.ts";
 import { Link, useNavigate } from "react-router";
 import { ROUTES } from "@/app.ts";
 import { useTimeoutJump } from "@/hooks/timeout_jump.ts";
@@ -85,17 +84,16 @@ const PageCSS = styled.div`
 
 function Email(props: { disabled?: boolean; onOk?: () => void }) {
   const { disabled, onOk } = props;
-  const { api } = useHoFetch();
-  const { run: sendEmailCaptcha, result: emailCaptcha } = useAsync(
+  const { run: sendEmailCaptcha, data: emailCaptcha } = useAsync(
     (email: string, sessionId: string, selected: number[]) =>
       api["/passport/reset_password/email_captcha"].post({
         body: { email, captchaReply: { sessionId, selectedIndex: selected } },
       }),
   );
 
-  const { run: submit, result } = useAsync(async (formData: ChangePasswordForm) => {
+  const { run: submit, loading } = useAsync(async (formData: ChangePasswordForm) => {
     const res = await tryHashPassword(formData.newPassword);
-    const captcha = emailCaptcha.value;
+    const captcha = emailCaptcha;
     if (!captcha) throw new Error("缺少验证码");
     await api["/passport/reset_password"].post({
       body: {
@@ -109,7 +107,7 @@ function Email(props: { disabled?: boolean; onOk?: () => void }) {
     onOk?.();
     onOk?.();
   });
-  const { message } = useContext(AndContext);
+  const { message } = useAntdStatic();
   return (
     <Form disabled={disabled} wrapperCol={{ span: 18 }} labelCol={{ span: 6 }} onFinish={submit}>
       <Form.Item label="电子邮箱" name="email" rules={[{ required: true, type: "email" }]}>
@@ -147,7 +145,7 @@ function Email(props: { disabled?: boolean; onOk?: () => void }) {
         <Input.Password placeholder="确认密码" />
       </Form.Item>
       <Form.Item style={{ display: "flex", justifyContent: "end" }}>
-        <Button type="primary" htmlType="submit" disabled={disabled} loading={result.loading}>
+        <Button type="primary" htmlType="submit" disabled={disabled} loading={loading}>
           确认
         </Button>
       </Form.Item>

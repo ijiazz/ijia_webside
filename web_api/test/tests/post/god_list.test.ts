@@ -1,13 +1,13 @@
 import { expect, beforeEach } from "vitest";
-import { test, Context, JWT_TOKEN_KEY, Api } from "../fixtures/hono.ts";
+import { test, Context, JWT_TOKEN_KEY, Api } from "../../fixtures/hono.ts";
 import { applyController } from "@asla/hono-decorator";
 import { watching_pla_user, pla_user, USER_LEVEL, Platform, DbPlaUserCreate } from "@ijia/data/db";
 
-import { postController } from "@/modules/post/post.controller.ts";
-import { insertPosts } from "../__mocks__/posts.ts";
-import { signLoginJwt } from "@/global/jwt.ts";
-beforeEach<Context>(async ({ hono, hoFetch, ijiaDbPool }) => {
-  applyController(hono, postController);
+import { platformPostController } from "@/modules/post/mod.ts";
+import { insertPosts } from "../../__mocks__/posts.ts";
+import { signAccessToken } from "@/global/jwt.ts";
+beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
+  applyController(hono, platformPostController);
 });
 const getPosts = (api: Api, option: { number: number; offset: number; token?: string }) => {
   return api["/post/god_list"].get({
@@ -26,7 +26,7 @@ test.skip("没有登录只能查看前 10 条", async function ({ api, ijiaDbPoo
   await expect(getPosts(api, { number: 10, offset: 1 })).resolves.toEqual({ total: 20, items: [], needLogin: true });
   await expect(getPosts(api, { number: 11, offset: 0 })).resolves.toEqual({ total: 20, items: [], needLogin: true });
 
-  const token = await signLoginJwt(1, 10);
+  const { token } = await signAccessToken(1, { survivalSeconds: 10 * 60 });
   const res = await getPosts(api, { number: 11, offset: 1, token });
   expect(res.items.length).toBe(11);
 });
@@ -37,12 +37,12 @@ test.skip("只能查看 god 用户发布的帖子", async function ({ api, ijiaD
   await insertPosts(2, Platform.weibo, "wb0"); //god
   await insertPosts(2, Platform.weibo, "wb1"); //null
 
-  const token = await signLoginJwt(1, 10);
+  const { token } = await signAccessToken(1, { survivalSeconds: 10 * 60 });
 
   const posts = await getPosts(api, { number: 10, offset: 0, token });
   const postsUser = posts.items.reduce(
     (s, c) => {
-      s[c.author.user_id] = true;
+      s[c.author!.user_id] = true;
       return s;
     },
     {} as Record<string, boolean>,

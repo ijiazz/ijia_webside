@@ -1,22 +1,22 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { LoginForm, ProFormCheckbox, ProFormText } from "@ant-design/pro-components";
 import { Alert, Space, Tabs } from "antd";
-import React, { useContext } from "react";
+import React from "react";
 import { useState } from "react";
 import { Link, useRouteLoaderData } from "react-router";
 import { LoginType, PassportConfig, UserLoginParamDto } from "@/api.ts";
 import { CAN_HASH_PASSWORD, tryHashPassword } from "../util/pwd_hash.ts";
-import { AndContext } from "@/hooks/antd.ts";
+import { useAntdStatic } from "@/global-provider.tsx";
 import { IjiaLogo } from "@/common/site-logo.tsx";
 import styled from "@emotion/styled";
 import { useAsync } from "@/hooks/async.ts";
 import { ImageCaptchaModal } from "@/common/capthca/ImageCaptcha.tsx";
 import classNames from "classnames";
 import { useWindowResize } from "@/hooks/window.ts";
-import { IGNORE_ERROR_MSG, useHoFetch } from "@/hooks/http.ts";
 import { useRedirect } from "@/hooks/redirect.ts";
 import { getPathByRoute } from "@/app.ts";
 import { useCurrentUser } from "@/common/user.ts";
+import { api, IGNORE_ERROR_MSG } from "@/common/http.ts";
 
 type Msg = {
   type?: "info" | "success" | "error" | "warning";
@@ -34,10 +34,9 @@ export function LoginPage() {
   const go = useRedirect({ defaultPath: () => getPathByRoute("/live") });
   const [loginType, setLoginType] = useState<LoginType>(LoginType.id);
   const [message, setMessage] = useState<Msg | undefined>(defaultMessage);
-  const { api } = useHoFetch();
   const [loginParam, setLoginParam] = useState<UserLoginParamDto | undefined>();
   const [captchaModalOpen, setCaptchaModalOpen] = useState(false);
-  const { result: value, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {
+  const { loading: loginLoading, run: postLogin } = useAsync(async function (param: UserLoginParamDto) {
     const result = await api["/passport/login"].post({ body: param, allowFailed: true, [IGNORE_ERROR_MSG]: true });
 
     if (!result.success) {
@@ -60,11 +59,10 @@ export function LoginPage() {
     }
   });
   const { refresh } = useCurrentUser({ manual: true });
-  const loginLoading = value.loading;
 
   const windowSize = useWindowResize();
 
-  const { modal } = useContext(AndContext);
+  const { modal } = useAntdStatic();
   const onClickLoinBtn = async (param: IdLoginParam) => {
     setMessage(defaultMessage);
 
@@ -121,7 +119,6 @@ export function LoginPage() {
                         name="password"
                         fieldProps={{ prefix: <LockOutlined /> }}
                         placeholder="密码"
-                        rules={[{ required: true }]}
                       />
                     </>
                   ),
@@ -240,11 +237,11 @@ const StyledPage = styled.div`
 
 type EmailLoginParam = {
   email: string;
-  password: string;
+  password?: string;
 };
 type IdLoginParam = {
   id: string;
-  password: string;
+  password?: string;
 };
 async function getLoinParam(loginType: LoginType, param: IdLoginParam) {
   let loginParam: UserLoginParamDto | undefined;
@@ -254,15 +251,16 @@ async function getLoinParam(loginType: LoginType, param: IdLoginParam) {
     loginParam = {
       method: LoginType.id,
       id: (param as IdLoginParam).id,
-      ...(await tryHashPassword(param.password)),
     };
   } else {
     loginParam = {
       method: LoginType.email,
       email: id,
-      ...(await tryHashPassword(param.password)),
     };
   }
-
+  if (param.password) {
+    const p = await tryHashPassword(param.password);
+    Object.assign(loginParam, p);
+  }
   return loginParam;
 }

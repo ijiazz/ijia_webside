@@ -1,13 +1,14 @@
-import React, { useEffect } from "react";
-import { createBrowserRouter, Outlet, RouteObject, RouterProvider } from "react-router";
+import React, { useEffect, useMemo } from "react";
+import { createBrowserRouter, RouteObject, RouterProvider } from "react-router";
 import passportRoutes from "./modules/passport/routes.tsx";
 import profileRoutes from "./modules/profile/routes.tsx";
 import { routes as examinationRoutes } from "./modules/examination/routes.tsx";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
-import liveRoutes from "./modules/live/routes.tsx";
+import wallRoutes from "./modules/post/routes.tsx";
 import { notFoundRouter } from "./common/page_state/NotFound.tsx";
 import { getPathByRoute, remoteLoading } from "./app.ts";
 import aboutRouters from "./modules/about/routes.tsx";
+import type { LazyRoute } from "./type.ts";
 const coreRoutes: RouteObject[] = [
   {
     index: true,
@@ -20,9 +21,13 @@ const coreRoutes: RouteObject[] = [
   },
   { path: "passport", children: passportRoutes },
   {
-    Component: lazyPage(() => import("./modules/layout/UserLayout.tsx").then((mod) => mod.UserLayout)),
+    Component: lazyPage(() => import("./modules/layout/UserLayout.tsx").then((mod) => mod.UserThemeLayout)),
     children: [
-      { path: "live", children: liveRoutes },
+      {
+        path: "live",
+        lazy: () => import("./modules/post/pages/home.tsx").then((mod): LazyRoute => ({ Component: mod.HomePage })),
+      },
+      { path: "wall", children: wallRoutes },
       { path: "profile", children: profileRoutes },
       { path: "examination", children: examinationRoutes },
       notFoundRouter,
@@ -35,17 +40,7 @@ const routes: RouteObject[] = [
   {
     path: "/",
     lazy: () => {
-      return import("./global-provider.tsx").then(({ AntdProvider, HoFetchProvider }) => ({
-        Component() {
-          return (
-            <AntdProvider>
-              <HoFetchProvider>
-                <Outlet />
-              </HoFetchProvider>
-            </AntdProvider>
-          );
-        },
-      }));
+      return import("./global-provider.tsx").then(({ GlobalProvider }): LazyRoute => ({ Component: GlobalProvider }));
     },
     HydrateFallback() {
       useEffect(() => remoteLoading, []);
@@ -57,7 +52,8 @@ const routes: RouteObject[] = [
 export default routes;
 
 function Router() {
-  return <RouterProvider router={createBrowserRouter(routes, { basename: getPathByRoute("/") })} />;
+  const router = useMemo(() => createBrowserRouter(routes, { basename: getPathByRoute("/") }), []);
+  return <RouterProvider router={router} />;
 }
 
 export function SpaRoot() {

@@ -1,86 +1,18 @@
 import React, { PropsWithChildren } from "react";
-import { ProLayout, ProLayoutProps } from "@ant-design/pro-components";
 import { IjiaLogo } from "../../common/site-logo.tsx";
-import { Button, MenuProps } from "antd";
-import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { Button, Tooltip } from "antd";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { menus } from "./menus.tsx";
 import { getUserToken, useCurrentUser } from "@/common/user.ts";
-import { avatarDropdownRender } from "./avatar.tsx";
-import { useAntdStatic } from "@/hooks/antd.ts";
+import { AvatarMenu } from "./avatar.tsx";
+import { AntdThemeProvider, useAntdStatic, useThemeController } from "@/global-provider.tsx";
 import styled from "@emotion/styled";
-import { ROUTES } from "@/app.ts";
+import { RootLayout } from "./RootLayout.tsx";
+import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
 
-function LayoutBase(
-  props: PropsWithChildren<{ avatarProps?: ProLayoutProps["avatarProps"]; action?: React.ReactNode }>,
-) {
-  const { children = <Outlet />, action } = props;
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
-  function onMenuSelect(item: Parameters<NonNullable<MenuProps["onSelect"]>>[0]) {
-    let path = item.key;
-    if (path) navigate(path, { viewTransition: true });
-  }
-  return (
-    <ProLayoutCSS
-      disableMobile
-      token={{ pageContainer: { paddingBlockPageContainerContent: 0, paddingInlinePageContainerContent: 0 } }}
-      onMenuHeaderClick={() => navigate(ROUTES.Home, { viewTransition: true })}
-      logo={<IjiaLogo />}
-      title="IJIA 学院"
-      route={menus}
-      location={{
-        pathname: pathname,
-      }}
-      actionsRender={
-        action
-          ? (props) => {
-              if (props.isMobile) return [];
-              return action;
-            }
-          : undefined
-      }
-      avatarProps={props.avatarProps}
-      layout="mix"
-      splitMenus
-      menuProps={{
-        onSelect: onMenuSelect,
-      }}
-    >
-      {children}
-    </ProLayoutCSS>
-  );
-}
-const ProLayoutCSS = styled(ProLayout)`
-  height: 100%;
-  .ant-layout {
-    height: 100%;
-  }
-  .ant-pro-layout-container {
-    min-height: 100%;
-  }
-  @media (max-width: 600px) {
-    .ant-pro-top-nav-header-logo {
-      h1 {
-        display: none;
-      }
-    }
-    .ant-pro-global-header-header-actions-avatar {
-      .ant-avatar + span {
-        display: none;
-      }
-    }
-  }
-  @media (max-width: 400px) {
-    .ant-pro-top-nav-header-logo {
-      display: none;
-    }
-  }
-`;
 const IS_DEV = import.meta.env?.DEV;
+
 export function UserLayout(props: PropsWithChildren<{}>) {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const { logout, value: user } = useCurrentUser();
   const { message } = useAntdStatic();
   const copyToken = () => {
     const url = new URL(location.href);
@@ -92,42 +24,76 @@ export function UserLayout(props: PropsWithChildren<{}>) {
     }
     message.success("已复制");
   };
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { logout, value: user } = useCurrentUser();
+  const themeCtrl = useThemeController();
   return (
-    <LayoutBase
-      avatarProps={
-        user
-          ? {
-              src: user.avatar_url,
-              className: "e2e-avatar",
-              size: "small",
-              title: user?.nickname,
-              render: (props, dom) => {
-                return avatarDropdownRender(dom, {
-                  navigate: (to) => navigate(to, { viewTransition: true }),
-                  onLogout: logout,
-                });
-              },
-              children: user.nickname ?? " ",
-            }
-          : {
-              className: "e2e-avatar",
-              size: "small",
-              title: "登录",
-              onClick: () => {
-                navigate("/passport/login", { viewTransition: true });
-              },
-              render: (props, dom) => {
-                return (
-                  <Link style={{ color: "inherit" }} to={"/passport/login?redirect=" + pathname} viewTransition>
-                    {dom}
-                  </Link>
-                );
-              },
-            }
+    <RootLayout
+      leftExtra={
+        <StyledIcon>
+          <IjiaLogo className="site-logo" />
+          <b className="site-name">IJIA 学院</b>
+        </StyledIcon>
       }
-      action={IS_DEV && user ? <Button onClick={copyToken}>复制token</Button> : undefined}
+      menus={menus}
+      pathname={pathname}
+      onSelectedKeysChange={({ keys, path }) => {
+        if (path) navigate(path);
+      }}
+      rightExtra={
+        <div style={{ display: "flex", gap: 8, marginRight: 8, alignItems: "center" }}>
+          {IS_DEV && user ? <Button onClick={copyToken}>复制token</Button> : undefined}
+          <Tooltip title={themeCtrl.mode === "dark" ? "切换到亮色主题" : "切换到暗色主题"}>
+            <DayNightSwitch
+              checked={themeCtrl.mode === "dark"}
+              style={{ zoom: 0.7 }}
+              onChange={(checked) => {
+                console.log("切换主题", checked);
+                themeCtrl.setMode(checked ? "dark" : "light");
+              }}
+            />
+          </Tooltip>
+          <AvatarMenu
+            noLogged={!user}
+            userName={!user ? "登录" : user?.nickname}
+            userUrl={user?.avatar_url}
+            logout={logout}
+          />
+        </div>
+      }
     >
-      {props.children}
-    </LayoutBase>
+      <Outlet />
+    </RootLayout>
   );
 }
+
+export function UserThemeLayout() {
+  return (
+    <AntdThemeProvider>
+      <UserLayout />
+    </AntdThemeProvider>
+  );
+}
+const StyledIcon = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .site-name {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .site-logo {
+    margin-left: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .site-name {
+      display: none;
+    }
+  }
+  @media (max-width: 400px) {
+    display: none;
+  }
+`;

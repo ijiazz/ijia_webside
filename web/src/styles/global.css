@@ -34,3 +34,7 @@
 .ant-tabs-content-holder {
   overflow: auto;
 }
+
+.ant-form-item {
+  margin-bottom: 16px;
+}

@@ -13,7 +13,7 @@ import {
   imageCaptchaReplyChecker,
 } from "../captcha/mod.ts";
 import { checkValueAsync, emailChecker } from "@/global/check.ts";
-import { rolesGuard, UserInfo } from "@/global/auth.ts";
+import { identity, UserInfo } from "@/global/auth.ts";
 import { HonoContext } from "@/hono/type.ts";
 import { signSysJWT, parseSysJWT } from "@/global/jwt.ts";
 import { sendAccountAuthEmailCaptcha, sendChangeEmailCaptcha } from "./services/send_email_captcha.ts";
@@ -22,7 +22,7 @@ import { optional } from "@asla/wokao";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { changeAccountEmail, changeAccountPassword } from "./sql/account.ts";
 
-@Use(rolesGuard)
+@Use(identity)
 @autoBody
 @Controller({})
 export class AccountController {

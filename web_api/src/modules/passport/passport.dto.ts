@@ -14,6 +14,7 @@ export type CreateUserProfileResult = {
 export type UserLoginResultDto = {
   success: boolean;
   token: string;
+  maxAge?: number;
   message?: string;
   redirect?: string;
   tip?: {
@@ -26,7 +27,7 @@ export type UserLoginByIdParam = {
   captcha?: ImageCaptchaReply;
 
   id: string;
-  password: string;
+  password?: string;
   passwordNoHash?: boolean;
 };
 export type UserLoginByEmailParam = {
@@ -34,7 +35,7 @@ export type UserLoginByEmailParam = {
   captcha?: ImageCaptchaReply;
 
   email: string;
-  password: string;
+  password?: string;
   passwordNoHash?: boolean;
 };
 export type UserLoginParamDto = UserLoginByIdParam | UserLoginByEmailParam;

@@ -25,7 +25,7 @@ import { appConfig } from "@/config.ts";
 import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/errors.ts";
 import { PassportConfig } from "./passport.dto.ts";
 import { sendResetPassportCaptcha, sendSignUpEmailCaptcha } from "./services/send_email_captcha.ts";
-import { signLoginJwt } from "@/global/jwt.ts";
+import { signAccessToken } from "@/global/jwt.ts";
 import { user } from "@ijia/data/db";
 import v from "@ijia/data/yoursql";
 import { accountLoginByEmail, accountLoginById, updateLastLoginTime } from "./sql/login.ts";
@@ -98,7 +98,7 @@ export class PassportController {
   }
 
   @PipeOutput(function (value, ctx) {
-    if (value.success) setCookie(ctx, "jwt-token", value.token);
+    if (value.success) setCookie(ctx, "access_token", value.token, { maxAge: value.maxAge });
     return ctx.json(value, 200);
   })
   @PipeInput(function (ctx: Context) {
@@ -124,10 +124,10 @@ export class PassportController {
       case LoginType.id: {
         const params = checkValue(body, {
           id: integer({ acceptString: true }),
-          password: "string",
+          password: optional.string,
           passwordNoHash: optional.boolean,
         });
-        if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
+        if (params.passwordNoHash && params.password) params.password = await hashPasswordFrontEnd(params.password);
         const uid = await accountLoginById(+params.id, params.password);
         account = { userId: uid };
         break;
@@ -136,10 +136,10 @@ export class PassportController {
         const params = checkValue(body, {
           method: "string",
           email: "string",
-          password: "string",
+          password: optional.string,
           passwordNoHash: optional.boolean,
         });
-        if (params.passwordNoHash) params.password = await hashPasswordFrontEnd(params.password);
+        if (params.passwordNoHash && params.password) params.password = await hashPasswordFrontEnd(params.password);
         const uid = await accountLoginByEmail(params.email, params.password);
         account = { userId: uid };
         break;
@@ -154,15 +154,18 @@ export class PassportController {
       success: true,
       message: "登录成功",
       token: jwtKey.token,
+      maxAge: jwtKey.maxAge,
     };
   }
   private async signToken(userId: number) {
-    const minute = 3 * 24 * 60; // 3 天后过期
-    const jwtKey = await signLoginJwt(userId, minute);
+    const DAY = 24 * 60 * 60; // 一天的秒数
+    const jwtKey = await signAccessToken(userId, {
+      survivalSeconds: 60 * 60, // 60 分钟过期. 每60分钟需要刷新一次
+      refreshKeepAliveSeconds: 7 * DAY, // 7 天内有操作可免登录
+      refreshSurvivalSeconds: 30 * DAY, // 刷新 token 最多可以用 1 个月
+    });
 
-    return {
-      token: jwtKey,
-    };
+    return jwtKey;
   }
 
   @ToArguments(async function (ctx) {

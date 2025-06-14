@@ -10,15 +10,15 @@ class CookieStore {
   private remove(key: string) {
     return Cookie.remove(key);
   }
-  set jwtToken(value: string | undefined) {
+  set accessToken(value: string | undefined) {
     if (value) {
-      this.set("jwt-token", value);
+      this.set("access_token", value);
     } else {
-      this.remove("jwt-token");
+      this.remove("access_token");
     }
   }
-  get jwtToken(): string | undefined {
-    return this.get("jwt-token");
+  get accessToken(): string | undefined {
+    return this.get("access_token");
   }
 }
 

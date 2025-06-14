@@ -1,6 +1,5 @@
 import { StudentIdCard, StudentIdCardBack } from "@/common/StudentIdCard.tsx";
-import { useAsync, UseAsyncResult } from "@/hooks/async.ts";
-import { useHoFetch } from "@/hooks/http.ts";
+import { useAsync } from "@/hooks/async.ts";
 import { PlusOutlined, QuestionCircleOutlined, ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 import {
   Avatar,
@@ -23,14 +22,13 @@ import { useCurrentUser } from "@/common/user.ts";
 import styled from "@emotion/styled";
 import { Meta } from "@/lib/components/Meta.tsx";
 import { BindAccountDto, UserInfoDto } from "@/api.ts";
-import { toFileUrl } from "@/common/http.ts";
+import { api, toFileUrl } from "@/common/http.ts";
 import dayjs, { Dayjs } from "dayjs";
 import { PagePadding } from "@/lib/components/Page.tsx";
-import { useThemeToken } from "@/hooks/antd.ts";
+import { useThemeToken } from "@/global-provider.tsx";
 
 export function BasicInfoPage() {
-  const { api } = useHoFetch();
-  const { result, run } = useAsync(
+  const { data, loading, run } = useAsync(
     () => {
       return api["/user/profile"].get().then((res) => ({
         ...res,
@@ -40,19 +38,18 @@ export function BasicInfoPage() {
     { autoRunArgs: [] },
   );
   const [zoom, setZoom] = useState(1);
-  const value = result.value;
 
   const date = useMemo(() => {
-    const time = value?.profile?.acquaintance_time;
+    const time = data?.profile?.acquaintance_time;
     if (!time) return undefined;
     const date = new Date(time);
 
     return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
-  }, [value]);
+  }, [data]);
 
   return (
     <PagePadding>
-      {value && (
+      {data && (
         <>
           <Button
             icon={zoom === 1 ? <ZoomInOutlined /> : <ZoomOutOutlined />}
@@ -62,11 +59,11 @@ export function BasicInfoPage() {
           </Button>
           <div style={{ display: "flex", flexWrap: "wrap" }}>
             <StudentIdCard
-              className={value.primary_class?.class_name}
-              avatarUrl={value.avatar_url}
-              id={value.user_id.toString().padStart(5)}
-              name={value.nickname}
-              isOfficial={value.is_official}
+              className={data.primary_class?.class_name}
+              avatarUrl={data.avatar_url}
+              id={data.user_id.toString().padStart(5)}
+              name={data.nickname}
+              isOfficial={data.is_official}
               scale={zoom}
               date={date}
             />
@@ -74,8 +71,8 @@ export function BasicInfoPage() {
           </div>
         </>
       )}
-      <BindAccountList profileResult={result} onProfileChange={() => run()} />
-      <BasicForm profileResult={result} onProfileChange={() => run()} />
+      <BindAccountList profileData={data} profileLoading={loading} onProfileChange={() => run()} />
+      <BasicForm profileData={data} profileLoading={loading} onProfileChange={() => run()} />
     </PagePadding>
   );
 }
@@ -87,11 +84,9 @@ type BasicFormData = {
   /** 是否开启年度评论统计 */
   comment_stat_enabled?: boolean;
 };
-function BasicForm(props: { profileResult: UseAsyncResult<UserInfoDto>; onProfileChange?(): void }) {
-  const { profileResult, onProfileChange } = props;
-  const profile = profileResult.value;
+function BasicForm(props: { profileData?: UserInfoDto; profileLoading?: boolean; onProfileChange?(): void }) {
+  const { profileData: profile, profileLoading, onProfileChange } = props;
 
-  const { api } = useHoFetch();
   const { refresh: afterUpdate } = useCurrentUser();
   const [form] = Form.useForm<BasicFormData>();
   const [isChanged, setIsChanged] = useState(false);
@@ -113,7 +108,7 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserInfoDto>; onProfil
     form.setFieldsValue(defaultData);
   }, [defaultData]);
 
-  const { run: onUpdate, result } = useAsync(async function () {
+  const { run: onUpdate } = useAsync(async function () {
     const formData = await form.validateFields();
     await api["/user/profile"].patch({
       body: {
@@ -131,9 +126,11 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserInfoDto>; onProfil
     afterUpdate?.();
   });
 
+  const theme = useThemeToken();
+
   return (
     <div>
-      <Spin spinning={profileResult.loading}>
+      <Spin spinning={profileLoading}>
         <Space size="large" align="baseline">
           <Typography.Title level={5}>基础设置</Typography.Title>
           {isChanged && (
@@ -153,7 +150,9 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserInfoDto>; onProfil
             </Space>
           )}
         </Space>
-        {profile?.is_official || <div>部分信息需要绑定平台账号后才能修改</div>}
+        {profile?.is_official || (
+          <div style={{ color: theme.colorWarningText, margin: "0 0 14px 0" }}>部分信息需要绑定平台账号后才能修改</div>
+        )}
         <Form
           form={form}
           onValuesChange={(value, values) => {
@@ -212,20 +211,18 @@ function BasicForm(props: { profileResult: UseAsyncResult<UserInfoDto>; onProfil
   );
 }
 
-function BindAccountList(props: { profileResult: UseAsyncResult<UserInfoDto>; onProfileChange?(): void }) {
-  const { profileResult, onProfileChange } = props;
-  const profile = profileResult.value;
+function BindAccountList(props: { profileData?: UserInfoDto; profileLoading?: boolean; onProfileChange?(): void }) {
+  const { profileData: profile, profileLoading, onProfileChange } = props;
   const accounts = profile?.bind_accounts ?? [];
 
   const { refresh: onAccountChange, value: user } = useCurrentUser();
-  const { api } = useHoFetch();
-  const { run: onRemoveBind, result: removeBindResult } = useAsync(async (item: BindAccountDto) => {
+  const { run: onRemoveBind, loading: removeBindLoading } = useAsync(async (item: BindAccountDto) => {
     await api["/user/bind_platform"].delete({ body: { bindKey: item.key } });
     message.success("已解除");
     onAccountChange();
     onProfileChange?.();
   });
-  const { run: refreshAccount, result: refreshAccountResult } = useAsync(async (item: BindAccountDto) => {
+  const { run: refreshAccount, loading: refreshAccountLoading } = useAsync(async (item: BindAccountDto) => {
     await api["/user/profile/sync"].post({ body: { bindKey: item.key } });
     message.success("已更新");
     onAccountChange();
@@ -236,7 +233,7 @@ function BindAccountList(props: { profileResult: UseAsyncResult<UserInfoDto>; on
   return (
     <BindAccountListCSS>
       <Typography.Title level={5}>账号绑定</Typography.Title>
-      <Spin spinning={profileResult.loading}>
+      <Spin spinning={profileLoading}>
         <div className="bind-list">
           <Avatar.Group>
             {accounts?.map((account) => {
@@ -251,15 +248,11 @@ function BindAccountList(props: { profileResult: UseAsyncResult<UserInfoDto>; on
                         title={account.user_name}
                       ></Meta>
                       <Space>
-                        <Button
-                          size="small"
-                          loading={refreshAccountResult.loading}
-                          onClick={() => refreshAccount(account)}
-                        >
+                        <Button size="small" loading={refreshAccountLoading} onClick={() => refreshAccount(account)}>
                           同步用户信息
                         </Button>
                         <Button
-                          loading={removeBindResult.loading}
+                          loading={removeBindLoading}
                           size="small"
                           onClick={() => setConfirmOpen({ title: "确认解除关联？", item: account })}
                         >
@@ -284,7 +277,7 @@ function BindAccountList(props: { profileResult: UseAsyncResult<UserInfoDto>; on
       <Modal
         open={confirmOpen !== undefined}
         title={confirmOpen?.title}
-        okButtonProps={{ loading: removeBindResult.loading }}
+        okButtonProps={{ loading: removeBindLoading }}
         onOk={() => {
           if (!confirmOpen) return;
           onRemoveBind(confirmOpen.item).then(() => {
@@ -316,9 +309,8 @@ const BindAccountListCSS = styled.div`
 `;
 
 function PublicClassSelect(props: { value?: number; onChange?(value: number): void; disabled?: boolean }) {
-  const api = useHoFetch().api;
   const token = useThemeToken();
-  const { result } = useAsync(
+  const { data } = useAsync(
     async function (search?: string) {
       const { items } = await api["/class/public"].get();
       return items.map((item) => ({
@@ -341,7 +333,7 @@ function PublicClassSelect(props: { value?: number; onChange?(value: number): vo
       {...props}
       style={{ minWidth: 100, maxWidth: 200 }}
       allowClear
-      options={result.value}
+      options={data}
       showSearch
       filterOption={(value, option) => {
         if (!option) return false;

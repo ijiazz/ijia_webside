@@ -17,14 +17,14 @@ export type AsyncSelectProps<
 export function AsyncSelect<ValueType = any, OptionType extends BaseOptionType | DefaultOptionType = DefaultOptionType>(
   props: AsyncSelectProps<ValueType, OptionType>,
 ) {
-  const { result, run } = useAsync(props.getOption, {});
+  const { loading, data, run } = useAsync(props.getOption, {});
   const getOption = useThrottle(run, 800);
 
   return (
     <Select<ValueType, OptionType>
       {...props}
-      options={result.value?.items}
-      loading={result.loading}
+      options={data?.items}
+      loading={loading}
       onSearch={(value) => getOption({ search: value })}
       filterOption={false}
     />

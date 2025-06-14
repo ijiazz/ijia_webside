@@ -34,7 +34,7 @@ export async function addServeStatic(hono: Hono) {
         }
         if (bucketTest.PLA_POST_MEDIA.test(rel)) {
           c.header("Cache-Control", "private, max-age=86400");
-          const userInfo = new UserInfo(getCookie(c, "jwt-token"));
+          const userInfo = new UserInfo(getCookie(c, "access_token"));
           await userInfo.getJwtInfo();
           return;
         }

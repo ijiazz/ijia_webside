@@ -30,7 +30,7 @@ export const test = viTest.extend<HonoContext>({
     });
     hoFetch.use(async function (ctx, next) {
       if (ctx[JWT_TOKEN_KEY]) {
-        ctx.headers.set("cookie", "jwt-token=" + ctx[JWT_TOKEN_KEY]);
+        ctx.headers.set("cookie", "access_token=" + ctx[JWT_TOKEN_KEY]);
       }
       return next();
     });

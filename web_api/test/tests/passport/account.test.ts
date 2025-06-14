@@ -7,7 +7,7 @@ import { emailCaptchaService } from "@/modules/captcha/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
-import { signLoginJwt } from "@/global/jwt.ts";
+import { signAccessToken } from "@/global/jwt.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
 import { user } from "@ijia/data/db";
@@ -15,10 +15,11 @@ import { user } from "@ijia/data/db";
 const AlicePassword = await hashPasswordFrontEnd("123");
 const AliceEmail = "alice@ijiazz.cn";
 let AliceId!: number;
-
+let aliceToken: string;
 beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
   ijiaDbPool; // 初始化数据库
   AliceId = await createUser(AliceEmail, { password: AlicePassword });
+  aliceToken = await signAccessToken(AliceId).then((res) => res.token);
   await initCaptcha();
   applyController(hono, passportController);
   applyController(hono, accountController);
@@ -26,7 +27,6 @@ beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
 
 describe("获取账号authToken", function () {
   test("获取账号authToken", async function ({ api }) {
-    const aliceToken = await signLoginJwt(AliceId, 60);
     const emailCaptchaAnswer = await mockSignAuthTokenEmailSendEmailCaptcha(api, aliceToken);
     const result = await api["/passport/sign_account_token"].post({
       body: { emailCaptcha: emailCaptchaAnswer },
@@ -41,7 +41,6 @@ describe("获取账号authToken", function () {
 });
 describe("修改邮箱", async function () {
   test("修改邮箱", async function ({ api }) {
-    const aliceToken = await signLoginJwt(AliceId, 60);
     const accountToken = await getAccountToken(api, aliceToken);
     const newEmail = "news@ijiazz.cn";
     const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail, aliceToken);
@@ -52,7 +51,6 @@ describe("修改邮箱", async function () {
     await expect(getUserEmail(AliceId), "成功修改邮箱").resolves.toBe(newEmail);
   });
   test("不能使用 news 的验证码来验证 bob 的邮箱", async function ({ api }) {
-    const aliceToken = await signLoginJwt(AliceId, 60);
     const accountToken = await getAccountToken(api, aliceToken);
     const newEmail = "news@ijiazz.cn";
     const bobEmail = "bob@ijiazz.cn";
@@ -64,14 +62,12 @@ describe("修改邮箱", async function () {
     await expect(promise).responseStatus(418);
   });
   test("邮箱已被注册，尝试修改发送将无法发送验证码", async function ({ api }) {
-    const aliceToken = await signLoginJwt(AliceId, 60);
     const accountToken = await getAccountToken(api, aliceToken);
     const BobEmail = "bob@ijiazz.cn";
     const BobId = await createUser(BobEmail, { password: AlicePassword });
     await expect(mockChangeEmailSendEmailCaptcha(api, AliceEmail, aliceToken), "邮箱已被注册").responseStatus(406);
   });
   test("邮箱不能修改成已注册的邮箱", async function ({ api }) {
-    const aliceToken = await signLoginJwt(AliceId, 60);
     const accountToken = await getAccountToken(api, aliceToken);
 
     const BobEmail = "bob@ijiazz.cn";
@@ -88,7 +84,6 @@ describe("修改邮箱", async function () {
     ).responseStatus(409);
   });
   test("已注销账号不能修改邮箱", async function ({ api }) {
-    const aliceToken = await signLoginJwt(AliceId, 60);
     const accountToken = await getAccountToken(api, aliceToken);
     await user.update({ is_deleted: "true" }).where(`id=${AliceId}`).query();
     const newEmail = "news@ijiazz.cn";
@@ -107,7 +102,6 @@ describe("修改邮箱", async function () {
 
 describe("修改密码", function () {
   test("修改密码", async ({ api }) => {
-    const aliceToken = await signLoginJwt(AliceId, 60);
     const newPassword = await hashPasswordFrontEnd("newPassword123");
     await api["/passport/change_password"].post({
       body: { oldPassword: AlicePassword, newPassword: newPassword },
@@ -117,7 +111,6 @@ describe("修改密码", function () {
     await expect(aliceLoin(api, AlicePassword), "旧密码登录失败").responseStatus(401);
   });
   test("修改密码必须输入正确的旧密码", async ({ api }) => {
-    const aliceToken = await signLoginJwt(AliceId, 60);
     const newPassword = await hashPasswordFrontEnd("newPassword123");
     const promise = api["/passport/change_password"].post({
       body: { oldPassword: await hashPasswordFrontEnd("errorPassword"), newPassword: newPassword },
