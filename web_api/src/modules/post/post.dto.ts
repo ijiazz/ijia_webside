@@ -80,10 +80,7 @@ export type PostItemDto = PostItemBase & {
     is_like: boolean; // 是否点赞
     is_report: boolean; // 是否已举报
   } | null;
-  group?: {
-    group_id: string;
-    group_name: string;
-  } | null;
+  group?: PostGroupInfo | null;
   stat: {
     like_total: number;
     /** 举报人数。可能不是整数 */
@@ -109,5 +106,8 @@ export type PostUserInfo = {
   avatar_url: string;
   home_page?: string;
 };
-
+export type PostGroupInfo = {
+  group_id: string;
+  group_name: string;
+};
 export type { TextStructure };
