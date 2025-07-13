@@ -38,6 +38,8 @@ export type CreatePostParam = {
   is_hide?: boolean;
   /** 是否匿名发布 */
   is_anonymous?: boolean;
+  /** 是否关闭评论 */
+  comment_disabled?: boolean;
 };
 
 export type UpdatePostParam = {
@@ -45,6 +47,8 @@ export type UpdatePostParam = {
   content_text_structure?: TextStructure[] | null;
   /** 是否仅自己可见 */
   is_hide?: boolean;
+  /** 是否开启评论 */
+  comment_disabled?: boolean;
   media_file?: (AssetMediaUploadFile & { index: number })[];
 };
 
@@ -80,10 +84,7 @@ export type PostItemDto = PostItemBase & {
     is_like: boolean; // 是否点赞
     is_report: boolean; // 是否已举报
   } | null;
-  group?: {
-    group_id: string;
-    group_name: string;
-  } | null;
+  group?: PostGroupInfo | null;
   stat: {
     like_total: number;
     /** 举报人数。可能不是整数 */
@@ -100,6 +101,8 @@ export type PostItemDto = PostItemBase & {
     is_anonymous?: boolean;
     /** 是否仅自己可见 */
     self_visible?: boolean;
+    /** 是否关闭评论 */
+    comment_disabled?: boolean;
   };
 };
 
@@ -109,5 +112,8 @@ export type PostUserInfo = {
   avatar_url: string;
   home_page?: string;
 };
-
+export type PostGroupInfo = {
+  group_id: string;
+  group_name: string;
+};
 export type { TextStructure };

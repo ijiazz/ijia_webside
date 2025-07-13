@@ -90,7 +90,7 @@ export async function deletePost(api: Api, postId: number, token?: string) {
   });
 }
 export function reportPost(api: Api, postId: number, token: string, reason?: string) {
-  return api["/post/report/:postId"].put({
+  return api["/post/report/:postId"].post({
     params: { postId: postId },
     body: { reason: reason },
     [JWT_TOKEN_KEY]: token,

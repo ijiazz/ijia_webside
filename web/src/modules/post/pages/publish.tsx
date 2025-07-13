@@ -22,13 +22,14 @@ export function PublishPost(props: {
     props;
   const { message } = useAntdStatic();
   const isEdit = editId !== undefined;
-  const { run, reset, loading } = useAsync(async (data: CreatePostParam) => {
+  const { run, reset, loading } = useAsync(async (data: UpdatePostParam | CreatePostParam) => {
     if (isEdit) {
       const updateValue: UpdatePostParam = diffUpdateValue(
         {
           content_text: data.content_text,
           content_text_structure: data.content_text_structure ?? null,
           is_hide: data.is_hide,
+          comment_disabled: data.comment_disabled,
         },
         initValues as UpdatePostParam | undefined,
       );
@@ -52,7 +53,7 @@ export function PublishPost(props: {
       onCreateOk?.(id);
     }
   });
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<UpdatePostParam | CreatePostParam>();
   const groupId = Form.useWatch("group_id", form);
 
   return (
@@ -64,9 +65,6 @@ export function PublishPost(props: {
         labelCol={{ span: 4 }}
         initialValues={initValues || {}}
       >
-        <Form.Item hidden={isEdit} label="内容分类" name="group_id">
-          <GroupSelect disabled={isEdit} options={groupOptions} loading={groupLoading} allowClear></GroupSelect>
-        </Form.Item>
         <Form.Item
           hidden={disableEditContent}
           label="发布内容"
@@ -75,7 +73,13 @@ export function PublishPost(props: {
         >
           <Input.TextArea placeholder="请输入内容" autoSize={{ minRows: 4, maxRows: 10 }} style={{ width: "100%" }} />
         </Form.Item>
+        <Form.Item hidden={isEdit} label="内容分类" name="group_id">
+          <GroupSelect disabled={isEdit} options={groupOptions} loading={groupLoading} allowClear></GroupSelect>
+        </Form.Item>
         <Form.Item hidden={disableSetting} label="仅自己可见" name="is_hide">
+          <Switch></Switch>
+        </Form.Item>
+        <Form.Item hidden={disableSetting} label="关闭评论区" name="comment_disabled">
           <Switch></Switch>
         </Form.Item>
         <Form.Item hidden={isEdit} label="匿名发布" name="is_anonymous">
@@ -126,6 +130,7 @@ function diffUpdateValue(news: UpdatePostParam, old?: UpdatePostParam): UpdatePo
     let updateValue: UpdatePostParam = {};
     if (news.content_text !== old.content_text) updateValue.content_text = news.content_text;
     if (news.is_hide !== old.is_hide) updateValue.is_hide = news.is_hide;
+    if (news.comment_disabled !== old.comment_disabled) updateValue.comment_disabled = news.comment_disabled;
     if (news.content_text_structure !== old.content_text_structure)
       updateValue.content_text_structure = news.content_text_structure;
 

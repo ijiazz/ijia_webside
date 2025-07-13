@@ -104,3 +104,20 @@ test("每个用户每天限制发帖子数量为50", async function ({ ijiaDbPoo
   }
   await expect(send(50)).responseStatus(403);
 });
+
+test("发布帖子关闭评论区", async function ({ api, ijiaDbPool }) {
+  const alice = await prepareUser("alice");
+  const bob = await prepareUser("bob");
+  const postInfo = await createPost(api, { content_text: "test1分组", comment_disabled: true }, alice.token);
+
+  {
+    const item = await testGetPost(api, postInfo.id, alice.token);
+    expect(item.config.comment_disabled).toBe(true);
+    expect(item.curr_user?.can_comment).toBe(true);
+  }
+  {
+    const item = await testGetPost(api, postInfo.id, bob.token);
+    expect(item.config.comment_disabled).toBe(true);
+    expect(item.curr_user?.can_comment).toBe(false);
+  }
+});

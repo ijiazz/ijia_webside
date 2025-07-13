@@ -41,7 +41,7 @@ export interface PostApi {
     };
   };
   /** 举报作品 */
-  "PUT /post/report/:postId": {
+  "POST /post/report/:postId": {
     body?: {
       reason?: string;
     };

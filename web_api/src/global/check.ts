@@ -33,6 +33,11 @@ export function checkValueAsync<T extends ExpectType>(
 
 export const emailChecker = stringMatch(/^[^@]+@.+?\..+$/);
 export const optionalPositiveInt = optional(integer.positive);
+/** 断言目标是一个整数，且可以转换字符串 */
+export const queryInt = integer({ acceptString: true });
+
+/** 断言目标是一个可选的整数，且可以转换字符串 */
+export const optionalInt = optional(queryInt);
 export const date: TypeCheckFn<Date> = function (input: unknown) {
   switch (typeof input) {
     case "string":

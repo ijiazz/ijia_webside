@@ -1,8 +1,8 @@
-import { useThemeToken } from "@/global-provider.tsx";
 import styled from "@emotion/styled";
-import { Space } from "antd";
+import { Space, Typography } from "antd";
 import React, { CSSProperties } from "react";
 
+const { Text } = Typography;
 export type PostHeaderProps = {
   userName?: React.ReactNode;
   platformIcon?: React.ReactNode;
@@ -14,18 +14,17 @@ export type PostHeaderProps = {
 };
 
 export function PostHeader(props: PostHeaderProps) {
-  const theme = useThemeToken();
   return (
     <PostHeaderCSS style={props.style}>
       <Space>
         <span className="post-header-owner-name">{props.userName}</span>
         <span className="post-header-platform">{props.platformIcon}</span>
       </Space>
-      <div className="post-header-subtitle" style={{ color: theme.colorTextDescription, fontSize: theme.fontSizeSM }}>
+      <Text className="post-header-subtitle" type="secondary">
         <span className="post-header-time">{props.publishTime}</span>
         <span className="post-header-time">{props.updateTime ? `更新于 ${props.updateTime}` : undefined}</span>
         <span> {props.ipLocation ? "IP: " + props.ipLocation : undefined}</span>
-      </div>
+      </Text>
     </PostHeaderCSS>
   );
 }
@@ -37,6 +36,7 @@ const PostHeaderCSS = styled.div`
     &-platform {
     }
     &-subtitle {
+      font-size: 12px;
       display: flex;
       flex-wrap: wrap;
       gap: 6px;

@@ -7,6 +7,7 @@ import { postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "test/fixtures/user.ts";
 import { createPostGroup, testGetPost, testGetSelfPost } from "./utils/prepare_post.ts";
 import { getPostReviewStatus, markReviewed, preparePost, ReviewStatus, updatePost } from "./utils/prepare_post.ts";
+import v from "@ijia/data/yoursql";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -203,4 +204,22 @@ test("只更新帖子的隐藏状态，审核状态和审核数据不变", async
     .queryMap<string>("id");
 
   expect(Object.fromEntries(status), "审核数据未改变").toEqual(Object.fromEntries(result));
+});
+test("更新帖子的评论关闭状态", async function ({ api, ijiaDbPool }) {
+  const { post: postInfo, alice } = await preparePost(api);
+  const bob = await prepareUser("bob");
+
+  {
+    await updatePost(api, postInfo.id, { comment_disabled: true }, alice.token);
+
+    const bobGet = await testGetPost(api, postInfo.id, bob.token);
+    expect(bobGet.curr_user?.can_comment).toBe(false);
+    expect(bobGet.config.comment_disabled).toBe(true);
+  }
+  {
+    await updatePost(api, postInfo.id, { comment_disabled: false }, alice.token);
+    const bobGet = await testGetPost(api, postInfo.id, bob.token);
+    expect(bobGet.curr_user?.can_comment).toBe(true);
+    expect(bobGet.config.comment_disabled).toBe(false);
+  }
 });

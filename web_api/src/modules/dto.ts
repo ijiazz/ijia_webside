@@ -6,6 +6,7 @@ export * from "./captcha/captcha.dto.ts";
 export * from "./dto_common.ts";
 export * from "./post/platform_post.dto.ts";
 export * from "./post/post.dto.ts";
+export * from "./post/comment.dto.ts";
 export * from "./live/live.dto.ts";
 
 export type { TextStructureType, TextStructure } from "@ijia/data/db";

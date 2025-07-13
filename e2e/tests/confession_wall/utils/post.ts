@@ -1,6 +1,7 @@
-import { api } from "@/__mocks__/fetch.ts";
+import { api, JWT_TOKEN_KEY } from "@/__mocks__/fetch.ts";
 import { CreatePostParam } from "@api/api.ts";
 import { post, post_group } from "@ijia/data/db";
+import { getAppUrlFromRoute } from "@/fixtures/test.ts";
 
 export async function clearPosts() {
   await post.delete().query();
@@ -17,5 +18,25 @@ export async function createPostGroup(name: string, description?: string) {
 }
 
 export async function createPost(postParam: CreatePostParam, token: string) {
-  await api["/post/content"].put({ body: postParam, headers: { cookie: `access_token=${token}` } });
+  return api["/post/content"].put({
+    body: postParam,
+    [JWT_TOKEN_KEY]: token,
+  });
+}
+export async function createCommentUseApi(config: {
+  postId: number;
+  text: string;
+  token?: string;
+  replyCommentId?: number;
+}) {
+  const { postId, text, replyCommentId, token } = config;
+  return api["/post/content/:postId/comment"].put({
+    params: { postId },
+    body: { text, replyCommentId },
+    [JWT_TOKEN_KEY]: token,
+  });
+}
+
+export function gotoComment(postId: number, token?: string) {
+  return getAppUrlFromRoute(`/wall/list?openCommentPostId=${postId}`, token);
 }

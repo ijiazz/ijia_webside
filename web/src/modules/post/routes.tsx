@@ -15,6 +15,9 @@ const routes: RouteObject[] = [
     async loader(data, ctx) {
       return api["/post/group/list"].get().catch(() => undefined);
     },
+    shouldRevalidate({ currentUrl, nextUrl }) {
+      return false;
+    },
     path: "list",
     id: "/wall",
     Component: lazyPage(() => import("./layout/WallLayout.tsx").then((mod) => mod.PostLayout)),
@@ -22,7 +25,7 @@ const routes: RouteObject[] = [
       {
         path: ":groupId?",
         index: true,
-        Component: lazyPage(() => import("./pages/wall.tsx").then((mod) => mod.PostListPage)),
+        Component: lazyPage(() => import("./pages/confession_wall/index.tsx").then((mod) => mod.PostListPage)),
       },
     ],
   },

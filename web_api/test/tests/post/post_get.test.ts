@@ -39,6 +39,16 @@ test("匿名帖子只有自己能看到用户信息", async function ({ api, iji
   }
 });
 
+test("未登录用户查看自己的作品应返回空", async function ({ api, ijiaDbPool }) {
+  const alice = await prepareUser("alice");
+
+  await createPost(api, { content_text: "111" }, alice.token);
+
+  const res = await api["/post/list"].get({ query: { self: true } });
+  expect(res.items).toHaveLength(0);
+  expect(res.needLogin).toBe(true);
+});
+
 test("审核中的帖子只有自己能查看", async function ({ api, ijiaDbPool }) {
   const alice = await prepareUser("alice");
   const bob = await prepareUser("bob");

@@ -2,16 +2,8 @@ import { Controller, Delete, Get, Patch, Post, Put, ToArguments, Use } from "@as
 import { autoBody } from "@/global/pipe.ts";
 import { identity } from "@/global/auth.ts";
 import { CreatePostParam, GetPostListParam, PostResponse, UpdatePostParam } from "./post.dto.ts";
-import {
-  createPost,
-  deletePost,
-  getPostList,
-  getUserDateCount,
-  updatePost,
-  cancelPostLike,
-  setPostLike,
-  reportPost,
-} from "./sql/post.ts";
+import { createPost, deletePost, getPostList, getUserDateCount, updatePost } from "./sql/post.ts";
+import { cancelPostLike, setPostLike, reportPost } from "./sql/post_like.ts";
 import { checkValue, checkValueAsync } from "@/global/check.ts";
 import { CheckTypeError, getBasicType, integer, optional } from "@asla/wokao";
 import { HonoContext } from "@/hono/type.ts";
@@ -34,6 +26,7 @@ class PostController {
       group_id: optional(integer()),
       is_hide: optional.boolean,
       is_anonymous: optional.boolean,
+      comment_disabled: optional.boolean,
     });
     return [uId, res];
   })
@@ -62,6 +55,7 @@ class PostController {
         throw new CheckTypeError("Array", getBasicType(input));
       }, "nullish"),
       is_hide: optional.boolean,
+      comment_disabled: optional.boolean,
     });
     return [postId, res, userId];
   })
@@ -111,6 +105,7 @@ class PostController {
   })
   @Get("/post/list")
   async getPublicList(params: GetPostListParam, currentUserId?: number): Promise<PostResponse> {
+    if (params.self && typeof currentUserId !== "number") return { needLogin: true, has_more: false, items: [] };
     return getPostList(params, { currentUserId });
   }
 
@@ -140,7 +135,7 @@ class PostController {
     });
     return [userId, postId, data];
   })
-  @Put("/post/report/:postId")
+  @Post("/post/report/:postId")
   async reportPost(userId: number, postId: number, data: { reason?: string }): Promise<{ success: boolean }> {
     const count = await reportPost(postId, userId, data.reason);
     return { success: count > 0 };

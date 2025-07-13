@@ -40,3 +40,11 @@ export function getResponseErrorInfo(body: unknown): { message?: string; code?: 
   }
   return;
 }
+
+export const JWT_TOKEN_KEY = Symbol("jwt_token");
+http.use(async function (ctx, next) {
+  if (ctx[JWT_TOKEN_KEY]) {
+    ctx.headers.set("cookie", "access_token=" + ctx[JWT_TOKEN_KEY]);
+  }
+  return next();
+});
