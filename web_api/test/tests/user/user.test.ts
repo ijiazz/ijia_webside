@@ -78,10 +78,10 @@ test("只能选择公共班级，且公共班级只能选一个", async function
   await expect(updateProfile(api, { primary_class_id: classes[2] }), "只能选择公共班级").responseStatus(409);
 
   await updateProfile(api, { primary_class_id: classes[0] });
-  await expect(getUserPublicClassId(1), "成功绑定").resolves.toEqual([1]);
+  await expect(getUserPublicClassId(AliceId), "成功绑定").resolves.toEqual([1]);
 
   await updateProfile(api, { primary_class_id: classes[1] });
-  await expect(getUserPublicClassId(1), "已更新").resolves.toEqual([2]);
+  await expect(getUserPublicClassId(AliceId), "已更新").resolves.toEqual([2]);
 });
 
 function updateProfile(api: Api, body: UpdateUserProfileParam) {
