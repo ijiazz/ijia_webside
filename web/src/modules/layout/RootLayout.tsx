@@ -128,7 +128,7 @@ export function RootLayout(props: RootLayoutProps) {
           {children}
         </AdaptiveMenuLayout>
       ) : (
-        children
+        <div className="root-layout-body">{children}</div>
       )}
     </RootLayoutCSS>
   );
