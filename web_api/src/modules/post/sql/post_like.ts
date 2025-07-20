@@ -1,99 +1,140 @@
-import { post, post_comment, post_comment_like, post_like } from "@ijia/data/db";
+import { post, post_comment, post_comment_like, post_like, user_profile } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
-import { DEFAULT_LIKE_WEIGHT, REPORT_THRESHOLD } from "./const.ts";
+import { DEFAULT_LIKE_WEIGHT } from "./const.ts";
 
-export async function setPostLike(postId: number, userId: number) {
-  const insertRecord = post_like
-    .insert("weight, post_id, user_id", () => {
-      return post
-        .select([`${v(DEFAULT_LIKE_WEIGHT)} as weight`, "id AS post_id", `${v(userId)} AS user_id`])
-        .where([`id=${v(postId)}`, `(NOT is_delete)`, `(user_id=${v(userId)} OR NOT is_hide)`])
-        .toString();
-    })
-    .onConflict(["post_id", "user_id"])
-    .doNotThing()
-    .returning("1");
+export async function setPostLike(postId: number, userId: number): Promise<number> {
+  const sqlText = `
+    WITH changed_record AS (
+    ${post_like
+      .insert(
+        "weight, post_id, user_id",
+        post
+          .select([`${v(DEFAULT_LIKE_WEIGHT)} as weight`, "id AS post_id", `${v(userId)} AS user_id`]) // 如果改为插入多个，只需更改这个语句
+          .where([`id=${v(postId)}`, `(NOT is_delete)`, `(user_id=${v(userId)} OR NOT is_hide)`])
+          .toString(),
+      )
+      .onConflict(["post_id", "user_id"])
+      .doNotThing()
+      .returning(["post_id", "user_id"])
+      .toString()}
+    ), update_post AS (
+      UPDATE ${post.name} SET like_count = like_count + c.count
+      FROM (SELECT post_id, count(*) FROM changed_record GROUP BY post_id) AS c
+      WHERE ${post.name}.id = c.post_id
+      RETURNING id AS post_id, ${post.name}.user_id AS user_id
+    ), user_stat AS (
+      SELECT 
+        COALESCE(u.user_id, author.user_id) AS user_id,
+        COALESCE(u.count, 0) AS post_like_count,
+        COALESCE(author.count, 0) AS post_like_get_count
+      FROM (
+        SELECT user_id, count(*)
+        FROM changed_record GROUP BY user_id
+      ) AS u
+      FULL OUTER JOIN (
+        SELECT user_id, count(*)
+        FROM update_post GROUP BY user_id
+      ) AS author
+      ON u.user_id = author.user_id
+    ), update_user_stat AS(
+      UPDATE ${user_profile.name}
+      SET post_like_count = ${user_profile.name}.post_like_count + user_stat.post_like_count,
+          post_like_get_count = ${user_profile.name}.post_like_get_count + user_stat.post_like_get_count
+      FROM user_stat
+      WHERE ${user_profile.name}.user_id = user_stat.user_id
+    )
+    SELECT COUNT(*)::INT FROM changed_record
+  `;
 
-  // 成功插入更新计数
-  const updateCount = post
-    .update({ like_count: "like_count + 1" })
-    .where([`id=${v(postId)}`, `EXISTS (SELECT 1 FROM tmp)`]);
+  const { count } = await dbPool.queryFirstRow<{ count: number }>(sqlText);
+  return count;
+}
 
-  const count = await dbPool.queryCount(`WITH tmp AS (${insertRecord})\n${updateCount.toString()}`);
+export async function cancelPostLike(postId: number, userId: number) {
+  const sql = `WITH changed_record AS (
+  ${post_like
+    .delete({ where: [`post_id=${v(postId)}`, `user_id=${v(userId)}`, "weight>0"] })
+    .returning(["post_id", "user_id"])
+    .toString()}
+  ), update_post AS(
+    UPDATE ${post.name} SET like_count = like_count - c.count
+    FROM (SELECT post_id, count(*) FROM changed_record GROUP BY post_id) AS c
+    WHERE ${post.name}.id = c.post_id
+    RETURNING id AS post_id, ${post.name}.user_id AS user_id, is_delete
+  ), user_stat AS (
+     SELECT 
+      COALESCE(u.user_id, author.user_id) AS user_id,
+      COALESCE(u.count, 0) AS post_like_count,
+      COALESCE(author.count, 0) AS post_like_get_count
+    FROM (
+      SELECT user_id, count(*)
+      FROM changed_record GROUP BY user_id
+    ) AS u
+    FULL OUTER JOIN (
+      SELECT user_id, count(*)
+      FROM update_post WHERE NOT is_delete
+      GROUP BY user_id
+    ) AS author
+    ON u.user_id = author.user_id
+  ), update_user_stat AS (
+    UPDATE ${user_profile.name} SET 
+      post_like_count = ${user_profile.name}.post_like_count - user_stat.post_like_count,
+      post_like_get_count = ${user_profile.name}.post_like_get_count - user_stat.post_like_get_count
+    FROM user_stat
+    WHERE ${user_profile.name}.user_id = user_stat.user_id
+  )
+  SELECT COUNT(*)::INT FROM changed_record
+  `;
+  const { count } = await dbPool.queryFirstRow<{ count: number }>(sql);
 
   return count;
 }
 
-function cancelPostLikeSql(postId: number, userId: number) {
-  const deleteRecord = post_like
-    .delete({ where: [`post_id=${v(postId)}`, `user_id=${v(userId)}`, "weight>0"] })
-    .returning("1");
-  // 成功删除则更新计数
-  const updateCount = post
-    .update({ like_count: "like_count - 1" })
-    .where([`id=${v(postId)}`, `EXISTS (SELECT 1 FROM tmp)`]);
-  const sql = `WITH tmp AS (${deleteRecord})\n${updateCount.toString()}`;
-
-  return sql;
-}
-export async function cancelPostLike(postId: number, userId: number) {
-  const sql = cancelPostLikeSql(postId, userId);
-  return dbPool.queryCount(sql);
-}
-export async function reportPost(postId: number, userId: number, reason?: string) {
-  const cancelLikeSql = cancelPostLikeSql(postId, userId);
-  const insertRecord = post_like
-    .insert("weight, post_id, user_id, reason", () => {
-      return post
-        .select([
-          "-100 as weight", //todo 根据用户获取权重
-          "id AS post_id",
-          `${v(userId)} AS user_id`,
-          `${reason ? v(reason) : "NULL"} AS reason`,
-        ])
-        .where([`id=${v(postId)}`, `(NOT is_delete)`])
-        .toString();
-    })
-    .returning("1");
-
-  const setReviewing = `(CASE 
-  WHEN (is_review_pass IS NULL AND (dislike_count + 100) >=${v(REPORT_THRESHOLD)}) THEN TRUE 
-  ELSE is_reviewing
-  END)`;
-
-  // 成功插入更新计数
-  const updateCount = post
-    .update({
-      dislike_count: "dislike_count + 100", //todo 根据用户获取权重
-      is_reviewing: setReviewing,
-    })
-    .where([`id=${v(postId)}`, `EXISTS (SELECT 1 FROM tmp)`]);
-
-  const sql = `WITH tmp AS (${insertRecord})\n${updateCount.toString()}`;
-
-  const [cancel, insert] = await dbPool.multipleQuery([cancelLikeSql, sql].join(";\n"));
-
-  return insert.rowCount;
-}
-
 export async function setCommentLike(commentId: number, userId: number) {
-  const insertRecord = post_comment_like
-    .insert("weight, comment_id, user_id", () => {
-      return post
-        .select([`${v(DEFAULT_LIKE_WEIGHT)} as weight`, "id AS comment_id", `${v(userId)} AS user_id`])
-        .where([`id=${v(commentId)}`, `(NOT is_delete)`, `(user_id=${v(userId)} OR NOT is_hide)`])
-        .toString();
-    })
-    .onConflict(["comment_id", "user_id"])
-    .doNotThing()
-    .returning("1");
+  const sql = `
+    WITH insert AS(
+    ${post_comment_like
+      .insert("weight, comment_id, user_id", () => {
+        return post_comment
+          .select([`${v(DEFAULT_LIKE_WEIGHT)} as weight`, "id AS comment_id", `${v(userId)} AS user_id`])
+          .where([`id=${v(commentId)}`, `(NOT is_delete)`])
+          .toString();
+      })
+      .onConflict(["comment_id", "user_id"])
+      .doNotThing()
+      .returning("comment_id")}
+    ), update_comment_stat AS(
+      UPDATE ${post_comment.name} SET
+        like_count=like_count + 1
+      FROM insert
+      WHERE insert.comment_id =  ${post_comment.name}.id
+      RETURNING post_id
+    )
+    SELECT count(*)::INT FROM insert
+  `;
+  const { count } = await dbPool.queryFirstRow<{ count: number }>(sql);
 
-  // 成功插入更新计数
-  const updateCount = post_comment
-    .update({ like_count: "like_count + 1" })
-    .where([`id=${v(commentId)}`, `EXISTS (SELECT 1 FROM tmp)`]);
+  return count;
+}
 
-  const count = await dbPool.queryCount(`WITH tmp AS (${insertRecord})\n${updateCount.toString()}`);
+export async function cancelCommentLike(commentId: number, userId: number): Promise<number> {
+  const sql = `
+    WITH updated AS (
+      ${post_comment_like
+        .delete({
+          where: [`comment_id=${v(commentId)}`, `user_id=${v(userId)}`],
+        })
+        .returning(["comment_id"])}
+    ), update_comment_stat AS(
+      UPDATE ${post_comment.name} SET
+        like_count=like_count - 1
+      FROM updated
+      WHERE updated.comment_id =  ${post_comment.name}.id
+      RETURNING post_id
+    )
+    SELECT count(*)::INT FROM updated
+  `;
+  const { count } = await dbPool.queryFirstRow<{ count: number }>(sql);
 
   return count;
 }

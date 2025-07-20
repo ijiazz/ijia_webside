@@ -6,50 +6,57 @@ import v from "@ijia/data/yoursql";
 const { expect, beforeEach, beforeAll, describe } = test;
 
 let Alice!: AccountInfo;
+let users: { user_name: string; sec_uid: string }[];
 beforeEach(async ({ page }) => {
   Alice = await initAlice();
   const aliceToken = await loginGetToken(Alice.email, Alice.password);
 
-  await pla_user.delete({ where: "pla_uid in ('alice','bob','david')" }).queryCount();
-  await pla_user
-    .insert([
-      {
-        pla_uid: "alice",
-        platform: Platform.douYin,
-        user_name: "Alice",
-        extra: { sec_uid: "sec_alice" },
-        signature: `IJIA学号：<${Alice.id}>`,
-      },
-      {
-        pla_uid: "bob",
-        platform: Platform.douYin,
-        user_name: "Bob",
-        extra: { sec_uid: "sec_bob" },
-        signature: `IJIA学号：<${Alice.id}>`,
-      },
-      { pla_uid: "david", platform: Platform.douYin, user_name: "Alice", extra: { sec_uid: "sec_david" } },
-    ])
-    .queryCount();
-  await dclass.delete({ where: "parent_class_id=" + v(PUBLIC_CLASS_ROOT_ID) }).queryCount();
-  await dclass
-    .insert([
-      { class_name: "e2e-8", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-      { class_name: "e2e-1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-    ])
-    .query();
+  const res = await pla_user
+    .insert(
+      [
+        {
+          pla_uid: "alice",
+          platform: Platform.douYin,
+          user_name: "Alice",
+          extra: { sec_uid: "sec_alice" },
+          signature: `IJIA学号：<${Alice.id}>`,
+        },
+        {
+          pla_uid: "bob",
+          platform: Platform.douYin,
+          user_name: "Bob",
+          extra: { sec_uid: "sec_bob" },
+          signature: `IJIA学号：<${Alice.id}>`,
+        },
+      ].map((item) => {
+        const uuid = crypto.randomUUID().replaceAll("-", "");
+        return {
+          ...item,
+          pla_uid: item.pla_uid + ":" + uuid,
+          extra: { ...item.extra, sec_uid: item.extra.sec_uid + ":" + uuid },
+        };
+      }),
+    )
+    .returning(["pla_uid", "platform", "user_name", "extra"])
+    .queryRows();
+
+  users = res.map((u) => ({ user_name: u.user_name, sec_uid: u.extra.sec_uid }));
+
   // 账号绑定
 
   await page.goto(getAppUrlFromRoute("/profile/center", aliceToken));
 });
 test("账号绑定与解除关联", async function ({ page, browser }) {
-  await addBind(page, "sec_bob");
-  await expect(page.locator(".student-card-body").first()).toHaveText(/Bob/);
+  const bob = users.find((u) => u.user_name === "Bob")!;
+  const alice = users.find((u) => u.user_name === "Alice")!;
+  await addBind(page, bob.sec_uid);
+  await expect(page.locator(".student-card-body .student-card-name")).toHaveText("姓名：Bob");
 
-  await addBind(page, "sec_alice");
+  await addBind(page, alice.sec_uid);
 
   await page.locator(".ant-avatar-group").getByText("Alice").hover();
   await page.getByRole("button", { name: "同步用户信息" }).click();
-  await expect(page.locator(".student-card-body").first()).toHaveText(/Alice/);
+  await expect(page.locator(".student-card-body .student-card-name")).toHaveText("姓名：Alice");
 
   await page.getByRole("button", { name: "解除关联" }).click();
   await page.getByRole("button", { name: "确 定" }).click();
@@ -75,7 +82,15 @@ test("账号绑定与解除关联", async function ({ page, browser }) {
 });
 
 test("修改基础配置", async function ({ page, browser }) {
-  await addBind(page, "sec_bob");
+  await dclass.delete({ where: "parent_class_id=" + v(PUBLIC_CLASS_ROOT_ID) }).queryCount();
+  await dclass
+    .insert([
+      { class_name: "e2e-8", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+      { class_name: "e2e-1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+    ])
+    .query();
+  const bob = users.find((u) => u.user_name === "Bob")!;
+  await addBind(page, bob.sec_uid);
   // 修改基础配置
   await page.locator(".ant-select-selection-search").click();
   await page

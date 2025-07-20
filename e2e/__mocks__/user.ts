@@ -1,5 +1,6 @@
-import { DbUserCreate, user } from "@ijia/data/db";
+import { user } from "@ijia/data/db";
 import { v, dbPool } from "@ijia/data/yoursql";
+import { createUser } from "@ijia/data/query";
 import { api } from "@/__mocks__/fetch.ts";
 import { LoginType } from "@/api.ts";
 export const E2E_PASSWORD = {
@@ -8,51 +9,40 @@ export const E2E_PASSWORD = {
   salt: "3a150d2378a64a49b7ca8d7e80bb51ab",
   raw: "123",
 };
+
+async function getNextUserId() {
+  const sql = `SELECT nextval(pg_get_serial_sequence(${v(user.name)}, 'id'))::INT AS id`;
+  const { id: id } = await dbPool.queryFirstRow<{ id: number }>(sql);
+  return id;
+}
+
 export type AccountInfo = {
   id: number;
   email: string;
   password: string;
 };
-export async function createOverwriteUser(
-  uid: number,
-  email: string,
-  option: { name?: string } = {},
-): Promise<AccountInfo> {
-  const userData: DbUserCreate = {
-    //@ts-ignore
-    id: uid,
-    email: email,
-    //123
+async function createNewUser(name: string): Promise<AccountInfo> {
+  const id = await getNextUserId();
+  const email = `${name}-${id}@ijiazz.cn`;
+  const res = await createUser(email, {
+    id,
+    nickname: name,
     password: E2E_PASSWORD.saved,
-    pwd_salt: E2E_PASSWORD.salt,
-    nickname: option.name,
-  };
-  await using q = dbPool.begin();
-
-  const s1 = user
-    .insert([userData])
-    .onConflict(["id"])
-    .doUpdate({
-      password: v(userData.password),
-      email: v(userData.email),
-      pwd_salt: v(userData.pwd_salt),
-    });
-  await q.queryCount(user.delete({ where: "email=" + v(userData.email) }));
-  await q.queryCount(s1);
-  await q.commit();
+    salt: E2E_PASSWORD.salt,
+  }).queryFirstRow();
 
   return {
-    id: 100,
-    email: userData.email,
+    id: res.user_id,
+    email: email,
     password: E2E_PASSWORD.raw,
   };
 }
 
 export function initAlice() {
-  return createOverwriteUser(100, "alice@ijiazz.cn", { name: "Alice" });
+  return createNewUser("Alice");
 }
 export function initBob() {
-  return createOverwriteUser(101, "bob@ijiazz.cn", { name: "Bob" });
+  return createNewUser("Bob");
 }
 
 export async function loginGetToken(email: string, pwd: string) {

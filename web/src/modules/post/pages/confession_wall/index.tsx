@@ -1,5 +1,5 @@
 import { PostGroupResponse, PostItemDto, UpdatePostParam } from "@/api.ts";
-import { List, MenuProps, Modal } from "antd";
+import { List, MenuProps, Modal, Input, Select } from "antd";
 import styled from "@emotion/styled";
 import { useAntdStatic } from "@/global-provider.tsx";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -7,7 +7,7 @@ import { useLocation, useNavigate, useRouteLoaderData, useSearchParams } from "r
 import { DeleteOutlined, EditOutlined, SettingOutlined, WarningOutlined } from "@ant-design/icons";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
 import { api } from "@/common/http.ts";
-import { PostQueryFilterContext, PostQueryFilter } from "../../layout/WallLayout.tsx";
+import { PostQueryFilterContext } from "../../layout/WallLayout.tsx";
 import { useLayoutDirection, LayoutDirection } from "@/global-provider.tsx";
 import { getUserInfoFromToken } from "@/common/user.ts";
 import { ROUTES } from "@/app.ts";
@@ -18,6 +18,7 @@ import { ImageFitCover } from "@/lib/components/ImgFitCover.tsx";
 import { useItemData } from "./useItemData.ts";
 import { WallPostCard } from "./PostCard.tsx";
 import { CommentDrawer, useCommentDrawer } from "./comment.tsx";
+import { ReportModal } from "../../components/ReportModal.tsx";
 
 export function PostListPage() {
   const data = useRouteLoaderData<PostGroupResponse | undefined>("/wall");
@@ -42,7 +43,7 @@ export function PostListPage() {
   return (
     <>
       <PostList groupOptions={option} onOpenComment={drawer.onOpenComment} />
-      <CommentDrawer postId={drawer.commentId} onClose={drawer.closeCommentDrawer} />
+      <CommentDrawer postId={drawer.commentId} open={drawer.open} onClose={drawer.closeCommentDrawer} />
     </>
   );
 }
@@ -52,12 +53,12 @@ type PostGroupOption = {
   value: number;
 };
 
-type PostLilstProps = {
+type PostListProps = {
   groupOptions?: PostGroupOption[];
   onOpenComment?: (postId: number) => void;
 };
 
-function PostList(props: PostLilstProps) {
+function PostList(props: PostListProps) {
   const { groupOptions, onOpenComment } = props;
   const filter = useContext(PostQueryFilterContext);
   const isSelf = filter.self;
@@ -114,6 +115,8 @@ function PostList(props: PostLilstProps) {
     itemsCtrl.setItems([]);
   }, [filter]);
 
+  const [reportOpen, setReportOpen] = useState<PostItemDto | undefined>();
+
   const isVertical = useLayoutDirection() === LayoutDirection.Vertical;
   return (
     <HomePageCSS>
@@ -141,8 +144,16 @@ function PostList(props: PostLilstProps) {
             dataSource={items}
             itemLayout="vertical"
             renderItem={(item, index) => {
-              const moreMenus: MenuProps["items"] = [{ icon: <WarningOutlined />, label: "举报", key: "report" }];
+              const moreMenus: MenuProps["items"] = [];
               if (item.curr_user) {
+                moreMenus.push({
+                  icon: <WarningOutlined />,
+                  label: item.curr_user.is_report ? "已举报" : "举报",
+                  key: "report",
+                  disabled: item.curr_user.is_report,
+                  onClick: () => setReportOpen(item),
+                });
+
                 if (item.curr_user.can_update) {
                   moreMenus.unshift(
                     { icon: <EditOutlined />, label: "编辑", key: "edit", onClick: () => onEditPost(item, true) },
@@ -170,7 +181,26 @@ function PostList(props: PostLilstProps) {
           />
         </PostListCSS>
       </InfiniteScrollLoad>
-
+      <ReportModal
+        open={!!reportOpen}
+        onClose={() => setReportOpen(undefined)}
+        onSubmit={async (reason) => {
+          if (!reportOpen) return;
+          const { success } = await api["/post/report/:postId"].post({
+            body: { reason },
+            params: { postId: reportOpen.asset_id },
+          });
+          message.success("举报成功");
+          setReportOpen(undefined);
+          if (success) {
+            itemsCtrl.replaceItem(reportOpen.asset_id, (old) => {
+              if (!old.curr_user) return old;
+              old.curr_user.is_report = true;
+              return old;
+            });
+          }
+        }}
+      />
       <Modal
         title={editItem ? "编辑" : "发布"}
         open={modalOpen}
@@ -188,7 +218,6 @@ function PostList(props: PostLilstProps) {
           initValues={editItem ? editItem : { group_id: filter.group?.group_id }}
           onCreateOk={(id) => {
             setModalOpen(false);
-            debugger;
             if (isSelf) {
               itemsCtrl.loadNewest(id);
             } else {

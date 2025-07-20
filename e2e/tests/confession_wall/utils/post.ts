@@ -1,10 +1,12 @@
 import { api, JWT_TOKEN_KEY } from "@/__mocks__/fetch.ts";
 import { CreatePostParam } from "@api/api.ts";
-import { post, post_group } from "@ijia/data/db";
+import { post_group } from "@ijia/data/db";
 import { getAppUrlFromRoute } from "@/fixtures/test.ts";
+import { dbPool } from "@ijia/data/yoursql";
 
 export async function clearPosts() {
-  await post.delete().query();
+  const res = await dbPool.query("DELETE FROM post");
+  return res;
 }
 export async function clearPostGroup() {
   await post_group.delete().query();

@@ -4,7 +4,7 @@ import { applyController } from "@asla/hono-decorator";
 import { test, Context } from "../../fixtures/hono.ts";
 import { beforeEach, describe, expect } from "vitest";
 import { getCommentDbRow, getPostCommentTotal, prepareCommentPost } from "./utils/prepare_comment.ts";
-import { prepareUser } from "../../fixtures/user.ts";
+import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { DbPostComment } from "@ijia/data/db";
 import { recursiveDeleteComment } from "@/modules/post/sql/post_comment.ts";
 
@@ -13,7 +13,7 @@ beforeEach<Context>(async ({ hono }) => {
   applyController(hono, commentController);
 });
 
-test("删除叶子评论，作品评论数应减 1", async function ({ api, ijiaDbPool }) {
+test("删除叶子评论，作品评论数应减 1", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token });
   const reply = await action.createComment("2", { token: alice.token, replyCommentId: root.id });
@@ -30,7 +30,10 @@ test("删除叶子评论，作品评论数应减 1", async function ({ api, ijia
   await expect(getPostCommentTotal(postInfo.id), "作品评论数减1").resolves.toBe(0);
 });
 
-test("删除根评论，作品评论应减去跟评论总回复数，再获取评论列表应不包含根跟评论", async function ({ api, ijiaDbPool }) {
+test("删除根评论，作品评论应减去跟评论总回复数，再获取评论列表应不包含根跟评论", async function ({
+  api,
+  publicDbPool,
+}) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
 
   const r0 = await action.createComment("0", { token: alice.token });
@@ -48,7 +51,7 @@ test("删除根评论，作品评论应减去跟评论总回复数，再获取�
   expect(list).toEqual(["0"]);
 });
 
-test("删除一级评论，根评论回复数应减1，作品评论数应减 1", async function ({ api, ijiaDbPool }) {
+test("删除一级评论，根评论回复数应减1，作品评论数应减 1", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
 
   await action.createComment("1", { token: alice.token });
@@ -72,7 +75,7 @@ test("删除一级评论，根评论回复数应减1，作品评论数应减 1",
   } satisfies Partial<DbPostComment>);
 });
 
-test("删除二级评论，父级评论和根评论计数相应减少", async function ({ api, ijiaDbPool }) {
+test("删除二级评论，父级评论和根评论计数相应减少", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
 
   await action.createComment("2", { token: alice.token });
@@ -91,7 +94,7 @@ test("删除二级评论，父级评论和根评论计数相应减少", async fu
   } satisfies Partial<DbPostComment>);
 });
 
-test("先删除父级评论，再删除子评论", async function ({ api, ijiaDbPool }) {
+test("先删除父级评论，再删除子评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
 
   await action.createComment("2", { token: alice.token });
@@ -117,10 +120,10 @@ test("先删除父级评论，再删除子评论", async function ({ api, ijiaDb
   } satisfies Partial<DbPostComment>);
 });
 
-test("不能删除别人的评论", async function ({ api, ijiaDbPool }) {
+test("不能删除别人的评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
-  const bob = await prepareUser("bob");
-  const xiaoming = await prepareUser("xiaoming");
+  const bob = await prepareUniqueUser("bob");
+  const xiaoming = await prepareUniqueUser("xiaoming");
 
   const bobComment = await action.createComment("1", { token: bob.token });
   const xiaomingComment = await action.createComment("2", { token: xiaoming.token });
@@ -134,16 +137,16 @@ test("不能删除别人的评论", async function ({ api, ijiaDbPool }) {
 
   await expect(getPostCommentTotal(postInfo.id)).resolves.toBe(1);
 });
-test("帖子作者可以删除别人的评论", async function ({ api, ijiaDbPool }) {
+test("帖子作者可以删除别人的评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
-  const bob = await prepareUser("bob");
+  const bob = await prepareUniqueUser("bob");
   const bobComment = await action.createComment("1", { token: bob.token });
   await action.deleteComment(bobComment.id, { token: alice.token });
   await expect(getPostCommentTotal(postInfo.id)).resolves.toBe(0);
 });
 
 describe("递归删除", function () {
-  test("删除根评论，根评论的所有子评论都会被删除", async function ({ api, ijiaDbPool }) {
+  test("删除根评论，根评论的所有子评论都会被删除", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     const root = await action.createComment("1", { token: alice.token }); //delete
     const reply = await action.createComment("1-1", { token: alice.token, replyCommentId: root.id });
@@ -158,7 +161,7 @@ describe("递归删除", function () {
       is_delete: true,
     } satisfies Partial<DbPostComment>);
   });
-  test("删除一级评论后，一级评论的子评论也会被删除", async function ({ api, ijiaDbPool }) {
+  test("删除一级评论后，一级评论的子评论也会被删除", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     const root = await action.createComment("1", { token: alice.token });
     const reply = await action.createComment("1-1", { token: alice.token, replyCommentId: root.id }); //delete
@@ -174,7 +177,7 @@ describe("递归删除", function () {
       is_delete: true,
     } satisfies Partial<DbPostComment>);
   });
-  test("删除一级评论，帖子评论数、父级评论回复数、跟评论回复数相应减少", async function ({ api, ijiaDbPool }) {
+  test("删除一级评论，帖子评论数、父级评论回复数、跟评论回复数相应减少", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
 
     await action.createComment("0", { token: alice.token });
@@ -199,7 +202,7 @@ describe("递归删除", function () {
     } satisfies Partial<DbPostComment>);
     await expect(getPostCommentTotal(postInfo.id), "作品评论数更新为 2").resolves.toBe(3);
   });
-  test("先删除部分子评论，再删除一级评论，再删除根评论", async function ({ api, ijiaDbPool }) {
+  test("先删除部分子评论，再删除一级评论，再删除根评论", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
 
     const r0 = await action.createComment("0", { token: alice.token });

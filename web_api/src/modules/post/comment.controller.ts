@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Put, ToArguments, Use } from "@asla/hono-decorator";
+import { Controller, Delete, Get, Post, Put, ToArguments, Use } from "@asla/hono-decorator";
 import { autoBody } from "@/global/pipe.ts";
 import { identity } from "@/global/auth.ts";
 import { CreatePostCommentResponse, CreatePostCommentParam, GetPostCommentListParam } from "./comment.dto.ts";
@@ -8,6 +8,8 @@ import { ExpectType, optional } from "@asla/wokao";
 import { createComment, getCommentList, getUserCanCreateCommentLimit, deleteComment } from "./sql/post_comment.ts";
 import { HttpError } from "@/global/errors.ts";
 import { ENV } from "@/config.ts";
+import { cancelCommentLike, setCommentLike } from "./sql/post_like.ts";
+import { reportComment } from "./sql/report.ts";
 
 @Use(identity)
 @autoBody
@@ -82,6 +84,43 @@ class CommentController {
   @Delete("/post/comment/entity/:commentId")
   async deleteComment(commentId: number, userId: number) {
     await deleteComment(commentId, userId);
+  }
+
+  @ToArguments(async (ctx: HonoContext) => {
+    const commentId = checkValue(ctx.req.param("commentId"), queryInt);
+    const isCancel = checkValue(ctx.req.query("isCancel"), (value) => (value === "true" ? true : false));
+    const userId = await ctx.get("userInfo").getUserId();
+    return [commentId, userId, isCancel];
+  })
+  @Post("/post/comment/like/:commentId")
+  async setCommentLike(
+    commentId: number,
+    userId: number,
+    isCancel?: boolean,
+  ): Promise<{
+    success: boolean;
+  }> {
+    let number: number;
+    if (isCancel) {
+      number = await cancelCommentLike(commentId, userId);
+    } else number = await setCommentLike(commentId, userId);
+    return { success: number === 1 };
+  }
+  @ToArguments(async (ctx: HonoContext) => {
+    const commentId = checkValue(ctx.req.param("commentId"), queryInt);
+    const userId = await ctx.get("userInfo").getUserId();
+    return [commentId, userId];
+  })
+  @Post("/post/comment/report/:commentId")
+  async reportComment(
+    commentId: number,
+    userId: number,
+    reason?: string,
+  ): Promise<{
+    success: boolean;
+  }> {
+    const number = await reportComment(commentId, userId, reason);
+    return { success: number === 1 };
   }
 }
 

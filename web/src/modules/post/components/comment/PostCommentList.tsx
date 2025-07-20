@@ -1,25 +1,27 @@
 import { useAsync } from "@/hooks/async.ts";
-import { Avatar, Button, Divider, Dropdown, Input, MenuProps, Tag, Typography } from "antd";
-import React, { useEffect, useMemo, useState } from "react";
-import { GetPostCommentListParam, PostCommentDto, PostCommentResponse } from "@/api.ts";
-import { CommentTree, useCommentData, CommentNode, findNodeRoot } from "./CommentItem.tsx";
+import { Avatar, Button, Divider, Input, Typography } from "antd";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { PostCommentResponse } from "@/api.ts";
+import { CommentTree, useCommentData, findNodeRoot } from "./CommentItem.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
-import { CaretRightOutlined, CloseOutlined, DeleteOutlined, MoreOutlined, UserOutlined } from "@ant-design/icons";
+import { CloseOutlined, UserOutlined } from "@ant-design/icons";
 import { api } from "@/common/http.ts";
 import { useAntdStatic } from "@/global-provider.tsx";
-import { dateToString } from "@/common/date.ts";
-import { LikeButton } from "../LikeButton.tsx";
-import styled from "@emotion/styled";
+import { ReportModal } from "../ReportModal.tsx";
+import {
+  commentDtoToCommentNode,
+  createComment,
+  getPostData,
+  loadCommentItem,
+  loadCommentList,
+  loadCommentReplyList,
+  PostCommentNode,
+  setCommentLike,
+} from "./api.ts";
+import { CommentHeader } from "./CommentHeader.tsx";
+import { CommentFooter } from "./CommentFooter.tsx";
 
 const { Text } = Typography;
-
-export type PostCommentNode = Omit<PostCommentDto, "children" | "create_time"> &
-  CommentNode & {
-    create_time_str: string;
-    loading?: boolean; // 是否正在加载子评论
-    hasMore?: boolean;
-    childrenCursor?: string | null;
-  };
 
 export type CreateData = {
   text: string;
@@ -33,20 +35,10 @@ export function CommentList(props: { postId?: number }) {
     pushList,
     reset: resetData,
     forceRender,
+    replaceItem,
   } = useCommentData<PostCommentNode>();
   const { message, modal } = useAntdStatic();
-  const {
-    loading: postInfoLoading,
-    data: postInfo,
-    run: loadPostInfo,
-  } = useAsync(function getPostData(postId: number) {
-    return api["/post/list"].get({ query: { post_id: postId } }).then((res) => {
-      const item = res.items[0];
-      if (item.asset_id !== postId) return;
-
-      return item;
-    });
-  });
+  const { loading: postInfoLoading, data: postInfo, run: loadPostInfo } = useAsync(getPostData);
 
   useEffect(() => {
     if (postId !== undefined) loadPostInfo(postId);
@@ -69,11 +61,7 @@ export function CommentList(props: { postId?: number }) {
     };
   }, [postInfo, postInfoLoading]);
 
-  const {
-    loading,
-    run: loadRootComment,
-    data,
-  } = useAsync(async (nextCursor?: string | null) => {
+  const loadRoot = useAsync(async (nextCursor?: string | null) => {
     if (typeof postId !== "number") return undefined;
 
     const res = await loadCommentList(postId, { cursor: nextCursor ?? undefined, number: 10 });
@@ -82,7 +70,7 @@ export function CommentList(props: { postId?: number }) {
     return res;
   });
 
-  const { run: loadReply } = useAsync(async function (parent: PostCommentNode) {
+  const loadReply = useAsync(async function (parent: PostCommentNode) {
     parent.loading = true;
     forceRender();
     let nodeList: PostCommentNode[];
@@ -130,6 +118,8 @@ export function CommentList(props: { postId?: number }) {
     }
   }, {});
 
+  const { reloadItem, onLike } = useReload({ replaceItem });
+
   const onCreateComment = () => {
     if (typeof postId !== "number") return;
 
@@ -152,11 +142,13 @@ export function CommentList(props: { postId?: number }) {
 
   useEffect(() => {
     resetData();
-    loadRootComment();
+    loadRoot.run();
   }, [postId]);
 
   const [text, setText] = useState<string | undefined>();
   const [replyingComment, setReplyingComment] = useState<PostCommentNode | null>(null);
+
+  const [reportOpen, setReportOpen] = useState<PostCommentNode | null>(null);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
@@ -173,7 +165,13 @@ export function CommentList(props: { postId?: number }) {
           }}
           headerRender={(node) => (
             <div e2e-comment-header-id={node.comment_id} className="e2e-post-comment-header">
-              <CommentHeader node={node} onDelete={() => deleteComment(node)} />
+              <CommentHeader
+                node={node}
+                onDelete={() => deleteComment(node)}
+                onReport={() => {
+                  setReportOpen(node);
+                }}
+              />
             </div>
           )}
           contentRender={(data, children) => {
@@ -184,7 +182,7 @@ export function CommentList(props: { postId?: number }) {
                   <CommentFooter
                     node={data}
                     onLike={() => {
-                      //TODO
+                      onLike(data, !!data.curr_user?.is_like);
                     }}
                     onReply={() => {
                       setReplyingComment(data);
@@ -193,7 +191,7 @@ export function CommentList(props: { postId?: number }) {
                 </div>
                 {children}
                 {data.hasMore && (
-                  <Button type="link" loading={data.loading} size="small" onClick={() => loadReply(data)}>
+                  <Button type="link" loading={data.loading} size="small" onClick={() => loadReply.run(data)}>
                     {data.children?.size ? "佳载更多" : `展开${data.is_root_reply_count}条回复`}
                   </Button>
                 )}
@@ -203,8 +201,8 @@ export function CommentList(props: { postId?: number }) {
           data={commentData}
         />
         <div style={{ textAlign: "center" }}>
-          {data?.has_more ? (
-            <Button type="link" onClick={() => loadRootComment(data?.next_cursor)} loading={loading}>
+          {loadRoot.data?.has_more ? (
+            <Button type="link" onClick={() => loadRoot.run(loadRoot.data?.next_cursor)} loading={loadRoot.loading}>
               佳载更多
             </Button>
           ) : (
@@ -237,149 +235,111 @@ export function CommentList(props: { postId?: number }) {
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function CommentFooter(props: { node: PostCommentNode; onLike?: (isCancel: boolean) => void; onReply?: () => void }) {
-  const { node, onLike, onReply } = props;
-  const currUser = node.curr_user;
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}
-    >
-      <div>
-        <Text style={{ fontSize: 12 }} type="secondary">
-          {node.create_time_str}
-        </Text>
-        <Button
-          size="small"
-          className="e2e-post-item-comment-open"
-          style={{ fontSize: 12 }}
-          type="text"
-          onClick={onReply}
-          disabled={!currUser}
-        >
-          回复
-        </Button>
-      </div>
-      <LikeButton
-        size="small"
-        className="e2e-post-item-like-btn"
-        disabled={!currUser}
-        isLike={currUser?.is_like}
-        onTrigger={onLike}
-        style={{
-          fontSize: 12,
-          display: "none", //TODO 评论点赞
+      <ReportModal
+        title={`举报：${reportOpen?.content_text?.slice(0, 20) ?? ""}`}
+        open={!!reportOpen}
+        onClose={() => setReportOpen(null)}
+        onSubmit={async (reason) => {
+          if (!reportOpen) return;
+          const { success } = await api["/post/comment/report/:commentId"].post({
+            body: { reason },
+            params: { commentId: reportOpen.comment_id },
+          });
+          message.success("举报成功");
+          setReportOpen(null);
+          if (success) {
+            replaceItem(reportOpen, (old) => {
+              if (!old.curr_user) return old;
+              old.curr_user.is_report = true;
+              return old;
+            });
+          }
         }}
-      >
-        {node.like_count}
-      </LikeButton>
+      />
     </div>
   );
 }
-type PostHeaderProps = {
-  node: PostCommentNode;
-  className?: string;
-  onDelete?: () => void;
-};
-function CommentHeader(props: PostHeaderProps) {
-  const { node, onDelete, className } = props;
 
-  const menus: MenuProps["items"] = [];
-  if (node.curr_user?.can_update) {
-    menus.unshift({
-      label: "删除",
-      icon: <DeleteOutlined />,
-      key: "delete",
-      onClick: onDelete,
+function useReload(config: {
+  replaceItem: (
+    find: PostCommentNode,
+    replace?: (old: PostCommentNode, find: PostCommentNode) => PostCommentNode,
+  ) => void;
+}) {
+  const { replaceItem } = config;
+  const reloadingRef = useRef<Record<number, Promise<unknown>>>({} as any);
+
+  const { message } = useAntdStatic();
+
+  const reloadItem = (node: PostCommentNode) => {
+    const id = node.comment_id;
+    const reloadIng = reloadingRef.current;
+    const promise = loadCommentItem(node)
+      .then((res) => {
+        if (reloadIng[id] === undefined) return; // 已被后调用来的更新
+
+        const item = res[0];
+        if (!item) return;
+
+        ref.current.replaceItem(item); // 直接替换
+      })
+      .finally(() => {
+        if (reloadIng[id] === promise) delete reloadIng[id];
+      });
+    reloadIng[id] = promise;
+    return promise;
+  };
+
+  const refObject = { reloadItem, replaceItem };
+  const ref = useRef(refObject);
+  ref.current = refObject;
+
+  const onLike = (node: PostCommentNode, isCancel: boolean) => {
+    const id = node.comment_id;
+    replaceItem(node, (old) => {
+      const c = old.curr_user;
+      if (c) {
+        c.is_like = !isCancel;
+        if (isCancel) old.like_count--;
+        else old.like_count++;
+      }
+      return old;
     });
-  }
-  return (
-    <PostCommentHeaderCSS className={className}>
-      <div>
-        <PostCommentHeaderTextCSS type="secondary">
-          <span>{node.user.user_name}</span>
-          {node.reply_to && (
-            <>
-              <CaretRightOutlined />
-              <span>{node.reply_to.user.user_name}</span>
-              {node.reply_to.is_deleted && (
-                <Tag bordered={false} style={{ marginLeft: 4 }}>
-                  已删除
-                </Tag>
-              )}
-            </>
-          )}
-        </PostCommentHeaderTextCSS>
-      </div>
-      <div>
-        {menus.length ? (
-          <Dropdown menu={{ items: menus }}>
-            <Button icon={<MoreOutlined />} type="text" />
-          </Dropdown>
-        ) : undefined}
-      </div>
-    </PostCommentHeaderCSS>
-  );
-}
-const PostCommentHeaderTextCSS = styled(Text)`
-  margin-top: 2px;
-  > span {
-    vertical-align: middle;
-  }
-`;
-const PostCommentHeaderCSS = styled.div`
-  display: flex;
-  justify-content: space-between;
-`;
-
-async function createComment(postId: number, data: { text: string }, replyCommentId?: number | null): Promise<number> {
-  const { id } = await api["/post/content/:postId/comment"].put({
-    params: {
-      postId: +postId,
-    },
-    body: {
-      text: data.text,
-      replyCommentId: typeof replyCommentId === "number" ? replyCommentId : undefined,
-    },
-  });
-
-  return id;
-}
-
-function commentDtoToCommentNode(item: PostCommentDto, parent: PostCommentNode | null): PostCommentNode {
-  const { children, create_time, ...reset } = item;
-
-  const node = reset as PostCommentNode;
-  node.key = node.comment_id;
-  node.create_time_str = dateToString(create_time * 1000, "second");
-
-  node.parent = parent ?? null;
-  if (children) {
-    node.children = new Map<string | number, PostCommentNode>();
-    for (let i = 0; i < children.length; i++) {
-      node.children.set(children[i].comment_id, commentDtoToCommentNode(children[i], node));
+    const reloading = reloadingRef.current;
+    const promise = setCommentLike(id, isCancel);
+    if (!reloading[id]) {
+      reloading[id] = promise;
     }
-  }
-  node.hasMore = !!(node.is_root_reply_count && (!node.children || node.children.size < node.is_root_reply_count));
-  return node;
-}
 
-function loadCommentList(postId: number, query?: GetPostCommentListParam) {
-  return api["/post/content/:postId/comment"].get({
-    params: { postId },
-    query: query,
-  });
-}
-function loadCommentReplyList(commentId: number, query?: GetPostCommentListParam) {
-  return api["/post/comment/entity/:commentId/root_list"].get({
-    params: { commentId: commentId },
-    query: query,
-  });
+    promise
+      .catch((error) => {
+        console.error(error);
+        message.error(isCancel ? "取消点赞失败" : "点赞失败");
+        return false;
+      })
+      .then((success: boolean) => {
+        if (reloading[id] === promise) {
+          //这个过程这个帖子没有被请求刷新过
+          delete reloading[id];
+          if (!success) {
+            ref.current.replaceItem(node, (old) => {
+              const c = old.curr_user;
+              if (c) {
+                c.is_like = !c.is_like;
+                if (isCancel) old.like_count++;
+                else old.like_count--;
+              }
+              return old;
+            });
+          }
+        } else {
+          return ref.current.reloadItem(node);
+        }
+      });
+  };
+
+  return {
+    onLike,
+    reloadItem,
+  };
 }

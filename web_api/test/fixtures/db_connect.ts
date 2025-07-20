@@ -1,4 +1,4 @@
-import { test as viTest, afterAll } from "vitest";
+import { test as viTest, afterAll, vi } from "vitest";
 import { DbPool, parserDbUrl, dbPool } from "@ijia/data/yoursql";
 import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
 import process from "node:process";
@@ -27,6 +27,7 @@ afterAll(async function () {
     await clearDropDb(pool, pubDbName);
   }
 });
+
 export const test = viTest.extend<DbContext>({
   async ijiaDbPool({}, use) {
     const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
@@ -38,13 +39,13 @@ export const test = viTest.extend<DbContext>({
   },
   async publicDbPool({}, use) {
     if (!publicDbPool) {
-      publicDbPool = Promise.resolve().then(async () => {
+      publicDbPool = (async () => {
         await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true, extra: true });
         dbPool.connectOption = { ...DB_CONNECT_INFO, database: pubDbName };
         dbPool.open();
         publicDbPool = dbPool;
         return dbPool;
-      });
+      })();
     }
     const pool = await publicDbPool;
     await use(pool);

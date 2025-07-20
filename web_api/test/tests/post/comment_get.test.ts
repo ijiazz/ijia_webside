@@ -6,14 +6,14 @@ import { prepareCommentPost, prepareCommentToDb } from "./utils/prepare_comment.
 import { updatePost, deletePost } from "./utils/prepare_post.ts";
 import { post } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
-import { prepareUser } from "../..//fixtures/user.ts";
+import { prepareUniqueUser } from "../..//fixtures/user.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
   applyController(hono, commentController);
 });
 
-test("分页获取根评论列表", async function ({ api, ijiaDbPool }) {
+test("分页获取根评论列表", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const g1 = await initCommentTree(action.postId, alice.id, { start: 0, count: 5, textPrefix: "root-" });
   const g2 = await initCommentTree(action.postId, alice.id, { start: 5, count: 5, textPrefix: "root-" }); // 分开创建，错开时间
@@ -42,7 +42,7 @@ test("分页获取根评论列表", async function ({ api, ijiaDbPool }) {
   expect(r3.items[0].content_text).toBe("root-8");
   expect(r3.items[1].content_text).toBe("root-9");
 });
-test("获取评论回复的平铺列表", async function ({ api, ijiaDbPool }) {
+test("获取评论回复的平铺列表", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const g1 = await initCommentTree(action.postId, alice.id, { count: 2, textPrefix: "root-" });
   const g1_1 = await initCommentTree(action.postId, alice.id, {
@@ -84,7 +84,7 @@ test("获取评论回复的平铺列表", async function ({ api, ijiaDbPool }) {
   }
 });
 
-test("评论列表不能包含已删除的评论", async function ({ api, ijiaDbPool }) {
+test("评论列表不能包含已删除的评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const g1 = await initCommentTree(action.postId, alice.id, { count: 3, textPrefix: "root-" });
   const children = await initCommentTree(action.postId, alice.id, {
@@ -104,7 +104,7 @@ test("评论列表不能包含已删除的评论", async function ({ api, ijiaDb
   expect(r3.items.map((c) => c.content_text)).toEqual(["1-1"]);
 });
 
-test("能够获取回复已删除的评论", async function ({ api, ijiaDbPool }) {
+test("能够获取回复已删除的评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token }); // 创建一个评论
   const reply = await action.createComment("1-1", {
@@ -126,7 +126,7 @@ test("能够获取回复已删除的评论", async function ({ api, ijiaDbPool }
   } satisfies DeepPartial<PostCommentDto>);
 });
 
-test("获取指定 ID 的评论", async function ({ api, ijiaDbPool }) {
+test("获取指定 ID 的评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const g1 = await initCommentTree(action.postId, alice.id, { start: 0, count: 3, textPrefix: "root-" });
   const reply = await initCommentTree(action.postId, alice.id, {
@@ -142,9 +142,9 @@ test("获取指定 ID 的评论", async function ({ api, ijiaDbPool }) {
   expect(replyList.items).toHaveLength(1);
   expect(replyList.items[0].content_text).toBe("1-1");
 });
-test("帖子作者可以看到所有人的删除按钮，其他人只能看到自己的删除按钮", async function ({ api, ijiaDbPool }) {
+test("帖子作者可以看到所有人的删除按钮，其他人只能看到自己的删除按钮", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
-  const bob = await prepareUser("bob"); // 创建一个用户
+  const bob = await prepareUniqueUser("bob"); // 创建一个用户
 
   await action.createComment("bob-comment", { token: bob.token });
   await action.createComment("alice-comment", { token: alice.token });
@@ -158,7 +158,7 @@ test("帖子作者可以看到所有人的删除按钮，其他人只能看到�
   expect(visitorList.items.map((c) => c.curr_user)).toEqual([null, null]);
 });
 describe("部分帖子状态下不能获取评论", () => {
-  test("不能获取正在审核的作品的评论", async function ({ api, ijiaDbPool }) {
+  test("不能获取正在审核的作品的评论", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
 
@@ -168,7 +168,7 @@ describe("部分帖子状态下不能获取评论", () => {
     await expect(authorGet.items.length).toBe(1);
     await expect(action.getCommentList()).resolves.toMatchObject({ items: [] });
   });
-  test("不能获取审核不通过的作品的评论", async function ({ api, ijiaDbPool }) {
+  test("不能获取审核不通过的作品的评论", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
 
@@ -179,7 +179,7 @@ describe("部分帖子状态下不能获取评论", () => {
     await expect(action.getCommentList()).resolves.toMatchObject({ items: [] });
   });
 
-  test("不能获取已隐藏的作品的评论", async function ({ api, ijiaDbPool }) {
+  test("不能获取已隐藏的作品的评论", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
     await updatePost(api, postInfo.id, { is_hide: true }, alice.token); // 隐藏作品
@@ -188,7 +188,7 @@ describe("部分帖子状态下不能获取评论", () => {
     await expect(authorGet.items.length).toBe(1);
     await expect(action.getCommentList()).resolves.toMatchObject({ items: [] });
   });
-  test("不能获取已删除的作品的评论", async function ({ api, ijiaDbPool }) {
+  test("不能获取已删除的作品的评论", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
     await deletePost(api, postInfo.id, alice.token);

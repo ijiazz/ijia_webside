@@ -2,6 +2,7 @@ import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { AccountInfo, initAlice, initBob, loginGetToken } from "@/__mocks__/user.ts";
 import { clearPosts, createPost, gotoComment, createCommentUseApi } from "../utils/post.ts";
 import { expect, Page } from "@playwright/test";
+import { afterTime } from "evlib";
 const { beforeEach } = test;
 
 let alice: AccountInfo & { token: string };
@@ -134,15 +135,38 @@ test("帖子作者可以删除其他人评论，其他人只能删除自己的�
     createCommentUseApi({ postId, text: "@2@", token: bobToken }),
   ]);
 
-  await page.goto(gotoComment(postId, alice.token));
+  {
+    await page.goto(gotoComment(postId, alice.token));
+    await getCommentMoreBtn(page, aliceComment.id).hover();
+    await expect(
+      page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
+      "Alice 能看到自己的评论的“删除”按钮",
+    ).not.toBeDisabled();
+    await page.mouse.move(0, 0);
 
-  await expect(getCommentMoreBtn(page, aliceComment.id), "Alice 能看到自己的评论的“删除”按钮").toHaveCount(1);
-  await expect(getCommentMoreBtn(page, bobComment.id), "Alice 能看到 Bob 的评论的“删除”按钮").toHaveCount(1);
+    await getCommentMoreBtn(page, bobComment.id).hover();
+    await expect(
+      page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
+      "Alice 能看到 Bob 的评论的“删除”按钮",
+    ).not.toBeDisabled();
+    await page.mouse.move(0, 0);
+  }
+  {
+    await page.goto(gotoComment(postId, bobToken));
+    await getCommentMoreBtn(page, aliceComment.id).hover();
+    await expect(
+      page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
+      "Bob 不能看到 Alice 的评论的“删除”按钮",
+    ).not.toBeVisible();
+    await page.mouse.move(0, 0);
 
-  await page.goto(gotoComment(postId, bobToken));
-
-  await expect(getCommentMoreBtn(page, bobComment.id), "Bob 不能看到 Alice 的评论的“删除”按钮").toHaveCount(1);
-  await expect(getCommentMoreBtn(page, aliceComment.id), "Bob 的评论的“删除”按钮").toHaveCount(0);
+    await getCommentMoreBtn(page, bobComment.id).hover();
+    await expect(
+      page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
+      "Bob 的评论的“删除”按钮",
+    ).not.toBeDisabled();
+    await page.mouse.move(0, 0);
+  }
 });
 
 const commentItemClassName = ".e2e-post-comment-item";
@@ -164,6 +188,7 @@ async function replyComment(page: Page, replyText: string, filterText: string) {
 
   await page.getByRole("textbox").fill(replyText);
   await expect(page.getByRole("button", { name: "发 送" }), "发送按钮应该可用").not.toBeDisabled();
+  await afterTime(200);
   await page.getByRole("button", { name: "发 送" }).click();
 }
 function getCommentMoreBtn(page: Page, commentId: number) {

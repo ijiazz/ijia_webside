@@ -42,6 +42,9 @@ export interface PostApi {
   };
   /** 举报作品 */
   "POST /post/report/:postId": {
+    params?: {
+      postId: number;
+    };
     body?: {
       reason?: string;
     };

@@ -114,6 +114,31 @@ export function useCommentData<T extends CommentNode>() {
     });
   };
   const reset = () => setCommentData(new Map());
+
+  const replaceItem = (find: T, merge?: (old: T, find: T) => T) => {
+    setCommentData((prev) => {
+      const parent = find.parent;
+      let list: Map<string | number, CommentNode>;
+      if (parent) {
+        if (!parent.children) {
+          parent.children = new Map<string | number, T>();
+        }
+        list = parent.children;
+      } else {
+        list = prev;
+      }
+      if (merge) {
+        const old = list.get(find.key) as T | null;
+        if (!old) return prev;
+        const newNode = merge(old, find);
+        list.set(newNode.key, newNode);
+      } else {
+        list.set(find.key, find);
+      }
+
+      return new Map(prev);
+    });
+  };
   return {
     commentData,
     deleteItem,
@@ -121,6 +146,7 @@ export function useCommentData<T extends CommentNode>() {
     pushList,
     reset,
     forceRender,
+    replaceItem,
   };
 }
 export function findNodeRoot<T extends CommentNode>(node: T): T {

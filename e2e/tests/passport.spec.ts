@@ -65,7 +65,7 @@ test("切换账号", async function ({ page }) {
   const token = await loginGetToken(Alice.email, Alice.password);
   await page.goto(getAppUrlFromRoute("/profile/center", token));
 
-  await expect(page.getByText("学号： " + Alice.id.toString())).toBeVisible();
+  await expect(page.locator(".student-card-id")).toHaveText("学号：" + Alice.id.toString());
   await page.locator(".e2e-avatar").hover();
   await page.getByText("退出登录").click();
 

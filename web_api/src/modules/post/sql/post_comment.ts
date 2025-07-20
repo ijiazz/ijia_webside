@@ -123,6 +123,7 @@ export async function getCommentList(
     .innerJoin(post, "p", ["c.post_id=p.id", "NOT p.is_delete"])
     .leftJoin(post_comment, "reply", "c.parent_comment_id=reply.id")
     .select([
+      "c.post_id",
       "c.id as comment_id",
       "c.root_comment_id",
       "c.is_root_reply_count",

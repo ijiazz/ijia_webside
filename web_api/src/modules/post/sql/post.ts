@@ -1,4 +1,4 @@
-import { post, post_group, post_like, TextStructure, user } from "@ijia/data/db";
+import { post, post_group, post_like, TextStructure, user, user_profile } from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
 import { CreatePostParam, GetPostListParam, PostItemDto, PostUserInfo, UpdatePostParam } from "../post.dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
@@ -198,10 +198,12 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
       is_reviewing: typeof group_id === "number", // 选择了分组，则需要审核
     })
     .returning<{ id: number }>(["id"]);
+  const [row] = await dbPool.multipleQueryRows([
+    recordSql,
+    user_profile.update({ post_count: "post_count + 1" }).where(`user_id=${v(userId)}`),
+  ]);
 
-  const row = await recordSql.queryFirstRow();
-
-  return row;
+  return row[0];
 }
 export async function updatePost(postId: number, userId: number, param: UpdatePostParam) {
   const struct = checkTypeCopy(param.content_text_structure, optional(textStructChecker, "nullish"));
@@ -299,13 +301,38 @@ function updatePostOption(optionsField: string, params: Pick<UpdatePostParam, "c
   return expr;
 }
 
+/**
+ * 将帖子标记为删除
+ * 更新作者的帖子总数
+ * 更新作者的总获赞数
+ */
 export async function deletePost(postId: number, userId?: number) {
-  const q = post.update({ is_delete: "true" }).where(() => {
-    const where = [`id=${v(postId)}`, `(NOT is_delete)`];
-    if (userId !== undefined) where.push(`user_id=${v(userId)}`);
-    return where;
-  });
-  return q.queryCount();
+  const sql = `WITH updated AS (
+    ${post
+      .update({ is_delete: "true" })
+      .where(() => {
+        const where = [`id=${v(postId)}`, `(NOT is_delete)`];
+        if (userId !== undefined) where.push(`user_id=${v(userId)}`);
+        return where;
+      })
+      .returning(["id AS post_id", "user_id", "like_count"])
+      .toString()}
+  ), update_user_stat AS (
+      UPDATE ${user_profile.name} SET 
+        post_count = ${user_profile.name}.post_count - stat.count,
+        post_like_get_count = ${user_profile.name}.post_like_get_count - stat.like_total
+      FROM (
+        SELECT user_id, count(*), SUM(like_count) AS like_total
+        FROM updated
+        GROUP BY user_id
+      ) AS stat
+      WHERE ${user_profile.name}.user_id = stat.user_id
+  )
+  SELECT COUNT(*)::INT FROM updated
+  `;
+
+  const { count } = await dbPool.queryFirstRow<{ count: number }>(sql);
+  return count;
 }
 export async function getUserDateCount(userId: number) {
   const { count } = await post

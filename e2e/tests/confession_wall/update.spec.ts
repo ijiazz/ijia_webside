@@ -1,10 +1,9 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { initAlice, initBob, loginGetToken } from "@/__mocks__/user.ts";
 import { clearPosts, createPost } from "./utils/post.ts";
-import { beforeEach } from "node:test";
 import { Page } from "@playwright/test";
 
-const { expect } = test;
+const { expect, beforeEach } = test;
 
 beforeEach(async function () {
   await clearPosts();

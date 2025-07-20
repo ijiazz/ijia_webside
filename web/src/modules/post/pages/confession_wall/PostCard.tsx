@@ -62,6 +62,7 @@ export function WallPostCard(props: PCardProps) {
       footer={
         <PostFooter
           commentCount={item.stat.comment_total}
+          isReported={item.curr_user?.is_report}
           isLike={item.curr_user?.is_like}
           likeCount={item.stat.like_total}
           likeDisabled={!item.curr_user}
@@ -82,6 +83,7 @@ function PostFooter(props: {
   likeCount?: number;
   likeDisabled?: boolean;
   isLike?: boolean;
+  isReported?: boolean;
 
   onOpenComment?: () => void;
   commentCount?: number;
@@ -95,12 +97,15 @@ function PostFooter(props: {
       }}
     >
       <VLink style={{ color: "inherit" }} target="_blank">
-        <Button
-          className="e2e-post-item-detail-open"
-          type="text"
-          icon={<ExportOutlined />}
-          style={{ fontSize: 16, width: "100%" }}
-        ></Button>
+        <Tooltip title="详情页开发中，敬请期待">
+          <Button
+            className="e2e-post-item-detail-open"
+            type="text"
+            icon={<ExportOutlined />}
+            disabled // TODO
+            style={{ fontSize: 16, width: "100%" }}
+          />
+        </Tooltip>
       </VLink>
       <Button
         className="e2e-post-item-comment-open"
@@ -111,15 +116,23 @@ function PostFooter(props: {
       >
         {props.commentCount}
       </Button>
-      <LikeButton
-        className="e2e-post-item-like-btn"
-        disabled={props.likeDisabled}
-        isLike={props.isLike}
-        onTrigger={(isCancel) => props.onPostLike?.(isCancel)}
-        style={{ fontSize: 16, width: "100%" }}
-      >
-        {props.likeCount}
-      </LikeButton>
+      {props.isReported ? (
+        <div style={{ fontSize: 16, width: "100%", textAlign: "center" }}>
+          <Tag color="red" bordered={false}>
+            已举报
+          </Tag>
+        </div>
+      ) : (
+        <LikeButton
+          className="e2e-post-item-like-btn"
+          disabled={props.likeDisabled}
+          isLike={props.isLike}
+          onTrigger={(isCancel) => props.onPostLike?.(isCancel)}
+          style={{ fontSize: 16, width: "100%" }}
+        >
+          {props.likeCount}
+        </LikeButton>
+      )}
     </div>
   );
 }

@@ -88,59 +88,59 @@ const StyledWrapper = styled.button`
       opacity: 0;
     }
   }
-  .points_wrapper .point:nth-child(1) {
+  .points_wrapper .point:nth-of-type(1) {
     left: 10%;
     opacity: 1;
     animation-duration: 2.35s;
     animation-delay: 0.2s;
   }
-  .points_wrapper .point:nth-child(2) {
+  .points_wrapper .point:nth-of-type(2) {
     left: 30%;
     opacity: 0.7;
     animation-duration: 2.5s;
     animation-delay: 0.5s;
   }
-  .points_wrapper .point:nth-child(3) {
+  .points_wrapper .point:nth-of-type(3) {
     left: 25%;
     opacity: 0.8;
     animation-duration: 2.2s;
     animation-delay: 0.1s;
   }
-  .points_wrapper .point:nth-child(4) {
+  .points_wrapper .point:nth-of-type(4) {
     left: 44%;
     opacity: 0.6;
     animation-duration: 2.05s;
   }
-  .points_wrapper .point:nth-child(5) {
+  .points_wrapper .point:nth-of-type(5) {
     left: 50%;
     opacity: 1;
     animation-duration: 1.9s;
   }
-  .points_wrapper .point:nth-child(6) {
+  .points_wrapper .point:nth-of-type(6) {
     left: 75%;
     opacity: 0.5;
     animation-duration: 1.5s;
     animation-delay: 1.5s;
   }
-  .points_wrapper .point:nth-child(7) {
+  .points_wrapper .point:nth-of-type(7) {
     left: 88%;
     opacity: 0.9;
     animation-duration: 2.2s;
     animation-delay: 0.2s;
   }
-  .points_wrapper .point:nth-child(8) {
+  .points_wrapper .point:nth-of-type(8) {
     left: 58%;
     opacity: 0.8;
     animation-duration: 2.25s;
     animation-delay: 0.2s;
   }
-  .points_wrapper .point:nth-child(9) {
+  .points_wrapper .point:nth-of-type(9) {
     left: 98%;
     opacity: 0.6;
     animation-duration: 2.6s;
     animation-delay: 0.1s;
   }
-  .points_wrapper .point:nth-child(10) {
+  .points_wrapper .point:nth-of-type(10) {
     left: 65%;
     opacity: 1;
     animation-duration: 2.5s;

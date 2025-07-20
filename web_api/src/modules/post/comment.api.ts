@@ -40,8 +40,8 @@ export interface PostCommentApi {
     };
   };
   /** 举报帖子评论 */
-  "POST /post/comment/report/:postId": {
-    params: { postId: number | string };
+  "POST /post/comment/report/:commentId": {
+    params: { commentId: number | string };
     body?: {
       reason?: string;
     };

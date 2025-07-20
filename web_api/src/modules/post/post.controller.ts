@@ -3,12 +3,13 @@ import { autoBody } from "@/global/pipe.ts";
 import { identity } from "@/global/auth.ts";
 import { CreatePostParam, GetPostListParam, PostResponse, UpdatePostParam } from "./post.dto.ts";
 import { createPost, deletePost, getPostList, getUserDateCount, updatePost } from "./sql/post.ts";
-import { cancelPostLike, setPostLike, reportPost } from "./sql/post_like.ts";
+import { cancelPostLike, setPostLike } from "./sql/post_like.ts";
 import { checkValue, checkValueAsync } from "@/global/check.ts";
 import { CheckTypeError, getBasicType, integer, optional } from "@asla/wokao";
 import { HonoContext } from "@/hono/type.ts";
 import { HttpError } from "@/global/errors.ts";
 import { appConfig } from "@/config.ts";
+import { reportPost } from "./sql/report.ts";
 
 @Use(identity)
 @autoBody

@@ -3,24 +3,26 @@ import { beforeEach, describe, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 import { postController } from "@/modules/post/post.controller.ts";
 import { commentController } from "@/modules/post/comment.controller.ts";
-import { testGetPost, updatePost, deletePost, preparePost, createPost } from "./utils/prepare_post.ts";
-import { prepareUser } from "../../fixtures/user.ts";
+import { testGetPost, updatePost, deletePost } from "./utils/prepare_post.ts";
+import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { PostComment, getCommentDbRow, prepareCommentPost, getPostCommentTotal } from "./utils/prepare_comment.ts";
 import { PostCommentDto } from "@/modules/post/comment.dto.ts";
 import { DbPostComment, post } from "@ijia/data/db";
+import { DeepPartial } from "./utils/comment.ts";
 import { getUserCanCreateCommentLimit } from "@/modules/post/sql/post_comment.ts";
 import { afterTime } from "evlib";
-import { DeepPartial } from "./utils/comment.ts";
-
+/* 
+  本测试文件使用了公共数据库 publicDbPool
+*/
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
   applyController(hono, commentController);
 });
 
 describe("根评论创建", function () {
-  test("添加一条根评论", async function ({ api, ijiaDbPool }) {
+  test("添加一条根评论", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
-    const bob = await prepareUser("bob");
+    const bob = await prepareUniqueUser("bob");
     await action.createComment("作者自己评论", { token: alice.token });
     await action.createComment("用户评论", { token: bob.token });
     await expect(action.createComment("尝试未登录评论")).responseStatus(401);
@@ -37,7 +39,7 @@ describe("根评论创建", function () {
       user: { user_id: bob.id },
     } satisfies DeepPartial<PostCommentDto>);
   });
-  test("创建根评论，作品评论计数应该加1", async function ({ api, ijiaDbPool }) {
+  test("创建根评论，作品评论计数应该加1", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     {
       const post = await testGetPost(api, postInfo.id);
@@ -53,9 +55,9 @@ describe("根评论创建", function () {
 });
 
 describe("创建回复评论", function () {
-  test("回复根评论", async function ({ api, ijiaDbPool }) {
+  test("回复根评论", async function ({ api, publicDbPool }) {
     const { action, alice } = await prepareCommentPost(api);
-    const bob = await prepareUser("bob");
+    const bob = await prepareUniqueUser("bob");
     const { id: rootId } = await action.createComment("1", { token: alice.token });
 
     await action.createComment("alice", { token: alice.token, replyCommentId: rootId });
@@ -85,7 +87,7 @@ describe("创建回复评论", function () {
     } satisfies DeepPartial<PostCommentDto>);
   });
 
-  test("回复跟评论，作品评论计数应该加1, 根评论计数加1", async function ({ api, ijiaDbPool }) {
+  test("回复跟评论，作品评论计数应该加1, 根评论计数加1", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     const { id: rootId1 } = await action.createComment("1", { token: alice.token });
     const { id: rootId2 } = await action.createComment("2", { token: alice.token });
@@ -123,7 +125,7 @@ describe("创建回复评论", function () {
     } satisfies DeepPartial<DbPostComment>);
   });
 
-  test("回复跟评论下的评论，作品评论计数应该加1，跟评论计数加1", async function ({ api, ijiaDbPool }) {
+  test("回复跟评论下的评论，作品评论计数应该加1，跟评论计数加1", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     const { id: rootId1 } = await action.createComment("1", { token: alice.token });
     const { id: rootId2 } = await action.createComment("2", { token: alice.token });
@@ -170,7 +172,7 @@ describe("创建回复评论", function () {
     }
   });
 
-  test("回复一楼评论", async function ({ api, ijiaDbPool }) {
+  test("回复一楼评论", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
 
     const { id: rootId1 } = await action.createComment("1", { token: alice.token });
@@ -207,14 +209,13 @@ describe("创建回复评论", function () {
     expect(post.stat.comment_total).toBe(7);
   });
 });
-
-test("评论内容不能超过1000个字符", async function ({ api, ijiaDbPool }) {
+test("评论内容不能超过1000个字符", async function ({ api, publicDbPool }) {
   const { action, alice } = await prepareCommentPost(api);
   const longText = "a".repeat(1001);
   await expect(action.createComment(longText, { token: alice.token })).responseStatus(400);
 });
 
-test("每个用户发布评论间隔不能小于2秒", async function ({ api, ijiaDbPool }) {
+test("每个用户发布评论间隔不能小于2秒", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   await expect(getUserCanCreateCommentLimit(alice.id, 0.2)).resolves.toBe(true);
   await action.createComment("1/1", { token: alice.token });
@@ -223,18 +224,19 @@ test("每个用户发布评论间隔不能小于2秒", async function ({ api, ij
   await expect(getUserCanCreateCommentLimit(alice.id, 0.2)).resolves.toBe(true);
 });
 
-test("对不存在作品创建评论", async function ({ api, ijiaDbPool }) {
-  const alice = await prepareUser("alice");
+test("对不存在作品创建评论", async function ({ api, publicDbPool }) {
+  const alice = await prepareUniqueUser("alice");
   const action = new PostComment(api, 999999);
   await expect(action.createComment("1", { token: alice.token })).responseStatus(404);
 });
-test("对不存在的评论回复", async function ({ api, ijiaDbPool }) {
+
+test("对不存在的评论回复", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   await expect(action.createComment("1", { token: alice.token, replyCommentId: 999999 })).responseStatus(404);
   await expect(getPostCommentTotal(postInfo.id)).resolves.toBe(0);
 });
 
-test("审核中的作品不能新增评论和回复评论", async function ({ api, ijiaDbPool }) {
+test("审核中的作品不能新增评论和回复评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token });
   await post.update({ is_reviewing: "true" }).where(`id=${postInfo.id}`).query();
@@ -247,7 +249,7 @@ test("审核中的作品不能新增评论和回复评论", async function ({ ap
   await expect(getPostCommentTotal(postInfo.id), "回复评论没有新增").resolves.toBe(1);
 });
 
-test("审核不通过的作品不能新增评论和回复评论", async function ({ api, ijiaDbPool }) {
+test("审核不通过的作品不能新增评论和回复评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token });
   await post.update({ is_review_pass: "false" }).where(`id=${postInfo.id}`).query();
@@ -259,7 +261,7 @@ test("审核不通过的作品不能新增评论和回复评论", async function
   await expect(action.createComment("2", { token: alice.token, replyCommentId: root.id })).responseStatus(404);
   await expect(getPostCommentTotal(postInfo.id), "回复评论没有新增").resolves.toBe(1);
 });
-test("已删除的作品不能新增评论和回复评论", async function ({ api, ijiaDbPool }) {
+test("已删除的作品不能新增评论和回复评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token });
   await deletePost(api, postInfo.id, alice.token);
@@ -271,7 +273,7 @@ test("已删除的作品不能新增评论和回复评论", async function ({ ap
   await expect(action.createComment("2", { token: alice.token, replyCommentId: root.id })).responseStatus(404);
   await expect(getPostCommentTotal(postInfo.id), "回复评论没有新增").resolves.toBe(1);
 });
-test("已隐藏的作品不能新增评论和回复评论", async function ({ api, ijiaDbPool }) {
+test("已隐藏的作品不能新增评论和回复评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token });
   await updatePost(api, postInfo.id, { is_hide: true }, alice.token);
@@ -284,9 +286,9 @@ test("已隐藏的作品不能新增评论和回复评论", async function ({ ap
   await expect(getPostCommentTotal(postInfo.id), "回复评论没有新增").resolves.toBe(1);
 });
 
-test("已关闭评论的作品只有作者能新增新增评论", async function ({ api, ijiaDbPool }) {
+test("已关闭评论的作品只有作者能新增新增评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: post1Info } = await prepareCommentPost(api);
-  const bob = await prepareUser("bob");
+  const bob = await prepareUniqueUser("bob");
   const root = await action.createComment("1", { token: alice.token });
   await updatePost(api, post1Info.id, { comment_disabled: true }, alice.token);
 
