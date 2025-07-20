@@ -3,14 +3,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export type UseAsync<T, A extends any[]> = {
   run(...args: A): Promise<T>;
   reset(result?: T, error?: any): void;
-  result: UseAsyncResult<T>;
+  loading: boolean;
+  error?: any;
+  data?: T;
 };
 export type UserAsyncOption<T, Args extends any[] = []> = {
   autoRunArgs?: Args;
-  defaultState?: UseAsyncResult<T>;
+  defaultResult?: T;
+  defaultError?: any;
 };
-export type UseAsyncResult<T> = {
-  loading: boolean;
+type UseAsyncResult<T> = {
   error?: any;
   value?: T;
 };
@@ -18,28 +20,31 @@ export function useAsync<T, Args extends any[] = []>(
   fn: (...args: Args) => Promise<T> | T,
   option: UserAsyncOption<T, Args> = {},
 ): UseAsync<T, Args> {
-  const { defaultState = { loading: false }, autoRunArgs } = option;
-  const [result, setResult] = useState<UseAsyncResult<T>>(defaultState);
+  const { defaultError, defaultResult, autoRunArgs } = option;
+  const [result, setResult] = useState<UseAsyncResult<T>>({ value: defaultResult, error: defaultError });
+  const [loading, setLoading] = useState(autoRunArgs ? true : false);
+
   const fnRef = useRef(fn);
   fnRef.current = fn;
   const loadingPromise = useRef<Promise<any>>(undefined);
   const run = useCallback((...args: Args) => {
     const promise = fnRef.current(...args);
     if (promise instanceof Promise) {
-      setResult((res) => ({ ...res, loading: true }));
+      setLoading(true);
       loadingPromise.current = promise;
       promise
         .then(
           (res): UseAsyncResult<T> => {
-            return { value: res, error: undefined, loading: false };
+            return { value: res, error: undefined };
           },
           (error): UseAsyncResult<T> => {
-            return { error, value: undefined, loading: false };
+            return { error, value: undefined };
           },
         )
         .then((result) => {
           const symbol = loadingPromise.current;
           if (symbol === promise || symbol === undefined) {
+            setLoading(false);
             setResult(result);
             loadingPromise.current = undefined;
           }
@@ -48,11 +53,15 @@ export function useAsync<T, Args extends any[] = []>(
       return promise;
     } else {
       loadingPromise.current = undefined;
-      setResult({ value: promise, loading: false });
+      setResult({ value: promise });
+      return Promise.resolve(promise);
     }
-    return Promise.resolve(promise);
   }, []);
-
+  const reset = useCallback((result: T, error: any) => {
+    loadingPromise.current = undefined;
+    setResult({ error, value: result });
+    setLoading(false);
+  }, []);
   useEffect(() => {
     if (autoRunArgs) run.apply(undefined, autoRunArgs);
     return () => {
@@ -60,11 +69,10 @@ export function useAsync<T, Args extends any[] = []>(
     };
   }, []);
   return {
-    reset: (result, error) => {
-      loadingPromise.current = undefined;
-      setResult({ error, loading: false, value: result });
-    },
+    reset,
     run,
-    result,
+    loading: loading,
+    error: result.error,
+    data: result.value,
   };
 }

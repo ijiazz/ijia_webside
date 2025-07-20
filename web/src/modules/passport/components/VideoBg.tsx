@@ -1,4 +1,5 @@
 import React, { PropsWithChildren } from "react";
+import { Outlet } from "react-router";
 
 export function VideoBg(props: PropsWithChildren<{ style?: React.CSSProperties; className?: string }>) {
   return (
@@ -26,7 +27,9 @@ export function VideoBg(props: PropsWithChildren<{ style?: React.CSSProperties; 
           <source src="/main/bg-login.mp4" type="video/mp4" />
         </video>
       </div>
-      <div style={{ position: "relative", height: "100%", overflow: "auto" }}>{props.children}</div>
+      <div style={{ position: "relative", height: "100%", overflow: "auto" }}>
+        <Outlet />
+      </div>
     </div>
   );
 }

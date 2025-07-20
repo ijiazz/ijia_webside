@@ -62,6 +62,7 @@ export function StudentIdCard(props: StudentIdCardInfo & { scale?: number }) {
 }
 
 const StudentIdCardCSS = styled.div`
+  box-sizing: border-box;
   position: relative;
   background-image: url(${school_card_front});
   background-size: cover;
@@ -151,6 +152,7 @@ const StudentIdCardBackCSS = styled.div`
   background-size: cover;
   border-radius: ${borderRadius}px;
   margin: 8px;
+  box-sizing: border-box;
   .student-card-body {
     color: #000;
     height: 100%;

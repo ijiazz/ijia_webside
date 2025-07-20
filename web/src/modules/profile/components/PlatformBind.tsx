@@ -1,8 +1,7 @@
 import { useAsync } from "@/hooks/async.ts";
-import { useHoFetch } from "@/hooks/http.ts";
 import { Avatar, Button, Input, Divider, Popover, Typography, Tag } from "antd";
-import React, { useContext, useState } from "react";
-import { useThemeToken, AndContext } from "@/hooks/antd.ts";
+import React, { useState } from "react";
+import { useAntdStatic, useThemeToken } from "@/global-provider.tsx";
 import styled from "@emotion/styled";
 import { BindPlatformCheckDto, Platform } from "@/api.ts";
 import step1Path from "./PlatformBind/douyin-step-1.webp";
@@ -10,18 +9,23 @@ import step2Path from "./PlatformBind/douyin-step-2.jpg";
 import step3Path from "./PlatformBind/douyin-step-3.webp";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Meta } from "@/lib/components/Meta.tsx";
+import { api } from "@/common/http.ts";
 
 export function PlatformBind(props: { userId?: number; onBindSuccess?(): void }) {
   const { onBindSuccess, userId } = props;
-  const { api } = useHoFetch();
-  const { message } = useContext(AndContext);
+  const { message } = useAntdStatic();
   const theme = useThemeToken();
-  const { result, run, reset } = useAsync(function (platform: Platform, url: string) {
+  const {
+    data: checkResult,
+    loading: checkLoading,
+    run,
+    reset,
+  } = useAsync(function (platform: Platform, url: string) {
     return api["/user/bind_platform/check"].post({
       body: { platformList: [{ platform, userHomeLink: url }] },
     });
   });
-  const { run: onBind, result: bindResult } = useAsync(async function (account: {
+  const { run: onBind, loading: bindLoading } = useAsync(async function (account: {
     platform: Platform;
     pla_uid: string;
   }) {
@@ -32,7 +36,6 @@ export function PlatformBind(props: { userId?: number; onBindSuccess?(): void })
   });
   const [platform, setPlatform] = useState<Platform>(Platform.douYin);
   const [inputText, setInputText] = useState<string>();
-  const checkResult: BindPlatformCheckDto | undefined = result.value;
   return (
     <PlatformBindCSS>
       <div className="tip">
@@ -64,7 +67,7 @@ export function PlatformBind(props: { userId?: number; onBindSuccess?(): void })
               run(platform, url.trim());
             }
           }}
-          loading={result.loading}
+          loading={bindLoading}
         >
           检测
         </Button>
@@ -80,7 +83,7 @@ export function PlatformBind(props: { userId?: number; onBindSuccess?(): void })
         <BindCheckResult
           {...checkResult}
           currentUserId={userId}
-          bindLoading={bindResult.loading}
+          bindLoading={checkLoading}
           onBind={() => {
             onBind({ pla_uid: checkResult.platformUser.pla_uid, platform: platform });
           }}
@@ -150,7 +153,6 @@ const BindCheckResultCSS = styled.div`
 const { Paragraph, Title } = Typography;
 
 function TutorialModal() {
-  //TODO: 绑定教程
   return (
     <TutorialModalCSS>
       <Paragraph>

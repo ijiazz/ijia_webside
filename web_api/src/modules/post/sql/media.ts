@@ -12,8 +12,9 @@ export function assetMediaToDto(item: DbPlaAssetMedia): AssetMediaDto["origin"] 
     meta: item.meta as any,
   };
 }
-export function getPostAssetsType(typeBit: string): PostAssetType {
-  const type = parseInt(typeBit, 2);
+export function getPostAssetsType(type: string | number): PostAssetType {
+  if (typeof type === "string") type = parseInt(type, 2);
+  if (!Number.isInteger(type)) throw new Error("type 不是有效的 bit:" + type);
   return {
     hasText: (type & 0b0001) != 0,
     hasImage: (type & 0b0010) != 0,

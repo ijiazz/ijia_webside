@@ -5,11 +5,11 @@ import { applyController } from "@asla/hono-decorator";
 
 import { classController } from "@/modules/class/class.controller.ts";
 
-beforeEach<Context>(async ({ hono, hoFetch, ijiaDbPool }) => {
+beforeEach<Context>(async ({ hono }) => {
   applyController(hono, classController);
 });
 
-test("获取公共班级", async function ({ api }) {
+test("获取公共班级", async function ({ api, ijiaDbPool }) {
   const created = await dclass
     .insert([
       { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },

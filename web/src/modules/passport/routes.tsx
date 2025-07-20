@@ -1,8 +1,6 @@
-import { Outlet, RouteObject } from "react-router";
-import { VideoBg } from "./components/VideoBg.tsx";
+import { RouteObject } from "react-router";
 import { api } from "@/common/http.ts";
 import { lazyPage } from "@/common/lazy_load_component.tsx";
-import React from "react";
 
 const router: RouteObject[] = [
   {
@@ -10,11 +8,7 @@ const router: RouteObject[] = [
       return api["/passport/config"].get().catch(() => ({}));
     },
     id: "/passport",
-    element: (
-      <VideoBg>
-        <Outlet />
-      </VideoBg>
-    ),
+    Component: lazyPage(() => import("./components/VideoBg.tsx").then((mod) => mod.VideoBg)),
     children: [
       {
         path: "login",
@@ -28,6 +22,7 @@ const router: RouteObject[] = [
   },
   {
     path: "/passport/find-account",
+
     Component: lazyPage(() => import("./pages/find-account.tsx").then((mod) => mod.FindAccount)),
   },
 ];

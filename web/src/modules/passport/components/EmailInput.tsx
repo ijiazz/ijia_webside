@@ -31,7 +31,7 @@ export function EmailInput(props: {
   sendBtnText?: string;
 }) {
   const { disabled, disabledInput, sendBtnText = "发送验证码", ...reset } = props;
-  const cooling = useCooling();
+  const cooling = useCooling(30);
   const [email, setValue] = useState<string | undefined>();
 
   const value = props.value ?? email;

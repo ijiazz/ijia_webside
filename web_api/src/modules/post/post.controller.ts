@@ -1,60 +1,145 @@
-import { Controller, Get, ToArguments, Use } from "@asla/hono-decorator";
-import { getGodPost } from "./sql/post.ts";
-import { GetPostListParam, LivePostResponse } from "./post.dto.ts";
+import { Controller, Delete, Get, Patch, Post, Put, ToArguments, Use } from "@asla/hono-decorator";
 import { autoBody } from "@/global/pipe.ts";
-import { enumPlatform } from "@ijia/data/db";
-import { checkValue } from "@/global/check.ts";
-import { enumType, integer, optional } from "@asla/wokao";
+import { identity } from "@/global/auth.ts";
+import { CreatePostParam, GetPostListParam, PostResponse, UpdatePostParam } from "./post.dto.ts";
+import { createPost, deletePost, getPostList, getUserDateCount, updatePost } from "./sql/post.ts";
+import { cancelPostLike, setPostLike } from "./sql/post_like.ts";
+import { checkValue, checkValueAsync } from "@/global/check.ts";
+import { CheckTypeError, getBasicType, integer, optional } from "@asla/wokao";
 import { HonoContext } from "@/hono/type.ts";
-import { Role, rolesGuard, UserInfo } from "@/global/auth.ts";
-import { getCheckerServer } from "@/services/douyin.ts";
+import { HttpError } from "@/global/errors.ts";
+import { appConfig } from "@/config.ts";
+import { reportPost } from "./sql/report.ts";
 
-@Use(rolesGuard)
+@Use(identity)
 @autoBody
 @Controller({})
 class PostController {
-  async getPostList(option: GetPostListParam = {}, userId?: number): Promise<LivePostResponse> {
-    const DEFAULT_NUMBER = 10;
-    const LIMIT = 10;
-    if (option.offset === undefined) option.offset = 0;
-    if (option.number === undefined) option.number = DEFAULT_NUMBER;
-
-    let needLogin = false;
-    if (!userId) {
-      if (option.offset + option.number > LIMIT) {
-        option.offset = 0;
-        if (option.number > LIMIT) option.number = LIMIT;
-        needLogin = true;
-      }
-    }
-    const { items, total } = await getGodPost(option);
-    if (needLogin) items.length = 0;
-    return { items, total, needLogin };
-  }
-  @ToArguments(async (ctx: HonoContext) => {
-    const params = checkValue(ctx.req.query(), {
-      number: optional(integer({ acceptString: true, min: 1, max: 100 })),
-      offset: optional(integer({ acceptString: true, min: 0 })),
-      platform: optional(enumType(Array.from(enumPlatform))),
-      userId: optional.string,
-      s_content: optional.string,
-      s_author: optional.string,
+  @ToArguments(async (c: HonoContext) => {
+    const userInfo = c.get("userInfo");
+    const uId = await userInfo.getUserId();
+    const res = await checkValueAsync(c.req.json(), {
+      content_text: optional.string,
+      content_text_structure: optional((input) => {
+        if (input instanceof Array) return input;
+        throw new CheckTypeError("Array", getBasicType(input));
+      }),
+      group_id: optional(integer()),
+      is_hide: optional.boolean,
+      is_anonymous: optional.boolean,
+      comment_disabled: optional.boolean,
     });
-    const uInfo = ctx.get("userInfo");
-
-    return [params, uInfo];
+    return [uId, res];
   })
-  @Get("/post/god_list")
-  async getPostNewest(option: GetPostListParam, uInfo: UserInfo) {
-    const isAdmin: boolean = await uInfo.getRolesFromDb().then(
-      ({ role_id_list }) => role_id_list.includes(Role.Admin),
-      () => false,
-    );
-    if (isAdmin) {
-      const userId = await uInfo.getUserId();
-      return this.getPostList(option, userId);
+  @Put("/post/content")
+  async create(userId: number, params: CreatePostParam): Promise<{ id: number }> {
+    const maximumDailyCount = appConfig.post?.maximumDailyCount ?? 50;
+    if (maximumDailyCount <= 0) throw new HttpError(403, "发帖功能已关闭");
+    const count = await getUserDateCount(userId);
+    if (count >= maximumDailyCount) throw new HttpError(403, `每日发布数量已达上限${count}个，请明天再试`);
+    try {
+      return await createPost(userId, params);
+    } catch (error) {
+      if (error instanceof CheckTypeError) throw new HttpError(400, error.message);
+      throw error;
     }
-    return getCheckerServer().getNewsPost();
+  }
+
+  @ToArguments(async (c: HonoContext) => {
+    const userInfo = c.get("userInfo");
+    const postId = checkValue(c.req.param("postId"), integer.positive);
+    const userId = await userInfo.getUserId();
+    const res = await checkValueAsync(c.req.json(), {
+      content_text: optional.string,
+      content_text_structure: optional((input) => {
+        if (input instanceof Array) return input;
+        throw new CheckTypeError("Array", getBasicType(input));
+      }, "nullish"),
+      is_hide: optional.boolean,
+      comment_disabled: optional.boolean,
+    });
+    return [postId, res, userId];
+  })
+  @Patch("/post/content/:postId")
+  async update(postId: number, params: UpdatePostParam, userId: number) {
+    let count: number;
+
+    try {
+      count = await updatePost(postId, userId, params);
+    } catch (error) {
+      if (error instanceof CheckTypeError) throw new HttpError(400, error.message);
+      throw error;
+    }
+    if (count === 0) {
+      throw new HttpError(404, `ID 为 ${postId} 的帖子不存在`);
+    }
+  }
+
+  @ToArguments(async (c: HonoContext) => {
+    const userInfo = c.get("userInfo");
+    const postId = checkValue(c.req.param("postId"), integer.positive);
+    const userId = await userInfo.getUserId();
+    return [postId, userId];
+  })
+  @Delete("/post/content/:postId")
+  async delete(postId: number, userId: number) {
+    const count = await deletePost(postId, userId);
+    if (count === 0) {
+      throw new HttpError(404, "帖子不存在或已被删除");
+    }
+  }
+
+  @ToArguments(async (c: HonoContext) => {
+    const userInfo = c.get("userInfo");
+    const userId = await userInfo.getUserId().catch(() => undefined);
+    const queries = c.req.query();
+    const res = checkValue(queries, {
+      cursor: optional.string,
+      self: optional((value) => value === "true"),
+      number: optional(integer({ acceptString: true, min: 1, max: 100 })),
+      userId: optional(integer.positive),
+      post_id: optional(integer.positive),
+
+      group_id: optional(integer({ acceptString: true })),
+    });
+    return [res, userId];
+  })
+  @Get("/post/list")
+  async getPublicList(params: GetPostListParam, currentUserId?: number): Promise<PostResponse> {
+    if (params.self && typeof currentUserId !== "number") return { needLogin: true, has_more: false, items: [] };
+    return getPostList(params, { currentUserId });
+  }
+
+  @ToArguments(async (c: HonoContext) => {
+    const userInfo = c.get("userInfo");
+    const userId = await userInfo.getUserId();
+    const postId = checkValue(c.req.param("postId"), integer.positive);
+    const isCancel = c.req.query("isCancel") === "true";
+    return [userId, postId, isCancel];
+  })
+  @Post("/post/like/:postId")
+  async likePost(userId: number, postId: number, isCancel?: boolean): Promise<{ success: boolean }> {
+    let count: number;
+    if (isCancel) {
+      count = await cancelPostLike(postId, userId);
+    } else {
+      count = await setPostLike(postId, userId);
+    }
+    return { success: count > 0 };
+  }
+  @ToArguments(async (c: HonoContext) => {
+    const userInfo = c.get("userInfo");
+    const userId = await userInfo.getUserId();
+    const postId = checkValue(c.req.param("postId"), integer.positive);
+    const data = await checkValueAsync(c.req.json(), {
+      reason: optional.string,
+    });
+    return [userId, postId, data];
+  })
+  @Post("/post/report/:postId")
+  async reportPost(userId: number, postId: number, data: { reason?: string }): Promise<{ success: boolean }> {
+    const count = await reportPost(postId, userId, data.reason);
+    return { success: count > 0 };
   }
 }
 

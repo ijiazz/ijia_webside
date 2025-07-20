@@ -6,7 +6,7 @@ import {
   EndpointDecorator,
 } from "@asla/hono-decorator";
 import { HTTPException } from "hono/http-exception";
-import { getCookie } from "hono/cookie";
+import { getCookie, setCookie } from "hono/cookie";
 import { UserInfo } from "./userInfo.ts";
 import { RequiredLoginError } from "../errors.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
@@ -26,8 +26,8 @@ async function checkRoles(userInfo: UserInfo, requiredAnyRoles: Set<string>) {
 /**
  * 装饰后，会根据添加 userInfo 到 HonoContext 上
  */
-export async function rolesGuard(ctx: HonoContext, next: () => Promise<void>): Promise<void | Response> {
-  const userInfo = new UserInfo(getCookie(ctx, "jwt-token"));
+export async function identity(ctx: HonoContext, next: () => Promise<void>): Promise<void | Response> {
+  const userInfo = new UserInfo(getCookie(ctx, "access_token"));
   ctx.set("userInfo", userInfo);
 
   const endpointCtx = getEndpointContext(ctx);
@@ -36,7 +36,11 @@ export async function rolesGuard(ctx: HonoContext, next: () => Promise<void>): P
 
   const endpointRoles = endpointCtx.getEndpointMetadata<Set<string>>(Roles);
   if (endpointRoles) await checkRoles(userInfo, endpointRoles);
-  return next();
+  await next();
+  const accessToken = await userInfo.getAccessTokenUpdate();
+  if (accessToken) {
+    setCookie(ctx, "access_token", accessToken.token, { maxAge: accessToken.maxAge });
+  }
 }
 /**
  * 装饰后，需要包含指定角色的用户才有权限访问接口

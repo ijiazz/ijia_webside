@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { useThemeToken } from "@/hooks/antd.ts";
+import { useThemeToken } from "@/global-provider.tsx";
 import styled from "@emotion/styled";
 import React from "react";
 
