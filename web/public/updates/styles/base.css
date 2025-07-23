@@ -1,0 +1,22 @@
+body {
+  max-width: 800px;
+  margin: 0 auto;
+
+  font-size: 14px;
+}
+main {
+  position: relative;
+  top: -150px;
+  background-color: #fff;
+  border-radius: 28px;
+  padding: 24px 38px;
+}
+.cover {
+  background: linear-gradient(#000 50%, #fff);
+}
+.cover img {
+  mix-blend-mode: screen;
+  object-fit: cover;
+  width: 100%;
+  min-height: 400px;
+}

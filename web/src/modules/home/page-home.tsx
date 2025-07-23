@@ -12,14 +12,14 @@ import { HomeLinks } from "./components/HomeLlink.tsx";
 import { useElementOverScreen } from "@/hooks/dom/observer.ts";
 
 export function HomePage() {
-  const data = useLoaderData<HomePageRes>();
+  const data = useLoaderData<HomePageRes | undefined>();
   const { state } = useLocation();
   const showExtend = state?.showExtend;
   const [speak, setSpeak] = useState<Caption>(showExtend ? extend[0] : flashTextList[0]);
   const indexRef = useRef(-1);
   const avatarScreenRef = useRef<HTMLDivElement>(null);
   const [blackMode, setBlackMode] = useState(true);
-  const avatarUrl = data.god_user.avatar_url;
+  const avatarUrl = data?.god_user.avatar_url;
   const size = useWindowResize();
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function HomePage() {
           </HeaderCSS>
         </Screen>
       </div>
-      <GodPlatform platforms={data.god_user_platforms} ref={platformRef}></GodPlatform>
+      <GodPlatform platforms={data?.god_user_platforms} ref={platformRef}></GodPlatform>
       <Footer />
     </HomePageCSS>
   );

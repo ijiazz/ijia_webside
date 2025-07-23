@@ -49,28 +49,24 @@ export function BasicInfoPage() {
 
   return (
     <PagePadding>
-      {data && (
-        <>
-          <Button
-            icon={zoom === 1 ? <ZoomInOutlined /> : <ZoomOutOutlined />}
-            onClick={() => setZoom((size) => (size === 1 ? 2 : 1))}
-          >
-            {zoom === 1 ? "放大" : "缩小"}
-          </Button>
-          <div style={{ display: "flex", flexWrap: "wrap" }}>
-            <StudentIdCard
-              className={data.primary_class?.class_name}
-              avatarUrl={data.avatar_url}
-              id={data.user_id.toString().padStart(5)}
-              name={data.nickname}
-              isOfficial={data.is_official}
-              scale={zoom}
-              date={date}
-            />
-            <StudentIdCardBack scale={zoom} />
-          </div>
-        </>
-      )}
+      <Button
+        icon={zoom === 1 ? <ZoomInOutlined /> : <ZoomOutOutlined />}
+        onClick={() => setZoom((size) => (size === 1 ? 2 : 1))}
+      >
+        {zoom === 1 ? "放大" : "缩小"}
+      </Button>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+        <StudentIdCard
+          className={data?.primary_class?.class_name}
+          avatarUrl={data?.avatar_url}
+          id={data?.user_id.toString().padStart(5)}
+          name={data?.nickname}
+          isOfficial={data?.is_official}
+          scale={zoom}
+          date={date}
+        />
+        <StudentIdCardBack scale={zoom} />
+      </div>
       <BindAccountList profileData={data} profileLoading={loading} onProfileChange={() => run()} />
       <BasicForm profileData={data} profileLoading={loading} onProfileChange={() => run()} />
     </PagePadding>

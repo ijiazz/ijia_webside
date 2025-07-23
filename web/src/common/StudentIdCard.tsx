@@ -67,7 +67,6 @@ const StudentIdCardCSS = styled.div`
   background-image: url(${school_card_front});
   background-size: cover;
   border-radius: ${borderRadius}px;
-  margin: 8px;
 
   display: flex;
   flex-direction: column;
@@ -151,7 +150,6 @@ const StudentIdCardBackCSS = styled.div`
   background-image: url(${school_card_back});
   background-size: cover;
   border-radius: ${borderRadius}px;
-  margin: 8px;
   box-sizing: border-box;
   .student-card-body {
     color: #000;

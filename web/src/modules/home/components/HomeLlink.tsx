@@ -41,12 +41,12 @@ export function HomeLinks(props: HomeLinkProps) {
         );
       }
       return (
-        <Hover color={color} key={key}>
-          <Link className="link-item" to={item.href} viewTransition target={item.open ? "_blank" : undefined}>
+        <Link to={item.href} key={key} viewTransition target={item.open ? "_blank" : undefined}>
+          <Hover color={color} className="link-item">
             {item.icon}
             {item.title}
-          </Link>
-        </Hover>
+          </Hover>
+        </Link>
       );
     });
   }, [links, blackMode]);
@@ -132,9 +132,9 @@ const HomeLinksCSS = styled.div<{ blackMode?: boolean; background?: string }>`
   }
 `;
 
-const Hover = (props: PropsWithChildren<{ style?: CSSProperties; color?: string }>) => {
+const Hover = (props: PropsWithChildren<{ style?: CSSProperties; color?: string; className?: string }>) => {
   return (
-    <StyledWrapper style={props.style} color={props.color}>
+    <StyledWrapper style={props.style} color={props.color} className={props.className}>
       <button className="cta">
         <span className="hover-underline-animation"> {props.children} </span>
       </button>
