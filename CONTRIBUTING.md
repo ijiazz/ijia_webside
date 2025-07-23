@@ -22,7 +22,7 @@ E2E测试: [Playwright](https://playwright.dev/)
 
 1. 初始化子模块
    项目依赖 [@ijia/data](https://github.com/ijiazz/school_db) ，这个包是数据库、和对象存储、缓存相关的封装，通过 git submodules 链接到项目中（在项目的 /deps/ijia-data 位置）。\
-   克隆项目时通过 `git clone --recursive git@github.com:ijiazz/ijia_website.git` 进行克隆，或者在克隆仓库到本地后执行 `git submodule update --init --recursive` 初始化子模块。
+   克隆项目时通过 `git clone --recursive git@github.com:ijiazz/ijia_webside.git` 进行克隆，或者在克隆仓库到本地后执行 `git submodule update --init --recursive` 初始化子模块。
 
 2. 安装依赖：运行`pnpm install`安装项目所需的依赖到 node_modules 目录下。如果你安装失败或安装太慢，可以更改 npm 镜像源(修改项目根目录下的 .npmrc 文件，在末尾添加
    `registry=https://registry.npmjs.org/` 即可)
