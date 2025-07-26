@@ -88,7 +88,7 @@ function createTextNode(struct: TextStructure, text: string, key: string): React
 }
 
 const PostTextCSS = styled.div`
-  white-space: pre;
+  white-space: pre-wrap;
   > span {
     color: ${(props) => props.color};
   }
