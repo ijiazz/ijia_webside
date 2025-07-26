@@ -34,7 +34,7 @@ class PostController {
   @Put("/post/content")
   async create(userId: number, params: CreatePostParam): Promise<{ id: number }> {
     const maximumDailyCount = appConfig.post?.maximumDailyCount ?? 50;
-    if (maximumDailyCount <= 0) throw new HttpError(403, "发帖功能已关闭");
+    if (maximumDailyCount <= 0) throw new HttpError(403, "服务器已关闭新增帖子");
     const count = await getUserDateCount(userId);
     if (count >= maximumDailyCount) throw new HttpError(403, `每日发布数量已达上限${count}个，请明天再试`);
     try {

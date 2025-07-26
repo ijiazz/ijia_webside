@@ -77,6 +77,7 @@ const appConfigChecker = {
   }),
   post: nullishOptional({
     maximumDailyCount: nullishOptional(integer(0), 50), // 每日最大发布数量。如果为 0 则禁止发帖
+    allowAddComment: nullishOptional("boolean", false), // 是否允许添加评论
   }),
   live_watch: nullishOptional(
     {
