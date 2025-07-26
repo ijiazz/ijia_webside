@@ -82,7 +82,7 @@ type ChildrenLink = {
 } & LinkItem;
 
 const links: ChildrenLink[] = [
-  { title: "IJIA 学院", href: "./live" },
+  { title: "IJIA 学院", href: "./wall" },
   { title: "入学指南", href: "./about/guide", open: true },
   { title: "学院简介", href: "./about/introduction", open: true },
   {
