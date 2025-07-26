@@ -30,7 +30,12 @@ export async function getPostList(
   if (currentUserId !== null) {
     curr_user = jsonb_build_object({
       can_update: `u.id=${v(currentUserId)}`,
-      can_comment: `get_bit(p.options, 1)='0' OR p.user_id=${v(currentUserId)}`,
+      disabled_comment_reason: `
+      CASE 
+        WHEN p.is_reviewing THEN '审核中的帖子不能评论' 
+        WHEN p.is_review_pass = FALSE THEN '审核不通过的帖子不能评论'
+        WHEN get_bit(p.options, 1)='1' AND p.user_id != ${v(currentUserId)} THEN '作者评论已关闭功能' 
+        ELSE NULL END`,
 
       /** like_weight 用量计算 is_like 和 is_report */
       like_weight: `${post_like
@@ -48,13 +53,18 @@ export async function getPostList(
     .leftJoin(post_group, "g", "g.id=p.group_id")
     .select({
       asset_id: "p.id",
-      author: `CASE WHEN (get_bit(p.options, 0)='0' OR u.id=${v(currentUserId)})
-              THEN ${jsonb_build_object({
-                user_name: "u.nickname",
-                user_id: "u.id ::TEXT",
-                avatar_url: "'/file/avatar/'||u.avatar",
-              } satisfies { [key in keyof PostUserInfo]: string })}
-              ELSE NULL END`,
+
+      /**
+       * 不是匿名或者是自己的帖子才作者信息
+       */
+      author: `CASE 
+        WHEN (get_bit(p.options, 0)='0' OR u.id=${v(currentUserId)}) 
+        THEN ${jsonb_build_object({
+          user_name: "u.nickname",
+          user_id: "u.id ::TEXT",
+          avatar_url: "'/file/avatar/'||u.avatar",
+        } satisfies { [key in keyof PostUserInfo]: string })}
+        ELSE NULL END`,
       publish_time: "p.publish_time",
       create_time: "p.create_time",
       update_time: "CASE WHEN p.update_time=p.create_time THEN NULL ELSE p.update_time END",
@@ -133,6 +143,9 @@ export async function getPostList(
         postItem.is_like = weight > 0; // 是否点赞
         postItem.is_report = weight < 0; // 是否举报
       }
+
+      const curr_user: NonNullable<PostItemDto["curr_user"]> = currUser;
+      curr_user.can_comment = curr_user.disabled_comment_reason === null;
     }
   });
   const firstPublishTime = list.find((item) => item.publish_time);

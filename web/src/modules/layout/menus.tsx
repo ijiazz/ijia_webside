@@ -8,10 +8,10 @@ export type MenuRoute = NonNullable<ProLayoutProps["route"]>;
 // 二菜单需要考虑图标，否则菜单收起后不是很好看
 
 export const menus: MenuItem[] = [
-  // {
-  //   path: "wall",
-  //   label: "表白墙",
-  // },
+  {
+    path: "wall",
+    label: "表白墙",
+  },
   {
     path: "live",
     label: "动态",

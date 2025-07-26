@@ -9,7 +9,7 @@ export * from "./post/post.dto.ts";
 export * from "./post/comment.dto.ts";
 export * from "./live/live.dto.ts";
 
-export type { TextStructureType, TextStructure } from "@ijia/data/db";
+export type { TextStructure } from "@ijia/data/db";
 export enum Platform {
   /** 抖音 */
   douYin = "douyin",
@@ -23,4 +23,13 @@ export enum Platform {
   v5sing = "v5sing",
   /** 网易云音乐 */
   wangYiMusic = "wangyiyun",
+}
+export enum TextStructureType {
+  unknown = -1,
+  /** 外部链接 */
+  link = 0,
+  /** 平台用户 */
+  user = 1,
+  /** 话题 */
+  topic = 2,
 }

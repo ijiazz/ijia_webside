@@ -20,5 +20,6 @@
   },
   "post": {
     "maximumDailyCount": 50, // 每日发帖上限。设置为 0 可关闭发帖功能
+    "allowAddComment": true, // 是否允许添加评论
   },
 }

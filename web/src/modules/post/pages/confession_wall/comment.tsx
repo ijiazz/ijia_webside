@@ -3,8 +3,13 @@ import { CommentList } from "../../components/comment/PostCommentList.tsx";
 import { Drawer } from "antd";
 import { LayoutDirection, useLayoutDirection } from "@/global-provider.tsx";
 
-export function CommentDrawer(props: { open?: boolean; onClose?: () => void; postId?: string | number | null }) {
-  const { onClose, postId: postId, open } = props;
+export function CommentDrawer(props: {
+  open?: boolean;
+  onClose?: () => void;
+  postId?: string | number | null;
+  isSelf?: boolean;
+}) {
+  const { onClose, postId: postId, open, isSelf } = props;
 
   const isHorizontal = useLayoutDirection() === LayoutDirection.Horizontal;
   const postIdNum = typeof postId === "string" ? +postId : typeof postId === "number" ? postId : undefined;
@@ -25,7 +30,7 @@ export function CommentDrawer(props: { open?: boolean; onClose?: () => void; pos
         },
       }}
     >
-      <CommentList postId={postIdNum} />
+      <CommentList postId={postIdNum} isSelf={isSelf} />
     </Drawer>
   );
 }

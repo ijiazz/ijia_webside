@@ -30,7 +30,7 @@ export async function createComment(
       `p.id=${v(postId)}`,
       `NOT p.is_delete`, // 帖子未被删除
       `(p.is_review_pass OR p.is_review_pass IS NULL)`, // 审核通过的或未审核的 帖子
-      `NOT p.is_reviewing`, // 帖子未在审核中
+      `NOT p.is_reviewing`, // 帖子不能在审核中
       `NOT p.is_hide`, // 帖子未设置仅作者可见
     ])
     .leftJoin(post_comment, "parent", `parent.id=data.parent_comment_id`)
@@ -87,7 +87,7 @@ export async function createComment(
 
   const res = await dbPool.queryRows<CreateCommentData>(sqlText);
   if (res.length === 0) {
-    throw new HttpError(404, "无法创建评论，可能是帖子不存在或已被删除");
+    throw new HttpError(404, "无法创建评论，可能是帖子不存在或已被删除，或者是审核中");
   }
   return res;
 }

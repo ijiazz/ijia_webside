@@ -120,7 +120,14 @@ export function InfiniteScrollLoad<T = unknown, P = unknown>(props: InfiniteScro
       {children}
       <div
         className={footerClassName}
-        style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "8px 0", ...footerStyle }}
+        style={{
+          fontSize: 12,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          margin: "8px 0",
+          ...footerStyle,
+        }}
       >
         {result.hasMore ? (
           result.error && !loading ? (

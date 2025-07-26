@@ -26,14 +26,18 @@ export function WallPostCard(props: PCardProps) {
       匿名
     </Tag>
   ) : (
-    author?.user_name
+    author?.user_name || author?.user_id
   );
 
   return (
     <PinkPostCard
       icon={
         <VLink to={undefined} target="_blank">
-          <Avatar icon={author ? undefined : <UserOutlined />} src={author?.avatar_url} />
+          {isAnonymous ? (
+            <Avatar icon={<UserOutlined />} />
+          ) : (
+            <Avatar src={author?.avatar_url}>{author?.user_id}</Avatar>
+          )}
         </VLink>
       }
       header={{

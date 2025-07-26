@@ -11,12 +11,39 @@ main {
   border-radius: 28px;
   padding: 24px 38px;
 }
+
+a {
+  text-decoration: none;
+}
+
 .cover {
   background: linear-gradient(#000 50%, #fff);
 }
 .cover img {
   mix-blend-mode: screen;
-  object-fit: cover;
+  object-fit: contain;
   width: 100%;
   min-height: 400px;
+}
+
+.legend {
+  margin: 14px 0;
+  max-width: 100%;
+  max-height: 1920px;
+  object-fit: cover;
+  text-align: center;
+}
+.legend img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+
+.legend-title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+}
+.quick-link::after {
+  content: attr(href);
 }

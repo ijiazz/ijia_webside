@@ -7,7 +7,7 @@ import { checkValue, checkValueAsync, optionalInt, queryInt } from "@/global/che
 import { ExpectType, optional } from "@asla/wokao";
 import { createComment, getCommentList, getUserCanCreateCommentLimit, deleteComment } from "./sql/post_comment.ts";
 import { HttpError } from "@/global/errors.ts";
-import { ENV } from "@/config.ts";
+import { appConfig, ENV } from "@/config.ts";
 import { cancelCommentLike, setCommentLike } from "./sql/post_like.ts";
 import { reportComment } from "./sql/report.ts";
 
@@ -34,6 +34,7 @@ class CommentController {
     userId: number,
     param: CreatePostCommentParam,
   ): Promise<CreatePostCommentResponse> {
+    if (!appConfig.post?.allowAddComment) throw new HttpError(403, "服务器已禁止新增评论");
     if (ENV.IS_PROD) {
       //TODO: 需要在事务中执行限制
       const canCreate = await getUserCanCreateCommentLimit(userId);

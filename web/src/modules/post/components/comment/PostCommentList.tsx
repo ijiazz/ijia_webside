@@ -26,8 +26,8 @@ const { Text } = Typography;
 export type CreateData = {
   text: string;
 };
-export function CommentList(props: { postId?: number }) {
-  const { postId } = props;
+export function CommentList(props: { postId?: number; isSelf?: boolean }) {
+  const { postId, isSelf } = props;
   const {
     commentData,
     addItem,
@@ -41,18 +41,14 @@ export function CommentList(props: { postId?: number }) {
   const { loading: postInfoLoading, data: postInfo, run: loadPostInfo } = useAsync(getPostData);
 
   useEffect(() => {
-    if (postId !== undefined) loadPostInfo(postId);
-  }, [postId]);
+    if (postId !== undefined) loadPostInfo(postId, isSelf);
+  }, [postId, isSelf]);
   const config = useMemo(() => {
-    let reason = "";
+    let reason: null | undefined | string = "";
     if (postInfoLoading) reason = "加载中...";
     else if (postInfo) {
-      if (postInfo.curr_user) {
-        reason = postInfo.curr_user.can_comment ? "" : "作者已关闭评论功能";
-      } else {
-        reason = "登录后可以评论";
-      }
-    } else reason = "未知错误，无法新增评论";
+      reason = postInfo.curr_user ? postInfo.curr_user.disabled_comment_reason : "登录后可以评论";
+    } else reason = "无法获取帖子数据";
     return {
       create: {
         reason: reason,

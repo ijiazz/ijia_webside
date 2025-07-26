@@ -80,6 +80,7 @@ export type PostItemDto = PostItemBase & {
   curr_user?: {
     can_update?: boolean; // 是否可以删除或删除
     can_comment?: boolean; // 是否可以评论
+    disabled_comment_reason?: string; // 如果不能评论，原因是什么
 
     is_like: boolean; // 是否点赞
     is_report: boolean; // 是否已举报
