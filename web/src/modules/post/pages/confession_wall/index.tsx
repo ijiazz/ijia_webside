@@ -1,5 +1,5 @@
 import { PostGroupResponse, PostItemDto, UpdatePostParam } from "@/api.ts";
-import { List, MenuProps, Modal, Input, Select } from "antd";
+import { List, MenuProps, Modal } from "antd";
 import styled from "@emotion/styled";
 import { useAntdStatic } from "@/global-provider.tsx";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -22,11 +22,13 @@ import { ReportModal } from "../../components/ReportModal.tsx";
 
 export function PostListPage() {
   const data = useRouteLoaderData<PostGroupResponse | undefined>("/wall");
+  const filter = useContext(PostQueryFilterContext);
+  const isSelf = filter.self;
   const { option, menus } = useMemo(() => {
     const option = data?.items.map((item) => ({
       label: item.group_name,
       value: item.group_id,
-      desc: `${item.group_desc || ""}\n${item.rule_desc || ""}`,
+      desc: item.rule_desc,
     }));
     const menus: MenuProps["items"] = data?.items.map((item) => ({
       key: item.group_id.toString(),
@@ -43,7 +45,7 @@ export function PostListPage() {
   return (
     <>
       <PostList groupOptions={option} onOpenComment={drawer.onOpenComment} />
-      <CommentDrawer postId={drawer.commentId} open={drawer.open} onClose={drawer.closeCommentDrawer} />
+      <CommentDrawer postId={drawer.commentId} isSelf={isSelf} open={drawer.open} onClose={drawer.closeCommentDrawer} />
     </>
   );
 }
@@ -241,6 +243,7 @@ const StyledTip = styled.div`
   font-weight: 500;
   border-radius: 6px;
   padding: 8px;
+  font-size: 14px;
 `;
 
 const HomePageCSS = styled.div`

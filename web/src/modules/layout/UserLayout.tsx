@@ -5,7 +5,7 @@ import { Outlet, useLocation, useNavigate } from "react-router";
 import { menus } from "./menus.tsx";
 import { getUserToken, useCurrentUser } from "@/common/user.ts";
 import { AvatarMenu } from "./avatar.tsx";
-import { AntdThemeProvider, useAntdStatic, useThemeController } from "@/global-provider.tsx";
+import { AntdThemeProvider, IS_MOBILE_LAYOUT, useAntdStatic, useThemeController } from "@/global-provider.tsx";
 import styled from "@emotion/styled";
 import { RootLayout } from "./RootLayout.tsx";
 import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
@@ -22,7 +22,7 @@ export function UserLayout(props: PropsWithChildren<{}>) {
       const tokenUrl = url.toString();
       navigator.clipboard.writeText(tokenUrl);
     }
-    message.success("已复制");
+    message.success("已复制个人访问 Token");
   };
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -43,7 +43,11 @@ export function UserLayout(props: PropsWithChildren<{}>) {
       }}
       rightExtra={
         <div style={{ display: "flex", gap: 8, marginRight: 8, alignItems: "center" }}>
-          {IS_DEV && user ? <Button onClick={copyToken}>复制token</Button> : undefined}
+          {IS_DEV && user ? (
+            <Button type="dashed" onClick={copyToken}>
+              Dev Mode
+            </Button>
+          ) : undefined}
           <Tooltip title={themeCtrl.mode === "dark" ? "切换到亮色主题" : "切换到暗色主题"}>
             <DayNightSwitch
               checked={themeCtrl.mode === "dark"}
@@ -93,7 +97,7 @@ const StyledIcon = styled.div`
       display: none;
     }
   }
-  @media (max-width: 400px) {
+  @media screen and (${IS_MOBILE_LAYOUT}) {
     display: none;
   }
 `;
