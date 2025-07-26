@@ -1,4 +1,11 @@
-import { AssetImage, AssetMediaDto, AssetVideo, TextStructure } from "@/api.ts";
+import {
+  AssetImage,
+  AssetMediaDto,
+  AssetVideo,
+  TextStructure,
+  TextStructureExternalLink,
+  TextStructureType,
+} from "@/api.ts";
 import { useThemeToken } from "@/global-provider.tsx";
 import styled from "@emotion/styled";
 import React, { CSSProperties, useMemo } from "react";
@@ -6,6 +13,7 @@ import { ReactNode } from "react";
 import { AssetMediaType } from "@/api.ts";
 import { DownOutlined, FileImageOutlined, UpOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
+import { Link } from "react-router";
 const { Paragraph } = Typography;
 
 function PostText(props: { text?: string | null; structure?: TextStructure[] | null }) {
@@ -22,7 +30,8 @@ function PostText(props: { text?: string | null; structure?: TextStructure[] | n
       }
       offset = item.index + item.length;
       const xText = text.slice(item.index, offset);
-      list.push(<span key={i + xText}>{xText}</span>);
+      const node = createTextNode(item, xText, i.toString());
+      list.push(node);
     }
     if (offset < text.length) list.push(text.slice(offset));
     return list;
@@ -56,6 +65,26 @@ function PostText(props: { text?: string | null; structure?: TextStructure[] | n
       </Paragraph>
     </PostTextCSS>
   );
+}
+
+function createTextNode(struct: TextStructure, text: string, key: string): ReactNode {
+  if (!struct || !text) return text;
+  switch (struct.type) {
+    case TextStructureType.link: {
+      const node = struct as TextStructureExternalLink;
+      return (
+        <Link to={node.link} target="_blank" rel="noopener noreferrer">
+          {text}
+        </Link>
+      );
+    }
+    case TextStructureType.user:
+      return <span style={{ color: "blue" }}>{text}</span>;
+    case TextStructureType.topic:
+      return <span style={{ color: "green" }}>{text}</span>;
+    default:
+      return <span key={key}>{text}</span>;
+  }
 }
 
 const PostTextCSS = styled.div`
