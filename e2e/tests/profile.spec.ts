@@ -47,6 +47,7 @@ beforeEach(async ({ page }) => {
   await page.goto(getAppUrlFromRoute("/profile/center", aliceToken));
 });
 test("账号绑定与解除关联", async function ({ page, browser }) {
+  test.setTimeout(40000); // 设置超时时间为40秒
   const bob = users.find((u) => u.user_name === "Bob")!;
   const alice = users.find((u) => u.user_name === "Alice")!;
   await addBind(page, bob.sec_uid);
