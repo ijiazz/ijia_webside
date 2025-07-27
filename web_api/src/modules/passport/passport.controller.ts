@@ -135,7 +135,7 @@ export class PassportController {
       case LoginType.email: {
         const params = checkValue(body, {
           method: "string",
-          email: "string",
+          email: emailChecker,
           password: optional.string,
           passwordNoHash: optional.boolean,
         });
