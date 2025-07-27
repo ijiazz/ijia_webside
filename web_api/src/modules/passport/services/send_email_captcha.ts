@@ -27,7 +27,7 @@ export async function sendSignUpEmailCaptcha(email: string): Promise<EmailCaptch
     code,
     recipient: email,
     title: `${appConfig.appName}验证码: ${code}`,
-    text: htmlContent,
+    html: htmlContent,
   };
 
   return emailCaptchaService.sendEmailCaptcha(captchaEmail);
@@ -47,7 +47,7 @@ export async function sendResetPassportCaptcha(email: string, userId: number) {
     code,
     recipient: email,
     title: `${appConfig.appName}验证码: ${code}`,
-    text: htmlContent,
+    html: htmlContent,
   };
 
   return emailCaptchaService.sendEmailCaptcha(captchaEmail);
@@ -73,7 +73,7 @@ export async function sendChangeEmailCaptcha(newEmail: string, userId: number) {
     code,
     recipient: newEmail,
     title: `${appConfig.appName}验证码: ${code}`,
-    text: htmlContent,
+    html: htmlContent,
   };
 
   return emailCaptchaService.sendEmailCaptcha(captchaEmail);
@@ -93,7 +93,7 @@ export async function sendAccountAuthEmailCaptcha(email: string, userId: number)
     code,
     recipient: email,
     title: `${appConfig.appName}验证码: ${code}`,
-    text: htmlContent,
+    html: htmlContent,
   };
 
   return emailCaptchaService.sendEmailCaptcha(captchaEmail);
