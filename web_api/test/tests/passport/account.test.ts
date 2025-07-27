@@ -10,7 +10,7 @@ import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
 import { user } from "@ijia/data/db";
-import { getUniqueEmail, prepareUniqueUser } from "test/fixtures/user.ts";
+import { getUniqueEmail, getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   await initCaptcha();
@@ -80,6 +80,20 @@ describe("修改邮箱", async function () {
         [JWT_TOKEN_KEY]: alice.token,
       }),
     ).responseStatus(409);
+  });
+  test("修改的邮箱大写字母域名会被转换成小写", async function ({ api, publicDbPool }) {
+    const alice = await prepareUniqueUser("alice");
+    const accountToken = await getAccountToken(api, alice.token);
+
+    const prefix = getUniqueName("Abc1");
+    const newEmail = `${prefix}@IJIAzz.中文`;
+
+    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail, alice.token);
+    await api["/passport/change_email"].post({
+      body: { newEmail: newEmail, emailCaptcha: emailCaptchaAnswer, accountToken },
+      [JWT_TOKEN_KEY]: alice.token,
+    });
+    await expect(getUserEmail(alice.id), "成功修改邮箱且邮箱域名为小写").resolves.toBe(`${prefix}@ijiazz.中文`);
   });
   test("已注销账号不能修改邮箱", async function ({ api }) {
     const alice = await prepareUniqueUser("alice");

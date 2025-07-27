@@ -8,7 +8,8 @@ import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
 import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
 import { emailCaptchaService } from "@/modules/captcha/mod.ts";
-import { getUniqueEmail } from "test/fixtures/user.ts";
+import { getUniqueEmail, getUniqueName } from "test/fixtures/user.ts";
+import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 
 const AlicePassword = "123";
 
@@ -31,6 +32,20 @@ test("必须传正确的邮件验证码", async function ({ api, publicDbPool })
       emailCaptcha: { code: "123", sessionId: "111" },
     }),
   ).rejects.throwErrorMatchBody(403, { message: "验证码错误" });
+});
+
+test("大写字母域名会被转换成小写", async function ({ api, publicDbPool }) {
+  const prefix = getUniqueName("Abc12中文");
+  const email = `${prefix}@IJIAZZ.中文`;
+  const emailAnswer = await mockSignUpSendEmailCaptcha(api, email);
+  const result = await signup(api, {
+    email: email,
+    password: "Abc123",
+    emailCaptcha: emailAnswer,
+  });
+
+  const info = await getValidUserSampleInfoByUserId(result.userId);
+  expect(info.email).toBe(`${prefix}@ijiazz.中文`);
 });
 test("不能使用一个用户的邮箱验证码注册另一个用户的邮箱", async function ({ api, publicDbPool }) {
   const emailAnswer = await mockSignUpSendEmailCaptcha(api, getUniqueEmail("alice"));

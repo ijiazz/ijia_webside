@@ -1,8 +1,10 @@
 import { HttpError } from "@/global/errors.ts";
 import { hashPasswordBackEnd } from "../services/password.ts";
 import { createUser as getCreateUserSql } from "@ijia/data/query";
+import { initEmail } from "@/global/check.ts";
 
 export async function createUser(email: string, userInfo: { password?: string; nickname?: string }): Promise<number> {
+  email = initEmail(email);
   const { nickname } = userInfo;
   let password: string | undefined;
   let salt: string | undefined;
