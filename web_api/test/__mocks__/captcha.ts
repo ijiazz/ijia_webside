@@ -15,7 +15,7 @@ export async function initCaptcha() {
   for (; i < 3; i++) captcha[i].is_true = true;
   for (; i < 6; i++) captcha[i].is_true = false;
 
-  await captcha_picture.insert(captcha).query(); // 前 6 张图片的真假值被确定
+  await captcha_picture.insert(captcha).onConflict("id").doNotThing().query(); // 前 6 张图片的真假值被确定
 }
 
 export async function createCaptchaSession(): Promise<ImageCaptchaReply> {
