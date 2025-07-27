@@ -58,7 +58,7 @@ test("审核中的帖子只有自己能查看", async function ({ api, publicDbP
     .where([`id=${id}`])
     .queryCount();
   const aliceView = await testGetSelfPost(api, id, alice.token);
-  expect(aliceView.asset_id).toBe(id);
+  expect(aliceView.post_id).toBe(id);
   expect(aliceView.status).toMatchObject({
     is_reviewing: true,
     review_pass: null,
@@ -79,7 +79,7 @@ test("审核失败的帖子只有自己能查看", async function ({ api, public
     .query();
 
   const aliceView = await testGetSelfPost(api, id, alice.token);
-  expect(aliceView.asset_id).toBe(id);
+  expect(aliceView.post_id).toBe(id);
   expect(aliceView.status).toMatchObject({
     is_reviewing: false,
     review_pass: false,
@@ -97,7 +97,7 @@ test("已隐藏的帖子只有自己能查看", async function ({ api, publicDbP
   const { id } = await createPost(api, { content_text: "test1", is_hide: true }, alice.token);
 
   const aliceView = await testGetSelfPost(api, id, alice.token);
-  expect(aliceView.asset_id).toBe(id);
+  expect(aliceView.post_id).toBe(id);
   expect(aliceView.status).toMatchObject({
     is_reviewing: false,
     review_pass: null,

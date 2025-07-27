@@ -49,7 +49,7 @@ export function commentDtoToCommentNode(item: PostCommentDto, parent: PostCommen
 export function getPostData(postId: number, isSelf?: boolean) {
   return api["/post/list"].get({ query: { post_id: postId, self: isSelf } }).then((res) => {
     const item = res.items[0];
-    if (item.asset_id !== postId) return;
+    if (item.post_id !== postId) return;
 
     return item;
   });

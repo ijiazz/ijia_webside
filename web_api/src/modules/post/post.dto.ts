@@ -73,7 +73,7 @@ export type PostItemBase = {
 };
 
 export type PostItemDto = PostItemBase & {
-  asset_id: number;
+  post_id: number;
   /** 作者信息 */
   author: PostUserInfo | null;
   /** 当前请求用户的相关数据 */

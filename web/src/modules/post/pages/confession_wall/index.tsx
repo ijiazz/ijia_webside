@@ -83,7 +83,7 @@ function PostList(props: PostListProps) {
   };
   const onEditPost = (item: PostItemDto, isEdit: boolean) => {
     setEditItem({
-      id: item.asset_id,
+      id: item.post_id,
       content_text: item.content_text,
       content_text_structure: item.content_text_structure,
       is_hide: item.config.self_visible,
@@ -96,8 +96,8 @@ function PostList(props: PostListProps) {
     modal.confirm({
       title: "删除确认",
       onOk: () => {
-        return api["/post/content/:postId"].delete({ params: { postId: item.asset_id } }).then(() => {
-          itemsCtrl.deleteItem(item.asset_id);
+        return api["/post/content/:postId"].delete({ params: { postId: item.post_id } }).then(() => {
+          itemsCtrl.deleteItem(item.post_id);
           message.success("删除成功");
         });
       },
@@ -170,7 +170,7 @@ function PostList(props: PostListProps) {
                 }
               }
               return (
-                <List.Item ref={index === 0 ? pageRef : undefined} key={item.asset_id} className="e2e-post-item">
+                <List.Item ref={index === 0 ? pageRef : undefined} key={item.post_id} className="e2e-post-item">
                   <WallPostCard
                     item={item}
                     moreMenus={moreMenus}
@@ -190,12 +190,12 @@ function PostList(props: PostListProps) {
           if (!reportOpen) return;
           const { success } = await api["/post/report/:postId"].post({
             body: { reason },
-            params: { postId: reportOpen.asset_id },
+            params: { postId: reportOpen.post_id },
           });
           message.success("举报成功");
           setReportOpen(undefined);
           if (success) {
-            itemsCtrl.replaceItem(reportOpen.asset_id, (old) => {
+            itemsCtrl.replaceItem(reportOpen.post_id, (old) => {
               if (!old.curr_user) return old;
               old.curr_user.is_report = true;
               return old;

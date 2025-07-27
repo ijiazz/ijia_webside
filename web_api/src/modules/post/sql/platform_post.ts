@@ -36,7 +36,7 @@ function selectAssetResource(setKey: string, keys?: Record<string, string | bool
     .where(`media.platform=${setKey}.platform AND media.asset_id=${setKey}.asset_id AND index IS NOT NULL`);
 }
 type SelectAssetList = {
-  asset_id: string;
+  post_id: string;
   platform: Platform;
   publish_time: Date | null;
   type: PostAssetType;
@@ -68,7 +68,7 @@ async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total
 
   const itemsSql = select
     .select<SelectAssetList>({
-      asset_id: "p.asset_id",
+      post_id: "p.asset_id",
       platform: "p.platform",
       publish_time: "p.publish_time",
       type: getPostContentType("p.content_type"),
@@ -157,7 +157,7 @@ function toPostListDto(list: SelectAssetList[]) {
     //TODO:补充其他平台
     switch (item.platform) {
       case Platform.douYin: {
-        url = `https://www.douyin.com/video/${item.asset_id}`;
+        url = `https://www.douyin.com/video/${item.post_id}`;
         author.home_page = `https://www.douyin.com/user/${item.author.extra?.sec_uid}`;
         break;
       }
@@ -166,7 +166,7 @@ function toPostListDto(list: SelectAssetList[]) {
       case Platform.xiaoHongShu:
         break;
       case Platform.weibo: {
-        url = `https://weibo.com/${author.user_id}/${item.asset_id}`;
+        url = `https://weibo.com/${author.user_id}/${item.post_id}`;
         author.home_page = `https://weibo.com/u/${author.user_id}`;
 
         break;
@@ -180,7 +180,7 @@ function toPostListDto(list: SelectAssetList[]) {
     }
 
     return {
-      asset_id: item.asset_id,
+      post_id: item.post_id,
       media: medias,
       author,
       content_text: item.content_text,

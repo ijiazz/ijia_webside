@@ -85,7 +85,7 @@ export function HomePage() {
             return (
               <List.Item
                 ref={index === 0 ? pageRef : undefined}
-                key={item.platform + "-" + item.asset_id}
+                key={item.platform + "-" + item.post_id}
                 style={{ background: theme.colorBgBase }}
               >
                 <CardLayout

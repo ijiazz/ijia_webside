@@ -52,7 +52,7 @@ export async function getPostList(
     .innerJoin(user, "u", "u.id=p.user_id")
     .leftJoin(post_group, "g", "g.id=p.group_id")
     .select({
-      asset_id: "p.id",
+      post_id: "p.id",
 
       /**
        * 不是匿名或者是自己的帖子才作者信息
@@ -132,8 +132,8 @@ export async function getPostList(
    *  因为 publish_time 可能为 null，如果 publish_time 为 null，仅使用 id 作为指针
    */
 
-  const list = await qSql.queryRows();
-  list.forEach((item) => {
+  const rawList = await qSql.queryRows();
+  rawList.forEach((item) => {
     const currUser = item.curr_user;
     if (currUser) {
       const weight = currUser.like_weight;
@@ -148,20 +148,21 @@ export async function getPostList(
       curr_user.can_comment = curr_user.disabled_comment_reason === null;
     }
   });
+  const list = rawList as PostItemDto[];
   const firstPublishTime = list.find((item) => item.publish_time);
   const last = list[list.length - 1];
   return {
-    items: list as PostItemDto[],
+    items: list,
     has_more: list.length >= number,
     before_cursor: firstPublishTime
       ? toTimestampCursor({
-          id: +firstPublishTime.asset_id,
+          id: +firstPublishTime.post_id,
           timestamp: firstPublishTime.publish_time ? new Date(firstPublishTime.publish_time).getTime() : null,
         })
       : null,
     next_cursor: last
       ? toTimestampCursor({
-          id: +last.asset_id,
+          id: +last.post_id,
           timestamp: last.publish_time ? new Date(last.publish_time).getTime() : null,
         })
       : null,
