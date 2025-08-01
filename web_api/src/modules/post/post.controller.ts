@@ -1,8 +1,21 @@
 import { Controller, Delete, Get, Patch, Post, Put, ToArguments, Use } from "@asla/hono-decorator";
 import { autoBody } from "@/global/pipe.ts";
 import { identity } from "@/global/auth.ts";
-import { CreatePostParam, GetPostListParam, PostResponse, UpdatePostParam } from "./post.dto.ts";
-import { createPost, deletePost, getPostList, getUserDateCount, updatePost } from "./sql/post.ts";
+import {
+  CreatePostParam,
+  GetPostListParam,
+  PostResponse,
+  UpdatePostConfigParam,
+  UpdatePostContentParam,
+} from "./post.dto.ts";
+import {
+  createPost,
+  deletePost,
+  getPostList,
+  getUserDateCount,
+  updatePostConfig,
+  updatePostContent,
+} from "./sql/post.ts";
 import { cancelPostLike, setPostLike } from "./sql/post_like.ts";
 import { checkValue, checkValueAsync } from "@/global/check.ts";
 import { CheckTypeError, getBasicType, integer, optional } from "@asla/wokao";
@@ -61,14 +74,12 @@ class PostController {
     return [postId, res, userId];
   })
   @Patch("/post/content/:postId")
-  async update(postId: number, params: UpdatePostParam, userId: number) {
+  async update(postId: number, params: UpdatePostContentParam & UpdatePostConfigParam, userId: number) {
     let count: number;
-
-    try {
-      count = await updatePost(postId, userId, params);
-    } catch (error) {
-      if (error instanceof CheckTypeError) throw new HttpError(400, error.message);
-      throw error;
+    if (params.content_text !== undefined || params.content_text_structure !== undefined) {
+      count = await updatePostContent(postId, userId, params);
+    } else {
+      count = await updatePostConfig(postId, userId, params);
     }
     if (count === 0) {
       throw new HttpError(404, `ID 为 ${postId} 的帖子不存在`);

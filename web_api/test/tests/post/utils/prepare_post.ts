@@ -1,7 +1,7 @@
 import { JWT_TOKEN_KEY, Api } from "../../../fixtures/hono.ts";
 import { DbUserProfile, post, post_group, user_profile } from "@ijia/data/db";
 
-import { CreatePostParam, PostItemDto, UpdatePostParam } from "@/modules/post/mod.ts";
+import { CreatePostParam, PostItemDto, UpdatePostConfigParam, UpdatePostContentParam } from "@/modules/post/mod.ts";
 import v, { DbPool } from "@ijia/data/yoursql";
 import { prepareUniqueUser } from "../../../fixtures/user.ts";
 
@@ -41,7 +41,12 @@ export async function getPostReviewStatus(postId: number): Promise<ReviewStatus>
 export async function createPost(api: Api, body: CreatePostParam, token: string) {
   return api["/post/content"].put({ body: body, [JWT_TOKEN_KEY]: token });
 }
-export async function updatePost(api: Api, postId: number, body: UpdatePostParam, token: string) {
+export async function updatePost(
+  api: Api,
+  postId: number,
+  body: UpdatePostConfigParam & UpdatePostContentParam,
+  token: string,
+) {
   return api["/post/content/:postId"].patch({
     params: { postId },
     body: body,

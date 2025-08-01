@@ -1,6 +1,22 @@
-import { post, post_group, post_like, TextStructure, user, user_profile } from "@ijia/data/db";
+import {
+  post,
+  post_group,
+  post_like,
+  post_review_info,
+  PostReviewType,
+  TextStructure,
+  user,
+  user_profile,
+} from "@ijia/data/db";
 import v, { dbPool } from "@ijia/data/yoursql";
-import { CreatePostParam, GetPostListParam, PostItemDto, PostUserInfo, UpdatePostParam } from "../post.dto.ts";
+import {
+  CreatePostParam,
+  GetPostListParam,
+  PostItemDto,
+  PostUserInfo,
+  UpdatePostConfigParam,
+  UpdatePostContentParam,
+} from "../post.dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { getPostContentType } from "./sql_tool.ts";
 import { CursorListDto } from "@/modules/dto_common.ts";
@@ -219,7 +235,23 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
 
   return row[0];
 }
-export async function updatePost(postId: number, userId: number, param: UpdatePostParam) {
+export async function updatePostConfig(postId: number, userId: number, param: UpdatePostConfigParam): Promise<number> {
+  const updateContentSql = await post
+    .update({
+      options: updatePostOption("options", { comment_disabled: param.comment_disabled }), // 设置评论关闭
+      is_hide: v(param.is_hide),
+    })
+    .where(() => {
+      return [`user_id=${v(userId)}`, `id=${v(postId)}`, `(NOT is_delete)`];
+    })
+    .queryCount();
+  return updateContentSql;
+}
+export async function updatePostContent(
+  postId: number,
+  userId: number,
+  param: UpdatePostContentParam,
+): Promise<number> {
   const struct = checkTypeCopy(param.content_text_structure, optional(textStructChecker, "nullish"));
 
   let update_content_text: string | undefined;
@@ -238,62 +270,58 @@ export async function updatePost(postId: number, userId: number, param: UpdatePo
     contentUpdated = true;
   }
 
-  type ReviewStatus = {
-    is_review_pass: boolean | null;
-    is_reviewing: boolean;
-    group_id: number | null;
-    is_hide: boolean;
-    id: number;
-  };
-  const updateContentSql = await post
-    .update({
-      content_text: update_content_text,
-      content_text_struct: update_content_text_struct,
-      options: updatePostOption("options", { comment_disabled: param.comment_disabled }), // 设置评论关闭
-      update_time: contentUpdated ? "now()" : undefined,
-      is_hide: v(param.is_hide),
-    })
-    .where(() => {
-      return [`user_id=${v(userId)}`, `id=${v(postId)}`, `(NOT is_delete)`];
-    })
-    .returning<ReviewStatus>(["id", "is_review_pass", "is_reviewing", "group_id", "is_hide"]);
+  const sqlText = `
+  WITH chanted_data AS (
+  ${post
+    .select([
+      "is_reviewing",
+      "is_review_pass",
+      "id",
+      `(
+        CASE WHEN group_id IS NOT NULL
+          THEN TRUE ELSE (
+            CASE WHEN is_reviewing_pass IS FALSE
+              THEN TRUE
+              ELSE FALSE
+            END
+        )
+        END
+      ) AS changed_reviewing`,
+      `NULL AS changed_review_pass`,
+      `(${update_content_text ? v(update_content_text) : "content_text"}) AS content_text`,
+      `(${update_content_text_struct ? v(update_content_text_struct) : "content_text_struct"}) AS content_text_struct`,
+      `(${contentUpdated ? "now()" : "update_time"}) AS update_time`,
+    ])
+    .where([`user_id=${v(userId)}`, `id=${v(postId)}`, `(NOT is_delete)`])
+    .genSql()}
+  ), updated AS (
+    UPDATE ${post.name} FROM chanted_data
+    SET content_text = chanted_data.content_text,
+        content_text_struct = chanted_data.content_text_struct,
+        update_time = chanted_data.update_time,
+        is_reviewing = chanted_data.changed_reviewing,
+        is_review_pass = chanted_data.changed_review_pass
+    WHERE ${post.name}.id = chanted_data.id
+  ), updated_review AS (
+    INSERT INTO ${post_review_info.name} (type, target_id)
+    SELECT ${v(PostReviewType.post)}, id FROM chanted_data
+    ON CONFLICT (type, target_id) DO UPDATE SET
+      create_time = now(),
+      finished_time = NULL,
+      reviewer_id = NULL,
+      is_review_pass = NULL,
+      remark = NULL
+  )
+  SELECT count(*)::INT AS count FROM chanted_data
+  `;
+  const res = await dbPool.queryFirstRow<{ count: number }>(sqlText);
 
-  const db = dbPool.begin("REPEATABLE READ");
-  const updatedList = await db.queryRows(updateContentSql);
-  const item = updatedList[0];
-  if (contentUpdated && item) {
-    if (item.is_review_pass === true) {
-      let update_is_reviewing: string | undefined;
-      if (item.group_id) {
-        update_is_reviewing = "TRUE"; // 如果有分组，则直接进入审核状态
-      } else {
-        // 没有分组，不用提交审核
-      }
-      const sql = post
-        .update({
-          is_reviewing: update_is_reviewing,
-          is_review_pass: "null",
-          review_fail_count: "0",
-          review_pass_count: "0",
-        })
-        .where(`id=${v(item.id)}`);
-
-      await db.query(sql);
-    } else if (item.is_review_pass === false) {
-      // 如果是更新的是审核不通过的帖子，则不用管
-    } else {
-      // 如果是更新的是审核中的帖子，则不需要更新审核状态，只需要重置审核计数
-
-      const sql = post.update({ review_fail_count: "0", review_pass_count: "0" }).where(`id=${v(item.id)}`);
-      await db.query(sql);
-    }
-  }
-
-  await db.commit();
-
-  return updatedList.length;
+  return res.count;
 }
-function updatePostOption(optionsField: string, params: Pick<UpdatePostParam, "comment_disabled">): string | undefined {
+function updatePostOption(
+  optionsField: string,
+  params: Pick<UpdatePostConfigParam, "comment_disabled">,
+): string | undefined {
   const bitLen = 8;
   // 最多32 个字段
   const bitOption = ["is_anonymous", "comment_disabled"];
