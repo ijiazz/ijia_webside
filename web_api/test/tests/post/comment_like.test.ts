@@ -13,7 +13,7 @@ import {
   CommentReviewStatus,
 } from "./utils/prepare_comment.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
-import { post_comment, post_comment_review_result } from "@ijia/data/db";
+import { post_comment, post_review_info, PostReviewType } from "@ijia/data/db";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -135,8 +135,6 @@ test("有效举报人数达到3人时，评论将进入审核状态", async func
   await expect(getCommentReportCount(comment.id)).resolves.toBe(3);
   await expect(getCommentReviewStatus(p.id)).resolves.toMatchObject({
     is_review_pass: null,
-    review_fail_count: 0,
-    review_pass_count: 0,
   } satisfies Partial<CommentReviewStatus>);
 });
 
@@ -149,10 +147,10 @@ test("审核通过或不通过的评论，举报人数达到3人后，评论审�
   const comment1 = await action.createComment("abc", { token: alice.token });
   const comment2 = await action.createComment("abc", { token: alice.token });
 
-  await post_comment_review_result
+  await post_review_info
     .insert([
-      { comment_id: comment1.id, is_review_pass: true },
-      { comment_id: comment2.id, is_review_pass: false },
+      { type: PostReviewType.postComment, target_id: comment1.id, is_review_pass: true },
+      { type: PostReviewType.postComment, target_id: comment2.id, is_review_pass: false },
     ])
     .query();
 

@@ -30,12 +30,13 @@ export function checkValueAsync<T extends ExpectType>(
 ): Promise<InferExpect<T>> {
   return input.then((data) => checkValue(data, expectType, option));
 }
-/** 将邮箱域名转为小写 */
+/** 将邮箱转为小写. 一般的邮箱不区分大小写 */
 export function initEmail(email: string) {
-  const idx = email.lastIndexOf("@");
-  const domain = email.slice(idx + 1).toLocaleLowerCase();
-  const name = email.slice(0, idx);
-  return `${name}@${domain}`;
+  return email.toLowerCase();
+  // const idx = email.lastIndexOf("@");
+  // const domain = email.slice(idx + 1).toLowerCase();
+  // const name = email.slice(0, idx);
+  // return `${name}@${domain}`;
 }
 
 export const emailChecker: TypeCheckFn<string> = (value) => {

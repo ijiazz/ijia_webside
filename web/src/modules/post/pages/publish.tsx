@@ -1,4 +1,4 @@
-import { CreatePostParam, UpdatePostParam } from "@/api.ts";
+import { CreatePostParam, UpdatePostContentParam, UpdatePostConfigParam } from "@/api.ts";
 import { api } from "@/common/http.ts";
 import { useAntdStatic } from "@/global-provider.tsx";
 import { useAsync } from "@/hooks/async.ts";
@@ -8,59 +8,76 @@ import React, { useMemo } from "react";
 import { useNavigate } from "react-router";
 import { PRadio, RadioOption } from "../components/PostGroupSelect.tsx";
 
+export type UpdatePostParam = Omit<UpdatePostContentParam, "type"> & Omit<UpdatePostConfigParam, "type">;
 export function PublishPost(props: {
   editId?: number;
-  disableEditContent?: boolean;
-  disableSetting?: boolean;
+  editType?: "content" | "config";
   initValues?: UpdatePostParam | CreatePostParam;
   onEditOk?: (id: number) => void;
   onCreateOk?: (id: number) => void;
   groupLoading?: boolean;
   groupOptions?: { label: string; value: number; desc?: string }[];
 }) {
-  const { initValues, onEditOk, onCreateOk, groupOptions, editId, groupLoading, disableEditContent, disableSetting } =
-    props;
-  const { message } = useAntdStatic();
-  const isEdit = editId !== undefined;
-  const { run, reset, loading } = useAsync(async (data: UpdatePostParam | CreatePostParam) => {
-    if (isEdit) {
-      const updateValue: UpdatePostParam = diffUpdateValue(
-        {
-          content_text: data.content_text,
-          content_text_structure: data.content_text_structure ?? null,
-          is_hide: data.is_hide,
-          comment_disabled: data.comment_disabled,
-        },
-        initValues as UpdatePostParam | undefined,
-      );
-      const isChange = Object.keys(updateValue).length;
-      if (isChange) {
-        if (disableEditContent) {
-          delete updateValue.content_text;
-          delete updateValue.content_text_structure;
-        }
-        if (disableSetting) {
-          delete updateValue.is_hide;
-        }
+  const { initValues, onEditOk, onCreateOk, groupOptions, editId, groupLoading, editType } = props;
 
-        await api["/post/content/:postId"].patch({ params: { postId: editId }, body: updateValue });
-        message.success("已修改");
+  const isEdit = editId !== undefined;
+  const disableEditContent = isEdit && editType === "config";
+  const disableSetting = isEdit && editType === "content";
+
+  const { message } = useAntdStatic();
+  const { loading: editLoading, run: commitEdit } = useAsync(async (editId: number, data: UpdatePostParam) => {
+    const updateValue: UpdatePostParam = diffUpdateValue(
+      {
+        content_text: data.content_text,
+        content_text_structure: data.content_text_structure ?? null,
+        is_hide: data.is_hide,
+        comment_disabled: data.comment_disabled,
+      },
+      initValues as UpdatePostParam | undefined,
+    );
+    const isChange = Object.keys(updateValue).length;
+    if (isChange) {
+      switch (editType) {
+        case "content":
+          await updatePostContent(editId.toString(), {
+            content_text: updateValue.content_text,
+            content_text_structure: updateValue.content_text_structure,
+          });
+          break;
+        case "config":
+          await updatePostConfig(editId.toString(), {
+            is_hide: updateValue.is_hide,
+            comment_disabled: updateValue.comment_disabled,
+          });
+          break;
+        default:
+          throw new Error("未知的编辑类型");
       }
-      onEditOk?.(editId);
-    } else {
-      const { id } = await api["/post/content"].put({ body: data });
-      message.success("已发布");
-      onCreateOk?.(id);
+
+      message.success("已修改");
     }
+    onEditOk?.(editId);
   });
+  const { run: commitCreate, loading: createLoading } = useAsync(async (data: CreatePostParam) => {
+    const { id } = await api["/post/content"].put({ body: data });
+    message.success("已发布");
+    onCreateOk?.(id);
+  });
+  const loading = editLoading || createLoading;
+
   const [form] = Form.useForm<UpdatePostParam | CreatePostParam>();
   const groupId = Form.useWatch("group_id", form);
-
   return (
     <div>
       <Form
         form={form}
-        onFinish={run}
+        onFinish={(data) => {
+          if (isEdit) {
+            commitEdit(editId!, data as UpdatePostParam);
+          } else {
+            commitCreate(data as CreatePostParam);
+          }
+        }}
         wrapperCol={{ span: 18 }}
         labelCol={{ span: 4 }}
         initialValues={initValues || {}}
@@ -96,6 +113,18 @@ export function PublishPost(props: {
       </Form>
     </div>
   );
+}
+async function updatePostContent(postId: string, content: Omit<UpdatePostContentParam, "type">) {
+  await api["/post/content/:postId"].patch({
+    params: { postId },
+    body: { ...content, type: "content" },
+  });
+}
+async function updatePostConfig(postId: string, config: Omit<UpdatePostConfigParam, "type">) {
+  await api["/post/content/:postId"].patch({
+    params: { postId },
+    body: { ...config, type: "config" },
+  });
 }
 
 function GroupSelect(props: SelectProps) {

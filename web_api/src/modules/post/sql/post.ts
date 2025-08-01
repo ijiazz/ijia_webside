@@ -280,34 +280,35 @@ export async function updatePostContent(
       `(
         CASE WHEN group_id IS NOT NULL
           THEN TRUE ELSE (
-            CASE WHEN is_reviewing_pass IS FALSE
+            CASE WHEN is_review_pass IS FALSE
               THEN TRUE
               ELSE FALSE
             END
         )
         END
-      ) AS changed_reviewing`,
-      `NULL AS changed_review_pass`,
-      `(${update_content_text ? v(update_content_text) : "content_text"}) AS content_text`,
-      `(${update_content_text_struct ? v(update_content_text_struct) : "content_text_struct"}) AS content_text_struct`,
+      )::BOOL AS changed_reviewing`,
+      `NULL::BOOL AS changed_review_pass`,
+      `(${update_content_text ? update_content_text : "content_text"}) AS content_text`,
+      `(${update_content_text_struct ? `${update_content_text_struct}::JSONB` : "content_text_struct"}) AS content_text_struct`,
       `(${contentUpdated ? "now()" : "update_time"}) AS update_time`,
     ])
     .where([`user_id=${v(userId)}`, `id=${v(postId)}`, `(NOT is_delete)`])
     .genSql()}
   ), updated AS (
-    UPDATE ${post.name} FROM chanted_data
+    UPDATE ${post.name}
     SET content_text = chanted_data.content_text,
         content_text_struct = chanted_data.content_text_struct,
         update_time = chanted_data.update_time,
         is_reviewing = chanted_data.changed_reviewing,
         is_review_pass = chanted_data.changed_review_pass
+    FROM chanted_data
     WHERE ${post.name}.id = chanted_data.id
   ), updated_review AS (
     INSERT INTO ${post_review_info.name} (type, target_id)
     SELECT ${v(PostReviewType.post)}, id FROM chanted_data
     ON CONFLICT (type, target_id) DO UPDATE SET
       create_time = now(),
-      finished_time = NULL,
+      reviewed_time = NULL,
       reviewer_id = NULL,
       is_review_pass = NULL,
       remark = NULL

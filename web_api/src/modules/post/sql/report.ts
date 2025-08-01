@@ -2,9 +2,10 @@ import {
   post,
   post_comment,
   post_comment_like,
-  post_comment_review_result,
+  post_review_info,
   post_like,
   user_profile,
+  PostReviewType,
 } from "@ijia/data/db";
 import v, { dbPool, Selection } from "@ijia/data/yoursql";
 import { REPORT_THRESHOLD } from "./const.ts";
@@ -86,16 +87,16 @@ export async function reportComment(commentId: number, userId: number, reason?: 
     FROM insert_report
     WHERE ${post_comment.name}.id = insert_report.comment_id
     RETURNING comment_id, dislike_count
-  ), update_reviewing AS (
-  ${post_comment_review_result
+  ), add_reviewing AS (
+  ${post_review_info
     .insert(
-      "comment_id",
+      "type, target_id",
       Selection.from("update_count")
-        .select("comment_id")
+        .select([v(PostReviewType.postComment), "comment_id"])
         .where(`update_count.dislike_count >=${v(REPORT_THRESHOLD)}`)
         .genSql(),
     )
-    .onConflict("comment_id")
+    .onConflict("type, target_id")
     .doNotThing()
     .genSql()}
   )

@@ -36,7 +36,7 @@ export interface PostApi {
   "DELETE /post/content/:postId": {};
   /** 更新作品 */
   "PATCH /post/content/:postId": {
-    body: UpdatePostContentParam & UpdatePostConfigParam;
+    body: UpdatePostContentParam | UpdatePostConfigParam;
   };
   /** 点赞作品 */
   "POST /post/like/:postId": {

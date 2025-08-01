@@ -42,10 +42,12 @@ export type CreatePostParam = {
   comment_disabled?: boolean;
 };
 export type UpdatePostContentParam = {
+  type: "content";
   content_text?: string | null;
   content_text_structure?: TextStructure[] | null;
 };
 export type UpdatePostConfigParam = {
+  type: "config";
   /** 是否仅自己可见 */
   is_hide?: boolean;
   /** 是否开启评论 */

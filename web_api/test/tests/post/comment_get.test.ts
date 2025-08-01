@@ -3,7 +3,7 @@ import { applyController } from "@asla/hono-decorator";
 import { beforeEach, describe, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 import { prepareCommentPost, prepareCommentToDb } from "./utils/prepare_comment.ts";
-import { updatePost, deletePost } from "./utils/prepare_post.ts";
+import { deletePost, updatePostConfigFormApi } from "./utils/prepare_post.ts";
 import { post } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
 import { prepareUniqueUser } from "../..//fixtures/user.ts";
@@ -182,7 +182,7 @@ describe("部分帖子状态下不能获取评论", () => {
   test("不能获取已隐藏的作品的评论", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
-    await updatePost(api, postInfo.id, { is_hide: true }, alice.token); // 隐藏作品
+    await updatePostConfigFormApi(api, postInfo.id, { is_hide: true }, alice.token); // 隐藏作品
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
