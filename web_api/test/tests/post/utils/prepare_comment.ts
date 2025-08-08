@@ -102,11 +102,13 @@ export async function getCommentStat(commentId: number): Promise<CommentInfo> {
     .queryFirstRow();
 }
 
-export type CommentReviewStatus = Pick<DbPostReviewInfoCreate, "is_review_pass">;
+export type CommentReviewStatus = Pick<DbPostReviewInfoCreate, "is_review_pass" | "reviewed_time" | "reviewer_id">;
 export async function getCommentReviewStatus(commentId: number): Promise<CommentReviewStatus | undefined> {
   const select = await post_review_info
     .select({
       is_review_pass: true,
+      reviewed_time: true,
+      reviewer_id: true,
     })
     .where([`type=${v(PostReviewType.postComment)}`, `target_id=${commentId}`])
     .queryRows();

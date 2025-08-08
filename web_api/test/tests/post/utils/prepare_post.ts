@@ -1,17 +1,11 @@
 import { JWT_TOKEN_KEY, Api } from "../../../fixtures/hono.ts";
-import {
-  DbPostReviewInfo,
-  DbUserProfile,
-  post,
-  post_group,
-  post_review_info,
-  PostReviewType,
-  user_profile,
-} from "@ijia/data/db";
+import { DbUserProfile, post, post_group, post_review_info, PostReviewType, user_profile } from "@ijia/data/db";
 
 import { CreatePostParam, PostItemDto, UpdatePostConfigParam, UpdatePostContentParam } from "@/modules/post/mod.ts";
 import v, { DbPool } from "@ijia/data/yoursql";
 import { prepareUniqueUser } from "../../../fixtures/user.ts";
+import { PostReviewInfo } from "@/modules/post/PostReview.dto.ts";
+import { jsonb_build_object } from "@/global/sql_util.ts";
 
 export async function markReviewed(
   postId: number,
@@ -36,7 +30,14 @@ export async function getPostReviewStatus(postId: number): Promise<ReviewStatus>
       is_review_pass: true,
       is_reviewing: true,
       review: post_review_info
-        .select(`row_to_json(${post_review_info.name})`)
+        .select(
+          jsonb_build_object({
+            is_review_pass: "is_review_pass",
+            reviewed_time: "reviewed_time",
+            remark: "remark",
+            reviewer_id: "reviewer_id",
+          }),
+        )
         .where([`type=${v(PostReviewType.post)}`, `target_id=${v(postId)}`])
         .toSelect(),
     })
@@ -78,7 +79,7 @@ export async function updatePostConfigFormApi(
 export type ReviewStatus = {
   is_review_pass: boolean | null;
   is_reviewing: boolean;
-  review: Pick<DbPostReviewInfo, "create_time" | "remark" | "reviewed_time" | "is_review_pass"> | null;
+  review: PostReviewInfo | null;
 };
 /** 创建一个用户，并发布一个帖子 */
 export async function preparePost(api: Api, option?: CreatePostParam) {

@@ -135,6 +135,7 @@ test("有效举报人数达到3人时，评论将进入审核状态", async func
   await expect(getCommentReportCount(comment.id)).resolves.toBe(3);
   await expect(getCommentReviewStatus(p.id)).resolves.toMatchObject({
     is_review_pass: null,
+    reviewed_time: null,
   } satisfies Partial<CommentReviewStatus>);
 });
 

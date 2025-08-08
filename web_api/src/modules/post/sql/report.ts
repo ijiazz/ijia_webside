@@ -10,7 +10,34 @@ import {
 import v, { dbPool, Selection } from "@ijia/data/yoursql";
 import { REPORT_THRESHOLD } from "./const.ts";
 import { HttpError } from "@/global/errors.ts";
-
+export async function setPostToReviewing(postId: number) {
+  const sqlText = `WITH need_add_review AS (${post
+    .update({ is_reviewing: v(true) })
+    .where([`id=${v(postId)}`, "NOT is_delete", `NOT is_reviewing`])
+    .returning("id AS post_id")
+    .toString()}
+  )
+  INSERT INTO ${post_review_info.name} (type, target_id)
+  SELECT ${v(PostReviewType.post)}, post_id FROM need_add_review
+  ON CONFLICT (type, target_id) DO
+  UPDATE SET is_review_pass = NULL
+  RETURNING target_id;
+  `;
+  await dbPool.queryFirstRow(sqlText);
+}
+export async function setPostCommentToReviewing(commentId: number) {
+  await post_review_info
+    .insert(
+      "type, target_id",
+      post_comment
+        .select([v(PostReviewType.postComment), "id"])
+        .where([`id=${v(commentId)}`, "NOT is_delete"])
+        .toString(),
+    )
+    .onConflict("type, target_id")
+    .doNotThing()
+    .query();
+}
 export async function reportPost(postId: number, userId: number, reason?: string): Promise<number> {
   const sql = `WITH old AS(
     ${post_like
@@ -45,11 +72,21 @@ export async function reportPost(postId: number, userId: number, reason?: string
       )
     FROM insert_report
     WHERE ${post.name}.id = insert_report.post_id
+    RETURNING post_id, is_reviewing, dislike_count
+  ), insert_reviewing AS (
+    INSERT INTO ${post_review_info.name} (type, target_id)
+    SELECT ${v(PostReviewType.post)}, post_id FROM update_post_count
+    WHERE is_reviewing
+    RETURNING target_id
   )
-  SELECT COUNT(*)::INT, (SELECT weight FROM old) AS old_weight, (SELECT weight FROM insert_report) AS report_weight FROM insert_report
+  SELECT COUNT(*)::INT,
+    (SELECT weight FROM old) AS old_weight,
+    (SELECT weight FROM insert_report) AS report_weight,
+    (SELECT COUNT(*)::INT FROM insert_reviewing) AS new_reviewing_count
+  FROM insert_report
   `;
 
-  const r2 = await dbPool.queryFirstRow<{ count: number; old_weight: number }>(sql);
+  const r2 = await dbPool.queryFirstRow<{ count: number; old_weight: number; new_reviewing_count: number }>(sql);
   if (r2.old_weight !== null) {
     if (r2.old_weight > 0) throw new HttpError(400, "请取消点赞后再举报");
   }

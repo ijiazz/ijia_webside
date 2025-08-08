@@ -17,7 +17,9 @@ import {
   updatePostConfigFormApi,
   UserStat,
 } from "./utils/prepare_post.ts";
-import { post } from "@ijia/data/db";
+import { post, PostReviewType } from "@ijia/data/db";
+import { DeepPartial } from "./utils/comment.ts";
+import { getReviewTarget } from "@/modules/post/sql/post_review.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -201,6 +203,7 @@ test("有效举报人数达到3人，帖子将进入审核状态", async functio
   await expect(getPostReportCount(p.id)).resolves.toBe(2);
   const status1 = await getPostReviewStatus(p.id);
   expect(status1.is_reviewing).toBeFalsy();
+  await expect(getReviewTarget(PostReviewType.post, p.id), "未添加到审核队列").resolves.toBeUndefined();
 
   const bob3 = await prepareUniqueUser("bob3");
   await reportPost(api, p.id, bob3.token, "测试举报");
@@ -210,7 +213,10 @@ test("有效举报人数达到3人，帖子将进入审核状态", async functio
   expect(status).toMatchObject({
     is_review_pass: null,
     is_reviewing: true,
-  } satisfies Partial<ReviewStatus>);
+    review: { is_review_pass: null, reviewed_time: null },
+  } satisfies DeepPartial<ReviewStatus>);
+
+  await expect(getReviewTarget(PostReviewType.post, p.id), "添加到审核队列").resolves.toBeTypeOf("object");
 });
 test("审核通过的帖子，举报达到3人后，帖子仍然是审核通过", async function ({ api, publicDbPool }) {
   const { post: p, alice } = await preparePost(api);

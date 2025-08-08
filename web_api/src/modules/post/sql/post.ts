@@ -263,7 +263,11 @@ export async function updatePostContent(
     if (param.content_text === null || param.content_text === "") {
       update_content_text_struct = "NULL";
     } else {
-      checkContent(param.content_text, struct);
+      try {
+        checkContent(param.content_text, struct);
+      } catch (error) {
+        throw new HttpError(400, error instanceof Error ? error.message : "Unknown error");
+      }
       update_content_text = v(param.content_text);
       update_content_text_struct = struct?.length ? v(JSON.stringify(struct)) : "NULL";
     }
@@ -274,17 +278,13 @@ export async function updatePostContent(
   WITH chanted_data AS (
   ${post
     .select([
-      "is_reviewing",
-      "is_review_pass",
       "id",
       `(
-        CASE WHEN group_id IS NOT NULL
-          THEN TRUE ELSE (
-            CASE WHEN is_review_pass IS FALSE
-              THEN TRUE
-              ELSE FALSE
-            END
-        )
+        CASE WHEN is_reviewing
+          THEN TRUE
+        WHEN group_id IS NOT NULL
+          THEN TRUE
+          ELSE FALSE
         END
       )::BOOL AS changed_reviewing`,
       `NULL::BOOL AS changed_review_pass`,
@@ -306,12 +306,15 @@ export async function updatePostContent(
   ), updated_review AS (
     INSERT INTO ${post_review_info.name} (type, target_id)
     SELECT ${v(PostReviewType.post)}, id FROM chanted_data
+    WHERE changed_reviewing
     ON CONFLICT (type, target_id) DO UPDATE SET
       create_time = now(),
       reviewed_time = NULL,
       reviewer_id = NULL,
       is_review_pass = NULL,
       remark = NULL
+  ), deleted_review AS (
+    ${post_review_info.delete({ where: [`type=${v(PostReviewType.post)}`, `target_id IN (SELECT id FROM chanted_data WHERE NOT changed_reviewing)`] }).genSql()}
   )
   SELECT count(*)::INT AS count FROM chanted_data
   `;
