@@ -18,7 +18,7 @@
     "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
     "@emotion/styled": "^11.14.0",
     "animejs": "^4.0.0",
-    "antd": "^5.23.3",
+    "antd": "^5.27.0",
     "canvas-confetti": "^1.9.3",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.13",

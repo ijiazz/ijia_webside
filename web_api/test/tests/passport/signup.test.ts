@@ -45,7 +45,7 @@ test("大写字母域名会被转换成小写", async function ({ api, publicDbP
   });
 
   const info = await getValidUserSampleInfoByUserId(result.userId);
-  expect(info.email).toBe(`${prefix}@ijiazz.中文`);
+  expect(info.email).toBe(`${prefix.toLowerCase()}@ijiazz.中文`);
 });
 test("不能使用一个用户的邮箱验证码注册另一个用户的邮箱", async function ({ api, publicDbPool }) {
   const emailAnswer = await mockSignUpSendEmailCaptcha(api, getUniqueEmail("alice"));
