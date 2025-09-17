@@ -1,11 +1,24 @@
 import { Controller, Delete, Get, Patch, Post, Put, ToArguments, Use } from "@asla/hono-decorator";
 import { autoBody } from "@/global/pipe.ts";
 import { identity } from "@/global/auth.ts";
-import { CreatePostParam, GetPostListParam, PostResponse, UpdatePostParam } from "./post.dto.ts";
-import { createPost, deletePost, getPostList, getUserDateCount, updatePost } from "./sql/post.ts";
+import {
+  CreatePostParam,
+  GetPostListParam,
+  PostResponse,
+  UpdatePostConfigParam,
+  UpdatePostContentParam,
+} from "./post.dto.ts";
+import {
+  createPost,
+  deletePost,
+  getPostList,
+  getUserDateCount,
+  updatePostConfig,
+  updatePostContent,
+} from "./sql/post.ts";
 import { cancelPostLike, setPostLike } from "./sql/post_like.ts";
 import { checkValue, checkValueAsync } from "@/global/check.ts";
-import { CheckTypeError, getBasicType, integer, optional } from "@asla/wokao";
+import { CheckTypeError, getBasicType, integer, optional, TypeCheckFn } from "@asla/wokao";
 import { HonoContext } from "@/hono/type.ts";
 import { HttpError } from "@/global/errors.ts";
 import { appConfig } from "@/config.ts";
@@ -49,26 +62,45 @@ class PostController {
     const userInfo = c.get("userInfo");
     const postId = checkValue(c.req.param("postId"), integer.positive);
     const userId = await userInfo.getUserId();
-    const res = await checkValueAsync(c.req.json(), {
-      content_text: optional.string,
-      content_text_structure: optional((input) => {
-        if (input instanceof Array) return input;
-        throw new CheckTypeError("Array", getBasicType(input));
-      }, "nullish"),
-      is_hide: optional.boolean,
-      comment_disabled: optional.boolean,
-    });
+    const json = await c.req.json();
+    let res: UpdatePostContentParam | UpdatePostConfigParam;
+    switch (json.type) {
+      case "content":
+        res = checkValue(json, {
+          type: "string" as any as TypeCheckFn<"content">,
+          content_text: optional.string,
+          content_text_structure: optional((input) => {
+            if (input instanceof Array) return input;
+            throw new CheckTypeError("Array", getBasicType(input));
+          }, "nullish"),
+        });
+        break;
+
+      case "config":
+        res = checkValue(json, {
+          type: "string" as any as TypeCheckFn<"config">,
+          is_hide: optional.boolean,
+          comment_disabled: optional.boolean,
+        });
+        break;
+
+      default:
+        throw new HttpError(400, `不支持的更新类型 ${json.type}`);
+    }
+
     return [postId, res, userId];
   })
   @Patch("/post/content/:postId")
-  async update(postId: number, params: UpdatePostParam, userId: number) {
+  async update(postId: number, params: UpdatePostContentParam | UpdatePostConfigParam, userId: number) {
     let count: number;
+    switch (params.type) {
+      case "content":
+        count = await updatePostContent(postId, userId, params);
+        break;
 
-    try {
-      count = await updatePost(postId, userId, params);
-    } catch (error) {
-      if (error instanceof CheckTypeError) throw new HttpError(400, error.message);
-      throw error;
+      case "config":
+        count = await updatePostConfig(postId, userId, params);
+        break;
     }
     if (count === 0) {
       throw new HttpError(404, `ID 为 ${postId} 的帖子不存在`);

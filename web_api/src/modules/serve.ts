@@ -8,7 +8,13 @@ import { passportController } from "./passport/mod.ts";
 import accountController from "./passport/account.controller.ts";
 import { classController } from "./class/mod.ts";
 import { imageCaptchaController } from "./captcha/mod.ts";
-import { postController, platformPostController, postGroupController, commentController } from "./post/mod.ts";
+import {
+  postController,
+  platformPostController,
+  postGroupController,
+  commentController,
+  postReviewController,
+} from "./post/mod.ts";
 import { liveController } from "./live/live.controller.ts";
 import { appController } from "./app/app.controller.ts";
 
@@ -25,6 +31,7 @@ export function createHonoApp(option: { static?: boolean } = {}) {
   applyController(hono, postGroupController);
   applyController(hono, postController);
   applyController(hono, commentController);
+  applyController(hono, postReviewController);
 
   applyController(hono, liveController);
   applyController(hono, appController);

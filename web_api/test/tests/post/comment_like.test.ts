@@ -13,7 +13,7 @@ import {
   CommentReviewStatus,
 } from "./utils/prepare_comment.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
-import { post_comment, post_comment_review_result } from "@ijia/data/db";
+import { post_comment, post_review_info, PostReviewType } from "@ijia/data/db";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -115,7 +115,7 @@ test("举报评论", async function ({ api, publicDbPool }) {
 
   const res = await reportComment(api, comment.id, "测试举报", bob.token);
   expect(res.success).toBeTruthy();
-  await expect(getCommentReportCount(comment.id)).resolves.toBe(1);
+  await expect(getCommentReviewWeight(comment.id)).resolves.toBe(100);
 });
 test("有效举报人数达到3人时，评论将进入审核状态", async function ({ api, publicDbPool }) {
   const { post: p, alice, action } = await prepareCommentPost(api);
@@ -126,17 +126,16 @@ test("有效举报人数达到3人时，评论将进入审核状态", async func
   for (let i = 0; i < list.length; i++) {
     await reportComment(api, comment.id, "测试举报", list[i].token);
   }
-  await expect(getCommentReportCount(comment.id)).resolves.toBe(2);
+  await expect(getCommentReviewWeight(comment.id)).resolves.toBe(200);
 
   await expect(getCommentReviewStatus(p.id), "评论未在审核状态").resolves.toBeUndefined();
 
   const bob3 = await prepareUniqueUser("bob3");
   await reportComment(api, p.id, "测试举报", bob3.token);
-  await expect(getCommentReportCount(comment.id)).resolves.toBe(3);
+  await expect(getCommentReviewWeight(comment.id)).resolves.toBe(300);
   await expect(getCommentReviewStatus(p.id)).resolves.toMatchObject({
     is_review_pass: null,
-    review_fail_count: 0,
-    review_pass_count: 0,
+    reviewed_time: null,
   } satisfies Partial<CommentReviewStatus>);
 });
 
@@ -149,10 +148,10 @@ test("审核通过或不通过的评论，举报人数达到3人后，评论审�
   const comment1 = await action.createComment("abc", { token: alice.token });
   const comment2 = await action.createComment("abc", { token: alice.token });
 
-  await post_comment_review_result
+  await post_review_info
     .insert([
-      { comment_id: comment1.id, is_review_pass: true },
-      { comment_id: comment2.id, is_review_pass: false },
+      { type: PostReviewType.postComment, target_id: comment1.id, is_review_pass: true },
+      { type: PostReviewType.postComment, target_id: comment2.id, is_review_pass: false },
     ])
     .query();
 
@@ -186,9 +185,9 @@ test("已举报的评论，不能再点赞", async function ({ api, publicDbPool
   } satisfies Partial<CommentInfo>);
 });
 
-function getCommentReportCount(commentId: number) {
+function getCommentReviewWeight(commentId: number) {
   return post_comment
-    .select({ report_count: "ROUND(dislike_count::NUMERIC /100, 2)" })
+    .select({ report_count: "dislike_count" })
     .where(`id=${commentId}`)
     .queryFirstRow()
     .then((item) => +item.report_count);

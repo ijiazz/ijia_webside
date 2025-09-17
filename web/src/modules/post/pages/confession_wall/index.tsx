@@ -1,4 +1,4 @@
-import { PostGroupResponse, PostItemDto, UpdatePostParam } from "@/api.ts";
+import { PostGroupResponse, PostItemDto } from "@/api.ts";
 import { List, MenuProps, Modal } from "antd";
 import styled from "@emotion/styled";
 import { useAntdStatic } from "@/global-provider.tsx";
@@ -19,6 +19,7 @@ import { useItemData } from "./useItemData.ts";
 import { WallPostCard } from "./PostCard.tsx";
 import { CommentDrawer, useCommentDrawer } from "./comment.tsx";
 import { ReportModal } from "../../components/ReportModal.tsx";
+import { UpdatePostParam } from "../publish.tsx";
 
 export function PostListPage() {
   const data = useRouteLoaderData<PostGroupResponse | undefined>("/wall");
@@ -214,8 +215,7 @@ function PostList(props: PostListProps) {
         width={600}
       >
         <Publish
-          disableEditContent={editItem && !editItem.updateContent}
-          disableSetting={editItem && editItem.updateContent}
+          editType={editItem && editItem.updateContent ? "content" : "config"}
           editId={editItem?.id}
           initValues={editItem ? editItem : { group_id: filter.group?.group_id }}
           onCreateOk={(id) => {

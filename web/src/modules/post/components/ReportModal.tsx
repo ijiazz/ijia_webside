@@ -1,6 +1,7 @@
 import { useAsync } from "@/hooks/async.ts";
 import { Button, Form, Input, Modal, Select } from "antd";
 import React, { useEffect, useState } from "react";
+import { PRESET_REASON } from "./preset_reason.ts";
 
 export function ReportModal(props: {
   open?: boolean;
@@ -49,11 +50,3 @@ export function ReportModal(props: {
     </Modal>
   );
 }
-
-const PRESET_REASON = [
-  { value: "辱骂" },
-  { value: "消极恶劣" },
-  { value: "色情" },
-  { value: "政治" },
-  { value: "其他" },
-];
