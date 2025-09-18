@@ -2,6 +2,7 @@
   "type": "module",
   "scripts": {
     "e2e:local": "playwright test --ui",
+    "check-type": "tsc --noEmit",
     "install-browsers": "pnpm dlx playwright install chromium webkit firefox",
     "install-browser": "pnpm dlx @puppeteer/browsers install chrome@109",
     "e2e:ci": "playwright test -c playwright.ci.config.ts --trace retain-on-first-failure",
@@ -11,8 +12,8 @@
   },
   "dependencies": {
     "@ijia/data": "workspace:^",
-    "@playwright/test": "^1.44.1",
-    "@types/node": "^22.13.8",
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.5.2",
     "evlib": "^3.1.3",
     "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1"
   }
