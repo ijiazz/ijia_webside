@@ -1,9 +1,11 @@
 import { JWT_TOKEN_KEY, Api } from "../../../fixtures/hono.ts";
-import { DbUserProfile, post, post_group, user_profile } from "@ijia/data/db";
+import { DbUserProfile, post, post_group, post_review_info, PostReviewType, user_profile } from "@ijia/data/db";
 
-import { CreatePostParam, PostItemDto, UpdatePostParam } from "@/modules/post/mod.ts";
+import { CreatePostParam, PostItemDto, UpdatePostConfigParam, UpdatePostContentParam } from "@/modules/post/mod.ts";
 import v, { DbPool } from "@ijia/data/yoursql";
 import { prepareUniqueUser } from "../../../fixtures/user.ts";
+import { PostReviewInfo } from "@/modules/post/PostReview.dto.ts";
+import { jsonb_build_object } from "@/global/sql_util.ts";
 
 export async function markReviewed(
   postId: number,
@@ -18,8 +20,6 @@ export async function markReviewed(
     .update({
       is_reviewing: v(status.reviewing),
       is_review_pass: v(status.review_pass),
-      review_pass_count: v(status.passCount),
-      review_fail_count: v(status.failCount),
     })
     .where([`id=${postId}`])
     .queryCount();
@@ -27,10 +27,19 @@ export async function markReviewed(
 export async function getPostReviewStatus(postId: number): Promise<ReviewStatus> {
   const select = await post
     .select<ReviewStatus>({
-      review_fail_count: true,
-      review_pass_count: true,
       is_review_pass: true,
       is_reviewing: true,
+      review: post_review_info
+        .select(
+          jsonb_build_object({
+            is_review_pass: "is_review_pass",
+            reviewed_time: "reviewed_time",
+            remark: "remark",
+            reviewer_id: "reviewer_id",
+          }),
+        )
+        .where([`type=${v(PostReviewType.post)}`, `target_id=${v(postId)}`])
+        .toSelect(),
     })
     .where(`id=${postId}`)
     .queryFirstRow();
@@ -41,18 +50,36 @@ export async function getPostReviewStatus(postId: number): Promise<ReviewStatus>
 export async function createPost(api: Api, body: CreatePostParam, token: string) {
   return api["/post/content"].put({ body: body, [JWT_TOKEN_KEY]: token });
 }
-export async function updatePost(api: Api, postId: number, body: UpdatePostParam, token: string) {
+
+export async function updatePostContentFromApi(
+  api: Api,
+  postId: number,
+  body: Omit<UpdatePostContentParam, "type">,
+  token: string,
+) {
   return api["/post/content/:postId"].patch({
     params: { postId },
-    body: body,
+    body: { ...body, type: "content" },
     [JWT_TOKEN_KEY]: token,
   });
 }
+export async function updatePostConfigFormApi(
+  api: Api,
+  postId: number,
+  body: Omit<UpdatePostConfigParam, "type">,
+  token: string,
+) {
+  return api["/post/content/:postId"].patch({
+    params: { postId },
+    body: { ...body, type: "config" },
+    [JWT_TOKEN_KEY]: token,
+  });
+}
+
 export type ReviewStatus = {
-  review_fail_count: number;
-  review_pass_count: number;
   is_review_pass: boolean | null;
   is_reviewing: boolean;
+  review: PostReviewInfo | null;
 };
 /** 创建一个用户，并发布一个帖子 */
 export async function preparePost(api: Api, option?: CreatePostParam) {

@@ -7,6 +7,7 @@ export * from "./dto_common.ts";
 export * from "./post/platform_post.dto.ts";
 export * from "./post/post.dto.ts";
 export * from "./post/comment.dto.ts";
+export * from "./post/PostReview.dto.ts";
 export * from "./live/live.dto.ts";
 
 export type { TextStructure } from "@ijia/data/db";

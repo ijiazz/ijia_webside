@@ -70,8 +70,8 @@ export function WallPostCard(props: PCardProps) {
           isLike={item.curr_user?.is_like}
           likeCount={item.stat.like_total}
           likeDisabled={!item.curr_user}
-          onPostLike={(isCancel) => onLike?.(item.asset_id, isCancel)}
-          onOpenComment={() => onOpenComment?.(item.asset_id)}
+          onPostLike={(isCancel) => onLike?.(item.post_id, isCancel)}
+          onOpenComment={() => onOpenComment?.(item.post_id)}
         />
       }
     >

@@ -93,7 +93,7 @@ describe("修改邮箱", async function () {
       body: { newEmail: newEmail, emailCaptcha: emailCaptchaAnswer, accountToken },
       [JWT_TOKEN_KEY]: alice.token,
     });
-    await expect(getUserEmail(alice.id), "成功修改邮箱且邮箱域名为小写").resolves.toBe(`${prefix}@ijiazz.中文`);
+    await expect(getUserEmail(alice.id), "成功修改邮箱变为小写").resolves.toBe(`${prefix.toLowerCase()}@ijiazz.中文`);
   });
   test("已注销账号不能修改邮箱", async function ({ api }) {
     const alice = await prepareUniqueUser("alice");

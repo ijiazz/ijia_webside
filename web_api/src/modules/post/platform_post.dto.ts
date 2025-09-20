@@ -22,7 +22,7 @@ export type GetPlatformPostListParam = {
 export interface PlatformPostItemDto extends PostItemBase {
   /** 作者信息 */
   author: PostUserInfo;
-  asset_id: string;
+  post_id: string;
   platform: Platform;
   url?: string;
 }

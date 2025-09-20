@@ -126,15 +126,7 @@ function ChangeEmailModal(props: { oldEmail?: string; open?: boolean; onClose?: 
     if (open) setToken(null);
   }, [open]);
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      onCancel={onClose}
-      title="修改邮箱"
-      footer={null}
-      destroyOnClose
-      maskClosable={false}
-    >
+    <Modal open={open} onCancel={onClose} title="修改邮箱" footer={null} destroyOnClose maskClosable={false}>
       <div style={{ maxWidth: 400 }}>
         <Steps
           current={step}

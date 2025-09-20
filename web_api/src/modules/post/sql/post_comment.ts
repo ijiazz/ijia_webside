@@ -222,66 +222,14 @@ export async function getUserCanCreateCommentLimit(userId: number, second: numbe
 
   return list.length === 0;
 }
-
+/** 删除 commentId 以及所有子评论，更新父级评论回复数和跟评论回复总数 */
 export async function recursiveDeleteComment(commentId: number, userId: number) {
-  const ctName = post_comment.name;
-  //删除 commentId 以及所有子评论，更新父级评论回复数和跟评论回复总数
-
-  const deleteComment = `
-WITH 
-  need_delete AS (
-    ${post_comment
-      .fromAs("base")
-      .innerJoin(post, "p", ["base.post_id=p.id"])
-      .select([
-        "base.id AS cid",
-        "base.parent_comment_id AS parent_cid",
-        "base.root_comment_id as root_cid",
-        "base.user_id AS comment_user_id",
-        "p.id as post_id",
-        "p.user_id AS post_user_id",
-      ])
-      .where([`base.id=${v(commentId)}`, "NOT base.is_delete", `(p.user_id=${v(userId)} OR base.user_id=${v(userId)})`])
-      .toString()}
-  ), deleted AS (
-  UPDATE ${ctName} SET 
-    is_delete= TRUE,
-    is_root_reply_count= 0,
-    reply_count= 0
-  FROM (
-    WITH RECURSIVE tree AS (
-      SELECT cid AS cid FROM need_delete
-      UNION ALL
-      ${post_comment.fromAs("c").innerJoin("tree", undefined, ["c.parent_comment_id=tree.cid", "NOT c.is_delete"]).select("c.id").toString()}
-    )
-    SELECT * FROM tree
-  ) as tree2 
-  WHERE NOT is_delete AND ${ctName}.id= tree2.cid
-  RETURNING id, root_comment_id, parent_comment_id
-), delete_total AS (
-  SELECT COUNT(*) FROM deleted
-), update_post AS (
-    ${post.update({ comment_num: "comment_num - delete_total.count" }).toString()}
-  FROM delete_total, need_delete
-  WHERE ${post.name}.id = need_delete.post_id
-), change_parent AS (${createChangeParent("deleted")}), update_parent AS (  
-  UPDATE ${ctName} SET 
-    reply_count = ${ctName}.reply_count - change_parent.reply_count,
-    is_root_reply_count = ${ctName}.is_root_reply_count - change_parent.is_root_reply_count
-  FROM change_parent WHERE ${ctName}.id = change_parent.id
-)
-SELECT 
-  (SELECT json_agg(change_parent) FROM change_parent) AS change_parent,
-  (SELECT count(need_delete)::INT FROM need_delete) AS can_delete_total, 
-  delete_total.count::INT AS deleted_total
-FROM delete_total
-`;
-  const result = await dbPool.queryRows<{
+  const deleteInfo = await dbPool.queryFirstRow<{
     deleted_total: number;
     can_delete_total: number;
     need_delete: { post_user_id: number; comment_user_id: number }[];
-  }>(deleteComment);
-  const deleteInfo = result[0];
+  }>(`SELECT * FROM post_recursive_delete_comment(${v(commentId)}, ${v(userId)})`);
+
   if (!deleteInfo.can_delete_total) throw new HttpError(404, `id 为 ${commentId} 的评论不存在`);
 }
 /**
@@ -290,54 +238,9 @@ FROM delete_total
  * 帖子作者可以删除所有评论
  */
 export async function deleteComment(commentId: number, userId: number) {
-  const ctName = post_comment.name;
-  const sqlText = `WITH deleted AS (
-    UPDATE ${ctName} SET is_delete= TRUE
-    FROM ${post.name} AS p
-    WHERE ${ctName}.id=${v(commentId)} AND NOT ${ctName}.is_delete AND (p.user_id=${v(userId)} OR ${ctName}.user_id=${v(userId)})
-    RETURNING ${ctName}.id, ${ctName}.root_comment_id, ${ctName}.parent_comment_id, ${ctName}.post_id, ${ctName}.is_root_reply_count
-  ), update_post AS (
-    UPDATE ${post.name} AS p
-    SET comment_num = comment_num - (
-      CASE WHEN deleted.root_comment_id IS NULL
-      THEN deleted.is_root_reply_count +1
-      ELSE 1 END
-    ) FROM deleted
-    WHERE p.id = deleted.post_id
-  ), change_parent AS (${createChangeParent("deleted")}), update_parent AS (  
-    UPDATE ${ctName} SET 
-      reply_count = ${ctName}.reply_count - change_parent.reply_count,
-      is_root_reply_count = ${ctName}.is_root_reply_count - change_parent.is_root_reply_count
-    FROM change_parent
-    WHERE ${ctName}.id = change_parent.id
-  )
-  SELECT count(deleted.id)::INT AS deleted_total FROM deleted
-  `;
-  const result = await dbPool.queryRows<{ deleted_total: number }>(sqlText);
+  const deleteInfo = await dbPool.queryFirstRow<{ count: number }>(
+    `SELECT post_delete_comment(${v(commentId)}, ${v(userId)}) as count`,
+  );
 
-  const deleteInfo = result[0];
-  if (!deleteInfo.deleted_total) throw new HttpError(404, `id 为 ${commentId} 的评论不存在`);
-}
-/**
- *
- * inputTable: parent_comment_id, root_comment_id
- * outputTable: id, reply_count, is_root_reply_count
- */
-function createChangeParent(targetTableName: string) {
-  return `
-  SELECT COALESCE(a.id, b.id) AS id, 
-    COALESCE(a.parent_count, 0) AS reply_count,
-    COALESCE(b.root_count, 0) AS is_root_reply_count
-  FROM (
-    SELECT parent_comment_id AS id, COUNT(*) AS parent_count 
-    FROM ${targetTableName}
-    WHERE parent_comment_id IS NOT NULL
-    GROUP BY parent_comment_id
-  ) AS a FULL OUTER JOIN (
-    SELECT root_comment_id AS id, COUNT(*) AS root_count 
-    FROM ${targetTableName} 
-    WHERE root_comment_id IS NOT NULL
-    GROUP BY root_comment_id
-  ) AS b ON a.id = b.id
-`;
+  if (!deleteInfo.count) throw new HttpError(404, `id 为 ${commentId} 的评论不存在`);
 }

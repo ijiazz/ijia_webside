@@ -23,7 +23,7 @@ export type AccountInfo = {
 };
 async function createNewUser(name: string): Promise<AccountInfo> {
   const id = await getNextUserId();
-  const email = `${name}-${id}@ijiazz.cn`;
+  const email = `${name}-${id}@ijiazz.cn`.toLocaleLowerCase();
   const res = await createUser(email, {
     id,
     nickname: name,

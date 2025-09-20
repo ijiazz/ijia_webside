@@ -41,15 +41,17 @@ export type CreatePostParam = {
   /** 是否关闭评论 */
   comment_disabled?: boolean;
 };
-
-export type UpdatePostParam = {
+export type UpdatePostContentParam = {
+  type: "content";
   content_text?: string | null;
   content_text_structure?: TextStructure[] | null;
+};
+export type UpdatePostConfigParam = {
+  type: "config";
   /** 是否仅自己可见 */
   is_hide?: boolean;
   /** 是否开启评论 */
   comment_disabled?: boolean;
-  media_file?: (AssetMediaUploadFile & { index: number })[];
 };
 
 export type PostGroupItem = {
@@ -73,7 +75,7 @@ export type PostItemBase = {
 };
 
 export type PostItemDto = PostItemBase & {
-  asset_id: number;
+  post_id: number;
   /** 作者信息 */
   author: PostUserInfo | null;
   /** 当前请求用户的相关数据 */

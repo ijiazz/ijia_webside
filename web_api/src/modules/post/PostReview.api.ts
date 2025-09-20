@@ -1,16 +1,16 @@
-import { GetPostReviewListParam, PostReviewItem } from "./PostReview.dto.ts";
+import { GetPostCommentListParam } from "./comment.dto.ts";
+import { PostReviewItemDto, CommitReviewParam, CommitReviewResultDto } from "./PostReview.dto.ts";
 
 export interface PostReviewApi {
-  /** 获取作品列表 */
+  /** 获取帖子审核列表 */
   "GET /post/review/next": {
-    response: PostReviewItem;
-    query?: GetPostReviewListParam;
+    response: PostReviewItemDto;
+    query?: GetPostCommentListParam;
   };
-  /** 点赞作品 */
-  "POST /post/content/:postId/review": {
-    body?: {};
-    response: {
-      success: boolean;
-    };
+  /** 获取帖子审核列表 */
+  "POST /post/review/entity/:reviewId/commit": {
+    response: CommitReviewResultDto;
+    params: { reviewId: string | number };
+    body: CommitReviewParam;
   };
 }

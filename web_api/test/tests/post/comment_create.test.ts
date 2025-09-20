@@ -3,7 +3,7 @@ import { beforeEach, describe, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 import { postController } from "@/modules/post/post.controller.ts";
 import { commentController } from "@/modules/post/comment.controller.ts";
-import { testGetPost, updatePost, deletePost } from "./utils/prepare_post.ts";
+import { testGetPost, deletePost, updatePostConfigFormApi } from "./utils/prepare_post.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { PostComment, getCommentDbRow, prepareCommentPost, getPostCommentTotal } from "./utils/prepare_comment.ts";
 import { PostCommentDto } from "@/modules/post/comment.dto.ts";
@@ -276,7 +276,7 @@ test("已删除的作品不能新增评论和回复评论", async function ({ ap
 test("已隐藏的作品不能新增评论和回复评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token });
-  await updatePost(api, postInfo.id, { is_hide: true }, alice.token);
+  await updatePostConfigFormApi(api, postInfo.id, { is_hide: true }, alice.token);
   await expect(getPostCommentTotal(postInfo.id)).resolves.toBe(1);
 
   await expect(action.createComment("2", { token: alice.token })).responseStatus(404);
@@ -290,7 +290,7 @@ test("已关闭评论的作品只有作者能新增新增评论", async function
   const { action, alice, post: post1Info } = await prepareCommentPost(api);
   const bob = await prepareUniqueUser("bob");
   const root = await action.createComment("1", { token: alice.token });
-  await updatePost(api, post1Info.id, { comment_disabled: true }, alice.token);
+  await updatePostConfigFormApi(api, post1Info.id, { comment_disabled: true }, alice.token);
 
   await expect(action.createComment("2", { token: bob.token }), "bob 不能创建根评论").responseStatus(404); // 403 更好
   await expect(

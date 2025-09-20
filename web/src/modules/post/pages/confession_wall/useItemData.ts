@@ -36,7 +36,7 @@ export function useItemData(option: { filter?: PostQueryFilter } = {}) {
         if (!item) return;
 
         setItems((prev) => {
-          return prev.map((i) => (i.asset_id === item.asset_id ? item : i));
+          return prev.map((i) => (i.post_id === item.post_id ? item : i));
         });
       })
       .finally(() => {
@@ -46,12 +46,12 @@ export function useItemData(option: { filter?: PostQueryFilter } = {}) {
     return promise;
   };
   const deleteItem = (id: number) => {
-    setItems((prev) => prev.filter((i) => i.asset_id !== id));
+    setItems((prev) => prev.filter((i) => i.post_id !== id));
   };
   const replaceItem = (postId: number, replaceFn: (old: PostItemDto) => PostItemDto) => {
     setItems((prev) => {
       return prev.map((item) => {
-        if (item.asset_id === postId) {
+        if (item.post_id === postId) {
           return replaceFn(item);
         }
         return item;

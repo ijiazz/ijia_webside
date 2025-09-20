@@ -1,10 +1,11 @@
 import { CreateCommentItemData, GetPostCommentListParam } from "@/modules/post/comment.dto.ts";
 import {
   DbPostComment,
-  DbPostCommentReviewResult,
   post,
   post_comment,
-  post_comment_review_result,
+  post_review_info,
+  DbPostReviewInfoCreate,
+  PostReviewType,
 } from "@ijia/data/db";
 import { Api, JWT_TOKEN_KEY } from "test/fixtures/hono.ts";
 import { preparePost } from "./prepare_post.ts";
@@ -101,18 +102,15 @@ export async function getCommentStat(commentId: number): Promise<CommentInfo> {
     .queryFirstRow();
 }
 
-export type CommentReviewStatus = Pick<
-  DbPostCommentReviewResult,
-  "is_review_pass" | "review_fail_count" | "review_pass_count"
->;
+export type CommentReviewStatus = Pick<DbPostReviewInfoCreate, "is_review_pass" | "reviewed_time" | "reviewer_id">;
 export async function getCommentReviewStatus(commentId: number): Promise<CommentReviewStatus | undefined> {
-  const select = await post_comment_review_result
+  const select = await post_review_info
     .select({
-      review_fail_count: true,
-      review_pass_count: true,
       is_review_pass: true,
+      reviewed_time: true,
+      reviewer_id: true,
     })
-    .where(`comment_id=${commentId}`)
+    .where([`type=${v(PostReviewType.postComment)}`, `target_id=${commentId}`])
     .queryRows();
 
   return select[0] as CommentReviewStatus | undefined;

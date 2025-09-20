@@ -29,5 +29,12 @@ const routes: RouteObject[] = [
       },
     ],
   },
+  {
+    path: "review",
+    loader: () => {
+      return api["/post/review/next"].get();
+    },
+    Component: lazyPage(() => import("./pages/review.tsx").then((mod) => mod.ReviewPage)),
+  },
 ];
 export default routes;

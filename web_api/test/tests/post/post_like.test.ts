@@ -6,7 +6,6 @@ import { applyController } from "@asla/hono-decorator";
 import { postController } from "@/modules/post/mod.ts";
 import {
   cancelPostLike,
-  createPost,
   deletePost,
   getPostReviewStatus,
   getUserStatFromDb,
@@ -15,10 +14,12 @@ import {
   ReviewStatus,
   setPostLike,
   testGetPost,
+  updatePostConfigFormApi,
   UserStat,
 } from "./utils/prepare_post.ts";
-import { updatePost } from "./utils/prepare_post.ts";
-import { post } from "@ijia/data/db";
+import { post, PostReviewType } from "@ijia/data/db";
+import { DeepPartial } from "./utils/comment.ts";
+import { getReviewTarget } from "@/modules/post/sql/post_review.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -130,7 +131,7 @@ test("他人作品点赞：点赞后返回的帖子信息包含点赞状态，�
 test("已隐藏的帖子只有自己能点赞", async function ({ api, publicDbPool }) {
   const { post, alice } = await preparePost(api);
   const bob = await prepareUniqueUser("bob");
-  await updatePost(api, post.id, { is_hide: true }, alice.token);
+  await updatePostConfigFormApi(api, post.id, { is_hide: true }, alice.token);
 
   await expect(getPostLikeCount(post.id)).resolves.toBe(0);
 
@@ -202,6 +203,7 @@ test("有效举报人数达到3人，帖子将进入审核状态", async functio
   await expect(getPostReportCount(p.id)).resolves.toBe(2);
   const status1 = await getPostReviewStatus(p.id);
   expect(status1.is_reviewing).toBeFalsy();
+  await expect(getReviewTarget(PostReviewType.post, p.id), "未添加到审核队列").resolves.toBeUndefined();
 
   const bob3 = await prepareUniqueUser("bob3");
   await reportPost(api, p.id, bob3.token, "测试举报");
@@ -211,9 +213,10 @@ test("有效举报人数达到3人，帖子将进入审核状态", async functio
   expect(status).toMatchObject({
     is_review_pass: null,
     is_reviewing: true,
-    review_fail_count: 0,
-    review_pass_count: 0,
-  } satisfies Partial<ReviewStatus>);
+    review: { is_review_pass: null, reviewed_time: null },
+  } satisfies DeepPartial<ReviewStatus>);
+
+  await expect(getReviewTarget(PostReviewType.post, p.id), "添加到审核队列").resolves.toBeTypeOf("object");
 });
 test("审核通过的帖子，举报达到3人后，帖子仍然是审核通过", async function ({ api, publicDbPool }) {
   const { post: p, alice } = await preparePost(api);
@@ -230,8 +233,6 @@ test("审核通过的帖子，举报达到3人后，帖子仍然是审核通过"
   expect(status).toMatchObject({
     is_review_pass: true,
     is_reviewing: false,
-    review_fail_count: 0,
-    review_pass_count: 0,
   } satisfies Partial<ReviewStatus>);
 });
 test("已举报的帖子尝试取消点赞，不应删除举报记录", async function ({ api, publicDbPool }) {

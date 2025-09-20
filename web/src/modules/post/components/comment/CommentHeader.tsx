@@ -7,14 +7,13 @@ import { PostCommentNode } from "./api.ts";
 const { Text } = Typography;
 
 type PostHeaderProps = {
-  node: PostCommentNode;
+  node: Pick<PostCommentNode, "comment_id" | "reply_to" | "curr_user"> & { user?: { user_name: string } };
   className?: string;
   onDelete?: () => void;
   onReport?: () => void;
 };
 export function CommentHeader(props: PostHeaderProps) {
   const { node, onDelete, onReport, className } = props;
-
   const menus: MenuProps["items"] = [];
   if (node.curr_user) {
     if (node.curr_user.can_update) {
@@ -37,7 +36,7 @@ export function CommentHeader(props: PostHeaderProps) {
     <PostCommentHeaderCSS className={className}>
       <div>
         <PostCommentHeaderTextCSS type="secondary">
-          <span>{node.user.user_name}</span>
+          <span>{node.user?.user_name}</span>
           {node.reply_to && (
             <>
               <CaretRightOutlined />

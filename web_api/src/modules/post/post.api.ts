@@ -1,5 +1,12 @@
 import { GetPlatformPostListParam, PlatformPostResponse } from "./platform_post.dto.ts";
-import { CreatePostParam, GetPostListParam, PostGroupResponse, PostResponse, UpdatePostParam } from "./post.dto.ts";
+import {
+  CreatePostParam,
+  GetPostListParam,
+  PostGroupResponse,
+  PostResponse,
+  UpdatePostConfigParam,
+  UpdatePostContentParam,
+} from "./post.dto.ts";
 
 export interface PostApi {
   /** 获取平台帖子列表 */
@@ -29,7 +36,7 @@ export interface PostApi {
   "DELETE /post/content/:postId": {};
   /** 更新作品 */
   "PATCH /post/content/:postId": {
-    body: UpdatePostParam;
+    body: UpdatePostContentParam | UpdatePostConfigParam;
   };
   /** 点赞作品 */
   "POST /post/like/:postId": {
