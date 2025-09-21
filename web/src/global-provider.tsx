@@ -1,5 +1,7 @@
 import React from "react";
-import { Outlet } from "react-router";
+import { Outlet } from "@tanstack/react-router";
+import "@ant-design/v5-patch-for-react-19";
+import "./styles/global.css";
 
 import { AntdThemeProvider } from "./provider/AntdProvider.tsx";
 import { HoFetchProvider } from "./provider/HoFetchProvider.tsx";

@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import React, { ReactNode } from "react";
-import { Link } from "react-router";
 
 import { GithubOutlined } from "@ant-design/icons";
+import { Link } from "@tanstack/react-router";
 
 const footerLinks: {
   icon?: ReactNode;

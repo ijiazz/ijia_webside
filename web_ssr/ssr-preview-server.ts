@@ -3,17 +3,15 @@ import { Hono } from "jsr:@hono/hono";
 import { serveStatic } from "jsr:@hono/hono/deno";
 
 const isProd = false;
-
-let renderer: {
-  renderToReadableStream(req: Request): Promise<ReadableStream>;
-};
+interface RenderServer {
+  renderByStream(req: Request): Promise<Response>;
+}
+let renderer: RenderServer;
 
 if (isProd) {
-  const mod = await import("@ssr-render");
-  renderer = mod.renderer;
+  renderer = await import("@ssr-render");
 } else {
-  const mod = await import("@/index.server.tsx");
-  renderer = mod.renderer;
+  renderer = await import("@/index-server.tsx");
 }
 
 const hono = new Hono();
@@ -22,8 +20,7 @@ const fileDir = path.resolve(import.meta.dirname!, "../web/dist/client");
 
 hono.use("/assets/*", serveStatic({ root: path.relative(".", fileDir) }));
 
-hono.on("GET", "*", async function (ctx, next) {
-  const stream = await renderer.renderToReadableStream(ctx.req.raw);
-  return new Response(stream, { headers: { "Content-Type": "text/html" } });
+hono.on("GET", "*", function (ctx, next) {
+  return renderer.renderByStream(ctx.req.raw);
 });
 Deno.serve({ port: 5273 }, hono.fetch);

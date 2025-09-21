@@ -1,8 +1,9 @@
 import type { UserConfig, Plugin } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import legacy from "@vitejs/plugin-legacy";
-import { ManualChunkMeta } from "rollup";
+import type { ManualChunkMeta } from "rollup";
 import { getPnpmNodeModulesDir, PnpmNodeModulesParser } from "./build/vite-tool.ts";
 const origin = "http://127.0.0.1:3000";
 export default {
@@ -18,6 +19,11 @@ export default {
   },
   plugins: [
     tsconfigPaths(),
+    tanstackRouter({
+      target: "react",
+      autoCodeSplitting: true,
+      addExtensions: true,
+    }),
     react(),
     legacy({
       renderLegacyChunks: false,
@@ -52,9 +58,9 @@ function createManualChunks() {
   console.log("pnpm dir", pnpmNodeModulesDir);
 
   const chunkDeps: Record<string, string | boolean> = {
-    // react: true, // 有bug，暂时不要分
+    react: true, // 有bug，暂时不要分
     "react-dom": true,
-    "react-router": true,
+    "@tanstack/react-router": true,
     "@emotion/styled": "emotion",
   };
   const manualChunks = (id: string, meta: ManualChunkMeta) => {

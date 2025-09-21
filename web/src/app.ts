@@ -8,7 +8,7 @@ export function getPathByRoute(route: string) {
   return route;
 }
 
-export function remoteLoading() {
+export function removeLoading() {
   const element = document.getElementById("app-loading");
   if (element) {
     element.remove();
