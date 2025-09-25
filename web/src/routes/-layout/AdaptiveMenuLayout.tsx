@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import styled from "@emotion/styled";
-import { IS_MOBILE_LAYOUT, LayoutDirection, useLayoutDirection, useThemeToken } from "@/global-provider.tsx";
+import { IS_MOBILE_LAYOUT, LayoutDirection, useLayoutDirection, useThemeToken } from "@/provider/mod.tsx";
 import { Menu } from "antd";
 type AntdMenuProps = Omit<Parameters<typeof Menu>[0], "children">;
 export type AdaptiveMenuLayoutProps = Pick<

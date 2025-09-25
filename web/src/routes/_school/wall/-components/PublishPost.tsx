@@ -1,6 +1,6 @@
 import { CreatePostParam, UpdatePostContentParam, UpdatePostConfigParam } from "@/api.ts";
 import { api } from "@/common/http.ts";
-import { useAntdStatic } from "@/global-provider.tsx";
+import { useAntdStatic } from "@/provider/mod.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { Alert, Button, Form, Input, Select, Switch, SelectProps, Space } from "antd";
 import React, { useMemo } from "react";

@@ -12,7 +12,7 @@ import {
   PostReviewItemDto,
 } from "@/api.ts";
 import { Button, Empty, Form, Input, Radio, Typography } from "antd";
-import { useAntdStatic } from "@/global-provider.tsx";
+import { useAntdStatic } from "@/provider/mod.tsx";
 import { PostCommentReviewCard, PostReviewCard } from "./-components/PostReviewCard.tsx";
 
 export const Route = createLazyFileRoute("/_school/wall/review/")({

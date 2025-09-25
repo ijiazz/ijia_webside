@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import styled from "@emotion/styled";
 import { CheckCircleTwoTone } from "@ant-design/icons";
 import classnames from "classnames";
-import { useThemeToken } from "@/global-provider.tsx";
+import { useThemeToken } from "@/provider/mod.tsx";
 
 export type CaptchaPanelProps = {
   title?: string;

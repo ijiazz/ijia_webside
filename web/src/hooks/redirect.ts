@@ -12,7 +12,7 @@ export type RedirectOption = {
  */
 export function useRedirect(option: RedirectOption = {}) {
   const { defaultPath, key = "redirect" } = option;
-  const { search } = useLocation();
+  const { search } = useLocation<any>();
   return function () {
     let path = search[key];
 

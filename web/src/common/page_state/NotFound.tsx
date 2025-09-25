@@ -1,11 +1,9 @@
-import { Button, Result } from "antd";
 import React from "react";
-import { RouteObject } from "react-router";
 
 export function NotFoundPage() {
-  return <Result status="404" title="404" subTitle="Sorry, the page you visited does not exist." />;
+  return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+      <h3>404 页面不存在</h3>
+    </div>
+  );
 }
-export const notFoundRouter: RouteObject = {
-  path: "*",
-  Component: NotFoundPage,
-};

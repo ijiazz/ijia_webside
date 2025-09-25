@@ -17,7 +17,7 @@
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
     "@emotion/styled": "^11.14.0",
-    "@tanstack/react-router": "^1.131.49",
+    "@tanstack/react-router": "^1.132.2",
     "animejs": "^4.0.0",
     "antd": "^5.27.0",
     "canvas-confetti": "^1.9.3",
@@ -32,7 +32,7 @@
     "three": "^0.173.0"
   },
   "devDependencies": {
-    "@tanstack/router-plugin": "^1.131.49",
+    "@tanstack/router-plugin": "^1.132.2",
     "@types/canvas-confetti": "^1.9.0",
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^19.0.8",

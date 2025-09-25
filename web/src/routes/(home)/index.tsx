@@ -6,4 +6,6 @@ export const Route = createFileRoute("/(home)/")({
   loader(ctx): Promise<HomePageRes | undefined> {
     return api["/live/screen/home"].get().catch((res) => undefined);
   },
+  staleTime: 1000 * 60 * 10,
+  shouldReload: (ctx) => ctx.cause === "enter",
 });

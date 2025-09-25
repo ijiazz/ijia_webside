@@ -6,6 +6,11 @@ import { routeTree } from "./routeTree.gen.ts";
 export function genRouter() {
   return createRouter({ routeTree });
 }
+// declare module "@tanstack/react-router" {
+//   interface Register {
+//     router: ReturnType<typeof genRouter>;
+//   }
+// }
 
 export function SpaRoot(props: {}) {
   const router = useMemo(() => genRouter(), []);

@@ -13,7 +13,7 @@ export const Route = createLazyFileRoute("/_school/wall/publish")({
 function RouteComponent() {
   const navigate = useNavigate();
   const onBack = () => {
-    navigate({ to: ".." });
+    navigate({ to: "..", viewTransition: true });
   };
 
   const { loading, data: option } = useAsync(
@@ -34,7 +34,7 @@ function RouteComponent() {
       <div style={{ padding: "12px", flex: 1, overflow: "auto" }}>
         <PublishPost
           onCreateOk={() => {
-            navigate({ to: "/wall/list/self" });
+            navigate({ href: "/wall/list/self", viewTransition: true });
           }}
           groupOptions={option}
           groupLoading={loading}

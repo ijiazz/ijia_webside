@@ -4,7 +4,7 @@ import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import styled from "@emotion/styled";
 import { VLink } from "@/lib/components/VLink.tsx";
-import { IS_MOBILE_LAYOUT, useThemeToken } from "@/global-provider.tsx";
+import { IS_MOBILE_LAYOUT, useThemeToken } from "@/provider/mod.tsx";
 
 export function AvatarMenu(props: { noLogged?: boolean; logout?: () => void; userUrl?: string; userName?: string }) {
   const { logout, userName, userUrl, noLogged } = props;
@@ -29,7 +29,7 @@ export function AvatarMenu(props: { noLogged?: boolean; logout?: () => void; use
             key: "profile",
             icon: <UserOutlined />,
             label: "个人中心",
-            onClick: () => navigate({ to: "/profile/center" }),
+            onClick: () => navigate({ to: "/profile/center", viewTransition: true }),
           },
           {
             key: "logout",

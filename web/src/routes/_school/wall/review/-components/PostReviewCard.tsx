@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { UserOutlined } from "@ant-design/icons";
 import { PinkPostCard } from "../../-components/PinkCard.tsx";
 import { PostReviewTarget, PostCommentReviewTarget } from "@/api.ts";
-import { useThemeToken } from "@/global-provider.tsx";
+import { useThemeToken } from "@/provider/mod.tsx";
 import { CommentNode, CommentTree } from "../../../-components/comment/CommentItem.tsx";
 import { dateToString } from "@/common/date.ts";
 import { CommentHeader } from "../../../-components/comment/CommentHeader.tsx";

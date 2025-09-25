@@ -6,7 +6,7 @@ import {
   TextStructureExternalLink,
   TextStructureType,
 } from "@/api.ts";
-import { useThemeToken } from "@/global-provider.tsx";
+import { useThemeToken } from "@/provider/mod.tsx";
 import styled from "@emotion/styled";
 import React, { CSSProperties, useMemo } from "react";
 import { ReactNode } from "react";

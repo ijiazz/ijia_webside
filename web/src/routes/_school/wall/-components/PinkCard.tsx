@@ -2,7 +2,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import { CardLayoutProps } from "@/lib/components/card/card.tsx";
 import { PostHeader, PostHeaderProps } from "../../-components/post.tsx";
-import { useThemeToken } from "@/global-provider.tsx";
+import { useThemeToken } from "@/provider/mod.tsx";
 export type { CardLayoutProps };
 
 export function PinkPostCard(props: Omit<CardLayoutProps, "header"> & { header: PostHeaderProps }) {

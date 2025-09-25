@@ -1,9 +1,10 @@
 import React, { ReactNode, useMemo } from "react";
-import { IS_MOBILE_LAYOUT, useThemeToken } from "@/global-provider.tsx";
 import styled from "@emotion/styled";
 import { Tabs, TabsProps } from "antd";
 import { AdaptiveMenuLayout } from "./AdaptiveMenuLayout.tsx";
 import { ItemType, MenuItemType } from "antd/es/menu/interface.js";
+import { useThemeToken } from "@/provider/AntdProvider.tsx";
+import { IS_MOBILE_LAYOUT } from "@/provider/LayoutDirectionProvider.tsx";
 type TabPane = NonNullable<TabsProps["items"]>[number];
 type MenuItemCommon = {
   icon?: React.ReactNode;

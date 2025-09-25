@@ -1,7 +1,7 @@
 import React from "react";
 import { CommentList } from "./comment/PostCommentList.tsx";
 import { Drawer } from "antd";
-import { LayoutDirection, useLayoutDirection } from "@/global-provider.tsx";
+import { LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
 
 export function CommentDrawer(props: {
   open?: boolean;

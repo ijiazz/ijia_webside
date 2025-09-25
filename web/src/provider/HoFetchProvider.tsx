@@ -31,7 +31,7 @@ export function HoFetchProvider(props: PropsWithChildren<{}>) {
         if (!isLoginPage) {
           const s = new URLSearchParams();
           s.set("redirect", target);
-          navigate({ to: ROUTES.Login + "?" + s.toString() });
+          navigate({ href: ROUTES.Login + "?" + s.toString(), viewTransition: true });
         }
       }
     };

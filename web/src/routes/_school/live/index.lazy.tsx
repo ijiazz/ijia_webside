@@ -1,14 +1,14 @@
-import { createLazyFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 
 import { PlatformPostItemDto } from "@/api.ts";
 import { THIRD_PART } from "@/common/third_part_account.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { Avatar, List, Button } from "antd";
 import styled from "@emotion/styled";
-import { useThemeToken } from "@/global-provider.tsx";
+import { useThemeToken } from "@/provider/mod.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { PostContent, PostHeader } from "../-components/post.tsx";
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { ExportOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
 import { api } from "@/common/http.ts";
@@ -17,24 +17,14 @@ import { CardLayout } from "@/lib/components/card/card.tsx";
 export const Route = createLazyFileRoute("/_school/live/")({
   component: RouteComponent,
 });
-const DEFAULT_PAGE_SIZE = 10;
 function RouteComponent() {
-  const location = useLocation();
+  const param = Route.useSearch();
 
-  const navigate = useNavigate();
+  const navigate = Route.useNavigate();
   const pageRef = useRef<HTMLDivElement>(null);
-  const param = useMemo(() => {
-    const search = new URLSearchParams(location.search);
-    const page = search.get("page") ?? "1"; //TODO
-    return {
-      page: +page,
-      pageSize: DEFAULT_PAGE_SIZE,
-    };
-  }, [location.search]);
+
   const changePage = (page: number) => {
-    const newSearch = new URLSearchParams(location.search);
-    newSearch.set("page", page.toString());
-    navigate({ to: location.pathname + "?" + newSearch.toString() }); //TODO
+    navigate({ search: (prev: any) => ({ ...prev, page }), viewTransition: true });
   };
 
   const {

@@ -1,4 +1,4 @@
-import { IS_MOBILE_LAYOUT } from "@/global-provider.tsx";
+import { IS_MOBILE_LAYOUT } from "@/provider/mod.tsx";
 import styled from "@emotion/styled";
 
 export const PagePadding = styled.div`

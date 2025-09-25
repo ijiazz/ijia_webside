@@ -6,7 +6,13 @@ import { Outlet, useLocation } from "@tanstack/react-router";
 import { menus } from "../-layout/menus.tsx";
 import { getUserToken, useCurrentUser } from "@/common/user.ts";
 import { AvatarMenu } from "../-layout/avatar.tsx";
-import { AntdThemeProvider, IS_MOBILE_LAYOUT, useAntdStatic, useThemeController } from "@/global-provider.tsx";
+import {
+  AntdThemeProvider,
+  HoFetchProvider,
+  IS_MOBILE_LAYOUT,
+  useAntdStatic,
+  useThemeController,
+} from "@/provider/mod.tsx";
 import styled from "@emotion/styled";
 import { RootLayout } from "../-layout/RootLayout.tsx";
 import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
@@ -14,7 +20,9 @@ import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
 export const Route = createLazyFileRoute("/_school")({
   component: () => (
     <AntdThemeProvider>
-      <UserLayout />
+      <HoFetchProvider>
+        <UserLayout />
+      </HoFetchProvider>
     </AntdThemeProvider>
   ),
 });
@@ -50,7 +58,7 @@ function UserLayout(props: PropsWithChildren<{}>) {
       menus={menus}
       pathname={pathname}
       onSelectedKeysChange={({ keys, path }) => {
-        if (path) navigate({ to: path });
+        if (path) navigate({ to: path, viewTransition: true });
       }}
       rightExtra={
         <div style={{ display: "flex", gap: 8, marginRight: 8, alignItems: "center" }}>
@@ -64,7 +72,6 @@ function UserLayout(props: PropsWithChildren<{}>) {
               checked={themeCtrl.mode === "dark"}
               style={{ zoom: 0.7 }}
               onChange={(checked) => {
-                console.log("切换主题", checked);
                 themeCtrl.setMode(checked ? "dark" : "light");
               }}
             />
