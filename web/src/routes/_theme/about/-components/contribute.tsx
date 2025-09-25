@@ -17,7 +17,7 @@ export function Contribute() {
           GitHub仓库
         </Link>
         上参与我们的开源项目。您可以通过提交修复、功能改进或优化等相关的代码为网站贡献力量。在参与前，请务必仔细阅读
-        <Link to="https://github.com/ijiazz/ijia_website/blob/main/CONTRIBUTING.md">《GitHub 贡献指南》</Link>
+        <Link to="https://github.com/ijiazz/ijia_webside/blob/main/CONTRIBUTING.md">《GitHub 贡献指南》</Link>
         ，了解代码规范、提交流程等相关要求，以确保您贡献的代码能够顺利合并。
       </Paragraph>
       <Title level={4}>二、创意与建议</Title>
