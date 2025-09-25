@@ -8,7 +8,7 @@ import {
 } from "@/api.ts";
 import { useThemeToken } from "@/provider/mod.tsx";
 import styled from "@emotion/styled";
-import React, { CSSProperties, useMemo } from "react";
+import React, { CSSProperties, useMemo, useState } from "react";
 import { ReactNode } from "react";
 import { AssetMediaType } from "@/api.ts";
 import { DownOutlined, FileImageOutlined, UpOutlined } from "@ant-design/icons";
@@ -37,12 +37,16 @@ function PostText(props: { text?: string | null; structure?: TextStructure[] | n
     return list;
   }, [structure, text]);
 
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <PostTextCSS className="post-content-text" color={theme.colorWarning}>
       <Paragraph
         ellipsis={{
           rows: 10,
           expandable: "collapsible",
+          expanded,
+          onExpand: () => setExpanded(!expanded),
           symbol(expanded) {
             return (
               <div style={{ color: theme.colorPrimaryText }}>
