@@ -1,4 +1,4 @@
-import { useLocation, useSearchParams } from "react-router";
+import { useLocation } from "@tanstack/react-router";
 
 export type RedirectOption = {
   /** url 查询参数的 key */
@@ -12,10 +12,9 @@ export type RedirectOption = {
  */
 export function useRedirect(option: RedirectOption = {}) {
   const { defaultPath, key = "redirect" } = option;
-  const [searchParams] = useSearchParams();
-
+  const { search } = useLocation<any>();
   return function () {
-    let path = searchParams.get(key);
+    let path = search[key];
 
     if (!path && defaultPath) {
       if (typeof defaultPath === "string") path = defaultPath;

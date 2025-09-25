@@ -1,9 +1,11 @@
 import type { UserConfig, Plugin } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import legacy from "@vitejs/plugin-legacy";
-import { ManualChunkMeta } from "rollup";
+import type { ManualChunkMeta } from "rollup";
 import { getPnpmNodeModulesDir, PnpmNodeModulesParser } from "./build/vite-tool.ts";
+import path from "node:path";
 const origin = "http://127.0.0.1:3000";
 export default {
   root: import.meta.dirname,
@@ -18,6 +20,11 @@ export default {
   },
   plugins: [
     tsconfigPaths(),
+    tanstackRouter({
+      target: "react",
+      autoCodeSplitting: false,
+      addExtensions: true,
+    }),
     react(),
     legacy({
       renderLegacyChunks: false,
@@ -32,6 +39,7 @@ export default {
     target: "es2018",
     outDir: "dist/client",
     manifest: true,
+    minify: true,
     rollupOptions: {
       output: {
         manualChunks: createManualChunks(),
@@ -46,16 +54,19 @@ export default {
 } satisfies UserConfig;
 
 function createManualChunks() {
+  const srcDir = path.resolve(import.meta.dirname, "src");
   const pnpmNodeModulesDir = getPnpmNodeModulesDir("vite");
   if (!pnpmNodeModulesDir) return;
   const pnpmParser = new PnpmNodeModulesParser(pnpmNodeModulesDir);
   console.log("pnpm dir", pnpmNodeModulesDir);
+  console.log("src dir", srcDir);
 
   const chunkDeps: Record<string, string | boolean> = {
-    // react: true, // 有bug，暂时不要分
+    react: true, // 有bug，暂时不要分
     "react-dom": true,
-    "react-router": true,
+    "@tanstack/react-router": true,
     "@emotion/styled": "emotion",
+    "@jsr/asla__hofetch": "@asla/hofetch",
   };
   const manualChunks = (id: string, meta: ManualChunkMeta) => {
     const modInfo = pnpmParser.parserId(id);

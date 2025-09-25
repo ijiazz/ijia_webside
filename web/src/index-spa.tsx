@@ -1,11 +1,8 @@
 /// <reference types="vite/client" />
-import "@ant-design/v5-patch-for-react-19";
-import "./styles/global.css";
 import React from "react";
-
-import { createRoot } from "react-dom/client";
-import { SpaRoot } from "./routes.tsx";
 import { loginByAccessToken } from "@/common/user.ts";
+import { createRoot } from "react-dom/client";
+import { SpaRoot } from "./router.tsx";
 
 console.log("应用运行于 SPA 模式");
 const mountApp = () => {
