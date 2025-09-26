@@ -11,6 +11,7 @@ import { CaretDownOutlined } from "@ant-design/icons";
 import { HomeLinks } from "./-components/HomeLlink.tsx";
 import { useElementOverScreen } from "@/hooks/dom/observer.ts";
 import { HomePageRes } from "@/api.ts";
+import { useWindowEffect } from "./-hooks/useWindowEffect.ts";
 
 export const Route = createLazyFileRoute("/(home)/")({
   component: RouteComponent,
@@ -27,6 +28,7 @@ export function RouteComponent() {
   const [blackMode, setBlackMode] = useState(true);
   const avatarUrl = data?.god_user.avatar_url;
   const size = useWindowResize();
+  useWindowEffect();
 
   useEffect(() => {
     indexRef.current = 0;
