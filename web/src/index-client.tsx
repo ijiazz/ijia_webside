@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
-import "@ant-design/v5-patch-for-react-19";
 import "./styles/global.css";
+import "./clarity.ts";
 import React from "react";
 
 import { hydrateRoot } from "react-dom/client";

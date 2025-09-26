@@ -17,6 +17,7 @@
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
     "@emotion/styled": "^11.14.0",
+    "@microsoft/clarity": "^1.0.0",
     "@tanstack/react-router": "^1.132.2",
     "animejs": "^4.0.0",
     "antd": "^5.27.0",

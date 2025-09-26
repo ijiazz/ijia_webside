@@ -1,7 +1,5 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 
-import "@/styles/global.css";
-
 import React, { useEffect } from "react";
 import { removeLoading } from "@/app.ts";
 import { PageLoading } from "@/common/page_state/Loading.tsx";
