@@ -147,7 +147,7 @@ async function sendLiveNotificationEmails() {
 function genNoticeContent() {
   //TODO 个性化 html 提示，
   const date = new Date();
-  const h = date.getUTCHours() + 8; // 北京时间
+  const h = (date.getUTCHours() + 8) % 24; // 北京时间
   const m = date.getUTCMinutes();
   const time = h.toString().padStart(2, "0") + ":" + m.toString().padStart(2, "0");
 
