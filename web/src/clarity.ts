@@ -17,7 +17,7 @@ if (import.meta.env.PROD) {
   }
 }
 function enabledTrack() {
+  Clarity.init(projectId);
   const user = getUserInfoFromToken();
   Clarity.identify(user ? "ijia-" + user.userId.toString() : "guest");
-  Clarity.init(projectId);
 }
