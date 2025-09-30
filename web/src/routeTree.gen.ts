@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root.tsx'
 import { Route as ThemeRouteRouteImport } from './routes/_theme/route.tsx'
 import { Route as SchoolRouteRouteImport } from './routes/_school/route.tsx'
+import { Route as TestPageIndexRouteImport } from './routes/test-page/index.tsx'
 import { Route as StoryIndexRouteImport } from './routes/story/index.tsx'
 import { Route as homeIndexRouteImport } from './routes/(home)/index.tsx'
 import { Route as ThemeAboutIndexRouteImport } from './routes/_theme/about/index.tsx'
@@ -50,6 +51,11 @@ const ThemePassportRoute = ThemePassportRouteImport.update({
   id: '/passport',
   path: '/passport',
   getParentRoute: () => ThemeRouteRoute,
+} as any)
+const TestPageIndexRoute = TestPageIndexRouteImport.update({
+  id: '/test-page/',
+  path: '/test-page/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const StoryIndexRoute = StoryIndexRouteImport.update({
   id: '/story/',
@@ -190,6 +196,7 @@ const SchoolWallListChar123GroupIdChar125IndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof homeIndexRoute
   '/story': typeof StoryIndexRoute
+  '/test-page': typeof TestPageIndexRoute
   '/passport': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/examination/$': typeof SchoolExaminationSplatRoute
   '/profile/center': typeof SchoolProfileCenterRoute
@@ -210,6 +217,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof homeIndexRoute
   '/story': typeof StoryIndexRoute
+  '/test-page': typeof TestPageIndexRoute
   '/passport': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/examination/$': typeof SchoolExaminationSplatRoute
   '/profile/center': typeof SchoolProfileCenterRoute
@@ -232,6 +240,7 @@ export interface FileRoutesById {
   '/_theme': typeof ThemeRouteRouteWithChildren
   '/(home)/': typeof homeIndexRoute
   '/story/': typeof StoryIndexRoute
+  '/test-page/': typeof TestPageIndexRoute
   '/_theme/passport': typeof ThemePassportRouteWithChildren
   '/_theme/passport/_video_background': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/_school/examination/$': typeof SchoolExaminationSplatRoute
@@ -255,6 +264,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/story'
+    | '/test-page'
     | '/passport'
     | '/examination/$'
     | '/profile/center'
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/story'
+    | '/test-page'
     | '/passport'
     | '/examination/$'
     | '/profile/center'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/_theme'
     | '/(home)/'
     | '/story/'
+    | '/test-page/'
     | '/_theme/passport'
     | '/_theme/passport/_video_background'
     | '/_school/examination/$'
@@ -320,6 +332,7 @@ export interface RootRouteChildren {
   ThemeRouteRoute: typeof ThemeRouteRouteWithChildren
   homeIndexRoute: typeof homeIndexRoute
   StoryIndexRoute: typeof StoryIndexRoute
+  TestPageIndexRoute: typeof TestPageIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -344,6 +357,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/passport'
       preLoaderRoute: typeof ThemePassportRouteImport
       parentRoute: typeof ThemeRouteRoute
+    }
+    '/test-page/': {
+      id: '/test-page/'
+      path: '/test-page'
+      fullPath: '/test-page'
+      preLoaderRoute: typeof TestPageIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/story/': {
       id: '/story/'
@@ -572,6 +592,7 @@ const rootRouteChildren: RootRouteChildren = {
   ThemeRouteRoute: ThemeRouteRouteWithChildren,
   homeIndexRoute: homeIndexRoute,
   StoryIndexRoute: StoryIndexRoute,
+  TestPageIndexRoute: TestPageIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
