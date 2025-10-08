@@ -1,7 +1,7 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 import { applyController } from "@asla/hono-decorator";
-import { post, TextStructure, TextStructureType, TextStructureUser } from "@ijia/data/db";
+import { post, post_review_info, TextStructure, TextStructureType, TextStructureUser } from "@ijia/data/db";
 
 import { postController } from "@/modules/post/mod.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
@@ -82,6 +82,12 @@ test("发布帖子，如果选择了分组，发布后将直接进入审核状�
   expect(info.is_reviewing).toBe(true);
   expect(info.create_time).not.toBe(null);
   expect(info.publish_time).toBe(null);
+
+  const reviewQueue = await post_review_info
+    .select({ target_id: true })
+    .where(`type='post' AND target_id=${v(id)}`)
+    .queryFirstRow();
+  expect(reviewQueue).not.toBeNull();
 });
 test("发布的文本限制5000个字符", async function ({ publicDbPool, api }) {
   const alice = await prepareUniqueUser("alice");

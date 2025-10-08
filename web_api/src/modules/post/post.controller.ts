@@ -8,14 +8,8 @@ import {
   UpdatePostConfigParam,
   UpdatePostContentParam,
 } from "./post.dto.ts";
-import {
-  createPost,
-  deletePost,
-  getPostList,
-  getUserDateCount,
-  updatePostConfig,
-  updatePostContent,
-} from "./sql/post.ts";
+import { deletePost } from "./sql/post_delete.ts";
+import { createPost, updatePostConfig, updatePostContent } from "./sql/post_create_update.ts";
 import { cancelPostLike, setPostLike } from "./sql/post_like.ts";
 import { checkValue, checkValueAsync } from "@/global/check.ts";
 import { CheckTypeError, getBasicType, integer, optional, TypeCheckFn } from "@asla/wokao";
@@ -23,6 +17,7 @@ import { HonoContext } from "@/hono/type.ts";
 import { HttpError } from "@/global/errors.ts";
 import { appConfig } from "@/config.ts";
 import { reportPost } from "./sql/report.ts";
+import { getPostList, getUserDateCount } from "./sql/post_list.ts";
 
 @Use(identity)
 @autoBody

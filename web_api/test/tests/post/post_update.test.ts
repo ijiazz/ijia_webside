@@ -116,7 +116,7 @@ test("审核中的帖子，更新内容后仍为审核中，审核数据重置",
   expect(postInfo, "审核中、未有结果、审核计数为0").toMatchObject({
     is_review_pass: null, // 未有审核结果
     is_reviewing: true,
-    review: { is_review_pass: null, remark: null, reviewed_time: null }, // 无审核数据
+    review: null, // 无审核数据
   } satisfies DeepPartial<ReviewStatus>);
 });
 
