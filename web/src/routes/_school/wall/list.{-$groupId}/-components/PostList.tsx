@@ -170,7 +170,7 @@ export function PostList(props: PostListProps) {
         onCancel={() => setModalOpen(false)}
         footer={null}
         afterClose={() => setEditItem(undefined)}
-        destroyOnClose
+        destroyOnHidden
         width={600}
       >
         <Publish
@@ -213,6 +213,7 @@ const StyledTip = styled.div`
   font-weight: 500;
   border-radius: 6px;
   padding: 8px;
+  margin-bottom: 8px;
   font-size: 14px;
 `;
 

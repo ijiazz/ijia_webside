@@ -1,5 +1,5 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
-import React, { PropsWithChildren } from "react";
+import { createLazyFileRoute, Link, useRouterState } from "@tanstack/react-router";
+import React, { PropsWithChildren, useRef } from "react";
 import { IjiaLogo } from "../../common/site-logo.tsx";
 import { Button, Tooltip } from "antd";
 import { Outlet, useLocation } from "@tanstack/react-router";
@@ -42,7 +42,8 @@ function UserLayout(props: PropsWithChildren<{}>) {
     }
     message.success("已复制个人访问 Token");
   };
-  const { pathname } = useLocation();
+  const pathname = useLayoutPathname();
+  const match = Route.useMatch();
   const navigate = Route.useNavigate();
 
   const { logout, value: user } = useCurrentUser();
@@ -55,10 +56,16 @@ function UserLayout(props: PropsWithChildren<{}>) {
           <b className="site-name">IJIA 学院</b>
         </StyledIcon>
       }
+      renderLink={(item) => (
+        <Link style={{ color: "inherit" }} from={match.pathname} to={item.path}>
+          {item.label}
+        </Link>
+      )}
       menus={menus}
       pathname={pathname}
       onSelectedKeysChange={({ keys, path }) => {
-        if (path) navigate({ to: path, viewTransition: true });
+        if (keys.length === 1) return; // 已经通过 anchor 标签跳转了
+        if (path) navigate({ from: "/", to: path, viewTransition: true });
       }}
       rightExtra={
         <div style={{ display: "flex", gap: 8, marginRight: 8, alignItems: "center" }}>
@@ -88,6 +95,21 @@ function UserLayout(props: PropsWithChildren<{}>) {
       <Outlet />
     </RootLayout>
   );
+}
+
+function useLayoutPathname() {
+  const pendingMatch = useRouterState({
+    select(state) {
+      return state.isLoading;
+    },
+  });
+  const { pathname } = useLocation();
+  const prevPathname = useRef<string>(pathname);
+  if (!pendingMatch) {
+    prevPathname.current = pathname;
+  }
+
+  return pendingMatch ? prevPathname.current : pathname;
 }
 
 const StyledIcon = styled.div`

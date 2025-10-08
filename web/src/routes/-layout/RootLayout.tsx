@@ -5,6 +5,7 @@ import { AdaptiveMenuLayout } from "./AdaptiveMenuLayout.tsx";
 import { ItemType, MenuItemType } from "antd/es/menu/interface.js";
 import { useThemeToken } from "@/provider/AntdProvider.tsx";
 import { IS_MOBILE_LAYOUT } from "@/provider/LayoutDirectionProvider.tsx";
+
 type TabPane = NonNullable<TabsProps["items"]>[number];
 type MenuItemCommon = {
   icon?: React.ReactNode;
@@ -45,6 +46,8 @@ export type RootLayoutProps<T extends MenuItem = MenuItem> = {
   defaultSelectedKeys?: string[];
   onSelectedKeysChange?: (e: ChangeEvent) => void;
 
+  renderLink: (item: T) => ReactNode;
+
   leftExtra?: ReactNode;
   rightExtra?: ReactNode;
 
@@ -52,7 +55,7 @@ export type RootLayoutProps<T extends MenuItem = MenuItem> = {
 };
 
 export function RootLayout(props: RootLayoutProps) {
-  const { children, onSelectedKeysChange, leftExtra, rightExtra } = props;
+  const { children, onSelectedKeysChange, renderLink, leftExtra, rightExtra } = props;
   const { map, tabItems, menus, submenus } = useMemo(() => {
     const menus = props.menus;
     const internalMenus = menuItemsToInternalItem(menus || []);
@@ -62,13 +65,14 @@ export function RootLayout(props: RootLayoutProps) {
     const tabItems: TabPane[] = new Array(internalMenus.length);
 
     for (let i = 0; i < internalMenus.length; i++) {
-      const key = internalMenus[i].key;
-      const children = internalMenus[i].children;
+      const item = internalMenus[i];
+      const key = item.key;
+      const children = item.children;
       if (children) submenus[key] = menuItemToAntd(children);
       tabItems[i] = {
         key: key,
-        label: internalMenus[i].label,
-        icon: internalMenus[i].icon,
+        label: renderLink(item),
+        icon: item.icon,
       };
     }
 
@@ -112,25 +116,23 @@ export function RootLayout(props: RootLayoutProps) {
           items={tabItems}
         />
       </StyledNavTab>
-      {submenu?.length ? (
-        <AdaptiveMenuLayout
-          className="root-layout-body"
-          items={submenu}
-          defaultSelectedKeys={defaultSelectedKey.sub}
-          selectedKeys={selectedKey.sub}
-          onClick={(e) => {}}
-          onSelect={(e) => {
-            if (onSelectedKeysChange) {
-              const keys = [selectedKey.root!, ...e.selectedKeys];
-              onSelectedKeysChange?.({ keys, path: getPath(keys, map).join("/") });
-            }
-          }}
-        >
-          {children}
-        </AdaptiveMenuLayout>
-      ) : (
-        <div className="root-layout-body">{children}</div>
-      )}
+      <AdaptiveMenuLayout
+        className="root-layout-body"
+        items={submenu}
+        defaultSelectedKeys={defaultSelectedKey.sub}
+        selectedKeys={selectedKey.sub}
+        onSelect={(e) => {
+          if (onSelectedKeysChange) {
+            const keys = [selectedKey.root!, ...e.selectedKeys];
+            onSelectedKeysChange?.({ keys, path: getPath(keys, map).join("/") });
+          }
+        }}
+        styles={{
+          menu: { display: submenu?.length ? undefined : "none" },
+        }}
+      >
+        {children}
+      </AdaptiveMenuLayout>
     </RootLayoutCSS>
   );
 }

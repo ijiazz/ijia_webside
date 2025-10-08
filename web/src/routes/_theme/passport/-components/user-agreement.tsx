@@ -5,7 +5,7 @@ export function UserAgreementModal(props: { open?: boolean; onClose?(agree?: boo
   const { needAgree } = props;
   const [isAgree, setIsAgree] = useState(false);
   return (
-    <Modal title="IJIA 学院用户协议" open={props.open} destroyOnClose onCancel={() => props.onClose?.(isAgree)}>
+    <Modal title="IJIA 学院用户协议" open={props.open} destroyOnHidden onCancel={() => props.onClose?.(isAgree)}>
       <UserAgreement />
       {needAgree && (
         <Radio.Group onChange={(e) => setIsAgree(e.target.value)} value={isAgree}>
