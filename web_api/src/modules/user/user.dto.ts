@@ -1,4 +1,4 @@
-import type { Platform } from "@ijia/data/db";
+import { Platform } from "../dto.ts";
 
 export type UserBasicDto = {
   user_id: number;
