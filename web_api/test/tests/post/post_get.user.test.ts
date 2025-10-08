@@ -5,7 +5,8 @@ import { DbPostCreate, post } from "@ijia/data/db";
 
 import { postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "../../fixtures/user.ts";
-import { getPostList } from "@/modules/post/sql/post.ts";
+import { getPostList } from "@/modules/post/sql/post_list.ts";
+
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
 });
