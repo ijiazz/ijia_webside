@@ -327,33 +327,3 @@ function Image(props: { active?: boolean; item?: AvatarItem; className?: string;
     </div>
   );
 }
-
-export function ScreenAvatar(props: { children?: ReactNode; src?: string }) {
-  const { children, src } = props;
-  return (
-    <AvatarCSS>
-      <img src={src} />
-      {children}
-    </AvatarCSS>
-  );
-}
-const AvatarCSS = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-direction: column;
-  align-items: center;
-  /* opacity: 0.8; */
-  img {
-    width: 100px;
-    height: 100px;
-  }
-  overflow: hidden;
-  border-radius: 50%;
-
-  --glow-color: #fff6bd;
-  border: 3px solid var(--glow-color);
-  filter: brightness(1.4);
-  box-shadow:
-    4px 4px 28px 3px var(--glow-color),
-    4px 4px 28px 3px var(--glow-color);
-`;

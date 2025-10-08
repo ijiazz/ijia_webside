@@ -2,7 +2,7 @@ import { useLocation, createLazyFileRoute } from "@tanstack/react-router";
 
 import React, { useEffect, useRef, useState } from "react";
 import styled from "@emotion/styled";
-import { Screen, ScreenAvatar } from "./-components/Screen.tsx";
+import { Screen } from "./-components/Screen.tsx";
 import { Caption, CaptionFlow } from "@/lib/components/talk.tsx";
 import { GodPlatform } from "./-components/Platforms.tsx";
 import { Footer } from "@/common/Footer.tsx";
@@ -11,6 +11,8 @@ import { CaretDownOutlined } from "@ant-design/icons";
 import { HomeLinks } from "./-components/HomeLlink.tsx";
 import { useElementOverScreen } from "@/hooks/dom/observer.ts";
 import { HomePageRes } from "@/api.ts";
+import { useWindowEffect } from "./-hooks/useWindowEffect.ts";
+import { ScreenAvatar } from "./-components/ScreenAvatar.tsx";
 
 export const Route = createLazyFileRoute("/(home)/")({
   component: RouteComponent,
@@ -27,6 +29,7 @@ export function RouteComponent() {
   const [blackMode, setBlackMode] = useState(true);
   const avatarUrl = data?.god_user.avatar_url;
   const size = useWindowResize();
+  const { play } = useWindowEffect();
 
   useEffect(() => {
     indexRef.current = 0;
@@ -55,7 +58,7 @@ export function RouteComponent() {
         <Screen
           // 第一个延迟
           text={<CaptionFlow delay={indexRef.current < 0 ? 1000 : 0} text={speak} style={{ textAlign: "center" }} />}
-          avatar={avatarUrl ? <ScreenAvatar src={avatarUrl} /> : undefined}
+          avatar={avatarUrl ? <ScreenAvatar src={avatarUrl} onTrigger={play} /> : undefined}
         >
           <HeaderCSS style={{ flexDirection: size.width > 500 ? "row" : "column" }}>
             <div
@@ -123,6 +126,16 @@ const HeaderCSS = styled.div`
 `;
 
 const flashTextList: Caption[] = [
+  /*   {
+    text: "祝邹佳佳生日快乐！",
+    speed: 8,
+    pauseMs: 800,
+    segments: [
+      { length: 1, speed: 4, pauseMs: 200 },
+      { length: 3, speed: 4, pauseMs: 400 },
+      { length: 5, speed: 6 },
+    ],
+  }, */
   {
     text: "我们互相保护！",
     speed: 8,
