@@ -12,22 +12,28 @@ export type AdaptiveMenuLayoutProps = Pick<
   children?: ReactNode;
   style?: React.CSSProperties;
   className?: string;
+  styles?: {
+    menu?: React.CSSProperties;
+    content?: React.CSSProperties;
+  };
 };
 
 export function AdaptiveMenuLayout(props: AdaptiveMenuLayoutProps) {
-  const { className, style, children, leftExtra, rightExtra, ...menuProps } = props;
+  const { className, style, children, leftExtra, rightExtra, styles, ...menuProps } = props;
   const isVertical = useLayoutDirection() === LayoutDirection.Vertical;
 
   const theme = useThemeToken();
   return (
     <AdaptiveMenuLayoutCSS className={className} style={style}>
-      <NavigationTabCSS className="adaptive-menu" style={{ borderColor: theme.colorBorderSecondary }}>
+      <NavigationTabCSS className="adaptive-menu" style={{ borderColor: theme.colorBorderSecondary, ...styles?.menu }}>
         <div className="adaptive-menu-left">{leftExtra}</div>
 
         <Menu {...menuProps} mode={isVertical ? "horizontal" : "vertical"} className="adaptive-menu-center" />
         <div className="adaptive-menu-right"> {rightExtra}</div>
       </NavigationTabCSS>
-      <div className="adaptive-content">{children}</div>
+      <div className="adaptive-content" style={styles?.content}>
+        {children}
+      </div>
     </AdaptiveMenuLayoutCSS>
   );
 }
