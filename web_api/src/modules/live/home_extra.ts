@@ -1,4 +1,4 @@
-import { Platform } from "@ijia/data/db";
+import { Platform } from "../dto.ts";
 import { GodPlatformDto } from "./live.dto.ts";
 
 export const list: GodPlatformDto[] = [
@@ -33,5 +33,13 @@ export const list: GodPlatformDto[] = [
     user_id: "372467686",
     home_url: "https://music.163.com/#/user/home?id=372467686",
     avatar_url: "/main/avatar/wangyi.jpg",
+  },
+  {
+    platform: Platform.qqMusic,
+    user_name: "佳佳佳_zZ",
+    stat: { followers_count: 6614 },
+    user_id: "372467686",
+    home_url: "https://y.qq.com/n/ryqq/singer/0018KRrL010ZMa",
+    avatar_url: "/main/avatar/qqmusic.webp",
   },
 ];

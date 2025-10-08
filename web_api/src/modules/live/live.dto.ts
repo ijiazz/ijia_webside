@@ -1,4 +1,4 @@
-import { Platform } from "@ijia/data/db";
+import { Platform } from "../dto.ts";
 import { ListDto } from "../dto_common.ts";
 
 export type UserAvatarDto = {

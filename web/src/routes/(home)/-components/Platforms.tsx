@@ -20,7 +20,7 @@ export function GodPlatform(props: GodPlatformProps) {
       </div>
       <h1 className="description">我们的大明星</h1>
       {platforms?.map((item) => {
-        const icon = item.platform ? THIRD_PART[item.platform].icon : undefined;
+        const icon = item.platform ? THIRD_PART[item.platform]?.icon : undefined;
         const followersCount = item.stat?.followers_count ?? 0;
         const num = followerNumDetail ? followersCount : number(followersCount);
         return (

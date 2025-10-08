@@ -24,6 +24,7 @@ export enum Platform {
   v5sing = "v5sing",
   /** 网易云音乐 */
   wangYiMusic = "wangyiyun",
+  qqMusic = "qqmusic",
 }
 export enum TextStructureType {
   unknown = -1,
