@@ -64,14 +64,15 @@ export class UserController {
   @Post("/user/bind_platform")
   async bindPlatform(userId: number, bind: BindPlatformParam["account"]) {
     if (bind.platform !== Platform.douYin) throw new HttpError(409, { message: "暂不支持绑定该平台" });
+    const platform = bind.platform as Platform;
     const [{ count }] = await user_platform_bind
       .select<{ count: number }>("count(*) ::INT")
       .where(`user_id=${v(userId)}`)
       .queryRows();
     if (count > 5) throw new HttpError(409, { message: "最多绑定5个平台账号" });
-    await bindPlatformAccount(userId, bind.platform, bind.pla_uid);
+    await bindPlatformAccount(userId, platform, bind.pla_uid);
     if (count === 0) {
-      await this.syncPlatformAccountFromDb(userId, bind);
+      await this.syncPlatformAccountFromDb(userId, { platform, pla_uid: bind.pla_uid });
     }
   }
   @ToArguments(async function (ctx) {
@@ -125,6 +126,7 @@ export class UserController {
   async checkPlatformBind(userId: number, body: BindPlatformCheckParam): Promise<BindPlatformCheckDto> {
     const bind = body.platformList[0];
     if (bind.platform !== Platform.douYin) throw new HttpError(409, { message: "暂不支持绑定该平台" });
+    const platform = bind.platform as Platform;
 
     /** 抖音是 sec_id */
     let platformUseId = bind.platformUseId;
@@ -147,7 +149,7 @@ export class UserController {
         .queryRows();
       if (user?.avatar) userInfo.avatarPath = `/file/avatar/${user.avatar}`;
     } else {
-      userInfo = await getPlatformUserInfo(bind.platform, platformUseId, userId);
+      userInfo = await getPlatformUserInfo(platform, platformUseId, userId);
     }
     if (!userInfo.pass) throw new HttpError(403, { message: "检测不通过" });
 
@@ -161,7 +163,7 @@ export class UserController {
         platform: true,
         pla_uid: true,
       })
-      .where([`platform=${v(bind.platform)}`, `pla_uid=${v(userInfo.pla_uid)}`])
+      .where([`platform=${v(platform)}`, `pla_uid=${v(userInfo.pla_uid)}`])
       .limit(1)
       .queryRows();
     return {
