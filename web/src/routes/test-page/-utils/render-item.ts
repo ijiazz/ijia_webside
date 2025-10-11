@@ -7,23 +7,16 @@ export function renderIItem(item: HTMLElement, data: BulletChat, info: RenderOpt
   item.style.top = `${info.y}px`;
   item.style.color = "#fff";
 
-  const avatar = document.createElement("img");
-  avatar.src = data.user.avatar_url;
-  avatar.style.width = "1.1em";
-  avatar.style.height = "1.1em";
-  avatar.style.borderRadius = "50%";
-  avatar.style.objectFit = "cover";
-  avatar.style.marginRight = "8px";
-  avatar.style.verticalAlign = "middle";
-  avatar.style.overflow = "hidden";
-  avatar.style.border = "1px solid #fff";
-
-  item.prepend(avatar);
-
   item.addEventListener("mouseenter", onMouseEnter);
   item.addEventListener("mouseleave", onMouseLeave);
 
   item.addEventListener("touchstart", onTouchStart);
+
+  const avatar = document.createElement("img");
+  avatar.className = "bullet-chat-avatar";
+  avatar.src = data.user.avatar_url;
+
+  item.prepend(avatar);
 }
 
 function onMouseEnter(e: MouseEvent) {

@@ -23,15 +23,18 @@ function RouteComponent() {
       },
       100,
     );
-    ctrl.renderItem = renderIItem;
+    ctrl.onBeforeAppend = renderIItem;
     const abc = new AbortController();
     (async () => {
       for await (const item of genItems(abc.signal)) {
-        ctrl.addItem(item, genRandomY(container.clientHeight));
+        ctrl.addItem(item, genRandomY(container.clientHeight - 100));
       }
     })();
+    ctrl.start();
+
     return () => {
       abc.abort();
+      ctrl.clear();
     };
   }, []);
   return <StyledDiv ref={scRef} />;
@@ -47,23 +50,16 @@ const StyledDiv = styled.div`
     position: absolute;
     left: 100%;
     white-space: nowrap;
-    width: 100%;
-
-    animation-name: move-left;
-    animation-duration: 5s;
-    animation-timing-function: linear;
-    animation-iteration-count: 1;
-    animation-play-state: running;
-    animation-fill-mode: forwards;
   }
-
-  @keyframes move-left {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-100%);
-    }
+  .bullet-chat-avatar {
+    width: 1.1em;
+    height: 1.1em;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+    vertical-align: middle;
+    overflow: hidden;
+    border: 1px solid #fff;
   }
 `;
 
