@@ -13,6 +13,7 @@ import { useElementOverScreen } from "@/hooks/dom/observer.ts";
 import { HomePageRes } from "@/api.ts";
 import { useWindowEffect } from "./-hooks/useWindowEffect.ts";
 import { ScreenAvatar } from "./-components/ScreenAvatar.tsx";
+import { extend, flashTextList } from "./-utils/flashText.ts";
 
 export const Route = createLazyFileRoute("/(home)/")({
   component: RouteComponent,
@@ -124,39 +125,3 @@ const HeaderCSS = styled.div`
     }
   }
 `;
-
-const flashTextList: Caption[] = [
-  /*   {
-    text: "祝邹佳佳生日快乐！",
-    speed: 8,
-    pauseMs: 800,
-    segments: [
-      { length: 1, speed: 4, pauseMs: 200 },
-      { length: 3, speed: 4, pauseMs: 400 },
-      { length: 5, speed: 6 },
-    ],
-  }, */
-  {
-    text: "我们互相保护！",
-    speed: 8,
-    pauseMs: 800,
-    segments: [
-      { length: 2, speed: 4 },
-      { length: 5, speed: 6 },
-    ],
-  },
-  {
-    text: "我喜欢的小偶像叫邹佳佳！她一点都不垃圾，饭她很幸福！",
-    speed: 7,
-    pauseMs: 800,
-    segments: [{ length: 7, speed: 6, pauseMs: 250 }, { length: 5, speed: 8 }, 8, 6],
-  },
-];
-const extend: Caption[] = [
-  {
-    text: "谢谢宝宝们，回头看你们都在，嘿嘿",
-    speed: 6,
-    pauseMs: 800,
-    segments: [6, { length: 3, pauseMs: 200 }, 5, 2],
-  },
-];

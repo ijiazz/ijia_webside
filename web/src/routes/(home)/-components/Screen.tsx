@@ -7,6 +7,7 @@ import { useShakeAnimation } from "./shake_animation.ts";
 import classNames from "classnames";
 import { getUserInfoFromToken } from "@/common/user.ts";
 import { api } from "@/common/http.ts";
+import { HomeBulletChat } from "./HomeBulletchat.tsx";
 
 type AvatarItem = {
   key: string;
@@ -83,7 +84,7 @@ export function Screen(props: AvatarListProps) {
   const godAvatarRef = useRef<HTMLDivElement>(null);
   /** 镜头抖动 */
   const animationCtrl = useShakeAnimation({
-    autoPlay: true,
+    autoPlay: false,
     targetRef: godAvatarRef,
     heightRange: 50,
     widthRange: 50,
@@ -175,6 +176,7 @@ export function Screen(props: AvatarListProps) {
         </div>
         {children}
       </div>
+      <HomeBulletChat /> {/* 弹幕 */}
     </ScreenCSS>
   );
 }

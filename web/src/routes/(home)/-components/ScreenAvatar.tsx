@@ -9,7 +9,7 @@ export function ScreenAvatar(props: { src?: string; onTrigger?: () => void }) {
       <div className="avatar">
         <img src={src} />
       </div>
-      <img className="avatar-font" src={a1028} />
+      {/* <img className="avatar-font" src={a1028} /> */}
     </AvatarCSS>
   );
 }

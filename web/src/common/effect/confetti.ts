@@ -11,20 +11,20 @@ function fireConfetti(angle: number, x: number = 0.5, y: number = 0.35, count = 
       angle,
       spread: nRandomRange(45, 7), //发射角度偏移
       startVelocity: nRandomRange(45, 35),
-      decay: nRandomRange(0.9, 0.02), // 初速度
+      decay: nRandomRange(0.905, 0.02), // 初速度
       scalar: zoom, //彩带大小
-      gravity: zoom, // 重力
-      ticks: 1000, // 存活时间
+      gravity: 1 - (1 - zoom) * 0.7, // 重力
+      ticks: 2000, // 存活时间
       particleCount: rz,
     });
   }
 }
 export function playConfetti() {
-  const r = 50;
+  const r = 56;
   const min = 90 - r;
   const max = 90 + r;
   for (let i = min; i < max; i += 10) {
-    fireConfetti(i, nRandomRange(0.5, 0.1), nRandomRange(0.35, 0.1));
+    fireConfetti(i, 0.5, 0.35);
   }
 
   return {

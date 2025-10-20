@@ -1,16 +1,15 @@
 export class BulletChatController<T extends { text: string }> {
-  constructor(private readonly dom: HTMLElement) {}
+  constructor(readonly dom: HTMLElement) {}
   onBeforeAppend: (item: HTMLElement, data: T, info: RenderOption) => void = () => {};
   onBeforeRemove: (item: HTMLElement) => void = () => {};
   addItem(data: T, y: number, speed?: number) {
     const div = document.createElement("div");
     this.onBeforeAppend(div, data, { y, speed: speed || 5 });
     this.dom.appendChild(div);
-
-    this.liveMap.set(div, { offset: 0, isPaused: false });
+    this.liveMap.set(div, { offset: 0, isPaused: false, speed: this.defaultSpeed });
   }
   private liveMap = new Map<HTMLElement, BulletData>();
-  private speed = 1;
+  defaultSpeed = 1.2;
   render() {
     const container = this.dom;
     const containerWidth = container.clientWidth;
@@ -18,7 +17,7 @@ export class BulletChatController<T extends { text: string }> {
 
     for (const [element, data] of this.liveMap) {
       if (data.isPaused) continue;
-      data.offset -= this.speed;
+      data.offset -= data.speed;
       if (-data.offset >= containerWidth + element.clientWidth) {
         this.onBeforeRemove(element);
         element.remove();
@@ -66,4 +65,5 @@ export type RenderOption = {
 type BulletData = {
   offset: number;
   isPaused: boolean;
+  speed: number;
 };

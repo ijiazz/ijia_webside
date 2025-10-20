@@ -8,7 +8,7 @@ export function useWindowEffect() {
   useEffect(() => {
     const now = Date.now();
     let clear: undefined | (() => void);
-    let mode: "confetti" | "snow" | undefined = "confetti";
+    let mode: "confetti" | "snow" | undefined;
 
     if (isBirthDay()) {
       mode = "confetti";
