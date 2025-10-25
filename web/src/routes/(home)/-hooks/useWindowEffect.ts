@@ -2,52 +2,56 @@ import { afterTime } from "evlib";
 import { useRef } from "react";
 import { useEffect } from "react";
 
-export function useWindowEffect() {
-  const ref = useRef(false);
-  const refMod = useRef(() => {});
-  useEffect(() => {
-    const now = Date.now();
-    let clear: undefined | (() => void);
-    let mode: "confetti" | "snow" | undefined;
-
-    if (isBirthDay()) {
-      mode = "confetti";
-    }
-
-    if (mode === undefined) return;
-
-    Promise.all([import("@/common/effect/confetti.ts"), afterTime(2000)]).then(([mod]) => {
-      if (ref.current) return;
-      const { playConfetti, playRain, playSnow } = mod;
-      switch (mode) {
-        case "snow":
-          refMod.current = playSnow;
-          clear = playSnow().stop;
-          break;
-
-        case "confetti":
-          refMod.current = playConfetti;
-          clear = playConfetti().stop;
-          break;
-        default:
-          break;
-      }
-    });
-    return () => {
-      clear?.();
-      ref.current = true;
-    };
-  }, []);
-
-  return {
-    play: refMod.current,
-  };
+export enum EffectMode {
+  confetti,
+  snow,
 }
 
-const isBirthDay = () => {
-  const now = new Date();
-  const beijingOffset = 8 * 60; // 北京时间 UTC+8
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const beijing = new Date(utc + beijingOffset * 60000);
-  return beijing.getMonth() === 9 && beijing.getDate() === 28;
+export type UseWindowEffectResult = {
+  play: (mode: EffectMode) => void;
 };
+export function useWindowEffect(mode?: EffectMode) {
+  const needPlayRef = useRef<EffectMode | null>(null);
+  const refMod = useRef<typeof import("@/common/effect/confetti.ts") | null>(null);
+  const play = (mode: EffectMode) => {
+    const mod = refMod.current;
+    if (!mod) return;
+
+    if (/XiaoMi\/MiuiBrowser\/[\d\.]+$/.test(navigator.userAgent)) {
+      return;
+    }
+
+    const { playConfetti, playRain, playSnow } = mod;
+    switch (mode) {
+      case EffectMode.snow:
+        return playSnow().stop;
+
+      case EffectMode.confetti:
+        return playConfetti(document.body.clientWidth).stop;
+      default:
+        return () => {};
+    }
+  };
+  useEffect(() => {
+    let clear: undefined | (() => void);
+    if (mode === undefined) return;
+    needPlayRef.current = mode;
+
+    Promise.all([import("@/common/effect/confetti.ts"), afterTime(2000)])
+      .then(([mod]) => {
+        refMod.current = mod;
+      })
+      .then(() => {
+        if (needPlayRef.current !== mode) return;
+        clear = play(mode);
+      });
+    return () => {
+      clear?.();
+      needPlayRef.current = null;
+    };
+  }, [mode]);
+
+  return {
+    play,
+  };
+}

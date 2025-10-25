@@ -1,18 +1,26 @@
 import { Caption } from "@/lib/components/talk/type.ts";
 
-export const flashTextList: Caption[] = [
+export const birthdayCaption: Caption[] = [
   {
-    text: "祝邹佳佳10月28日生日快乐！",
-    speed: 8,
+    text: "祝邹佳佳生日快乐！",
+    // text: "祝邹佳佳10月28日生日快乐！",
+    speed: 6,
     pauseMs: 400,
     segments: [
       { length: 1, speed: 4, pauseMs: 200 },
       { length: 3, speed: 6 },
-      { length: 6, speed: 6, pauseMs: 200 },
+      // { length: 6, speed: 6, pauseMs: 200 },
       { length: 5, speed: 6 },
     ],
   },
-  /* {
+  {
+    text: "要一直在哦！",
+    speed: 5,
+  },
+];
+
+export const flashTextList: Caption[] = [
+  {
     text: "我们互相保护！",
     speed: 8,
     pauseMs: 800,
@@ -26,7 +34,7 @@ export const flashTextList: Caption[] = [
     speed: 7,
     pauseMs: 800,
     segments: [{ length: 7, speed: 6, pauseMs: 250 }, { length: 5, speed: 8 }, 8, 6],
-  }, */
+  },
 ];
 export const extend: Caption[] = [
   {

@@ -19,7 +19,7 @@ export function useBulletChat(props: {
         id: "1",
         like_count: 1,
         text: "hello",
-        user: { avatar_url: "", nickname: "nick", user_id: "1" },
+        user: { avatar_url: "", user_name: "nick", user_id: "1" },
       },
       100,
     );

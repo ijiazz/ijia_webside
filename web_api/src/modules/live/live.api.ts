@@ -1,5 +1,5 @@
 import { GetListOption } from "../dto_common.ts";
-import { ScreenAvatarRes, HomePageRes } from "./live.dto.ts";
+import { ScreenAvatarRes, HomePageRes, GetBulletChatListRes } from "./live.dto.ts";
 
 export interface LiveApi {
   "GET /live/screen/avatar": {
@@ -8,5 +8,9 @@ export interface LiveApi {
   };
   "GET /live/screen/home": {
     response: HomePageRes;
+  };
+
+  "GET /live/screen/bullet-chart": {
+    response: GetBulletChatListRes;
   };
 }

@@ -2,10 +2,10 @@ import { randomNormal } from "@/lib/random.ts";
 import confetti, { Options } from "canvas-confetti";
 console.warn("confetti loaded");
 
-function fireConfetti(angle: number, x: number = 0.5, y: number = 0.35, count = 100) {
+function fireConfetti(angle: number, x: number = 0.5, y: number = 0.35, count = 100, zoom1: number = 1) {
   const rz = 5;
   for (let i = 0; i < count; i += rz) {
-    const zoom = nRandomRange(1, 0.5);
+    const zoom = zoom1 * nRandomRange(1, 0.5);
     confetti({
       origin: { y, x },
       angle,
@@ -19,12 +19,22 @@ function fireConfetti(angle: number, x: number = 0.5, y: number = 0.35, count = 
     });
   }
 }
-export function playConfetti() {
+
+const midWith = 1400;
+const minWith = 500;
+const minZoom = 0.7;
+const maxZoom = 1.2;
+const k = (1 - minZoom) / (midWith - minWith);
+const b = 1 - k * midWith;
+export function playConfetti(windowWidth: number) {
+  let zoom = k * windowWidth + b;
+  if (zoom < minZoom) zoom = minZoom;
+  if (zoom > maxZoom) zoom = maxZoom;
   const r = 56;
   const min = 90 - r;
   const max = 90 + r;
   for (let i = min; i < max; i += 10) {
-    fireConfetti(i, 0.5, 0.35);
+    fireConfetti(i, 0.5, 0.35, 100 * zoom, zoom);
   }
 
   return {

@@ -14,8 +14,9 @@ export function BulletChatBox(
 const StyledDiv = styled.div`
   position: relative;
   overflow: hidden;
-
+  pointer-events: none;
   .bullet-chat-item {
+    pointer-events: all;
     position: absolute;
     left: 100%;
     white-space: nowrap;

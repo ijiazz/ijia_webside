@@ -1,5 +1,5 @@
 import { Platform } from "../dto.ts";
-import { CursorListDto, ListDto } from "../dto_common.ts";
+import { InfiniteListDto, ListDto } from "../dto_common.ts";
 
 export type UserAvatarDto = {
   avatar_url: string;
@@ -46,13 +46,16 @@ export type BulletChat = {
   like_count: number;
 
   user: {
-    nickname: string;
+    user_name: string;
     avatar_url: string;
     user_id: string;
   };
 };
 
-export type BulletChatListDto = CursorListDto<BulletChat, string> & {};
+export type GetBulletChatParam = {
+  offset?: number;
+};
+export type GetBulletChatListRes = InfiniteListDto<BulletChat> & {};
 
 export type GetBulletChatParams = {
   cursor?: string;

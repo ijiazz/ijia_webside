@@ -2,7 +2,7 @@ import { api } from "@/common/http.ts";
 import { BulletChatBox } from "@/lib/BulletChat/BulletChatBox.tsx";
 import React from "react";
 
-export function HomeBulletChat() {
+export function HomeBulletChat(props: {}) {
   return (
     <BulletChatBox
       genData={genItems}
@@ -11,6 +11,8 @@ export function HomeBulletChat() {
   );
 }
 async function* genItems(signal: AbortSignal) {
+  //TODO
+  return;
   const { items, total } = await api["/live/screen/avatar"].get({ query: { number: 400 } });
 
   for (let i = 0; ; i++) {

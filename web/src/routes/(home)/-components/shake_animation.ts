@@ -6,23 +6,26 @@ export function useShakeAnimation(config: {
   /** 传入一个元素的ref,当这个元素离开屏幕后停止播放动画 */
   targetRef?: React.RefObject<HTMLDivElement | null>;
   autoPlay?: boolean;
-  widthRange: number;
-  heightRange: number;
   onFrameUpdate: (offsetX: number, offsetY: number) => void;
 }) {
-  const { targetRef, widthRange, heightRange, onFrameUpdate, autoPlay = true } = config;
+  const { targetRef, onFrameUpdate, autoPlay = true } = config;
+  /** X轴抖动范围 */
+  const widthRange: number = 100;
+  const heightRange: number = 100;
+  const speed = 2300;
+
   const [isPlay, setIsPlay] = useState(autoPlay);
   const animationCtrlRef = useRef<JSAnimation>(null);
   useEffect(() => {
     const obj = { scrollLeft: 0, scrollTop: 0 };
     const animation = animate(obj, {
       scrollLeft: [
-        { from: 0, to: widthRange, duration: 3000 },
-        { to: 0, duration: 3000 },
+        { from: 0, to: widthRange, duration: speed * 3 },
+        { to: 0, duration: speed * 3 },
       ],
       scrollTop: [
-        { from: 0, to: heightRange, duration: 4000 },
-        { to: 0, duration: 4000 },
+        { from: 0, to: heightRange, duration: speed * 4 },
+        { to: 0, duration: speed * 4 },
       ],
       autoplay: isPlay,
       ease: "inOut", // ease applied between each keyframes if no ease defined

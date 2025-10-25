@@ -1,15 +1,17 @@
 import styled from "@emotion/styled";
 import React from "react";
-import a1028 from "../-img/1028.png";
+import a1028 from "../../-img/1028.png";
+import { MEDIA_CHECK, useScreenEffects } from "./screenEffects.tsx";
 
 export function ScreenAvatar(props: { src?: string; onTrigger?: () => void }) {
   const { src, onTrigger } = props;
+  const effects = useScreenEffects();
   return (
     <AvatarCSS onDoubleClick={onTrigger}>
       <div className="avatar">
         <img src={src} />
       </div>
-      {/* <img className="avatar-font" src={a1028} /> */}
+      {effects?.birthday && <img className="avatar-font" src={a1028} />}
     </AvatarCSS>
   );
 }
@@ -46,5 +48,15 @@ const AvatarCSS = styled.div`
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%) scale(0.45);
+  }
+
+  @media screen and (${MEDIA_CHECK}) {
+    .avatar {
+      width: 70px;
+      height: 70px;
+    }
+    .avatar-font {
+      transform: translate(-50%, -50%) scale(0.315);
+    }
   }
 `;
