@@ -1,3 +1,4 @@
+import { BulletChat } from "@/api.ts";
 import { api } from "@/common/http.ts";
 import { BulletChatBox } from "@/lib/BulletChat/BulletChatBox.tsx";
 import React from "react";
@@ -11,23 +12,32 @@ export function HomeBulletChat(props: {}) {
   );
 }
 async function* genItems(signal: AbortSignal) {
-  let hasMore = true;
-  let offset = 0;
-  while (hasMore) {
-    if (signal.aborted) {
-      return;
-    }
-    const res = await api["/live/screen/bullet-chart"].get({ query: { index: offset } });
-    offset++;
-    hasMore = res.has_more;
-    for await (const item of res.items) {
-      yield item;
-      if (signal.aborted) {
-        return;
-      }
-      await new Promise((r) => setTimeout(r, 2000));
-    }
+  const stream = createStream();
+  const reader = stream.getReader();
+  let item = await reader.read();
+  while (!item.done && !signal.aborted) {
+    yield item.value;
+    await new Promise((r) => setTimeout(r, 2000));
+    item = await reader.read();
   }
-
-  return;
+}
+function createStream() {
+  let offset = 0;
+  return new ReadableStream<BulletChat>(
+    {
+      async pull(controller) {
+        const res = await api["/live/screen/bullet-chart"].get({ query: { index: offset++ } });
+        for (const item of res.items) {
+          controller.enqueue(item);
+        }
+        if (!res.has_more) {
+          controller.close();
+        }
+      },
+    },
+    {
+      highWaterMark: 15,
+      size: (chunk) => 1,
+    },
+  );
 }
