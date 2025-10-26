@@ -1,13 +1,4 @@
-import {
-  checkType,
-  ExpectType,
-  InferExpect,
-  optional,
-  TypeCheckFn,
-  CheckTypeError,
-  createCheckerFn,
-  integer,
-} from "@asla/wokao";
+import { checkType, ExpectType, InferExpect, optional, TypeCheckFn, CheckTypeError, integer, array } from "@asla/wokao";
 
 const optionalString = nullishOptional("string");
 const optionalBoolean = nullishOptional("boolean");
@@ -65,6 +56,21 @@ export type EmailConfig = {
   serverHost: string;
   serverPort: number;
 };
+const dateSchema: TypeCheckFn<Date> = function dateTypeCheck(input: unknown): Date {
+  if (typeof input !== "string") throw new CheckTypeError("不是有效的日期字符串");
+  return new Date(input);
+};
+
+const homeSchema = {
+  bulletChart: array({
+    usePostId: nullishOptional(integer(), null), // 获取的帖子 id，如果为 null, 则所有帖子都获取
+    enable: nullishOptional("boolean", true), // 是否启用
+    enableDateStart: nullishOptional(dateSchema, null), // 启用日期, 如果设置，则仅在此日期后启用
+    enableDateEnd: nullishOptional(dateSchema, null), // 结束日期，如果设置，则仅在此日期前启用
+  }),
+} satisfies ExpectType;
+type HomeConfig = InferExpect<typeof homeSchema>;
+
 const appConfigChecker = {
   appName: nullishOptional("string", "IJIA 学院"),
   emailSender: optional(emailConfigCheck),
@@ -85,6 +91,7 @@ const appConfigChecker = {
     },
     { pollingMinute: 0 },
   ),
+  home: nullishOptional(homeSchema, {} as HomeConfig),
 } satisfies ExpectType;
 
 export type AppConfig = Readonly<InferExpect<typeof appConfigChecker>>;

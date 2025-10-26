@@ -1,13 +1,15 @@
 import { autoBody } from "@/global/pipe.ts";
 import { Controller, Get, PipeInput, PipeOutput } from "@asla/hono-decorator";
-import { ScreenAvatarRes, HomePageRes, GodPlatformDto } from "./live.dto.ts";
-import { optionalPositiveInt, checkValue } from "@/global/check.ts";
+import { ScreenAvatarRes, HomePageRes, GodPlatformDto, GetBulletChatListRes, GetBulletChatParam } from "./live.dto.ts";
+import { optionalPositiveInt, checkValue, optionalInt } from "@/global/check.ts";
 import { genScreenAvatar } from "./sql/avatar.ts";
 import { pla_user } from "@ijia/data/db";
 import { redisPool } from "@ijia/data/cache";
 import { dbPool } from "@ijia/data/yoursql";
 import { list } from "./home_extra.ts";
 import { Context } from "hono";
+import { genGetBulletChart } from "./sql/bullet.sql.ts";
+import { appConfig } from "@/config.ts";
 
 @autoBody
 @Controller({})
@@ -87,6 +89,42 @@ class LiveController {
       current_user: null,
       god_user: { user_name: platforms[0].user_name, avatar_url: platforms[0].avatar_url },
       god_user_platforms: platforms.sort((a, b) => b.stat.followers_count - a.stat.followers_count),
+    };
+  }
+
+  @PipeInput((ctx) => {
+    const queries = ctx.req.query();
+    return checkValue(queries, { index: optionalInt });
+  })
+  @Get("/live/screen/bullet-chart")
+  async getBulletChart(param: GetBulletChatParam): Promise<GetBulletChatListRes> {
+    const { index = 0 } = param;
+    const bulletChartConfig = appConfig.home.bulletChart;
+
+    const target = bulletChartConfig.find((config) => {
+      if (!config.enable) return false;
+      const { enableDateEnd, enableDateStart } = config;
+      const now = new Date();
+      if (enableDateStart && now < enableDateStart) return false;
+      if (enableDateEnd && now > enableDateEnd) return false;
+
+      return true;
+    });
+    if (!target) {
+      return {
+        has_more: false,
+        items: [],
+      };
+    }
+    const pageSize = 50;
+    const res = await genGetBulletChart({
+      groupId: target.usePostId,
+      pageSize,
+      page: index,
+    }).queryRows();
+    return {
+      items: res,
+      has_more: res.length >= pageSize,
     };
   }
 }

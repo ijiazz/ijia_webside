@@ -9,9 +9,12 @@ export type ListDto<T> = {
   total: number;
 };
 
-export type CursorListDto<T, C> = {
+export type InfiniteListDto<T> = {
   items: T[];
   has_more: boolean;
+};
+
+export type CursorListDto<T, C> = InfiniteListDto<T> & {
   before_cursor?: C | null;
   next_cursor?: C | null;
 };

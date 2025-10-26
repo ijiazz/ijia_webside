@@ -52,7 +52,9 @@ function UserLayout(props: PropsWithChildren<{}>) {
     <RootLayout
       leftExtra={
         <StyledIcon>
-          <IjiaLogo className="site-logo" />
+          <Link to="/">
+            <IjiaLogo className="site-logo" />
+          </Link>
           <b className="site-name">IJIA 学院</b>
         </StyledIcon>
       }

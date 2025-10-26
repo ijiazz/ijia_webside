@@ -52,7 +52,7 @@ export function HomeLinks(props: HomeLinkProps) {
   }, [links, blackMode]);
   return (
     <HomeLinksCSS {...props} style={{ backdropFilter: background ? "blur(3px)" : undefined }}>
-      <div className="home-link home-link-left"></div>
+      {/* <div className="home-link home-link-left"></div> */}
       <div className="home-link home-link-right">{items}</div>
     </HomeLinksCSS>
   );
@@ -115,13 +115,26 @@ const HomeLinksCSS = styled.div<{ blackMode?: boolean; background?: string }>`
     padding: 8px 12px;
     display: flex;
     > * {
-      padding-left: max(4px, 4%);
-      padding-right: max(4px, 4%);
+      padding-left: 4%;
+      padding-right: 4%;
     }
+
     .link-item {
       color: ${({ blackMode }) => (blackMode ? "#fff" : "#000")};
       font-weight: 500;
       font-size: 14px;
+    }
+  }
+  @media screen and (max-width: 550px) {
+    .home-link > * {
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+  }
+  @media screen and (max-width: 400px) {
+    .home-link > * {
+      padding-left: 2px;
+      padding-right: 2px;
     }
   }
   .home-link-left {

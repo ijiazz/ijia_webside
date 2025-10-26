@@ -22,4 +22,14 @@
     "maximumDailyCount": 50, // 每日发帖上限。设置为 0 可关闭发帖功能
     "allowAddComment": true, // 是否允许添加评论
   },
+  "home": {
+    "bulletChart": [
+      {
+        "usePostId": 2, // 获取的帖子 id，如果为 null, 则所有帖子都获取
+        "enable": true, // 是否启用
+        "enableDateStart": "2025-10-28T00:00:00.000+08:00", // 启用日期, 如果设置，则仅在此日期后启用
+        "enableDateEnd": "2025-10-28T23:59:59.999+08:00", // 结束日期，如果设置，则仅在此日期前启用
+      },
+    ],
+  },
 }
