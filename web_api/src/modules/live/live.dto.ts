@@ -53,11 +53,6 @@ export type BulletChat = {
 };
 
 export type GetBulletChatParam = {
-  offset?: number;
+  index?: number;
 };
 export type GetBulletChatListRes = InfiniteListDto<BulletChat> & {};
-
-export type GetBulletChatParams = {
-  cursor?: string;
-  number?: number;
-};

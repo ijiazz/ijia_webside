@@ -1,7 +1,7 @@
 import { autoBody } from "@/global/pipe.ts";
 import { Controller, Get, PipeInput, PipeOutput } from "@asla/hono-decorator";
 import { ScreenAvatarRes, HomePageRes, GodPlatformDto, GetBulletChatListRes, GetBulletChatParam } from "./live.dto.ts";
-import { optionalPositiveInt, checkValue } from "@/global/check.ts";
+import { optionalPositiveInt, checkValue, optionalInt } from "@/global/check.ts";
 import { genScreenAvatar } from "./sql/avatar.ts";
 import { pla_user } from "@ijia/data/db";
 import { redisPool } from "@ijia/data/cache";
@@ -94,11 +94,11 @@ class LiveController {
 
   @PipeInput((ctx) => {
     const queries = ctx.req.query();
-    return checkValue(queries, { offset: optionalPositiveInt });
+    return checkValue(queries, { index: optionalInt });
   })
   @Get("/live/screen/bullet-chart")
   async getBulletChart(param: GetBulletChatParam): Promise<GetBulletChatListRes> {
-    const { offset = 0 } = param;
+    const { index = 0 } = param;
     const bulletChartConfig = appConfig.home.bulletChart;
 
     const target = bulletChartConfig.find((config) => {
@@ -120,7 +120,7 @@ class LiveController {
     const res = await genGetBulletChart({
       groupId: target.usePostId,
       pageSize,
-      page: offset,
+      page: index,
     }).queryRows();
     return {
       items: res,

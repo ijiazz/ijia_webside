@@ -15,8 +15,8 @@ export function genGetBulletChart(options: GetBulletChartOptions): SqlStatementD
     .innerJoin(user, "u", "p.user_id = u.id")
     .select<BulletChat>({
       text: "p.content_text",
-      id: true,
-      like_count: "p.like_total",
+      id: "p.id",
+      like_count: "p.like_count",
       user: jsonb_build_object({
         user_name: "u.nickname",
         user_id: "u.id ::TEXT",
@@ -36,7 +36,7 @@ export function genGetBulletChart(options: GetBulletChartOptions): SqlStatementD
       }
       return conditions;
     })
-    .orderBy("p.like_total DESC, p.id ASC")
+    .orderBy("p.like_count DESC, p.id ASC")
     .limit(pageSize, page * pageSize);
   return sql;
 }

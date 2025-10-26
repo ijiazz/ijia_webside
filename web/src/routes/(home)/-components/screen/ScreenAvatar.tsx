@@ -7,7 +7,7 @@ export function ScreenAvatar(props: { src?: string; onTrigger?: () => void }) {
   const { src, onTrigger } = props;
   const effects = useScreenEffects();
   return (
-    <AvatarCSS onDoubleClick={onTrigger}>
+    <AvatarCSS onDoubleClick={onTrigger} onTouchEnd={onTrigger}>
       <div className="avatar">
         <img src={src} />
       </div>

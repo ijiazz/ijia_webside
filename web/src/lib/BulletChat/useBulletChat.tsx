@@ -14,15 +14,6 @@ export function useBulletChat(props: {
     const container = containerRef.current;
     if (!container) return;
     const ctrl = new BulletChatController<BulletChat>(container);
-    ctrl.addItem(
-      {
-        id: "1",
-        like_count: 1,
-        text: "hello",
-        user: { avatar_url: "", user_name: "nick", user_id: "1" },
-      },
-      100,
-    );
     ctrl.onBeforeAppend = renderIItem;
     setCtrl(ctrl);
   }, []);
@@ -32,7 +23,7 @@ export function useBulletChat(props: {
     const abc = new AbortController();
     (async () => {
       for await (const item of genData(abc.signal)) {
-        ctrl.addItem(item, genRandomY(ctrl.dom.clientHeight - 100));
+        await ctrl.addItemAsync(item);
       }
     })();
     ctrl.start();
@@ -43,15 +34,11 @@ export function useBulletChat(props: {
     };
   }, [ctrl]);
 }
-function genRandomY(maxHeight: number) {
-  return Math.floor(Math.random() * maxHeight);
-}
 
-function renderIItem(item: HTMLElement, data: BulletChat, info: RenderOption) {
+function renderIItem(this: BulletChatController<BulletChat>, item: HTMLElement, data: BulletChat) {
   item.className = "bullet-chat-item";
-  item.innerText = data.text;
-  item.style.top = `${info.y}px`;
   item.style.color = "#fff";
+  item.appendChild(document.createTextNode(data.text));
 
   const avatar = document.createElement("img");
   avatar.className = "bullet-chat-avatar";
@@ -59,26 +46,16 @@ function renderIItem(item: HTMLElement, data: BulletChat, info: RenderOption) {
 
   item.prepend(avatar);
 
-  item.addEventListener("mouseenter", onMouseEnter);
-  item.addEventListener("mouseleave", onMouseLeave);
-
-  item.addEventListener("touchstart", onTouchStart);
-}
-
-function onMouseEnter(e: MouseEvent) {
-  const element = e.target;
-  if (!(element instanceof HTMLElement)) return;
-  element.style.animationPlayState = "paused";
-}
-function onMouseLeave(e: MouseEvent) {
-  const element = e.target;
-  if (!(element instanceof HTMLElement)) return;
-  element.style.animationPlayState = "running";
-}
-function onTouchStart(e: TouchEvent) {
-  const element = e.target;
-  if (!(element instanceof HTMLElement)) return;
-  const state = element.style.animationPlayState;
-  if (state === "running") element.style.animationPlayState = "paused";
-  else element.style.animationPlayState = "running";
+  const pauseItem = (e: MouseEvent) => {
+    const element = e.target;
+    if (!(element instanceof HTMLElement)) return;
+    this.pausedItem(element);
+  };
+  item.addEventListener("mouseenter", pauseItem);
+  item.addEventListener("mouseleave", (e) => {
+    const element = e.target;
+    if (!(element instanceof HTMLElement)) return;
+    element.style.animationPlayState = "running";
+    this.resumeItem(element);
+  });
 }

@@ -22,8 +22,8 @@ const StyledDiv = styled.div`
     white-space: nowrap;
   }
   .bullet-chat-avatar {
-    width: 1.5em;
-    height: 1.5em;
+    width: 1.3em;
+    height: 1.3em;
     border-radius: 50%;
     object-fit: cover;
     margin-right: 0.2em;
