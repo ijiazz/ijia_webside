@@ -131,6 +131,7 @@ export function LoginForm() {
           </div>
           <Form.Item
             name="agreement"
+            valuePropName="checked"
             rules={[
               {
                 async validator(rule, value, callback) {
