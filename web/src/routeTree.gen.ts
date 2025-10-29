@@ -13,9 +13,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root.tsx'
 import { Route as ThemeRouteRouteImport } from './routes/_theme/route.tsx'
 import { Route as SchoolRouteRouteImport } from './routes/_school/route.tsx'
-import { Route as TestPageIndexRouteImport } from './routes/test-page/index.tsx'
 import { Route as StoryIndexRouteImport } from './routes/story/index.tsx'
 import { Route as homeIndexRouteImport } from './routes/(home)/index.tsx'
+import { Route as ThemeTestPageIndexRouteImport } from './routes/_theme/test-page/index.tsx'
 import { Route as ThemeAboutIndexRouteImport } from './routes/_theme/about/index.tsx'
 import { Route as SchoolWallIndexRouteImport } from './routes/_school/wall/index.tsx'
 import { Route as SchoolLiveIndexRouteImport } from './routes/_school/live/index.tsx'
@@ -52,11 +52,6 @@ const ThemePassportRoute = ThemePassportRouteImport.update({
   path: '/passport',
   getParentRoute: () => ThemeRouteRoute,
 } as any)
-const TestPageIndexRoute = TestPageIndexRouteImport.update({
-  id: '/test-page/',
-  path: '/test-page/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const StoryIndexRoute = StoryIndexRouteImport.update({
   id: '/story/',
   path: '/story/',
@@ -71,6 +66,11 @@ const homeIndexRoute = homeIndexRouteImport
     getParentRoute: () => rootRouteImport,
   } as any)
   .lazy(() => import('./routes/(home)/index.lazy.tsx').then((d) => d.Route))
+const ThemeTestPageIndexRoute = ThemeTestPageIndexRouteImport.update({
+  id: '/test-page/',
+  path: '/test-page/',
+  getParentRoute: () => ThemeRouteRoute,
+} as any)
 const ThemeAboutIndexRoute = ThemeAboutIndexRouteImport.update({
   id: '/about/',
   path: '/about/',
@@ -196,7 +196,6 @@ const SchoolWallListChar123GroupIdChar125IndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof homeIndexRoute
   '/story': typeof StoryIndexRoute
-  '/test-page': typeof TestPageIndexRoute
   '/passport': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/examination/$': typeof SchoolExaminationSplatRoute
   '/profile/center': typeof SchoolProfileCenterRoute
@@ -208,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/live': typeof SchoolLiveIndexRoute
   '/wall': typeof SchoolWallIndexRoute
   '/about': typeof ThemeAboutIndexRoute
+  '/test-page': typeof ThemeTestPageIndexRoute
   '/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125RouteRouteWithChildren
   '/passport/login': typeof ThemePassportVideo_backgroundLoginRoute
   '/passport/signup': typeof ThemePassportVideo_backgroundSignupRoute
@@ -217,7 +217,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof homeIndexRoute
   '/story': typeof StoryIndexRoute
-  '/test-page': typeof TestPageIndexRoute
   '/passport': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/examination/$': typeof SchoolExaminationSplatRoute
   '/profile/center': typeof SchoolProfileCenterRoute
@@ -229,6 +228,7 @@ export interface FileRoutesByTo {
   '/live': typeof SchoolLiveIndexRoute
   '/wall': typeof SchoolWallIndexRoute
   '/about': typeof ThemeAboutIndexRoute
+  '/test-page': typeof ThemeTestPageIndexRoute
   '/passport/login': typeof ThemePassportVideo_backgroundLoginRoute
   '/passport/signup': typeof ThemePassportVideo_backgroundSignupRoute
   '/wall/review': typeof SchoolWallReviewIndexRoute
@@ -240,7 +240,6 @@ export interface FileRoutesById {
   '/_theme': typeof ThemeRouteRouteWithChildren
   '/(home)/': typeof homeIndexRoute
   '/story/': typeof StoryIndexRoute
-  '/test-page/': typeof TestPageIndexRoute
   '/_theme/passport': typeof ThemePassportRouteWithChildren
   '/_theme/passport/_video_background': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/_school/examination/$': typeof SchoolExaminationSplatRoute
@@ -253,6 +252,7 @@ export interface FileRoutesById {
   '/_school/live/': typeof SchoolLiveIndexRoute
   '/_school/wall/': typeof SchoolWallIndexRoute
   '/_theme/about/': typeof ThemeAboutIndexRoute
+  '/_theme/test-page/': typeof ThemeTestPageIndexRoute
   '/_school/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125RouteRouteWithChildren
   '/_theme/passport/_video_background/login': typeof ThemePassportVideo_backgroundLoginRoute
   '/_theme/passport/_video_background/signup': typeof ThemePassportVideo_backgroundSignupRoute
@@ -264,7 +264,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/story'
-    | '/test-page'
     | '/passport'
     | '/examination/$'
     | '/profile/center'
@@ -276,6 +275,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/wall'
     | '/about'
+    | '/test-page'
     | '/wall/list/{-$groupId}'
     | '/passport/login'
     | '/passport/signup'
@@ -285,7 +285,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/story'
-    | '/test-page'
     | '/passport'
     | '/examination/$'
     | '/profile/center'
@@ -297,6 +296,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/wall'
     | '/about'
+    | '/test-page'
     | '/passport/login'
     | '/passport/signup'
     | '/wall/review'
@@ -307,7 +307,6 @@ export interface FileRouteTypes {
     | '/_theme'
     | '/(home)/'
     | '/story/'
-    | '/test-page/'
     | '/_theme/passport'
     | '/_theme/passport/_video_background'
     | '/_school/examination/$'
@@ -320,6 +319,7 @@ export interface FileRouteTypes {
     | '/_school/live/'
     | '/_school/wall/'
     | '/_theme/about/'
+    | '/_theme/test-page/'
     | '/_school/wall/list/{-$groupId}'
     | '/_theme/passport/_video_background/login'
     | '/_theme/passport/_video_background/signup'
@@ -332,7 +332,6 @@ export interface RootRouteChildren {
   ThemeRouteRoute: typeof ThemeRouteRouteWithChildren
   homeIndexRoute: typeof homeIndexRoute
   StoryIndexRoute: typeof StoryIndexRoute
-  TestPageIndexRoute: typeof TestPageIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -358,13 +357,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ThemePassportRouteImport
       parentRoute: typeof ThemeRouteRoute
     }
-    '/test-page/': {
-      id: '/test-page/'
-      path: '/test-page'
-      fullPath: '/test-page'
-      preLoaderRoute: typeof TestPageIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/story/': {
       id: '/story/'
       path: '/story'
@@ -378,6 +370,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof homeIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_theme/test-page/': {
+      id: '/_theme/test-page/'
+      path: '/test-page'
+      fullPath: '/test-page'
+      preLoaderRoute: typeof ThemeTestPageIndexRouteImport
+      parentRoute: typeof ThemeRouteRoute
     }
     '/_theme/about/': {
       id: '/_theme/about/'
@@ -574,6 +573,7 @@ interface ThemeRouteRouteChildren {
   ThemeAboutGuideRoute: typeof ThemeAboutGuideRoute
   ThemeAboutIntroductionRoute: typeof ThemeAboutIntroductionRoute
   ThemeAboutIndexRoute: typeof ThemeAboutIndexRoute
+  ThemeTestPageIndexRoute: typeof ThemeTestPageIndexRoute
 }
 
 const ThemeRouteRouteChildren: ThemeRouteRouteChildren = {
@@ -581,6 +581,7 @@ const ThemeRouteRouteChildren: ThemeRouteRouteChildren = {
   ThemeAboutGuideRoute: ThemeAboutGuideRoute,
   ThemeAboutIntroductionRoute: ThemeAboutIntroductionRoute,
   ThemeAboutIndexRoute: ThemeAboutIndexRoute,
+  ThemeTestPageIndexRoute: ThemeTestPageIndexRoute,
 }
 
 const ThemeRouteRouteWithChildren = ThemeRouteRoute._addFileChildren(
@@ -592,7 +593,6 @@ const rootRouteChildren: RootRouteChildren = {
   ThemeRouteRoute: ThemeRouteRouteWithChildren,
   homeIndexRoute: homeIndexRoute,
   StoryIndexRoute: StoryIndexRoute,
-  TestPageIndexRoute: TestPageIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
