@@ -151,6 +151,6 @@ function genNoticeContent() {
   const m = date.getUTCMinutes();
   const time = h.toString().padStart(2, "0") + ":" + m.toString().padStart(2, "0");
 
-  const cancelLink = "https://iijazz.cn/profile/center";
+  const cancelLink = "https://ijiazz.cn/profile/center";
   return `IJIA 学院开课了(${time})，快去直播间学习吧！争取成为IJIA高手！\n 如果你不希望接收这类通知，请前往 ${cancelLink} 取消通知`;
 }
