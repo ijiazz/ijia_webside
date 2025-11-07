@@ -9,7 +9,7 @@ export async function bindUserRole(userId: number, rolesInput: Set<Role> | Role[
   const roles = rolesInput instanceof Set ? rolesInput : new Set(rolesInput);
   const values = Array.from(roles).map((r) => ({ id: r }));
   const sql = `WITH role_id(id) AS (
-      VALUES ${v.objectListToValuesList(values, { id: { sqlType: "TEXT", assertJsType: "string" } }).toString()}
+      VALUES ${v.createImplicitValues(values, { id: { sqlType: "TEXT", assertJsType: "string" } }).toString()}
     ), roles AS (
       ${role.insert("id", "SELECT * FROM role_id").onConflict("id").doNotThing().toString()}
     )
