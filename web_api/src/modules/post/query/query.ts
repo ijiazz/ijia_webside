@@ -1,4 +1,4 @@
-import { type DbPool, dbPool } from "@ijia/data/yoursql";
+import { type DbPool, dbPool } from "@ijia/data/dbclient";
 import { Get, PipeInput } from "@asla/hono-decorator";
 import { getCommentList, getCommentReplyByCid } from "./pla_query.ts";
 import type {

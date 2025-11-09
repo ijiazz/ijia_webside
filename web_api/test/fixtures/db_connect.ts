@@ -1,5 +1,5 @@
 import { test as viTest, afterAll, vi } from "vitest";
-import { DbPool, parserDbUrl, dbPool } from "@ijia/data/yoursql";
+import { DbPool, parserDbUrl, dbPool } from "@ijia/data/dbclient";
 import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
 import process from "node:process";
 import { redisPool, RedisPool } from "@ijia/data/cache";

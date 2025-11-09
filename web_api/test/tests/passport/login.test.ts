@@ -6,9 +6,10 @@ import { applyController } from "@asla/hono-decorator";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
-import v from "@ijia/data/yoursql";
 import { getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
+import { insertIntoValues, v } from "@/sql/utils.ts";
+import { update } from "@asla/yoursql";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
 
@@ -83,27 +84,27 @@ test("邮箱或学号不存在，应返回提示", async function ({ api, public
 });
 test("已删除的用户不能登录", async function ({ api, publicDbPool }) {
   const userInfo = await prepareUniqueUserWithPwd("alice@ijiazz.cn");
-  await user
-    .update({ is_deleted: "true" })
+  await update(user.name)
+    .set({ is_deleted: "true" })
     .where(`id=${v(userInfo.id)}`)
-    .query();
+    .client(publicDbPool);
   await expect(
     loginUseCaptcha(api, { id: userInfo.id.toString(), method: LoginType.id, password: userInfo.password! }),
   ).rejects.throwErrorEqualBody(401, { message: "账号或密码错误" });
 });
 test("黑名单用户不能登录", async function ({ api, publicDbPool }) {
   const info = await prepareUniqueUserWithPwd("alice@ijiazz.cn");
-  await user_blacklist.insert({ user_id: info.id, reason: "测试" }).query();
+  await insertIntoValues(user_blacklist.name, { user_id: info.id, reason: "测试" }).client(publicDbPool);
   await expect(
     loginUseCaptcha(api, { id: info.id.toString(), method: LoginType.id, password: AlicePassword }),
   ).rejects.throwErrorEqualBody(423, { message: "账号已被冻结" });
 });
 test("无密码直接登录", async function ({ api, publicDbPool }) {
   const userInfo = await prepareUniqueUserWithPwd("alice@ijiazz.cn");
-  await user
-    .update({ password: "null", pwd_salt: "null" })
+  await update(user.name)
+    .set({ password: "null", pwd_salt: "null" })
     .where(`id=${v(userInfo.id)}`)
-    .query();
+    .client(publicDbPool);
   const captcha = await createCaptchaSession();
 
   const p = loginUseCaptcha(api, {

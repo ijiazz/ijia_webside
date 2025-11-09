@@ -1,5 +1,5 @@
 import { DbUserAvatarCreate, pla_asset, pla_comment, pla_user, user_avatar } from "@ijia/data/db";
-import { DbQuery, v } from "@ijia/data/yoursql";
+import { DbQuery, v } from "@ijia/data/dbclient";
 import type {
   CommentReplyItemDto,
   CommentRootItemDto,

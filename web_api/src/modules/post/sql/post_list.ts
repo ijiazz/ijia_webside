@@ -1,5 +1,5 @@
 import { post, post_group, post_like, user } from "@ijia/data/db";
-import v from "@ijia/data/yoursql";
+import v from "@ijia/data/dbclient";
 import { GetPostListParam, PostItemDto, PostUserInfo } from "../post.dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { getPostContentType } from "./sql_tool.ts";

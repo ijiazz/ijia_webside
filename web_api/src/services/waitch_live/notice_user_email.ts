@@ -1,5 +1,6 @@
+import { select } from "@asla/yoursql";
 import { user_profile, user } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 import { PromiseConcurrency } from "evlib/async";
 
 /**
@@ -27,15 +28,14 @@ export type WatchInfo = {
 };
 
 export async function* getSubscribeLiveEmails(): AsyncGenerator<WatchInfo, void, void> {
-  const sql = user_profile
-    .fromAs("profile")
-    .innerJoin(user, "u", "profile.user_id=u.id")
-    .select<WatchInfo>({
-      name: "u.nickname",
-      user_id: "u.id::INT",
-      email: "u.email",
-      domain: "split_part(u.email,'@',2)",
-    })
+  const sql = select<WatchInfo>({
+    name: "u.nickname",
+    user_id: "u.id::INT",
+    email: "u.email",
+    domain: "split_part(u.email,'@',2)",
+  })
+    .from(user_profile.name, { as: "profile" })
+    .innerJoin(user.name, { as: "u", on: "profile.user_id=u.id" })
     .where(["profile.live_notice", "NOT u.is_deleted"])
     .orderBy("domain");
   await using cursor = await dbPool.cursor<WatchInfo>(sql, { defaultSize: 100 });

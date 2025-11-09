@@ -1,5 +1,5 @@
 import { post, post_review_info, TextStructure, user_profile } from "@ijia/data/db";
-import v, { dbPool } from "@ijia/data/yoursql";
+import v, { dbPool } from "@ijia/data/dbclient";
 import { CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "../post.dto.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
 import { textStructChecker } from "../transform/text_struct.ts";

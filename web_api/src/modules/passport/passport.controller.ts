@@ -27,7 +27,7 @@ import { PassportConfig } from "./passport.dto.ts";
 import { sendResetPassportCaptcha, sendSignUpEmailCaptcha } from "./services/send_email_captcha.ts";
 import { signAccessToken } from "@/global/jwt.ts";
 import { user } from "@ijia/data/db";
-import v from "@ijia/data/yoursql";
+import v from "@ijia/data/dbclient";
 import { accountLoginByEmail, accountLoginById, updateLastLoginTime } from "./sql/login.ts";
 import { createUser } from "./sql/signup.ts";
 import { resetAccountPassword } from "./sql/account.ts";

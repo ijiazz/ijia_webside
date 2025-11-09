@@ -2,7 +2,8 @@ import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { AccountInfo, initAlice, loginGetToken } from "@/__mocks__/user.ts";
 import { dclass, pla_user, Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { Page } from "@playwright/test";
-import v from "@ijia/data/yoursql";
+import { insertInto, deleteFrom, v } from "@asla/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 const { expect, beforeEach, beforeAll, describe } = test;
 
 let Alice!: AccountInfo;
@@ -112,7 +113,10 @@ async function addBind(page: Page, sec_id: string) {
 }
 
 async function clearPublicClass() {
-  await dclass.delete({ where: "parent_class_id=" + v(PUBLIC_CLASS_ROOT_ID) }).queryCount();
+  await deleteFrom(dclass.name)
+    .where("parent_class_id=" + v(PUBLIC_CLASS_ROOT_ID))
+    .client(dbPool)
+    .queryCount();
 }
 async function initPublicClass() {
   await dclass

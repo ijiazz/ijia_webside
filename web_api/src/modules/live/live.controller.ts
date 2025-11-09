@@ -5,7 +5,7 @@ import { optionalPositiveInt, checkValue, optionalInt } from "@/global/check.ts"
 import { genScreenAvatar } from "./sql/avatar.ts";
 import { pla_user } from "@ijia/data/db";
 import { redisPool } from "@ijia/data/cache";
-import { dbPool } from "@ijia/data/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 import { list } from "./home_extra.ts";
 import { Context } from "hono";
 import { genGetBulletChart } from "./sql/bullet.sql.ts";

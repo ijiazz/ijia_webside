@@ -1,4 +1,6 @@
+import { insertIntoValues } from "@/sql/utils.ts";
 import { DbPlaAssetCreate, pla_asset, Platform } from "@ijia/data/db";
+import { dbPool } from "@ijia/data/dbclient";
 
 export async function insertPosts(size: number, platform: Platform, pla_uid: string) {
   const posts: DbPlaAssetCreate[] = new Array(size);
@@ -12,5 +14,5 @@ export async function insertPosts(size: number, platform: Platform, pla_uid: str
       publish_time: new Date(date + i * 1000 * 60 * 60),
     };
   }
-  await pla_asset.insert(posts).query();
+  await insertIntoValues(pla_asset.name, posts).client(dbPool);
 }

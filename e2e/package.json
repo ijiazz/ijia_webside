@@ -11,10 +11,11 @@
     "report": "playwright show-report"
   },
   "dependencies": {
+    "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
+    "@asla/yoursql": "~0.10.2",
     "@ijia/data": "workspace:^",
     "@playwright/test": "^1.55.0",
     "@types/node": "^24.5.2",
-    "evlib": "^3.1.3",
-    "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1"
+    "evlib": "^3.1.3"
   }
 }

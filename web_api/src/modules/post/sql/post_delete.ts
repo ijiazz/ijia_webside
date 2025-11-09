@@ -1,4 +1,4 @@
-import v, { dbPool } from "@ijia/data/yoursql";
+import v, { dbPool } from "@ijia/data/dbclient";
 
 /**
  * 将帖子标记为删除

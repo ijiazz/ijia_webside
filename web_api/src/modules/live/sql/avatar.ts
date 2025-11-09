@@ -1,6 +1,6 @@
 import { GetListOption } from "@/api.ts";
 import { pla_user, user, user_platform_bind } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 import { UserAvatarDto } from "../live.dto.ts";
 
 /** 获取所有用户的头像 */

@@ -2,10 +2,12 @@ import { JWT_TOKEN_KEY, Api } from "../../../fixtures/hono.ts";
 import { DbUserProfile, post, post_group, post_review_info, PostReviewType, user_profile } from "@ijia/data/db";
 
 import { CreatePostParam, PostItemDto, UpdatePostConfigParam, UpdatePostContentParam } from "@/modules/post/mod.ts";
-import v, { DbPool } from "@ijia/data/yoursql";
+import { dbPool, DbPool } from "@ijia/data/dbclient";
 import { prepareUniqueUser } from "../../../fixtures/user.ts";
 import { PostReviewInfo } from "@/modules/post/PostReview.dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
+import { insertIntoValues, v } from "@/sql/utils.ts";
+import { select, update } from "@asla/yoursql";
 
 export async function markReviewed(
   postId: number,
@@ -16,35 +18,37 @@ export async function markReviewed(
     failCount?: number;
   } = {},
 ) {
-  return post
-    .update({
+  return update(post.name)
+    .set({
       is_reviewing: v(status.reviewing),
       is_review_pass: v(status.review_pass),
     })
     .where([`id=${postId}`])
+    .client(dbPool)
     .queryCount();
 }
 export async function getPostReviewStatus(postId: number): Promise<ReviewStatus> {
-  const select = await post
-    .select<ReviewStatus>({
-      is_review_pass: true,
-      is_reviewing: true,
-      review: post_review_info
-        .select(
-          jsonb_build_object({
-            is_review_pass: "is_review_pass",
-            reviewed_time: "reviewed_time",
-            remark: "remark",
-            reviewer_id: "reviewer_id",
-          }),
-        )
-        .where([`type=${v(PostReviewType.post)}`, `target_id=${v(postId)}`])
-        .toSelect(),
-    })
+  const t1 = await select<ReviewStatus>({
+    is_review_pass: true,
+    is_reviewing: true,
+    review: select(
+      jsonb_build_object({
+        is_review_pass: "is_review_pass",
+        reviewed_time: "reviewed_time",
+        remark: "remark",
+        reviewer_id: "reviewer_id",
+      }),
+    )
+      .from(post_review_info.name)
+      .where([`type=${v(PostReviewType.post)}`, `target_id=${v(postId)}`])
+      .toSelect(),
+  })
+    .from(post.name)
     .where(`id=${postId}`)
+    .dataClient(dbPool)
     .queryFirstRow();
 
-  return select;
+  return t1;
 }
 
 export async function createPost(api: Api, body: CreatePostParam, token: string) {
@@ -90,8 +94,10 @@ export async function preparePost(api: Api, option?: CreatePostParam) {
 }
 
 export async function createPostGroup(pool: DbPool, name: string): Promise<number> {
-  const sql = post_group.insert([{ name: name, public_sort: 0 }]).returning("id");
-  const result = await pool.queryRows(sql);
+  const result = await insertIntoValues(post_group.name, [{ name: name, public_sort: 0 }])
+    .returning("id")
+    .dataClient(pool)
+    .queryRows();
   return result[0].id;
 }
 /** 获取一个指定帖子 */
@@ -149,17 +155,18 @@ export type UserStat = Pick<
   | "report_subjective_error_count"
 >;
 export async function getUserStatFromDb(userId: number): Promise<UserStat> {
-  const item = await user_profile
-    .select({
-      post_count: true,
-      post_like_count: true,
-      post_like_get_count: true,
-      report_correct_count: true,
-      report_error_count: true,
-      report_subjective_correct_count: true,
-      report_subjective_error_count: true,
-    })
+  const item = await select({
+    post_count: true,
+    post_like_count: true,
+    post_like_get_count: true,
+    report_correct_count: true,
+    report_error_count: true,
+    report_subjective_correct_count: true,
+    report_subjective_error_count: true,
+  })
+    .from(user_profile.name)
     .where(`user_id=${v(userId)}`)
+    .dataClient(dbPool)
     .queryFirstRow();
 
   return item as any;

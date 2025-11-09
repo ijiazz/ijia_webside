@@ -1,5 +1,5 @@
 import { user } from "@ijia/data/db";
-import { v, dbPool } from "@ijia/data/yoursql";
+import { v, dbPool } from "@ijia/data/dbclient";
 import { createUser } from "@ijia/data/query";
 import { api } from "@/__mocks__/fetch.ts";
 import { LoginType } from "@/api.ts";

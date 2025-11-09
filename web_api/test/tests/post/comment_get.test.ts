@@ -7,6 +7,7 @@ import { deletePost, updatePostConfigFormApi } from "./utils/prepare_post.ts";
 import { post } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
 import { prepareUniqueUser } from "../..//fixtures/user.ts";
+import { update } from "@asla/yoursql";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -162,7 +163,7 @@ describe("部分帖子状态下不能获取评论", () => {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
 
-    await post.update({ is_reviewing: "true" }).where(`id=${action.postId}`).query(); // 设置作品为审核中
+    await update(post.name).set({ is_reviewing: "true" }).where(`id=${action.postId}`).client(publicDbPool).query(); // 设置作品为审核中
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
@@ -172,7 +173,7 @@ describe("部分帖子状态下不能获取评论", () => {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
 
-    await post.update({ is_review_pass: "false" }).where(`id=${postInfo.id}`).query(); // 设置作品为审核不通过
+    await update(post.name).set({ is_review_pass: "false" }).where(`id=${postInfo.id}`).client(publicDbPool).query(); // 设置作品为审核不通过
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);

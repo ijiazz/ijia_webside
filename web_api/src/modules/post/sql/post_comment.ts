@@ -1,5 +1,5 @@
 import { post, post_comment, user, post_comment_like } from "@ijia/data/db";
-import v, { dbPool, Selection } from "@ijia/data/yoursql";
+import v, { dbPool, Selection } from "@ijia/data/dbclient";
 import {
   CreateCommentData,
   CreateCommentItemData,

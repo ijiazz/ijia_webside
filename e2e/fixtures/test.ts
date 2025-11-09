@@ -1,6 +1,6 @@
 import { Page, test } from "@playwright/test";
 import process from "node:process";
-import { dbPool, DbPool } from "@ijia/data/yoursql";
+import { dbPool, DbPool } from "@ijia/data/dbclient";
 import { env } from "@/playwright.config.ts";
 
 export interface Context {

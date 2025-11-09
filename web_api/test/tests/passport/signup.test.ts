@@ -10,6 +10,7 @@ import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
 import { emailCaptchaService } from "@/modules/captcha/mod.ts";
 import { getUniqueEmail, getUniqueName } from "test/fixtures/user.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
+import { select } from "@asla/yoursql";
 
 const AlicePassword = "123";
 
@@ -22,7 +23,9 @@ test("注册用户", async function ({ api, publicDbPool }) {
   const email = getUniqueEmail("alice");
   const emailAnswer = await mockSignUpSendEmailCaptcha(api, email);
   const result = await signup(api, { email: email, password: AlicePassword, emailCaptcha: emailAnswer });
-  await expect(user.select({ email: true }).where(`id=${result.userId}`).queryCount()).resolves.toBe(1);
+  await expect(
+    select({ email: true }).from(user.name).where(`id=${result.userId}`).dataClient(publicDbPool).queryCount(),
+  ).resolves.toBe(1);
 });
 test("必须传正确的邮件验证码", async function ({ api, publicDbPool }) {
   await expect(

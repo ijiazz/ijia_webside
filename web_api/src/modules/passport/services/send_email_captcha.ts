@@ -1,5 +1,5 @@
 import { user } from "@ijia/data/db";
-import v from "@ijia/data/yoursql";
+import v from "@ijia/data/dbclient";
 import { emailCaptchaService, CaptchaEmail, EmailCaptchaQuestion, EmailCaptchaType } from "../../captcha/mod.ts";
 import { createEmailCodeHtmlContent } from "../template/sigup-email-code.ts";
 import { appConfig } from "@/config.ts";

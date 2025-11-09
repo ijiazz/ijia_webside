@@ -4,6 +4,8 @@ import { log, LogLevel } from "@ijia/data/db";
 import { appConfig } from "@/config.ts";
 import { getEmailSender } from "../email.ts";
 import { toErrorStr } from "evlib";
+import { insertIntoValues } from "@/sql/utils.ts";
+import { dbPool } from "@ijia/data/dbclient";
 type LiveStatus = 0 | 1 | undefined;
 class UserLive {
   #onTick?: () => Promise<LiveStatus>;
@@ -83,8 +85,8 @@ export class IjiaWatch extends UserLive {
     try {
       return await checkServer.userIsLive(this.uid);
     } catch (error) {
-      await log
-        .insert({ info: { error: toErrorStr(error) }, name: "直播轮询", level: LogLevel.error })
+      await insertIntoValues(log.name, { info: { error: toErrorStr(error) }, name: "直播轮询", level: LogLevel.error })
+        .client(dbPool)
         .query()
         .catch((e) => {
           console.error("直播状态轮询请求异常, 且无法写入日志", e);
@@ -127,18 +129,16 @@ async function sendLiveNotificationEmails() {
   const useTime = Date.now() - startTime;
 
   try {
-    await log
-      .insert({
-        info: {
-          总发送用户数: res.total,
-          发送总耗时: useTime,
-          发送失败次数: res.sendFailedCount,
-          发送失败人数: failedTotal,
-        },
-        level: LogLevel.log,
-        name: "发送直播通知邮件",
-      })
-      .queryCount();
+    await insertIntoValues(log.name, {
+      info: {
+        总发送用户数: res.total,
+        发送总耗时: useTime,
+        发送失败次数: res.sendFailedCount,
+        发送失败人数: failedTotal,
+      },
+      level: LogLevel.log,
+      name: "发送直播通知邮件",
+    }).client(dbPool);
   } catch (error) {
     console.error("添直播通知邮件通知日志失败", error);
   }

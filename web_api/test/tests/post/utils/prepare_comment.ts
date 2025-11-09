@@ -9,8 +9,10 @@ import {
 } from "@ijia/data/db";
 import { Api, JWT_TOKEN_KEY } from "test/fixtures/hono.ts";
 import { preparePost } from "./prepare_post.ts";
-import v from "@ijia/data/yoursql";
 import { createComment } from "@/modules/post/sql/post_comment.ts";
+import { select } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
+import { dbPool } from "@ijia/data/dbclient";
 
 export class PostComment {
   constructor(
@@ -75,7 +77,7 @@ export async function reportComment(api: Api, commentId: number, reason?: string
 
 /** 直接从数据库查询评论的数据 */
 export async function getCommentDbRow(commentId: number) {
-  return post_comment.select("*").where(`id=${commentId}`).limit(1).queryFirstRow();
+  return select("*").from(post_comment.name).where(`id=${commentId}`).limit(1).dataClient(dbPool).queryFirstRow();
 }
 export async function prepareCommentPost(api: Api) {
   const post1 = await preparePost(api, undefined);
@@ -83,9 +85,10 @@ export async function prepareCommentPost(api: Api) {
   return { ...post1, action };
 }
 export async function getPostCommentTotal(postId: number) {
-  return post
-    .select("comment_num")
+  return select("comment_num")
+    .from(post.name)
     .where(`id=${v(postId)}`)
+    .dataClient(dbPool)
     .queryFirstRow()
     .then((r) => r.comment_num);
 }
@@ -96,22 +99,24 @@ export async function prepareCommentToDb(postId: number, userId: number, comment
 
 export type CommentInfo = Pick<DbPostComment, "like_count" | "dislike_count">;
 export async function getCommentStat(commentId: number): Promise<CommentInfo> {
-  return post_comment
-    .select<CommentInfo>({ like_count: true, dislike_count: true })
+  return select<CommentInfo>({ like_count: true, dislike_count: true })
+    .from(post_comment.name)
     .where(`id=${v(commentId)}`)
+    .dataClient(dbPool)
     .queryFirstRow();
 }
 
 export type CommentReviewStatus = Pick<DbPostReviewInfoCreate, "is_review_pass" | "reviewed_time" | "reviewer_id">;
 export async function getCommentReviewStatus(commentId: number): Promise<CommentReviewStatus | undefined> {
-  const select = await post_review_info
-    .select({
-      is_review_pass: true,
-      reviewed_time: true,
-      reviewer_id: true,
-    })
+  const t = await select({
+    is_review_pass: true,
+    reviewed_time: true,
+    reviewer_id: true,
+  })
+    .from(post_review_info.name)
     .where([`type=${v(PostReviewType.postComment)}`, `target_id=${commentId}`])
+    .dataClient(dbPool)
     .queryRows();
 
-  return select[0] as CommentReviewStatus | undefined;
+  return t[0] as CommentReviewStatus | undefined;
 }

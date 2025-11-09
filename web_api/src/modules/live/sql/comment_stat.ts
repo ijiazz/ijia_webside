@@ -1,5 +1,5 @@
 import { pla_comment, pla_user } from "@ijia/data/db";
-import { Selection, v } from "@ijia/data/yoursql";
+import { Selection, v } from "@ijia/data/dbclient";
 import { GetListOption } from "@/modules/dto_common.ts";
 import { CommentStatByCount } from "../comment.api.ts";
 

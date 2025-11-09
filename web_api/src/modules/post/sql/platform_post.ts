@@ -1,4 +1,4 @@
-import { ConditionParam, Selection, v, dbPool } from "@ijia/data/yoursql";
+import { ConditionParam, Selection, v, dbPool } from "@ijia/data/dbclient";
 import {
   pla_asset,
   pla_comment,

@@ -1,7 +1,7 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { user } from "@ijia/data/db";
 import { initAlice, loginGetToken, initBob } from "@/__mocks__/user.ts";
-import { v } from "@ijia/data/yoursql";
+import { v } from "@ijia/data/dbclient";
 import { Page } from "@playwright/test";
 const { expect, beforeEach } = test;
 

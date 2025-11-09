@@ -1,4 +1,4 @@
-import v from "@ijia/data/yoursql";
+import v from "@ijia/data/dbclient";
 import { HttpError } from "@/global/errors.ts";
 import { hashPasswordBackEnd } from "../services/password.ts";
 import { user, user_blacklist } from "@ijia/data/db";

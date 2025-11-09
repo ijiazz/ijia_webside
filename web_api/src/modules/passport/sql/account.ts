@@ -1,5 +1,5 @@
 import { user } from "@ijia/data/db";
-import v, { dbPool } from "@ijia/data/yoursql";
+import v, { dbPool } from "@ijia/data/dbclient";
 import { HttpError } from "@/global/errors.ts";
 import { hashPasswordBackEnd } from "../services/password.ts";
 

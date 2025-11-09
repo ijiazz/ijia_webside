@@ -1,5 +1,5 @@
 import { post, post_comment, post_comment_like, post_like, user_profile } from "@ijia/data/db";
-import v, { dbPool } from "@ijia/data/yoursql";
+import v, { dbPool } from "@ijia/data/dbclient";
 import { DEFAULT_LIKE_WEIGHT } from "./const.ts";
 
 export async function setPostLike(postId: number, userId: number): Promise<number> {
