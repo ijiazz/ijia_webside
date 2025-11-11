@@ -288,7 +288,7 @@ export class UserController {
         avatar: "target.avatar",
         nickname: "target.user_name",
       })
-      .from(targetData.toSelect(), "target")
+      .from(targetData.toSelect("target"))
       .where("public.user.id=target.user_id");
     const count = await sql.client(dbPool).queryCount();
     if (count === 0) throw new HttpError(403, { message: "账号不存在" });
