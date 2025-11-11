@@ -38,6 +38,7 @@ export const test = viTest.extend<DbContext>({
     await clearDropDb(dbPool, dbName);
   },
   async publicDbPool({}, use) {
+    console.log("publicDbPool init", !!publicDbPool);
     if (!publicDbPool) {
       publicDbPool = (async () => {
         await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true, extra: true });

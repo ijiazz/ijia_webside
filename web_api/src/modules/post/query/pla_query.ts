@@ -1,5 +1,5 @@
 import { DbUserAvatarCreate, pla_asset, pla_comment, pla_user, user_avatar } from "@ijia/data/db";
-import { DbQuery, v } from "@ijia/data/dbclient";
+import { DbQuery } from "@ijia/data/dbclient";
 import type {
   CommentReplyItemDto,
   CommentRootItemDto,
@@ -9,6 +9,8 @@ import type {
   UserItemDto,
 } from "./query.dto.ts";
 import { createSearch } from "@/global/sql_util.ts";
+import { insertIntoValues, v } from "@/sql/utils.ts";
+import { select, update } from "@asla/yoursql";
 const operation = {
   andEq(value: Record<string, any>): string[] {
     let values: string[] = [];
@@ -31,24 +33,35 @@ function uriToUrl(uri: string, origin: string) {
 export function renameAvatarUriSql(oldId: string, newImage: DbUserAvatarCreate) {
   const newId = newImage.id;
   if (oldId === newId) throw new Error("oldUri 不能和 newId 一致");
-  let sql = user_avatar.insert([newImage]).onConflict(["id"]).doNotThing().toString();
-  sql += ";\n" + pla_user.updateFrom({ avatar: newId }).where("avatar=" + v(oldId));
-  sql += ";\n" + pla_asset.updateFrom({ user_avatar_snapshot: newId }).where("user_avatar_snapshot=" + v(oldId));
-  sql += ";\n" + pla_comment.updateFrom({ user_avatar_snapshot: newId }).where("user_avatar_snapshot=" + v(oldId));
+  let sql = insertIntoValues(user_avatar.name, newImage).onConflict(["id"]).doNotThing().toString();
+  sql +=
+    ";\n" +
+    update(pla_user.name)
+      .set({ avatar: v(newId) })
+      .where("avatar=" + v(oldId));
+  sql +=
+    ";\n" +
+    update(pla_asset.name)
+      .set({ user_avatar_snapshot: v(newId) })
+      .where("user_avatar_snapshot=" + v(oldId));
+  sql +=
+    ";\n" +
+    update(pla_comment.name)
+      .set({ user_avatar_snapshot: v(newId) })
+      .where("user_avatar_snapshot=" + v(oldId));
   return sql;
 }
 
 export async function getUserList(queryable: DbQuery, option: GetUserParam & DebugOption = {}): Promise<UserItemDto[]> {
   const { page = 0, pageSize = 20, platform, user_id, s_user_name } = option;
 
-  const sql = pla_user
-    .fromAs("p")
-    .select<UserItemDto>({
-      avatarUrl: "p.avatar",
-      ip_location: true,
-      user_name: true,
-      user_id: "p.pla_uid",
-    })
+  const sql = select<UserItemDto>({
+    avatarUrl: "p.avatar",
+    ip_location: true,
+    user_name: true,
+    user_id: "p.pla_uid",
+  })
+    .from(pla_user.name, { as: "p" })
     .where(() => {
       const searchWhere = [];
       if (s_user_name) searchWhere.push(createSearch("user_name", s_user_name));
@@ -66,19 +79,18 @@ interface DebugOption {
 function sqlCommentList(option: (GetCommentListParam & GetCommentReplyListParam) & DebugOption = {}) {
   const { page = 0, pageSize = 20, root_comment_id = null, sort } = option;
 
-  const selectable = pla_comment
-    .fromAs("c")
-    .innerJoin(pla_user, "u", "u.pla_uid=c.pla_uid")
-    .select({
-      comment_id: "c.comment_id",
-      content_text: "c.content_text",
-      comment_type: "c.comment_type",
-      publish_time: "c.publish_time",
-      like_count: "c.like_count",
-      author_like: "c.author_like",
-      image_uri: "c.image_uri",
-      user: `jsonb_build_object('user_name', u.user_name, 'user_id', u.pla_uid)`,
-    })
+  const selectable = select({
+    comment_id: "c.comment_id",
+    content_text: "c.content_text",
+    comment_type: "c.comment_type",
+    publish_time: "c.publish_time",
+    like_count: "c.like_count",
+    author_like: "c.author_like",
+    image_uri: "c.image_uri",
+    user: `jsonb_build_object('user_name', u.user_name, 'user_id', u.pla_uid)`,
+  })
+    .from(pla_comment.name, { as: "c" })
+    .innerJoin(pla_user.name, { as: "u", on: "u.pla_uid=c.pla_uid" })
     .where(() => {
       const where: string[] = operation.andEq({
         asset_id: option.asset_id,

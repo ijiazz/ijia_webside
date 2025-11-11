@@ -1,7 +1,9 @@
 import { user } from "@ijia/data/db";
-import v, { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@ijia/data/dbclient";
 import { HttpError } from "@/global/errors.ts";
 import { hashPasswordBackEnd } from "../services/password.ts";
+import { select, update } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
 
 export async function changeAccountPassword(uid: number, oldPwd: string, newPwd: string) {
   const salt = crypto.randomUUID().replaceAll("-", ""); //16byte
@@ -9,43 +11,49 @@ export async function changeAccountPassword(uid: number, oldPwd: string, newPwd:
 
   await using conn = dbPool.begin("REPEATABLE READ");
 
-  const userInfoQuery = user
-    .select<LoginUserInfo>({
-      password: true,
-      pwd_salt: true,
-    })
+  const userInfoQuery = select<LoginUserInfo>({
+    password: true,
+    pwd_salt: true,
+  })
+    .from(user.name)
     .where([`id=${v(uid)}`, "NOT is_deleted"])
     .limit(1);
   const userInfo: LoginUserInfo | undefined = await conn.queryRows(userInfoQuery).then((rows) => rows[0]);
   if (!userInfo) throw new HttpError(409, { message: "用户不存在" });
 
   await expectPasswordIsEqual(userInfo, oldPwd);
-  await conn.queryCount(user.update({ password: v(password), pwd_salt: v(salt) }).where(`id=${v(uid)}`));
+  await conn.queryCount(
+    update(user.name)
+      .set({ password: v(password), pwd_salt: v(salt) })
+      .where(`id=${v(uid)}`),
+  );
   await conn.commit();
 }
 export async function resetAccountPassword(email: string, newPwd: string) {
   const salt = crypto.randomUUID().replaceAll("-", ""); //16byte
   const password = await hashPasswordBackEnd(newPwd, salt);
 
-  const count = await user
-    .update({ password: v(password), pwd_salt: v(salt) })
+  const count = await update(user.name)
+    .set({ password: v(password), pwd_salt: v(salt) })
     .where([`email=${v(email)}`, "NOT is_deleted"])
+    .client(dbPool)
     .queryCount();
   if (count === 0) {
     throw new HttpError(409, { message: "账号不存在" });
   }
 }
 export async function changeAccountEmail(userId: number, newEmail: string) {
-  const count = await user
-    .update({ email: v(newEmail) })
+  const count = await update(user.name)
+    .set({ email: v(newEmail) })
     .where([
       `id=${v(userId)}`,
-      `NOT EXISTS ${user
-        .select("*")
+      `NOT EXISTS ${select("*")
+        .from(user.name)
         .where(`email=${v(newEmail)}`)
         .toSelect()}`,
       "NOT is_deleted",
     ])
+    .client(dbPool)
     .queryCount();
   if (count === 0) {
     throw new HttpError(409, { message: "账号不存在" });

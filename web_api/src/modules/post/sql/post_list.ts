@@ -1,10 +1,12 @@
 import { post, post_group, post_like, user } from "@ijia/data/db";
-import v from "@ijia/data/dbclient";
+import { dbPool } from "@ijia/data/dbclient";
 import { GetPostListParam, PostItemDto, PostUserInfo } from "../post.dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { getPostContentType } from "./sql_tool.ts";
 import { CursorListDto } from "@/modules/dto_common.ts";
 import { HttpError } from "@/global/errors.ts";
+import { select } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
 
 export async function getPostList(
   params: GetPostListParam = {},
@@ -36,8 +38,8 @@ export async function getPostList(
         ELSE NULL END`,
 
       /** like_weight 用量计算 is_like 和 is_report */
-      like_weight: `${post_like
-        .select("weight")
+      like_weight: `${select("weight")
+        .from(post_like.name)
         .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
         .toSelect()}`,
     });
@@ -45,17 +47,13 @@ export async function getPostList(
     curr_user = "null";
   }
 
-  const qSql = post
-    .fromAs("p")
-    .innerJoin(user, "u", "u.id=p.user_id")
-    .leftJoin(post_group, "g", "g.id=p.group_id")
-    .select({
-      post_id: "p.id",
+  const qSql = select({
+    post_id: "p.id",
 
-      /**
-       * 不是匿名或者是自己的帖子才作者信息
-       */
-      author: `CASE 
+    /**
+     * 不是匿名或者是自己的帖子才作者信息
+     */
+    author: `CASE 
         WHEN (get_bit(p.options, 0)='0' OR u.id=${v(currentUserId)}) 
         THEN ${jsonb_build_object({
           user_name: "u.nickname",
@@ -63,32 +61,35 @@ export async function getPostList(
           avatar_url: "'/file/avatar/'||u.avatar",
         } satisfies { [key in keyof PostUserInfo]: string })}
         ELSE NULL END`,
-      publish_time: "p.publish_time",
-      create_time: "p.create_time",
-      update_time: "CASE WHEN p.update_time=p.create_time THEN NULL ELSE p.update_time END",
-      like_weight: `${post_like
-        .select("weight")
-        .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
-        .toSelect()}`,
-      type: getPostContentType("p.content_type"),
-      content_text: "p.content_text",
-      content_text_structure: "p.content_text_struct",
-      ip_location: "null", //TODO
-      media: "null", //TODO
-      curr_user: curr_user,
-      group: jsonb_build_object({ group_id: "g.id", group_name: "g.name" }),
-      stat: jsonb_build_object({
-        like_total: "p.like_count",
-        dislike_total: "ROUND(p.dislike_count::NUMERIC /100, 2)",
-        comment_total: "comment_num",
-      }),
-      config: jsonb_build_object({
-        is_anonymous: "get_bit(p.options, 0)::BOOL",
-        comment_disabled: "get_bit(p.options, 1)::BOOL",
-        self_visible: "p.is_hide",
-      }),
-      status: jsonb_build_object({ review_pass: "p.is_review_pass", is_reviewing: "p.is_reviewing" }),
-    })
+    publish_time: "p.publish_time",
+    create_time: "p.create_time",
+    update_time: "CASE WHEN p.update_time=p.create_time THEN NULL ELSE p.update_time END",
+    like_weight: `${select("weight")
+      .from(post_like.name)
+      .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
+      .toSelect()}`,
+    type: getPostContentType("p.content_type"),
+    content_text: "p.content_text",
+    content_text_structure: "p.content_text_struct",
+    ip_location: "null", //TODO
+    media: "null", //TODO
+    curr_user: curr_user,
+    group: jsonb_build_object({ group_id: "g.id", group_name: "g.name" }),
+    stat: jsonb_build_object({
+      like_total: "p.like_count",
+      dislike_total: "ROUND(p.dislike_count::NUMERIC /100, 2)",
+      comment_total: "comment_num",
+    }),
+    config: jsonb_build_object({
+      is_anonymous: "get_bit(p.options, 0)::BOOL",
+      comment_disabled: "get_bit(p.options, 1)::BOOL",
+      self_visible: "p.is_hide",
+    }),
+    status: jsonb_build_object({ review_pass: "p.is_review_pass", is_reviewing: "p.is_reviewing" }),
+  })
+    .from(post.name, { as: "p" })
+    .innerJoin(user.name, { as: "u", on: "u.id=p.user_id" })
+    .leftJoin(post_group.name, { as: "g", on: "g.id=p.group_id" })
     .where(() => {
       const where: string[] = [`NOT p.is_delete`];
 
@@ -130,8 +131,9 @@ export async function getPostList(
    *  因为 publish_time 可能为 null，如果 publish_time 为 null，仅使用 id 作为指针
    */
 
-  const rawList = await qSql.queryRows();
-  rawList.forEach((item) => {
+  const rawList = await dbPool.queryRows(qSql);
+  rawList.forEach((target) => {
+    const item: { [key in keyof typeof target]: any } = target;
     const currUser = item.curr_user;
     if (currUser) {
       const weight = currUser.like_weight;
@@ -168,9 +170,10 @@ export async function getPostList(
 }
 
 export async function getUserDateCount(userId: number) {
-  const { count } = await post
-    .select<{ count: number }>({ count: "count(*)::INT" }, "p")
+  const { count } = await select<{ count: number }>({ count: "count(*)::INT" })
+    .from(post.name, { as: "p" })
     .where([`user_id=${v(userId)}`, `DATE(p.create_time) = CURRENT_DATE`])
+    .dataClient(dbPool)
     .queryFirstRow();
   return count;
 }

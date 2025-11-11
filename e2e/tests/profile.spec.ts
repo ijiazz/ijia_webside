@@ -2,8 +2,9 @@ import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { AccountInfo, initAlice, loginGetToken } from "@/__mocks__/user.ts";
 import { dclass, pla_user, Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { Page } from "@playwright/test";
-import { insertInto, deleteFrom, v } from "@asla/yoursql";
+import { deleteFrom, v } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
+import { insertIntoValues } from "@/sql/utils.ts";
 const { expect, beforeEach, beforeAll, describe } = test;
 
 let Alice!: AccountInfo;
@@ -12,33 +13,34 @@ beforeEach(async ({ page }) => {
   Alice = await initAlice();
   const aliceToken = await loginGetToken(Alice.email, Alice.password);
 
-  const res = await pla_user
-    .insert(
-      [
-        {
-          pla_uid: "alice",
-          platform: Platform.douYin,
-          user_name: "Alice",
-          extra: { sec_uid: "sec_alice" },
-          signature: `IJIA学号：<${Alice.id}>`,
-        },
-        {
-          pla_uid: "bob",
-          platform: Platform.douYin,
-          user_name: "Bob",
-          extra: { sec_uid: "sec_bob" },
-          signature: `IJIA学号：<${Alice.id}>`,
-        },
-      ].map((item) => {
-        const uuid = crypto.randomUUID().replaceAll("-", "");
-        return {
-          ...item,
-          pla_uid: item.pla_uid + ":" + uuid,
-          extra: { ...item.extra, sec_uid: item.extra.sec_uid + ":" + uuid },
-        };
-      }),
-    )
+  const res = await insertIntoValues(
+    pla_user.name,
+    [
+      {
+        pla_uid: "alice",
+        platform: Platform.douYin,
+        user_name: "Alice",
+        extra: { sec_uid: "sec_alice" },
+        signature: `IJIA学号：<${Alice.id}>`,
+      },
+      {
+        pla_uid: "bob",
+        platform: Platform.douYin,
+        user_name: "Bob",
+        extra: { sec_uid: "sec_bob" },
+        signature: `IJIA学号：<${Alice.id}>`,
+      },
+    ].map((item) => {
+      const uuid = crypto.randomUUID().replaceAll("-", "");
+      return {
+        ...item,
+        pla_uid: item.pla_uid + ":" + uuid,
+        extra: { ...item.extra, sec_uid: item.extra.sec_uid + ":" + uuid },
+      };
+    }),
+  )
     .returning(["pla_uid", "platform", "user_name", "extra"])
+    .dataClient(dbPool)
     .queryRows();
 
   users = res.map((u) => ({ user_name: u.user_name, sec_uid: u.extra.sec_uid }));
@@ -119,10 +121,8 @@ async function clearPublicClass() {
     .queryCount();
 }
 async function initPublicClass() {
-  await dclass
-    .insert([
-      { class_name: "e2e-8", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-      { class_name: "e2e-1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-    ])
-    .query();
+  await insertIntoValues(dclass.name, [
+    { class_name: "e2e-8", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+    { class_name: "e2e-1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+  ]).client(dbPool);
 }

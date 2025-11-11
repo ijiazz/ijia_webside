@@ -1,4 +1,5 @@
-import v, { dbPool } from "@ijia/data/dbclient";
+import { v } from "@/sql/utils.ts";
+import { dbPool } from "@ijia/data/dbclient";
 
 /**
  * 将帖子标记为删除
@@ -7,7 +8,7 @@ import v, { dbPool } from "@ijia/data/dbclient";
  */
 export async function deletePost(postId: number, userId: number | null = null) {
   const { count } = await dbPool.queryFirstRow<{ count: number }>(
-    `SELECT post_delete(${v(postId)}, ${v(userId)}) AS count`,
+    v.gen`SELECT post_delete(${postId}, ${userId}) AS count`,
   );
   return count;
 }

@@ -1,10 +1,12 @@
 import { post, post_review_info, TextStructure, user_profile } from "@ijia/data/db";
-import v, { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@ijia/data/dbclient";
 import { CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "../post.dto.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
 import { textStructChecker } from "../transform/text_struct.ts";
 import { HttpError } from "@/global/errors.ts";
 import { PostReviewType } from "../PostReview.dto.ts";
+import { insertIntoValues, v } from "@/sql/utils.ts";
+import { update } from "@asla/yoursql";
 
 export async function createPost(userId: number, param: CreatePostParam): Promise<{ id: number }> {
   param.content_text_structure = checkTypeCopy(param.content_text_structure, optional(textStructChecker));
@@ -18,20 +20,20 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
   if (param.comment_disabled) optionBit |= 0b0100_0000;
   await using t = dbPool.begin();
   const [insert] = await t.multipleQueryRows([
-    post
-      .insert({
-        user_id: userId,
-        content_text: content_text ? content_text : null,
-        content_text_struct: content_text_structure ? new String(v(JSON.stringify(content_text_structure))) : null,
-        group_id,
-        publish_time: group_id === undefined ? "now()" : undefined,
-        content_type: toBit(8, 0b0000_0001), //TODO 判断是否有其他类型
-        is_hide,
-        options: toBit(8, optionBit),
-        is_reviewing: group_id === undefined ? false : true,
-      })
-      .returning<{ id: number; group_id: number | null }>(["id", "group_id"]),
-    user_profile.update({ post_count: "post_count + 1" }).where(`user_id=${v(userId)}`),
+    insertIntoValues(post.name, {
+      user_id: userId,
+      content_text: content_text ? content_text : null,
+      content_text_struct: content_text_structure ? new String(v(JSON.stringify(content_text_structure))) : null,
+      group_id,
+      publish_time: group_id === undefined ? "now()" : undefined,
+      content_type: toBit(8, 0b0000_0001), //TODO 判断是否有其他类型
+      is_hide,
+      options: toBit(8, optionBit),
+      is_reviewing: group_id === undefined ? false : true,
+    }).returning<{ id: number; group_id: number | null }>(["id", "group_id"]),
+    update(user_profile.name)
+      .set({ post_count: "post_count + 1" })
+      .where(`user_id=${v(userId)}`),
   ]);
   const row = insert[0];
   if (row.group_id !== null) {
@@ -65,8 +67,8 @@ export async function updatePostContent(
       update_content_text_struct = struct?.length ? v(JSON.stringify(struct)) : "NULL";
     }
   }
-  const update = post
-    .update({
+  const sql = update(post.name)
+    .set({
       content_text: update_content_text,
       content_text_struct: update_content_text_struct,
       update_time: update_content_text === undefined ? undefined : "now()",
@@ -84,7 +86,7 @@ export async function updatePostContent(
     group_id: number | null;
   };
   await using t = dbPool.begin();
-  const [row] = await t.queryRows<Update>(update);
+  const [row] = await t.queryRows<Update>(sql);
   if (!row) return 0;
   if (row.group_id !== null) {
     await t.queryCount(getAddReviewRecord(PostReviewType.post, postId));
@@ -97,14 +99,15 @@ export async function updatePostContent(
 
 export async function updatePostConfig(postId: number, userId: number, param: UpdatePostConfigParam): Promise<number> {
   const { comment_disabled, is_hide } = param;
-  const updateContentSql = await post
-    .update({
+  const updateContentSql = await update(post.name)
+    .set({
       options: updatePostOption("options", { comment_disabled }), // 设置评论关闭
       is_hide: is_hide === undefined ? undefined : v(is_hide),
     })
     .where(() => {
       return [`user_id=${v(userId)}`, `id=${v(postId)}`, `(NOT is_delete)`];
     })
+    .client(dbPool)
     .queryCount();
   return updateContentSql;
 }
@@ -167,7 +170,7 @@ function checkContent(contentText: string, struct?: TextStructure[] | null) {
 }
 
 function getAddReviewRecord(type: PostReviewType, target_id: number) {
-  return post_review_info.insert({ type, target_id }).onConflict(["type", "target_id"]).doUpdate({
+  return insertIntoValues(post_review_info.name, { type, target_id }).onConflict(["type", "target_id"]).doUpdate({
     create_time: "now()",
     is_review_pass: "NULL",
     remark: "NULL",

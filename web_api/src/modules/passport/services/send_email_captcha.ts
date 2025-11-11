@@ -1,15 +1,18 @@
 import { user } from "@ijia/data/db";
-import v from "@ijia/data/dbclient";
+import { dbPool } from "@ijia/data/dbclient";
 import { emailCaptchaService, CaptchaEmail, EmailCaptchaQuestion, EmailCaptchaType } from "../../captcha/mod.ts";
 import { createEmailCodeHtmlContent } from "../template/sigup-email-code.ts";
 import { appConfig } from "@/config.ts";
 import { HttpError } from "@/global/errors.ts";
+import { select } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
 
 export async function sendSignUpEmailCaptcha(email: string): Promise<EmailCaptchaQuestion> {
-  const exists = await user
-    .select({ email: true })
+  const exists = await select({ email: true })
+    .from(user.name)
     .where(`email=${v(email)}`)
     .limit(1)
+    .dataClient(dbPool)
     .queryCount();
   if (exists) throw new HttpError(406, "邮箱已被注册");
 
@@ -53,9 +56,10 @@ export async function sendResetPassportCaptcha(email: string, userId: number) {
   return emailCaptchaService.sendEmailCaptcha(captchaEmail);
 }
 export async function sendChangeEmailCaptcha(newEmail: string, userId: number) {
-  const [count] = await user
-    .select<{ count: number }>("count(*)::INT")
+  const [count] = await select<{ count: number }>("count(*)::INT")
+    .from(user.name)
     .where(`email=${v(newEmail)}`)
+    .dataClient(dbPool)
     .queryRows();
   if (count.count) throw new HttpError(406, "邮箱已被注册");
 

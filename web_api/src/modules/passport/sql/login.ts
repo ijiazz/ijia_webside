@@ -1,7 +1,9 @@
-import v from "@ijia/data/dbclient";
+import { dbPool } from "@ijia/data/dbclient";
 import { HttpError } from "@/global/errors.ts";
 import { hashPasswordBackEnd } from "../services/password.ts";
 import { user, user_blacklist } from "@ijia/data/db";
+import { select, update } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
 
 export async function accountLoginById(id: number, password?: string): Promise<number> {
   const user: LoginUserInfo | undefined = await selectUser(`id=${v(id)}`);
@@ -12,9 +14,10 @@ export async function accountLoginByEmail(email: string, password?: string): Pro
   return loginCheck(user, password);
 }
 export async function updateLastLoginTime(id: number) {
-  await user
-    .update({ last_login_time: "now()" })
+  await update(user.name)
+    .set({ last_login_time: "now()" })
     .where([`id=${v(id)}`, "last_login_time < now()"])
+    .client(dbPool)
     .queryCount();
 }
 async function loginCheck(user: LoginUserInfo | undefined, password?: string): Promise<number> {
@@ -32,18 +35,16 @@ async function expectPasswordIsEqual(user: LoginUserInfo, inputPassword?: string
   return typeof inputPassword === "string" && user.password === inputPassword;
 }
 function selectUser(where: string) {
-  return user
-    .select<LoginUserInfo>(
-      {
-        user_id: "id",
-        password: true,
-        pwd_salt: true,
-        in_blacklist: `EXISTS ${user_blacklist.select("1").where("user_id = u.id").toSelect()}`,
-      },
-      "u",
-    )
+  return select<LoginUserInfo>({
+    user_id: "id",
+    password: true,
+    pwd_salt: true,
+    in_blacklist: `EXISTS ${select("1").from(user_blacklist.name).where("user_id = u.id").toSelect()}`,
+  })
+    .from(user.name, { as: "u" })
     .where(["NOT is_deleted", where])
     .limit(1)
+    .dataClient(dbPool)
     .queryRows()
     .then((rows) => rows[0]);
 }
