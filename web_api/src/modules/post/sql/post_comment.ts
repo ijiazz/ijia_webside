@@ -1,5 +1,5 @@
 import { post, post_comment, user, post_comment_like } from "@ijia/data/db";
-import v, { dbPool, Selection } from "@ijia/data/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 import {
   CreateCommentData,
   CreateCommentItemData,
@@ -10,37 +10,49 @@ import {
 import { HttpError } from "@/global/errors.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { parserTimestampCursor, toTimestampCursor } from "./_util.ts";
+import { v } from "@/sql/utils.ts";
+import { select } from "@asla/yoursql";
 
 export async function createComment(
   postId: number,
   userId: number,
   paramList: CreateCommentItemData[],
 ): Promise<CreateCommentData[]> {
-  const data = v.createValues(
-    "data",
-    paramList.map((item) => ({ content_text: item.text, parent_comment_id: item.replyCommentId })),
-    { content_text: "TEXT", parent_comment_id: "INT" },
-  );
-
   const commentTable = post_comment.name;
 
-  const insertRaw = Selection.from(data.toSelect())
-    .innerJoin(post, "p", [
+  const insertRaw = select([
+    "data.content_text",
+    `p.id AS post_id`,
+    `${v(userId)} AS user_id`,
+    `parent.id AS parent_comment_id`,
+    `(CASE WHEN parent.root_comment_id IS NULL THEN parent.id ELSE parent.root_comment_id END) AS root_comment_id`,
+  ])
+    .from(() => {
+      return v
+        .createExplicitValues(
+          paramList.map((item) => ({
+            content_text: item.text,
+            parent_comment_id: item.replyCommentId,
+          })),
+          {
+            content_text: "TEXT",
+            parent_comment_id: "INT",
+          },
+        )
+        .toSelect("data");
+    })
+    .innerJoin(post.name, {
+      as: "p",
       // 只有符合条件的帖子才可以添加评论
-      `p.id=${v(postId)}`,
-      `NOT p.is_delete`, // 帖子未被删除
-      `(p.is_review_pass OR p.is_review_pass IS NULL)`, // 审核通过的或未审核的 帖子
-      `NOT p.is_reviewing`, // 帖子不能在审核中
-      `NOT p.is_hide`, // 帖子未设置仅作者可见
-    ])
-    .leftJoin(post_comment, "parent", `parent.id=data.parent_comment_id`)
-    .select([
-      "data.content_text",
-      `p.id AS post_id`,
-      `${v(userId)} AS user_id`,
-      `parent.id AS parent_comment_id`,
-      `(CASE WHEN parent.root_comment_id IS NULL THEN parent.id ELSE parent.root_comment_id END) AS root_comment_id`,
-    ])
+      on: [
+        `p.id=${v(postId)}`,
+        `NOT p.is_delete`, // 帖子未被删除
+        `(p.is_review_pass OR p.is_review_pass IS NULL)`, // 审核通过的或未审核的 帖子
+        `NOT p.is_reviewing`, // 帖子不能在审核中
+        `NOT p.is_hide`, // 帖子未设置仅作者可见
+      ],
+    })
+    .leftJoin(post_comment.name, { as: "parent", on: `parent.id=data.parent_comment_id` })
     .where([
       `(data.parent_comment_id IS NULL OR NOT parent.is_delete)`, //如果是回复，需要确保父评论未被删除
       `(get_bit(p.options, 1)='0' OR p.user_id=${v(userId)})`, //如果已关闭评论区，只有帖子作者能创建评论 //TODO: 这个放到 insert 来判断比较好，现在这种没法返回 403
@@ -107,8 +119,8 @@ export async function getCommentList(
       can_update: `u.id=${v(currentUserId)} OR p.user_id=${v(currentUserId)}`,
 
       /** like_weight 用量计算 is_like 和 is_report */
-      like_weight: `${post_comment_like
-        .select("weight")
+      like_weight: `${select("weight")
+        .from(post_comment_like.name)
         .where(["comment_id=c.id", `user_id=${v(currentUserId)}`])
         .toSelect()}`,
     });
@@ -117,39 +129,38 @@ export async function getCommentList(
   }
   const isRootReply = typeof target.rootCommentId === "number";
 
-  const raw = await post_comment
-    .fromAs("c")
-    .innerJoin(user, "u", "c.user_id=u.id")
-    .innerJoin(post, "p", ["c.post_id=p.id", "NOT p.is_delete"])
-    .leftJoin(post_comment, "reply", "c.parent_comment_id=reply.id")
-    .select([
-      "c.post_id",
-      "c.id as comment_id",
-      "c.root_comment_id",
-      "c.is_root_reply_count",
-      "c.reply_count",
-      "EXTRACT(epoch FROM c.create_time) AS create_time",
-      "c.content_text",
-      "c.content_text_struct",
-      "c.like_count",
-      `${jsonb_build_object({
-        user_id: "u.id",
-        user_name: "u.nickname",
-        avatar_url: "'/file/avatar/'||u.avatar",
-      })} AS user`,
-      `${curr_user} as curr_user`,
-      `(CASE WHEN c.parent_comment_id IS NULL THEN NULL 
+  const raw = await select<Record<string, any>>([
+    "c.post_id",
+    "c.id as comment_id",
+    "c.root_comment_id",
+    "c.is_root_reply_count",
+    "c.reply_count",
+    "EXTRACT(epoch FROM c.create_time) AS create_time",
+    "c.content_text",
+    "c.content_text_struct",
+    "c.like_count",
+    `${jsonb_build_object({
+      user_id: "u.id",
+      user_name: "u.nickname",
+      avatar_url: "'/file/avatar/'||u.avatar",
+    })} AS user`,
+    `${curr_user} as curr_user`,
+    `(CASE WHEN c.parent_comment_id IS NULL THEN NULL 
         ELSE
       ${jsonb_build_object({
-        user: user
-          .select(`${jsonb_build_object({ user_id: "id", user_name: "nickname" })} `)
+        user: select(`${jsonb_build_object({ user_id: "id", user_name: "nickname" })} `)
+          .from(user.name)
           .where("reply.user_id=id")
           .toSelect(),
         comment_id: "c.parent_comment_id",
         is_deleted: "reply.is_delete",
       })}
         END) AS reply_to`,
-    ])
+  ])
+    .from(post_comment.name, { as: "c" })
+    .innerJoin(user.name, { as: "u", on: "c.user_id=u.id" })
+    .innerJoin(post.name, { as: "p", on: ["c.post_id=p.id", "NOT p.is_delete"] })
+    .leftJoin(post_comment.name, { as: "reply", on: "c.parent_comment_id=reply.id" })
     .where(() => {
       const where = [`NOT c.is_delete`];
 
@@ -184,6 +195,7 @@ export async function getCommentList(
     })
     .orderBy(["c.create_time ASC", "c.id ASC"])
     .limit(number)
+    .dataClient(dbPool)
     .queryRows();
 
   raw.forEach((item) => {
@@ -214,10 +226,11 @@ export async function getUserCanCreateCommentLimit(userId: number, second: numbe
   if (typeof second !== "number" || second <= 0) {
     throw new Error("second 必须是大于0的数字");
   }
-  const list = await post_comment
-    .select({ create_time: true, id: true })
+  const list = await select({ create_time: true, id: true })
+    .from(post_comment.name)
     .where([`user_id=${v(userId)}`, `now() - create_time < interval ' ${second} second'`])
     .limit(1)
+    .dataClient(dbPool)
     .queryRows();
 
   return list.length === 0;

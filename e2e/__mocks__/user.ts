@@ -1,8 +1,9 @@
 import { user } from "@ijia/data/db";
-import { v, dbPool } from "@ijia/data/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 import { createUser } from "@ijia/data/query";
 import { api } from "@/__mocks__/fetch.ts";
 import { LoginType } from "@/api.ts";
+import { v } from "@/sql/utils.ts";
 export const E2E_PASSWORD = {
   saved:
     "7bb09a5da06c0db9593efcc439f9c289ac446c084d57b6035e2b8b4d3b1b5d3034091ca9a58ab83d695974a67301df687e7db252d17e57c0089c589155f1676e",
@@ -11,7 +12,7 @@ export const E2E_PASSWORD = {
 };
 
 async function getNextUserId() {
-  const sql = `SELECT nextval(pg_get_serial_sequence(${v(user.name)}, 'id'))::INT AS id`;
+  const sql = v.gen`SELECT nextval(pg_get_serial_sequence(${user.name}, 'id'))::INT AS id`;
   const { id: id } = await dbPool.queryFirstRow<{ id: number }>(sql);
   return id;
 }
@@ -29,7 +30,7 @@ async function createNewUser(name: string): Promise<AccountInfo> {
     nickname: name,
     password: E2E_PASSWORD.saved,
     salt: E2E_PASSWORD.salt,
-  }).queryFirstRow();
+  });
 
   return {
     id: res.user_id,

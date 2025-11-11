@@ -1,6 +1,6 @@
 import { ImageCaptchaQuestion, ImageCaptchaReply } from "./captcha.dto.ts";
 import { captcha_picture, DbCaptchaPicture } from "@ijia/data/db";
-import { dbPool, v } from "@ijia/data/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 import { PipeInput, PipeOutput, Get, Post } from "@asla/hono-decorator";
 import { HTTPException } from "hono/http-exception";
 import { SessionManager } from "./_SessionManage.ts";
@@ -9,6 +9,8 @@ import { getOSS, getBucket } from "@ijia/data/oss";
 import { contentType } from "@std/media-types";
 import path from "node:path";
 import { ENV, RunMode } from "@/config.ts";
+import { select, update } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
 const BUCKET = getBucket();
 
 @autoBody
@@ -21,16 +23,16 @@ class ImageCaptchaController {
   readonly imageCaptcha = new SessionManager<ImageCaptchaSession>("Captcha:image", 3 * 60);
 
   private async imageCreateSessionData(): Promise<ImageCaptchaSession> {
-    const select = captcha_picture.select({
+    const t = select({
       id: true,
       type: true,
       is_true: true,
-    });
+    }).from(captcha_picture.name);
     //TODO: 优化随机行的获取
     //4 张确定值
-    const certain = select.where(`is_true IS NOT NULL`).orderBy("RANDOM()").limit(4);
+    const certain = t.where(`is_true IS NOT NULL`).orderBy("RANDOM()").limit(4);
     //5 张不确定值
-    const equivocal = select.where(`is_true IS NULL`).orderBy("RANDOM()").limit(9); // limit 9 避免 certain 数量不足
+    const equivocal = t.where(`is_true IS NULL`).orderBy("RANDOM()").limit(9); // limit 9 避免 certain 数量不足
 
     const sql = `(${certain.toSelect()} UNION ALL ${equivocal.toSelect()}) LIMIT 9`;
     const result = await dbPool
@@ -151,11 +153,11 @@ class ImageCaptchaController {
     if (pass && ENV.MODE !== RunMode.E2E) {
       const assertCorrect = Array.from(pass.assertCorrect);
       const assertError = Array.from(pass.assertError);
-      const add = captcha_picture
-        .update({ yes_count: "yes_count + 1" })
+      const add = update(captcha_picture.name)
+        .set({ yes_count: "yes_count + 1" })
         .where(`id in (${assertCorrect.map((value) => v(value)).join(",")})`);
-      const sub = captcha_picture
-        .update({ no_count: "no_count + 1" })
+      const sub = update(captcha_picture.name)
+        .set({ no_count: "no_count + 1" })
         .where(`id in (${assertError.map((value) => v(value)).join(",")})`);
 
       if (assertCorrect.length && assertError.length) {
@@ -164,9 +166,9 @@ class ImageCaptchaController {
         await q.query(sub);
         await q.commit();
       } else if (assertCorrect.length) {
-        await add.query();
+        await dbPool.query(add);
       } else if (assertError.length) {
-        await sub.query();
+        await dbPool.query(sub);
       }
     }
     return !!pass;

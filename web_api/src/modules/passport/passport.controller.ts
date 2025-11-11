@@ -27,10 +27,12 @@ import { PassportConfig } from "./passport.dto.ts";
 import { sendResetPassportCaptcha, sendSignUpEmailCaptcha } from "./services/send_email_captcha.ts";
 import { signAccessToken } from "@/global/jwt.ts";
 import { user } from "@ijia/data/db";
-import v from "@ijia/data/yoursql";
 import { accountLoginByEmail, accountLoginById, updateLastLoginTime } from "./sql/login.ts";
 import { createUser } from "./sql/signup.ts";
 import { resetAccountPassword } from "./sql/account.ts";
+import { select } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
+import { dbPool } from "@ijia/data/dbclient";
 
 @autoBody
 @Controller({})
@@ -198,10 +200,11 @@ export class PassportController {
     const pass = await imageCaptchaController.verify(captchaReply);
     if (!pass) throw new HttpCaptchaError();
 
-    const [account] = await user
-      .select<{ email: string; id: number }>({ email: true, id: true })
+    const [account] = await select<{ email: string; id: number }>({ email: true, id: true })
+      .from(user.name)
       .where(`email=${v(email)}`)
       .limit(1)
+      .dataClient(dbPool)
       .queryRows();
     if (!account) throw new HttpError(406, "账号不存在");
 

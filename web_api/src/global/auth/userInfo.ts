@@ -1,42 +1,38 @@
 import { verifyAccessToken, AccessTokenData, refreshAccessToken, SignInfo, SignResult } from "@/global/jwt.ts";
 import { user, user_role_bind } from "@ijia/data/db";
-import { v } from "@ijia/data/yoursql";
 import { HttpError, RequiredLoginError } from "../errors.ts";
 import { getValidUserSampleInfoByUserId, SampleUserInfo } from "@/sql/user.ts";
 import { setTimeoutUnRef } from "../utils.ts";
+import { v } from "@/sql/utils.ts";
+import { select, SqlStatement } from "@asla/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 
 async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
   if (!roles.length) return false;
-  const select = user_role_bind.select({ role_id: true });
+  const statement1 = select({ role_id: true }).from(user_role_bind.name);
 
-  let count: number;
+  let statement2: SqlStatement;
   if (roles.length === 1) {
-    count = await select
-      .where(`id=${v(userId)} AND role_id=${v(roles[0])}`)
-      .limit(1)
-      .queryCount();
+    statement2 = statement1.where(`id=${v(userId)} AND role_id=${v(roles[0])}`).limit(1);
   } else {
-    count = await select
-      .where(`id=${v(userId)} AND role_id IN (${roles.map((item) => v(item))})`)
-      .limit(1)
-      .queryCount();
+    statement2 = statement1.where(`id=${v(userId)} AND role_id IN (${roles.map((item) => v(item))})`).limit(1);
   }
-  return count > 0;
+  const res = await dbPool.queryCount(statement2);
+  return res > 0;
 }
 async function getUserRoleNameList(userId: number): Promise<UserWithRole> {
-  const [userInfo] = await user
-    .fromAs("u")
-    .select<UserWithRole>({
-      user_id: "u.id",
-      email: "u.email",
-      nickname: "u.nickname",
-      role_id_list: user_role_bind
-        .fromAs("bind")
-        .select<{ role_id: "string" }>({ role_id: "array_agg(bind.role_id)" })
-        .where(`bind.user_id=${v(userId)}`)
-        .toSelect(),
-    })
+  const [userInfo] = await select<UserWithRole>({
+    user_id: "u.id",
+    email: "u.email",
+    nickname: "u.nickname",
+    role_id_list: select<{ role_id: "string" }>({ role_id: "array_agg(bind.role_id)" })
+      .from(user_role_bind.name, { as: "bind" })
+      .where(`bind.user_id=${v(userId)}`)
+      .toSelect(),
+  })
+    .from(user.name, { as: "u" })
     .where("NOT u.is_deleted")
+    .dataClient(dbPool)
     .queryRows();
   if (!userInfo) throw new HttpError(400, "账号不存在");
   if (!userInfo.role_id_list) userInfo.role_id_list = [];

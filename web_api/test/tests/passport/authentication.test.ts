@@ -6,6 +6,7 @@ import { HoFetch } from "@asla/hofetch";
 import { signAccessToken } from "@/global/jwt.ts";
 import { afterTime } from "evlib";
 import { user } from "@ijia/data/db";
+import { insertIntoValues } from "@/sql/utils.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, userController);
@@ -27,7 +28,7 @@ test("过期的token请求后应返回删除 cookie", async function ({ hoFetch 
 });
 
 test("刷新 token 后应返回新的 token", async function ({ hoFetch, ijiaDbPool }) {
-  await user.insert({ id: 1, email: "test@example" }).query();
+  await insertIntoValues(user.name, { id: 1, email: "test@example" }).client(ijiaDbPool);
   const token = await signAccessToken(1, { survivalSeconds: 0.05, refreshSurvivalSeconds: 2 });
   await afterTime(50);
   const res = await getInfo(hoFetch, token.token);

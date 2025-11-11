@@ -1,22 +1,25 @@
 import { Role } from "@/global/auth.ts";
 import { signAccessToken } from "@/global/jwt.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
-import { role, user_role_bind } from "@ijia/data/db";
-import v, { dbPool } from "@ijia/data/yoursql";
+import { v } from "@/sql/utils.ts";
+import { dbPool } from "@ijia/data/dbclient";
 
 /** 将角色绑定到用户，如果角色不存在，则创建 */
 export async function bindUserRole(userId: number, rolesInput: Set<Role> | Role[]) {
   const roles = rolesInput instanceof Set ? rolesInput : new Set(rolesInput);
   const values = Array.from(roles).map((r) => ({ id: r }));
-  const sql = `WITH role_id(id) AS (
-      VALUES ${v.objectListToValuesList(values, { id: { sqlType: "TEXT", assertJsType: "string" } }).toString()}
+  const base2 = v.gen`WITH role_id(id) AS (
+      VALUES ${new String(v.createExplicitValues(values, { id: { sqlType: "TEXT", assertJsType: "string" } }).text)}
     ), roles AS (
-      ${role.insert("id", "SELECT * FROM role_id").onConflict("id").doNotThing().toString()}
+      INSERT INTO role (id) 
+      SELECT role_id.id FROM role_id 
+      ON CONFLICT (id) DO NOTHING
     )
-    INSERT INTO ${user_role_bind.name} (user_id, role_id)
-    SELECT ${v(userId)}, id AS role_id FROM role_id
+    INSERT INTO user_role_bind(user_id, role_id)
+    SELECT ${userId}, id AS role_id FROM role_id  
     `;
-  await dbPool.queryCount(sql);
+
+  await dbPool.queryCount(base2);
 }
 export async function prepareUser(nickname: string, option: PrepareUserOption = {}): Promise<UserToken> {
   const email = nickname + "@ijiazz.cn";

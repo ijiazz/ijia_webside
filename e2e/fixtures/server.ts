@@ -1,4 +1,4 @@
-import { DbPool } from "@ijia/data/yoursql";
+import { DbPool } from "@ijia/data/dbclient";
 import { spawn, ChildProcess } from "node:child_process";
 
 function dockerRun() {

@@ -1,4 +1,4 @@
-import { v } from "@ijia/data/yoursql";
+import { v } from "@/sql/utils.ts";
 
 export function createSearch(column: string, value: string) {
   return `${column} LIKE ${v("%" + value + "%")}`;

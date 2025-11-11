@@ -1,4 +1,4 @@
-import { ConditionParam, Selection, v, dbPool } from "@ijia/data/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 import {
   pla_asset,
   pla_comment,
@@ -19,6 +19,8 @@ import { PostAssetType, PostUserInfo } from "../post.dto.ts";
 import { AssetMediaDto, MulFormat, AssetImage } from "../common.dto.ts";
 import { assetMediaToDto } from "./media.ts";
 import { getPostContentType } from "./sql_tool.ts";
+import { select } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
 
 export type GetAssetListOption = GetListOption & {
   platform?: Platform;
@@ -30,9 +32,8 @@ export type GetAssetListOption = GetListOption & {
 };
 
 function selectAssetResource(setKey: string, keys?: Record<string, string | boolean>) {
-  return pla_asset_media
-    .fromAs("media")
-    .select(`json_agg(${keys ? jsonb_build_object(keys, "media") : "media"})`)
+  return select(`json_agg(${keys ? jsonb_build_object(keys, "media") : "media"})`)
+    .from(pla_asset_media.name, { as: "media" })
     .where(`media.platform=${setKey}.platform AND media.asset_id=${setKey}.asset_id AND index IS NOT NULL`);
 }
 type SelectAssetList = {
@@ -48,26 +49,29 @@ type SelectAssetList = {
 };
 async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total: number; items: SelectAssetList[] }> {
   const { number = 20, offset = 0, platform, userId, sort, includeHidden } = option;
+  const createJoin = (statement: ReturnType<typeof select>) => {
+    return statement
+      .from(watching_pla_user.name, { as: "god_user" })
+      .innerJoin(pla_user.name, {
+        as: "u",
+        on: ["u.platform=god_user.platform ", " u.pla_uid=god_user.pla_uid", `god_user.level >=${USER_LEVEL.god}`],
+      })
+      .innerJoin(pla_asset.name, {
+        as: "p",
+        on: () => {
+          const where = ["p.platform=u.platform", "p.pla_uid=u.pla_uid"];
+          if (!includeHidden) {
+            const condition =
+              "( god_user.visible_time_second IS NULL OR NOW() - p.publish_time < INTERVAL '1 second' * visible_time_second )";
+            where.push(condition);
+          }
+          return where;
+        },
+      });
+  };
 
-  const select = watching_pla_user
-    .fromAs("god_user")
-    .innerJoin(pla_user, "u", [
-      "u.platform=god_user.platform ",
-      " u.pla_uid=god_user.pla_uid",
-      `god_user.level >=${USER_LEVEL.god}`,
-    ])
-    .innerJoin(pla_asset, "p", () => {
-      const where = ["p.platform=u.platform", "p.pla_uid=u.pla_uid"];
-      if (!includeHidden) {
-        const condition =
-          "( god_user.visible_time_second IS NULL OR NOW() - p.publish_time < INTERVAL '1 second' * visible_time_second )";
-        where.push(condition);
-      }
-      return where;
-    });
-
-  const itemsSql = select
-    .select<SelectAssetList>({
+  const itemsSql = createJoin(
+    select<SelectAssetList>({
       post_id: "p.asset_id",
       platform: "p.platform",
       publish_time: "p.publish_time",
@@ -83,8 +87,9 @@ async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total
         extra: "u.extra",
       }),
       media: selectAssetResource("p").toSelect(),
-    })
-    .where((): ConditionParam => {
+    }),
+  )
+    .where(() => {
       const searchWhere: string[] = [];
       if (option.s_author) searchWhere.push(createSearch("u.user_name", option.s_author));
       if (option.s_content) searchWhere.push(createSearch("p.content_text", option.s_content));
@@ -112,8 +117,8 @@ async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total
     })
     .limit(number, offset);
 
-  const totalSql = select.select("count(*)::INT");
-  const [counts, items] = await dbPool.multipleQueryRows(totalSql.toString() + ";\n" + itemsSql.toString());
+  const totalSql = createJoin(select("count(*)::INT"));
+  const [counts, items] = await dbPool.multipleQueryRows([totalSql, itemsSql]);
   return {
     total: counts[0].count,
     items,
@@ -215,9 +220,9 @@ export async function getGodPost(option?: GetAssetListOption) {
   };
 }
 function selectAssetStat(selectableSymbol: string) {
-  return Selection.from(selectableSymbol, "t")
-    .innerJoin(pla_comment, "c", "c.asset_id=t.asset_id")
-    .select({ asset_id: "c.asset_id", count: "count(*)::INT" })
+  return select({ asset_id: "c.asset_id", count: "count(*)::INT" })
+    .from(selectableSymbol, { as: "t" })
+    .innerJoin(pla_comment.name, { as: "c", on: "c.asset_id=t.asset_id" })
     .groupBy("c.asset_id");
 }
 

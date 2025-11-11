@@ -7,6 +7,7 @@ import { postController } from "@/modules/post/mod.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { PostItemDto, PostUserInfo } from "@/api.ts";
 import { createPost, preparePost, testGetPost, testGetSelfPost } from "./utils/prepare_post.ts";
+import { update } from "@asla/yoursql";
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
 });
@@ -53,9 +54,11 @@ test("审核中的帖子只有自己能查看", async function ({ api, publicDbP
   const bob = await prepareUniqueUser("bob");
 
   const { id } = await createPost(api, { content_text: "test1分组" }, alice.token);
-  await post
-    .update({ is_reviewing: "true" })
+
+  await update(post.name)
+    .set({ is_reviewing: "true" })
     .where([`id=${id}`])
+    .client(publicDbPool)
     .queryCount();
   const aliceView = await testGetSelfPost(api, id, alice.token);
   expect(aliceView.post_id).toBe(id);
@@ -73,9 +76,10 @@ test("审核失败的帖子只有自己能查看", async function ({ api, public
   const bob = await prepareUniqueUser("bob");
   const { id } = await createPost(api, { content_text: "test" }, alice.token);
 
-  await post
-    .update({ is_review_pass: "false" })
+  await update(post.name)
+    .set({ is_review_pass: "false" })
     .where([`id=${id}`])
+    .client(publicDbPool)
     .query();
 
   const aliceView = await testGetSelfPost(api, id, alice.token);

@@ -6,6 +6,7 @@ import { DbPostCreate, post } from "@ijia/data/db";
 import { postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "../../fixtures/user.ts";
 import { getPostList } from "@/modules/post/sql/post_list.ts";
+import { insertIntoValues } from "@/sql/utils.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -32,7 +33,7 @@ test("分页获取帖子列表", async function ({ api, ijiaDbPool }) {
     };
     baseDate -= oneDay; // 每个帖子的发布时间间隔1秒
   }
-  await post.insert(values).query();
+  await insertIntoValues(post.name, values).client(ijiaDbPool);
 
   const list1 = await getPostList(undefined, 10);
   expect(list1.items.length).toBe(10);
@@ -65,7 +66,7 @@ test("向前分页", async function ({ api, ijiaDbPool }) {
     content_text: "test",
     publish_time: new Date(baseDate), // 插入一个时间重复的
   };
-  await post.insert(f).query();
+  await insertIntoValues(post.name, f).client(ijiaDbPool);
 
   const { before_cursor } = await getPostList();
 
@@ -78,7 +79,7 @@ test("向前分页", async function ({ api, ijiaDbPool }) {
     };
     baseDate += oneDay; // 每个帖子的发布时间间隔1秒
   }
-  await post.insert(values).query();
+  await insertIntoValues(post.name, values).client(ijiaDbPool);
 
   const list1 = await getPostList({ cursor: before_cursor ?? undefined, forward: true, number: 2 });
 

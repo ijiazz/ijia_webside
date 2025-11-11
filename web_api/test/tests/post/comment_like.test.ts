@@ -14,6 +14,9 @@ import {
 } from "./utils/prepare_comment.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import { post_comment, post_review_info, PostReviewType } from "@ijia/data/db";
+import { insertIntoValues } from "@/sql/utils.ts";
+import { dbPool } from "@ijia/data/dbclient";
+import { select } from "@asla/yoursql";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -148,11 +151,11 @@ test("审核通过或不通过的评论，举报人数达到3人后，评论审�
   const comment1 = await action.createComment("abc", { token: alice.token });
   const comment2 = await action.createComment("abc", { token: alice.token });
 
-  await post_review_info
-    .insert([
-      { type: PostReviewType.postComment, target_id: comment1.id, is_review_pass: true },
-      { type: PostReviewType.postComment, target_id: comment2.id, is_review_pass: false },
-    ])
+  await insertIntoValues(post_review_info.name, [
+    { type: PostReviewType.postComment, target_id: comment1.id, is_review_pass: true },
+    { type: PostReviewType.postComment, target_id: comment2.id, is_review_pass: false },
+  ])
+    .client(dbPool)
     .query();
 
   await reportComment(api, comment1.id, "测试举报", alice.token);
@@ -186,9 +189,10 @@ test("已举报的评论，不能再点赞", async function ({ api, publicDbPool
 });
 
 function getCommentReviewWeight(commentId: number) {
-  return post_comment
-    .select({ report_count: "dislike_count" })
+  return select<{ report_count: number }>({ report_count: "dislike_count" })
+    .from(post_comment.name)
     .where(`id=${commentId}`)
+    .dataClient(dbPool)
     .queryFirstRow()
     .then((item) => +item.report_count);
 }

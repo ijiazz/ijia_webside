@@ -5,11 +5,12 @@ import { optionalPositiveInt, checkValue, optionalInt } from "@/global/check.ts"
 import { genScreenAvatar } from "./sql/avatar.ts";
 import { pla_user } from "@ijia/data/db";
 import { redisPool } from "@ijia/data/cache";
-import { dbPool } from "@ijia/data/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 import { list } from "./home_extra.ts";
 import { Context } from "hono";
 import { genGetBulletChart } from "./sql/bullet.sql.ts";
 import { appConfig } from "@/config.ts";
+import { select } from "@asla/yoursql";
 
 @autoBody
 @Controller({})
@@ -60,18 +61,18 @@ class LiveController {
   })
   @Get("/live/screen/home")
   async getHomeData(): Promise<HomePageRes> {
-    const select = {
+    const selectColumns = {
       platform: true,
       pla_uid: true,
       user_name: true,
       avatar_url: "'/file/avatar/'||avatar",
       stat: "json_build_object('followers_count',follower_count)",
     };
-    const dy = pla_user
-      .select({ ...select, home_url: "'https://www.douyin.com/user/'||(extra->>'sec_uid')" })
+    const dy = select({ ...selectColumns, home_url: "'https://www.douyin.com/user/'||(extra->>'sec_uid')" })
+      .from(pla_user.name)
       .where(["platform='douyin' ", " pla_uid='63677127177'"]);
-    const wb = pla_user
-      .select({ ...select, home_url: "'https://weibo.com/u/'||pla_uid" })
+    const wb = select({ ...selectColumns, home_url: "'https://weibo.com/u/'||pla_uid" })
+      .from(pla_user.name)
       .where(["platform='weibo' ", " pla_uid='6201382716'"]);
     const [dyData, wbData] = await dbPool.multipleQueryRows<[GodPlatformDto, GodPlatformDto]>([dy, wb].join(";"));
 
@@ -121,7 +122,7 @@ class LiveController {
       groupId: target.usePostId,
       pageSize,
       page: index,
-    }).queryRows();
+    });
     return {
       items: res,
       has_more: res.length >= pageSize,

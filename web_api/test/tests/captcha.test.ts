@@ -4,7 +4,8 @@ import { imageCaptchaController } from "@/modules/captcha/mod.ts";
 import { applyController } from "@asla/hono-decorator";
 import { captcha_picture } from "@ijia/data/db";
 import { initCaptcha } from "../__mocks__/captcha.ts";
-import v from "@ijia/data/yoursql";
+import { select } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
 
 beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
   applyController(hono, imageCaptchaController);
@@ -38,16 +39,21 @@ test("验证错误", async function ({ api }) {
   await expect(imageCaptchaController.imageCaptcha.get(result.sessionId), "验证后被删除").resolves.toBeUndefined();
 });
 
-test("允许选择不确定的选项", async function ({ api }) {
+test("允许选择不确定的选项", async function ({ api, ijiaDbPool }) {
   const result = await api["/captcha/image"].post();
 
   const { all, yes, no, unknown } = await imageCaptchaController.getAnswer(result.sessionId);
   const unknownId = unknown.map((index) => all[index]);
 
-  const unknownItems = captcha_picture
-    .select<{ yes_count: number; no_count: number; id: string }>({ id: true, yes_count: true, no_count: true })
+  const unknownItems = select<{ yes_count: number; no_count: number; id: string }>({
+    id: true,
+    yes_count: true,
+    no_count: true,
+  })
+    .from(captcha_picture.name)
     .where(`id in (${unknownId.map((id) => v(id)).join(", ")})`)
-    .orderBy("id");
+    .orderBy("id")
+    .dataClient(ijiaDbPool);
 
   const old = await unknownItems.queryRows();
   expect(

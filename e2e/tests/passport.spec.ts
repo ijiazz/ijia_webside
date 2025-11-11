@@ -1,13 +1,15 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { user } from "@ijia/data/db";
 import { initAlice, loginGetToken, initBob } from "@/__mocks__/user.ts";
-import { v } from "@ijia/data/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 import { Page } from "@playwright/test";
+import { deleteFrom, select } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
 const { expect, beforeEach } = test;
 
 test("注册账号", async function ({ page, webInfo }) {
   const email = "test_signup@ijiazz.cn";
-  await user.delete({ where: "email=" + v(email) }).queryCount();
+  await dbPool.queryCount(deleteFrom(user.name).where("email=" + v(email)));
 
   await page.goto(getAppUrlFromRoute("/passport/signup"));
 
@@ -40,9 +42,10 @@ test("注册账号", async function ({ page, webInfo }) {
   await expect(page, "注册成功后导航到个人配置页").toHaveURL(/\/profile\/center/, {});
 
   await expect(
-    user
-      .select("*")
+    select("*")
+      .from(user.name)
       .where(`email=` + v(email))
+      .client(dbPool)
       .queryCount(),
     "注册成功",
   ).resolves.toBe(1);
@@ -123,7 +126,9 @@ test("修改邮箱", async function ({ page }) {
   const Alice = await initAlice();
   const token = await loginGetToken(Alice.email, Alice.password);
   const changeEmail = "changenew@ijiazz.cn";
-  await user.delete({ where: "email=" + v(changeEmail) }).queryCount();
+  await deleteFrom(user.name)
+    .where("email=" + v(changeEmail))
+    .client(dbPool);
   await page.goto(getAppUrlFromRoute("/profile/security", token));
 
   await page.getByRole("button", { name: "修 改" }).click();

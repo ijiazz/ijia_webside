@@ -1,28 +1,29 @@
-import v, { SqlStatementDataset } from "@ijia/data/yoursql";
 import { post, user } from "@ijia/data/db";
 import { BulletChat } from "../live.dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
+import { select } from "@asla/yoursql";
+import { v } from "@/sql/utils.ts";
+import { dbPool, ExecutableSql } from "@ijia/data/dbclient";
 
 type GetBulletChartOptions = {
   groupId: number | null;
   pageSize: number;
   page: number;
 };
-export function genGetBulletChart(options: GetBulletChartOptions): SqlStatementDataset<BulletChat> {
+export function genGetBulletChart(options: GetBulletChartOptions): ExecutableSql<BulletChat[]> {
   const { groupId, pageSize, page } = options;
-  const sql = post
-    .fromAs("p")
-    .innerJoin(user, "u", "p.user_id = u.id")
-    .select<BulletChat>({
-      text: "p.content_text",
-      id: "p.id",
-      like_count: "p.like_count",
-      user: jsonb_build_object({
-        user_name: "u.nickname",
-        user_id: "u.id ::TEXT",
-        avatar_url: "'/file/avatar/'||u.avatar",
-      }),
-    })
+  const sql = select<BulletChat>({
+    text: "p.content_text",
+    id: "p.id",
+    like_count: "p.like_count",
+    user: jsonb_build_object({
+      user_name: "u.nickname",
+      user_id: "u.id ::TEXT",
+      avatar_url: "'/file/avatar/'||u.avatar",
+    }),
+  })
+    .from(post.name, { as: "p" })
+    .innerJoin(user.name, { as: "u", on: "p.user_id = u.id" })
     .where(() => {
       const conditions: string[] = [
         `NOT p.is_delete`,
@@ -37,6 +38,7 @@ export function genGetBulletChart(options: GetBulletChartOptions): SqlStatementD
       return conditions;
     })
     .orderBy("p.like_count DESC, p.id ASC")
-    .limit(pageSize, page * pageSize);
+    .limit(pageSize, page * pageSize)
+    .dataClient(dbPool, ({ rows }) => rows);
   return sql;
 }

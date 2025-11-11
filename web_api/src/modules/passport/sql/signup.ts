@@ -12,7 +12,7 @@ export async function createUser(email: string, userInfo: { password?: string; n
     salt = crypto.randomUUID().replaceAll("-", ""); //16byte
     password = await hashPasswordBackEnd(userInfo.password, salt);
   }
-  const [res] = await getCreateUserSql(email, { nickname, password, salt }).queryRows();
+  const res = await getCreateUserSql(email, { nickname, password, salt });
 
   if (!res) throw new HttpError(406, "邮箱已注册");
 

@@ -32,6 +32,7 @@ import {
   setCommentLike,
 } from "./utils/prepare_comment.ts";
 import { PostReviewType, user_profile } from "@ijia/data/db";
+import { select } from "@asla/yoursql";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -218,8 +219,9 @@ test("帖子审核通过后，应更新举报用户的审核正确/错误统计"
   await commitReview(true, post.id);
 
   const getUserReportStat = () => {
-    return user_profile
-      .select({ user_id: true, report_correct_count: true, report_error_count: true })
+    return select({ user_id: true, report_correct_count: true, report_error_count: true })
+      .from(user_profile.name)
+      .dataClient(ijiaDbPool)
       .queryMap<number>("user_id")
       .then((res) => Object.fromEntries(res));
   };
@@ -262,12 +264,13 @@ test("评论审核通过后，应更新举报用户的审核正确/错误统计"
   await commitReview(true, c1.id);
 
   const getUserReportStat = () => {
-    return user_profile
-      .select({
-        user_id: true,
-        report_correct_count: "report_subjective_correct_count",
-        report_error_count: "report_subjective_error_count",
-      })
+    return select({
+      user_id: true,
+      report_correct_count: "report_subjective_correct_count",
+      report_error_count: "report_subjective_error_count",
+    })
+      .from(user_profile.name)
+      .dataClient(ijiaDbPool)
       .queryMap<number>("user_id")
       .then((res) => Object.fromEntries(res));
   };

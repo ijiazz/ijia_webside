@@ -8,6 +8,8 @@ import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
 import { emailCaptchaService } from "@/modules/captcha/mod.ts";
+import { update } from "@asla/yoursql";
+import { dbPool } from "@ijia/data/dbclient";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
 
@@ -48,7 +50,7 @@ test("重置密码必须传正确的验证码", async function ({ api }) {
 });
 test("已注销账号不能重置密码", async function ({ api }) {
   const Alice = await prepareUniqueUser("alice");
-  await user.update({ is_deleted: "true" }).where(`id=${Alice.userId}`).query();
+  await update(user.name).set({ is_deleted: "true" }).where(`id=${Alice.userId}`).client(dbPool).query();
   const emailCaptchaAnswer = await mockResetPasswordSendEmailCaptcha(api, Alice.email);
   const newPassword = await hashPasswordFrontEnd("newPassword123");
 

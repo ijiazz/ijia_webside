@@ -1,5 +1,5 @@
 import { test as viTest, afterAll, vi } from "vitest";
-import { DbPool, parserDbUrl, dbPool } from "@ijia/data/yoursql";
+import { DbPool, parserDbUrl, dbPool } from "@ijia/data/dbclient";
 import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
 import process from "node:process";
 import { redisPool, RedisPool } from "@ijia/data/cache";
@@ -38,6 +38,7 @@ export const test = viTest.extend<DbContext>({
     await clearDropDb(dbPool, dbName);
   },
   async publicDbPool({}, use) {
+    console.log("publicDbPool init", !!publicDbPool);
     if (!publicDbPool) {
       publicDbPool = (async () => {
         await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true, extra: true });

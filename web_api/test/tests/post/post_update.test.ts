@@ -13,8 +13,9 @@ import {
   updatePostContentFromApi,
 } from "./utils/prepare_post.ts";
 import { getPostReviewStatus, markReviewed, preparePost, ReviewStatus } from "./utils/prepare_post.ts";
-import v from "@ijia/data/yoursql";
 import { DeepPartial } from "./utils/comment.ts";
+import { insertIntoValues, v } from "@/sql/utils.ts";
+import { select } from "@asla/yoursql";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
@@ -123,23 +124,23 @@ test("审核中的帖子，更新内容后仍为审核中，审核数据重置",
 test("更新审核不通过的帖子，审核数据重置", async function ({ api, publicDbPool }) {
   const groupId = await createPostGroup(publicDbPool, "测试分组");
   const alice = await prepareUniqueUser("alice");
-  const result = await post
-    .insert([
-      {
-        content_text: "未审核",
-        is_review_pass: null,
-        is_reviewing: false,
-        user_id: alice.id,
-        group_id: groupId,
-      },
-      {
-        content_text: "审核不通过",
-        is_review_pass: false,
-        is_reviewing: false,
-        user_id: alice.id,
-      },
-    ])
+  const result = await insertIntoValues(post.name, [
+    {
+      content_text: "未审核",
+      is_review_pass: null,
+      is_reviewing: false,
+      user_id: alice.id,
+      group_id: groupId,
+    },
+    {
+      content_text: "审核不通过",
+      is_review_pass: false,
+      is_reviewing: false,
+      user_id: alice.id,
+    },
+  ])
     .returning(["id", "is_review_pass", "is_reviewing"])
+    .dataClient(publicDbPool)
     .queryRows();
 
   await Promise.all(result.map(({ id }) => updatePostContentFromApi(api, id, { content_text: "更新" }, alice.token)));
@@ -163,46 +164,47 @@ test("更新审核不通过的帖子，审核数据重置", async function ({ ap
 });
 test("只更新帖子的隐藏状态，审核状态和审核数据不变", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  const result = await post
-    .insert([
-      {
-        content_text: "未审核",
-        is_review_pass: null,
-        is_reviewing: false,
-        user_id: alice.id,
-      },
-      {
-        content_text: "审核中",
-        is_review_pass: null,
-        is_reviewing: true,
-        user_id: alice.id,
-      },
-      {
-        content_text: "审核不通过",
-        is_review_pass: false,
-        is_reviewing: false,
-        user_id: alice.id,
-      },
-      {
-        content_text: "审核通过",
-        is_review_pass: true,
-        is_reviewing: false,
-        user_id: alice.id,
-      },
-    ])
+  const result = await insertIntoValues(post.name, [
+    {
+      content_text: "未审核",
+      is_review_pass: null,
+      is_reviewing: false,
+      user_id: alice.id,
+    },
+    {
+      content_text: "审核中",
+      is_review_pass: null,
+      is_reviewing: true,
+      user_id: alice.id,
+    },
+    {
+      content_text: "审核不通过",
+      is_review_pass: false,
+      is_reviewing: false,
+      user_id: alice.id,
+    },
+    {
+      content_text: "审核通过",
+      is_review_pass: true,
+      is_reviewing: false,
+      user_id: alice.id,
+    },
+  ])
     .returning(["id", "is_review_pass", "is_reviewing"])
+    .dataClient(publicDbPool)
     .queryMap<number>("id");
 
   const keys = Array.from(result.keys());
   await Promise.all(keys.map((id) => updatePostConfigFormApi(api, id, { is_hide: true }, alice.token)));
 
-  const status = await post
-    .select({
-      id: true,
-      is_review_pass: true,
-      is_reviewing: true,
-    })
+  const status = await select({
+    id: true,
+    is_review_pass: true,
+    is_reviewing: true,
+  })
+    .from(post.name)
     .where(`user_id=${v(alice.id)}`)
+    .dataClient(publicDbPool)
     .queryMap<string>("id");
 
   expect(Object.fromEntries(status), "审核数据未改变").toEqual(Object.fromEntries(result));

@@ -11,6 +11,7 @@ import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
 import { user } from "@ijia/data/db";
 import { getUniqueEmail, getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
+import { update } from "@asla/yoursql";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   await initCaptcha();
@@ -95,10 +96,10 @@ describe("修改邮箱", async function () {
     });
     await expect(getUserEmail(alice.id), "成功修改邮箱变为小写").resolves.toBe(`${prefix.toLowerCase()}@ijiazz.中文`);
   });
-  test("已注销账号不能修改邮箱", async function ({ api }) {
+  test("已注销账号不能修改邮箱", async function ({ api, publicDbPool }) {
     const alice = await prepareUniqueUser("alice");
     const accountToken = await getAccountToken(api, alice.token);
-    await user.update({ is_deleted: "true" }).where(`id=${alice.id}`).query();
+    await update(user.name).set({ is_deleted: "true" }).where(`id=${alice.id}`).client(publicDbPool);
     const newEmail = "news@ijiazz.cn";
     const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail, alice.token);
     const promise = api["/passport/change_email"].post({
