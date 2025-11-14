@@ -1,0 +1,57 @@
+name: Deploy WEB
+run-name: "[${{ github.actor }}] 从 [${{ github.ref_name }}] 部署 WEB 到生产环境"
+on:
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: "Force rebuild even if artifact exists"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      WEB_ARTIFACT_NAME: web_dist-${{ github.ref }}
+    steps:
+      - name: Download previous artifact
+        id: fetch_artifact
+        if: inputs.force_rebuild != 'true'
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          name: ${{ env.WEB_ARTIFACT_NAME }}
+          search_artifacts: true
+          if_no_artifact_found: fail
+          path: web/dist
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v4
+        if: steps.fetch_artifact.outcome != 'success' || inputs.force_rebuild == 'true'
+        with:
+          submodules: true
+      - name: Setup project
+        if: steps.fetch_artifact.outcome != 'success' || inputs.force_rebuild == 'true'
+        uses: ./.github/actions/setup-project
+      - name: Build
+        if: steps.fetch_artifact.outcome != 'success' || inputs.force_rebuild == 'true'
+        run: pnpm build
+        working-directory: ./web
+      - name: Upload artifacts
+        if: steps.fetch_artifact.outcome != 'success' || inputs.force_rebuild == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.WEB_ARTIFACT_NAME }}
+          path: ./web/dist
+          overwrite: true
+      # - uses: appleboy/ssh-action@v1
+      #   with:
+      #     host: ${{ secrets.WEB_DEPLOY_HOST }}
+      #     port: ${{ secrets.WEB_DEPLOY_PORT }}
+      #     key: ${{ secrets.WEB_DEPLOY_KEY }}
+      #     username: ${{ secrets.WEB_DEPLOY_USER }}
+      #     script: |
+      #       cd ${{ secrets.WEB_DEPLOY_PATH }}
+      #       ./deploy.sh ${{ env.WEB_ARTIFACT_NAME }}
