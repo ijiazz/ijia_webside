@@ -1,0 +1,62 @@
+name: Deploy WEB
+on:
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: "Force rebuild even if artifact exists"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      WEB_ARTIFACT_NAME: web_dist-${{ github.sha }}
+    steps:
+      - name: Download previous artifact
+        id: fetch_artifact
+        if: inputs.force_rebuild != 'true'
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          name: ${{ env.WEB_ARTIFACT_NAME }}
+          search_artifacts: true
+          if_no_artifact_found: ignore
+          path: web/dist
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set found_artifact output
+        run: echo ${{ steps.fetch_artifact.outputs.artifacts }}
+
+      - uses: actions/checkout@v4
+        if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
+        with:
+          submodules: true
+      - name: Setup project
+        if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
+        uses: ./.github/actions/setup-project
+      - name: Build
+        if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
+        run: pnpm build
+        working-directory: ./web
+      - name: Upload artifacts
+        if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
+        id: upload_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.WEB_ARTIFACT_NAME }}
+          path: ./web/dist
+          overwrite: true
+
+      - name: Get Artifact ID
+        id: artifact_meta
+        run: echo "id=${{ steps.upload_artifact.outputs['artifact-id'] || fromJSON(steps.fetch_artifact.outputs.artifacts)[0].id }}" >> "$GITHUB_OUTPUT"
+
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.WEB_DEPLOY_HOST }}
+          key: ${{ secrets.WEB_DEPLOY_KEY }}
+          username: ${{ secrets.WEB_DEPLOY_USER }}
+          script: |
+            cd ${{ secrets.WEB_DEPLOY_PATH }}
+            ./deploy_web.sh ${{ steps.artifact_meta.outputs.id }} ${{github.sha}}
