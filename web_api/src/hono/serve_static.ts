@@ -3,7 +3,6 @@ import { ServeStaticOptions } from "hono/serve-static";
 import { Hono } from "hono";
 import { ENV } from "@/config.ts";
 import path from "node:path";
-import { platform } from "node:os";
 import { HTTPException } from "hono/http-exception";
 import { UserInfo } from "@/global/auth.ts";
 import { getCookie } from "hono/cookie";
@@ -14,9 +13,7 @@ import { contentType } from "@std/media-types";
 
 export async function addServeStatic(hono: Hono) {
   const rooDir = path.resolve(ENV.OSS_ROOT_DIR!);
-  let rootDirRelative = rooDir;
-  if (platform() === "win32") rootDirRelative = path.relative(".", rooDir); // hono@4.617 的 serveStatic 在 Windows 上存在bug (https://github.com/honojs/hono/issues/3475)
-  console.log("useStatic", rootDirRelative);
+  console.log("useStatic", rooDir);
   const oos = getBucket();
   const bucketTest = {
     AVATAR: new RegExp(`^/${oos.AVATAR}/`),
@@ -51,7 +48,7 @@ export async function addServeStatic(hono: Hono) {
         }
         throw new HTTPException(404, { res: new Response("访问不存在的资源地址") });
       },
-      root: rootDirRelative,
+      root: rooDir,
     }),
   );
 }
