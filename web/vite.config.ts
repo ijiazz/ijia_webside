@@ -11,12 +11,7 @@ export default {
   root: import.meta.dirname,
   server: {
     proxy: {
-      "/api/": {
-        target: origin,
-        rewrite: (path) => path.replace(/^\/api\//, "/"),
-        secure: false,
-        changeOrigin: true,
-      },
+      "/api/": { target: origin, secure: false, changeOrigin: true },
       "/file/": { target: origin, secure: false, changeOrigin: true },
     },
   },

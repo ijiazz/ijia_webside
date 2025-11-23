@@ -1,4 +1,4 @@
-import { ENV, appConfig, constWatcher, RunMode } from "@/config.ts";
+import { ENV, appConfig, constWatcher } from "@/config.ts";
 import { createHonoApp } from "./modules/serve.ts";
 import { dbPool } from "@ijia/data/dbclient";
 import { listenUseDenoHttpServer, listenUseNodeHttpServer, ListenOption, AppServer } from "@/hono/listen.ts";
@@ -9,7 +9,7 @@ async function bootstrap() {
   console.log(`Server listen: ${ENV.LISTEN_ADDR}:${ENV.LISTEN_PORT}`);
   console.log(`Mode: ${ENV.MODE}`);
 
-  const hono = createHonoApp({ static: true });
+  const hono = createHonoApp();
   const listenOption: ListenOption = {
     hostname: ENV.LISTEN_ADDR,
     port: ENV.LISTEN_PORT,
