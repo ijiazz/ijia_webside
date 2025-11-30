@@ -1,4 +1,4 @@
-import { CreateCommentItemData, GetPostCommentListParam } from "@/modules/post/comment.dto.ts";
+import { CreateCommentItemData, GetPostCommentListParam } from "@/routers/post/comment/-api.ts";
 import {
   DbPostComment,
   post,
@@ -9,7 +9,7 @@ import {
 } from "@ijia/data/db";
 import { Api, JWT_TOKEN_KEY } from "test/fixtures/hono.ts";
 import { preparePost } from "./prepare_post.ts";
-import { createComment } from "@/modules/post/sql/post_comment.ts";
+import { createComment } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import { dbPool } from "@ijia/data/dbclient";

@@ -27,3 +27,30 @@ export interface GetListOption {
 export type TextStructureExternalLink = TextStructure & {
   link: string;
 };
+
+export type { TextStructure } from "@ijia/data/db";
+
+export enum Platform {
+  /** 抖音 */
+  douYin = "douyin",
+  /** bilibili */
+  bilibili = "bilibili",
+  /** 小红书 */
+  xiaoHongShu = "xiaohonshu",
+  /** 微博 */
+  weibo = "weibo",
+  /** 5Sing 音乐 */
+  v5sing = "v5sing",
+  /** 网易云音乐 */
+  wangYiMusic = "wangyiyun",
+  qqMusic = "qqmusic",
+}
+export enum TextStructureType {
+  unknown = -1,
+  /** 外部链接 */
+  link = 0,
+  /** 平台用户 */
+  user = 1,
+  /** 话题 */
+  topic = 2,
+}

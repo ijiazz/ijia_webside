@@ -1,4 +1,4 @@
-import { GetPostCommentListParam } from "./comment.dto.ts";
+import { GetPostCommentListParam } from "../../routers/post/comment/_dto.ts";
 import { PostReviewItemDto, CommitReviewParam, CommitReviewResultDto } from "./PostReview.dto.ts";
 
 export interface PostReviewApi {

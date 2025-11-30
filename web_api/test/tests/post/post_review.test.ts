@@ -5,7 +5,6 @@ import { applyController } from "@asla/hono-decorator";
 import {
   postReviewController,
   postController,
-  commentController,
   PostReviewTarget,
   CommitReviewParam,
   CommitReviewResultDto,
@@ -33,11 +32,12 @@ import {
 } from "./utils/prepare_comment.ts";
 import { PostReviewType, user_profile } from "@ijia/data/db";
 import { select } from "@asla/yoursql";
+import commentRoutes from "@/routers/post/comment/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
-  applyController(hono, commentController);
   applyController(hono, postReviewController);
+  commentRoutes.apply(hono);
 });
 test("只有超级管理员可以查看审核和提交审核", async function ({ api, ijiaDbPool }) {
   const Bob = await prepareUniqueUser("Bob");

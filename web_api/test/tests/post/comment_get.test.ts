@@ -1,4 +1,4 @@
-import { commentController, PostCommentDto, postController } from "@/modules/post/mod.ts";
+import { PostCommentDto, postController } from "@/modules/post/mod.ts";
 import { applyController } from "@asla/hono-decorator";
 import { beforeEach, describe, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
@@ -8,10 +8,11 @@ import { post } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
 import { prepareUniqueUser } from "../..//fixtures/user.ts";
 import { update } from "@asla/yoursql";
+import commentRoutes from "@/routers/post/comment/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   applyController(hono, postController);
-  applyController(hono, commentController);
+  commentRoutes.apply(hono);
 });
 
 test("分页获取根评论列表", async function ({ api, publicDbPool }) {
