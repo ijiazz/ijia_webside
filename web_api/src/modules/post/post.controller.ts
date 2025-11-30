@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Patch, Post, Put, ToArguments, Use } from "@asla/hono-decorator";
 import { autoBody } from "@/global/pipe.ts";
-import { identity } from "@/global/auth.ts";
+import { identity } from "@/middleware/auth.ts";
 import {
   CreatePostParam,
   GetPostListParam,

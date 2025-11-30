@@ -1,6 +1,6 @@
 import { Controller, Get, Post, ToArguments, Use } from "@asla/hono-decorator";
 import { autoBody } from "@/global/pipe.ts";
-import { identity, Role, Roles } from "@/global/auth.ts";
+import { identity, Role, Roles } from "@/middleware/auth.ts";
 import { CommitReviewParam, PostReviewItemDto, CommitReviewResultDto, PostReviewType } from "./PostReview.dto.ts";
 import { commitReview, getReview } from "./sql/post_review.ts";
 import { HonoContext } from "@/hono/type.ts";

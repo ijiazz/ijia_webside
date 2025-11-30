@@ -13,7 +13,7 @@ import {
   imageCaptchaReplyChecker,
 } from "../captcha/mod.ts";
 import { checkValueAsync, emailChecker } from "@/global/check.ts";
-import { identity, UserInfo } from "@/global/auth.ts";
+import { identity, UserInfo } from "@/middleware/auth.ts";
 import { HonoContext } from "@/hono/type.ts";
 import { signSysJWT, parseSysJWT } from "@/global/jwt.ts";
 import { sendAccountAuthEmailCaptcha, sendChangeEmailCaptcha } from "./services/send_email_captcha.ts";

@@ -13,7 +13,7 @@ import {
   PostItemDto,
 } from "@/modules/post/mod.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
-import { Role } from "@/global/auth.ts";
+import { Role } from "@/middleware/auth.ts";
 import {
   createPost,
   getPostReviewStatus,

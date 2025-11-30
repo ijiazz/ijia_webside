@@ -1,4 +1,4 @@
-import { UserInfo } from "@/global/auth.ts";
+import { UserInfo } from "@/middleware/auth.ts";
 import { Context } from "hono";
 
 type HonoVariables = {

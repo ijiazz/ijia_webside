@@ -1,4 +1,4 @@
-import { Role } from "@/global/auth.ts";
+import { Role } from "@/middleware/auth.ts";
 import { signAccessToken } from "@/global/jwt.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
 import { v } from "@/sql/utils.ts";

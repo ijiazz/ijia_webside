@@ -4,7 +4,7 @@ import { Hono } from "hono";
 import { ENV } from "@/config.ts";
 import path from "node:path";
 import { HTTPException } from "hono/http-exception";
-import { UserInfo } from "@/global/auth.ts";
+import { UserInfo } from "@/middleware/auth.ts";
 import { getCookie } from "hono/cookie";
 import { getBucket, createFileStream } from "@ijia/data/oss";
 import fs from "node:fs/promises";

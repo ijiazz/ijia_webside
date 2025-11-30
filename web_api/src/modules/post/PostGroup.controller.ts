@@ -1,6 +1,6 @@
 import { Controller, Get, Use } from "@asla/hono-decorator";
 import { autoBody } from "@/global/pipe.ts";
-import { identity } from "@/global/auth.ts";
+import { identity } from "@/middleware/auth.ts";
 import { post_group } from "@ijia/data/db";
 import { PostGroupItem, PostGroupResponse } from "./post.dto.ts";
 import { select } from "@asla/yoursql";

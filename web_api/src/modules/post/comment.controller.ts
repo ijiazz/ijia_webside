@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Post, Put, ToArguments, Use } from "@asla/hono-decorator";
 import { autoBody } from "@/global/pipe.ts";
-import { identity } from "@/global/auth.ts";
+import { identity } from "@/middleware/auth.ts";
 import { CreatePostCommentResponse, CreatePostCommentParam, GetPostCommentListParam } from "./comment.dto.ts";
 import { HonoContext } from "@/hono/type.ts";
 import { checkValue, checkValueAsync, optionalInt, queryInt } from "@/global/check.ts";

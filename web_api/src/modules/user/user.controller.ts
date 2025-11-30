@@ -24,7 +24,7 @@ import { Controller, Delete, Get, Patch, PipeInput, Post, ToArguments, Use } fro
 import { HonoContext } from "@/hono/type.ts";
 import { checkValue, checkValueAsync, date } from "@/global/check.ts";
 import { autoBody } from "@/global/pipe.ts";
-import { identity } from "@/global/auth.ts";
+import { identity } from "@/middleware/auth.ts";
 import { HttpError } from "@/global/errors.ts";
 import { getCheckerServer, getUerSecIdFromShareUrl, PlatformUserBasicInfoCheckResult } from "@/services/douyin.ts";
 import {

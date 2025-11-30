@@ -8,7 +8,7 @@ import {
 import { HTTPException } from "hono/http-exception";
 import { getCookie, setCookie } from "hono/cookie";
 import { UserInfo } from "./userInfo.ts";
-import { RequiredLoginError } from "../errors.ts";
+import { RequiredLoginError } from "@/global/errors.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 
 async function checkRoles(userInfo: UserInfo, requiredAnyRoles: Set<string>) {

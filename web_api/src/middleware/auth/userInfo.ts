@@ -1,8 +1,8 @@
 import { verifyAccessToken, AccessTokenData, refreshAccessToken, SignInfo, SignResult } from "@/global/jwt.ts";
 import { user, user_role_bind } from "@ijia/data/db";
-import { HttpError, RequiredLoginError } from "../errors.ts";
+import { HttpError, RequiredLoginError } from "@/global/errors.ts";
 import { getValidUserSampleInfoByUserId, SampleUserInfo } from "@/sql/user.ts";
-import { setTimeoutUnRef } from "../utils.ts";
+import { setTimeoutUnRef } from "@/global/utils.ts";
 import { v } from "@/sql/utils.ts";
 import { select, SqlStatement } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
