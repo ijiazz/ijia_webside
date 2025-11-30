@@ -1,14 +1,10 @@
 import { TextStructure } from "@ijia/data/db";
-import { CursorListDto, ListDto } from "../dto_common.ts";
-import { AssetMediaDto, AssetMediaUploadFile } from "./common.dto.ts";
+import { CursorListDto } from "../../../dto/dto_common.ts";
+import { AssetMediaUploadFile } from "../../../dto/media.dto.ts";
+import { PostGroupInfo } from "./post_group.ts";
+import { PostItemBase, PostUserInfo } from "./common.ts";
 
 export type PostResponse = CursorListDto<PostItemDto, string> & { needLogin?: boolean };
-export type PostAssetType = {
-  hasText: boolean;
-  hasImage: boolean;
-  hasAudio: boolean;
-  hasVideo: boolean;
-};
 
 export type GetPostListParam = {
   number?: number;
@@ -54,26 +50,6 @@ export type UpdatePostConfigParam = {
   comment_disabled?: boolean;
 };
 
-export type PostGroupItem = {
-  group_id: number;
-  group_name: string;
-  group_desc?: string;
-  rule_desc?: string;
-};
-export type PostGroupResponse = ListDto<PostGroupItem>;
-
-export type PostItemBase = {
-  /** 作品类型 */
-  type: PostAssetType;
-  content_text: string | null;
-  content_text_structure: TextStructure[] | null;
-  publish_time?: string | null;
-  update_time?: string | null;
-  create_time?: string | null;
-  ip_location: string | null;
-  media: (AssetMediaDto | undefined)[];
-};
-
 export type PostItemDto = PostItemBase & {
   post_id: number;
   /** 作者信息 */
@@ -108,15 +84,3 @@ export type PostItemDto = PostItemBase & {
     comment_disabled?: boolean;
   };
 };
-
-export type PostUserInfo = {
-  user_name: string;
-  user_id: string;
-  avatar_url: string;
-  home_page?: string;
-};
-export type PostGroupInfo = {
-  group_id: string;
-  group_name: string;
-};
-export type { TextStructure };

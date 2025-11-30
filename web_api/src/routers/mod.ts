@@ -6,7 +6,7 @@ export default routeGroup.create({
   routePath: "",
   async validateInput(ctx) { 
   },
-  async handler({ commentId, userId }) { 
+  async handler( ) { 
   },
 });
  */

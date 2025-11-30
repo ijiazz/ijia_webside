@@ -1,17 +1,14 @@
-import { Controller, Get, Use } from "@asla/hono-decorator";
-import { autoBody } from "@/global/pipe.ts";
-import { identity } from "@/middleware/auth.ts";
 import { post_group } from "@ijia/data/db";
-import { PostGroupItem, PostGroupResponse } from "./post.dto.ts";
 import { select } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
+import routeGroup from "../_route.ts";
+import { PostGroupItem } from "../-api.ts";
 
-@Use(identity)
-@autoBody
-@Controller({})
-class PostGroupController {
-  @Get("/post/group/list")
-  async getGroupList(): Promise<PostGroupResponse> {
+export default routeGroup.create({
+  method: "GET",
+  routePath: "/post/group/list",
+  async validateInput(ctx) {},
+  async handler() {
     const list = await select({ group_desc: "description", group_id: "id", group_name: "name" })
       .from(post_group.name)
       .orderBy("public_sort ASC")
@@ -26,6 +23,5 @@ class PostGroupController {
     }
 
     return { items: list as any, total: list.length };
-  }
-}
-export const postGroupController = new PostGroupController();
+  },
+});

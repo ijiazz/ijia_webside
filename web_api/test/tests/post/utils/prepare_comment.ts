@@ -1,4 +1,4 @@
-import { CreateCommentItemData, GetPostCommentListParam } from "@/routers/post/comment/-api.ts";
+import { CreateCommentItemData, GetPostCommentListParam } from "@/routers/post/comment/mod.ts";
 import {
   DbPostComment,
   post,

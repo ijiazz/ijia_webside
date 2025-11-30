@@ -1,16 +1,13 @@
 import { beforeEach, expect } from "vitest";
 import { Api, Context, JWT_TOKEN_KEY, test } from "../../fixtures/hono.ts";
-import { applyController } from "@asla/hono-decorator";
 
-import {
-  postReviewController,
-  postController,
+import postRoutes, {
   PostReviewTarget,
   CommitReviewParam,
   CommitReviewResultDto,
   PostCommentReviewTarget,
   PostItemDto,
-} from "@/modules/post/mod.ts";
+} from "@/routers/post/mod.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import { Role } from "@/middleware/auth.ts";
 import {
@@ -22,7 +19,7 @@ import {
   testGetPost,
   testGetSelfPost,
 } from "./utils/prepare_post.ts";
-import { setPostCommentToReviewing, setPostToReviewing } from "@/modules/post/sql/report.ts";
+import { setPostCommentToReviewing, setPostToReviewing } from "@/routers/post/-sql/report.sql.ts";
 import {
   CommentReviewStatus,
   getCommentReviewStatus,
@@ -35,8 +32,8 @@ import { select } from "@asla/yoursql";
 import commentRoutes from "@/routers/post/comment/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
-  applyController(hono, postReviewController);
+  postRoutes.apply(hono);
+
   commentRoutes.apply(hono);
 });
 test("只有超级管理员可以查看审核和提交审核", async function ({ api, ijiaDbPool }) {

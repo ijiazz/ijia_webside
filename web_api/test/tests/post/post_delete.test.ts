@@ -1,12 +1,10 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { applyController } from "@asla/hono-decorator";
-
-import { postController } from "@/modules/post/mod.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { preparePost, deletePost, getUserStatFromDb, UserStat, setPostLike, createPost } from "./utils/prepare_post.ts";
+import postRoutes from "@/routers/post/mod.ts";
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
+  postRoutes.apply(hono);
 });
 
 test("帖子删除后不能再获取", async function ({ api, publicDbPool }) {

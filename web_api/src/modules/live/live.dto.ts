@@ -1,4 +1,4 @@
-import { InfiniteListDto, ListDto, Platform } from "../dto_common.ts";
+import { InfiniteListDto, ListDto, Platform } from "../../dto/dto_common.ts";
 
 export type UserAvatarDto = {
   avatar_url: string;

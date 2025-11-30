@@ -1,5 +1,3 @@
-import { postController } from "@/modules/post/post.controller.ts";
-import { applyController } from "@asla/hono-decorator";
 import { test, Context } from "../../fixtures/hono.ts";
 import { beforeEach, describe, expect } from "vitest";
 import { getCommentDbRow, getPostCommentTotal, prepareCommentPost } from "./utils/prepare_comment.ts";
@@ -7,9 +5,10 @@ import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { DbPostComment } from "@ijia/data/db";
 import { recursiveDeleteComment } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 import commentRoutes from "@/routers/post/comment/mod.ts";
+import postRoutes from "@/routers/post/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
+  postRoutes.apply(hono);
   commentRoutes.apply(hono);
 });
 

@@ -1,4 +1,4 @@
-import { GetListOption } from "../dto_common.ts";
+import { GetListOption } from "../../dto/dto_common.ts";
 import { ScreenAvatarRes, HomePageRes, GetBulletChatListRes, GetBulletChatParam } from "./live.dto.ts";
 
 export interface LiveApi {

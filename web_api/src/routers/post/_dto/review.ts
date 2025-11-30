@@ -1,5 +1,5 @@
-import { PostCommentDto } from "../../routers/post/comment/_dto.ts";
-import { PostItemDto } from "./post.dto.ts";
+import { PostCommentDto } from "../comment/_dto.ts";
+import { PostItemDto } from "./post.ts";
 
 export enum PostReviewType {
   post = "post",

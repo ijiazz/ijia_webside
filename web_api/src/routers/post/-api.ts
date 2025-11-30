@@ -1,12 +1,19 @@
-import { GetPlatformPostListParam, PlatformPostResponse } from "./platform_post.dto.ts";
+import { GetPlatformPostListParam, PlatformPostResponse } from "./_dto/platform_post.dto.ts";
 import {
+  CommitReviewParam,
+  CommitReviewResultDto,
   CreatePostParam,
   GetPostListParam,
-  PostGroupResponse,
   PostResponse,
+  PostReviewItemDto,
   UpdatePostConfigParam,
   UpdatePostContentParam,
-} from "./post.dto.ts";
+  PostGroupResponse,
+} from "./_dto/mod.ts";
+import { GetPostCommentListParam } from "./comment/_dto.ts";
+import { PostCommentApi } from "./comment/-api.ts";
+
+export * from "./_dto/mod.ts";
 
 export interface PostApi {
   /** 获取平台帖子列表 */
@@ -15,11 +22,15 @@ export interface PostApi {
     query?: GetPlatformPostListParam;
   };
 }
+
 export interface PostApi {
   /** 获取作品分组 */
   "GET /post/group/list": {
     response: PostGroupResponse;
   };
+}
+
+export interface PostApi {
   /** 获取作品列表 */
   "GET /post/list": {
     response: PostResponse;
@@ -60,3 +71,18 @@ export interface PostApi {
     };
   };
 }
+export interface PostApi {
+  /** 获取帖子审核列表 */
+  "GET /post/review/next": {
+    response: PostReviewItemDto;
+    query?: GetPostCommentListParam;
+  };
+  /** 获取帖子审核列表 */
+  "POST /post/review/entity/:reviewId/commit": {
+    response: CommitReviewResultDto;
+    params: { reviewId: string | number };
+    body: CommitReviewParam;
+  };
+}
+
+export interface PostApi extends PostCommentApi {}

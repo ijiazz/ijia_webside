@@ -1,15 +1,13 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { applyController } from "@asla/hono-decorator";
 import { post } from "@ijia/data/db";
 
-import { postController } from "@/modules/post/mod.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
-import { PostItemDto, PostUserInfo } from "@/api.ts";
 import { createPost, preparePost, testGetPost, testGetSelfPost } from "./utils/prepare_post.ts";
+import postRoutes, { PostItemDto, PostUserInfo } from "@/routers/post/mod.ts";
 import { update } from "@asla/yoursql";
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
+  postRoutes.apply(hono);
 });
 
 test("匿名帖子只有自己能看到用户信息", async function ({ api, publicDbPool }) {

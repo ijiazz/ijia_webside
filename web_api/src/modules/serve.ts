@@ -8,11 +8,10 @@ import { passportController } from "./passport/mod.ts";
 import accountController from "./passport/account.controller.ts";
 import { classController } from "./class/mod.ts";
 import { imageCaptchaController } from "./captcha/mod.ts";
-import { postController, platformPostController, postGroupController, postReviewController } from "./post/mod.ts";
 import { liveController } from "./live/live.controller.ts";
 import { appController } from "./app/app.controller.ts";
 
-import { commentRoutes } from "@/routers/mod.ts";
+import { commentRoutes, postRoutes } from "@/routers/mod.ts";
 
 export function createHonoApp() {
   const hono = createHono({ static: true });
@@ -24,14 +23,10 @@ export function createHonoApp() {
   applyController(hono, userController, options);
   applyController(hono, classController, options);
 
-  applyController(hono, platformPostController, options);
-  applyController(hono, postGroupController, options);
-  applyController(hono, postController, options);
-  applyController(hono, postReviewController, options);
-
   applyController(hono, liveController, options);
   applyController(hono, appController, options);
 
+  postRoutes.apply(hono, options);
   commentRoutes.apply(hono, options);
   return hono;
 }

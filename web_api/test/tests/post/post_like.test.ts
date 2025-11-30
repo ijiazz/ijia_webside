@@ -1,9 +1,7 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
-import { applyController } from "@asla/hono-decorator";
 
-import { postController } from "@/modules/post/mod.ts";
 import {
   cancelPostLike,
   deletePost,
@@ -19,12 +17,13 @@ import {
 } from "./utils/prepare_post.ts";
 import { post, PostReviewType } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
-import { getReviewTarget } from "@/modules/post/sql/post_review.ts";
+import { getReviewTarget } from "@/routers/post/review/-sql/post_review.sql.ts";
 import { select, update } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
+import postRoutes from "@/routers/post/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
+  postRoutes.apply(hono);
 });
 test("自己作品点赞：点赞后返回的帖子信息包含点赞状态，取消点赞后点赞状态为false", async function ({
   api,

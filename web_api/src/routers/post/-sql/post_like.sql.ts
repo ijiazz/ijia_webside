@@ -1,6 +1,6 @@
 import { post, post_comment, post_comment_like, post_like, user_profile } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
-import { DEFAULT_LIKE_WEIGHT } from "./const.ts";
+import { DEFAULT_LIKE_WEIGHT } from "../-utils/const.ts";
 import { deleteFrom, insertInto, select, withAs } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 

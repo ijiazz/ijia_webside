@@ -1,6 +1,6 @@
 import { checkValue, queryInt } from "@/global/check.ts";
 import routeGroup from "../_route.ts";
-import { reportComment } from "@/modules/post/sql/report.ts";
+import { reportComment } from "../../-sql/report.sql.ts";
 
 export default routeGroup.create({
   method: "POST",

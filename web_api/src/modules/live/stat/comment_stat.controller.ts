@@ -1,6 +1,6 @@
 import { Controller, Get, PipeInput } from "@asla/hono-decorator";
 import { checkValue } from "@/global/check.ts";
-import { GetListOption } from "@/modules/dto_common.ts";
+import { GetListOption } from "@/dto/dto_common.ts";
 import { optionalPositiveInt } from "@/global/check.ts";
 import { getCommentCount } from "../sql/comment_stat.ts";
 

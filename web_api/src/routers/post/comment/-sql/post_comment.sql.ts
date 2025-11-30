@@ -9,7 +9,7 @@ import {
 } from "../_dto.ts";
 import { HttpError } from "@/global/errors.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
-import { parserTimestampCursor, toTimestampCursor } from "@/modules/post/sql/_util.ts";
+import { parserTimestampCursor, toTimestampCursor } from "../../-utils/_util.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
 

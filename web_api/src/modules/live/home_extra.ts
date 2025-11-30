@@ -1,4 +1,4 @@
-import { Platform } from "../dto_common.ts";
+import { Platform } from "../../dto/dto_common.ts";
 import { GodPlatformDto } from "./live.dto.ts";
 
 export const list: GodPlatformDto[] = [

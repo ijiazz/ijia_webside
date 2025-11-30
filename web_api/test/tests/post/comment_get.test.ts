@@ -1,5 +1,3 @@
-import { PostCommentDto, postController } from "@/modules/post/mod.ts";
-import { applyController } from "@asla/hono-decorator";
 import { beforeEach, describe, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 import { prepareCommentPost, prepareCommentToDb } from "./utils/prepare_comment.ts";
@@ -8,10 +6,11 @@ import { post } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
 import { prepareUniqueUser } from "../..//fixtures/user.ts";
 import { update } from "@asla/yoursql";
-import commentRoutes from "@/routers/post/comment/mod.ts";
+import commentRoutes, { PostCommentDto } from "@/routers/post/comment/mod.ts";
+import postRoutes from "@/routers/post/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
+  postRoutes.apply(hono);
   commentRoutes.apply(hono);
 });
 

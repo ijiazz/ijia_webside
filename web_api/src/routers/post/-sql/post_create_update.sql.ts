@@ -1,12 +1,11 @@
 import { post, post_review_info, TextStructure, user_profile } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
-import { CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "../post.dto.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
-import { textStructChecker } from "../transform/text_struct.ts";
+import { textStructChecker } from "../-utils/text_struct.ts";
 import { HttpError } from "@/global/errors.ts";
-import { PostReviewType } from "../PostReview.dto.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
+import { PostReviewType, CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "../_dto/mod.ts";
 
 export async function createPost(userId: number, param: CreatePostParam): Promise<{ id: number }> {
   param.content_text_structure = checkTypeCopy(param.content_text_structure, optional(textStructChecker));

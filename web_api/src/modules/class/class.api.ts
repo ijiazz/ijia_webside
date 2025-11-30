@@ -1,4 +1,4 @@
-import { ListDto } from "../dto_common.ts";
+import { ListDto } from "../../dto/dto_common.ts";
 import { ClassOption } from "./class.dto.ts";
 
 export interface ClassApi {

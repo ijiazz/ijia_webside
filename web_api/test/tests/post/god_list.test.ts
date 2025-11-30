@@ -1,15 +1,15 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, JWT_TOKEN_KEY, Api } from "../../fixtures/hono.ts";
-import { applyController } from "@asla/hono-decorator";
 import { watching_pla_user, pla_user, USER_LEVEL, Platform, DbPlaUserCreate } from "@ijia/data/db";
 
-import { platformPostController } from "@/modules/post/mod.ts";
 import { insertPosts } from "../../__mocks__/posts.ts";
 import { signAccessToken } from "@/global/jwt.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 import { dbPool } from "@ijia/data/dbclient";
+import godListRoute from "@/routers/post/god_list.get.ts";
+
 beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
-  applyController(hono, platformPostController);
+  godListRoute.apply(hono);
 });
 const getPosts = (api: Api, option: { number: number; offset: number; token?: string }) => {
   return api["/post/god_list"].get({

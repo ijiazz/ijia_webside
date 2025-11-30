@@ -1,4 +1,4 @@
-import { Platform } from "../dto_common.ts";
+import { Platform } from "../../dto/dto_common.ts";
 
 export type UserBasicDto = {
   user_id: number;

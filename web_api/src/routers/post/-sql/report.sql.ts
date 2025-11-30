@@ -8,7 +8,7 @@ import {
   user_profile,
 } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
-import { DEFAULT_REPORT_WEIGHT, REPORT_THRESHOLD } from "./const.ts";
+import { DEFAULT_REPORT_WEIGHT, REPORT_THRESHOLD } from "../-utils/const.ts";
 import { HttpError } from "@/global/errors.ts";
 import { v } from "@/sql/utils.ts";
 import { insertInto, select, update } from "@asla/yoursql";
