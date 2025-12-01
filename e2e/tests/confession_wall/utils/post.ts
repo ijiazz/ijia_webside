@@ -1,5 +1,5 @@
 import { api, JWT_TOKEN_KEY } from "@/__mocks__/fetch.ts";
-import { CreatePostParam } from "@api/api.ts";
+import { CreatePostParam } from "@api/dto.ts";
 import { post_group } from "@ijia/data/db";
 import { getAppUrlFromRoute } from "@/fixtures/test.ts";
 import { dbPool } from "@ijia/data/dbclient";
