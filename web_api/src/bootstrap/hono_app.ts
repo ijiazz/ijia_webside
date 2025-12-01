@@ -1,10 +1,10 @@
 import { Hono } from "hono";
-import { addServeStatic } from "../hono/serve_static.ts";
+import { addServeStatic } from "./serve_static.ts";
 import { RouteApplyOption } from "@/lib/route.ts";
 import { errorHandler } from "../global/http_error.ts";
 
-import passportRoutes from "./passport/mod.ts";
-import liveRoutes from "./live/mod.ts";
+import passportRoutes from "../routers/passport/mod.ts";
+import liveRoutes from "../routers/live/mod.ts";
 
 import { commentRoutes, postRoutes, appRoutes, captchaRoutes, classRoutes } from "@/routers/mod.ts";
 import userRoutes from "@/routers/user/mod.ts";

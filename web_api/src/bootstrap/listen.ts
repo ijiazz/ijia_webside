@@ -11,7 +11,16 @@ export type AppServer = {
   close(force?: boolean): Promise<void>;
 };
 
-export function listenUseNodeHttpServer(hono: Hono, option: ListenOption): Promise<AppServer> {
+export function listenHttpServer(hono: Hono, listenOption: ListenOption) {
+  //@ts-ignore
+  if (globalThis.Deno) {
+    return listenUseDenoHttpServer(hono, listenOption);
+  } else {
+    return listenUseNodeHttpServer(hono, listenOption);
+  }
+}
+
+function listenUseNodeHttpServer(hono: Hono, option: ListenOption): Promise<AppServer> {
   const { https: httpsOptions } = option;
   let server: ServerType;
   if (httpsOptions) {
@@ -43,7 +52,7 @@ export function listenUseNodeHttpServer(hono: Hono, option: ListenOption): Promi
     server.once("error", reject);
   });
 }
-export function listenUseDenoHttpServer(hono: Hono, option: ListenOption): Promise<AppServer> {
+function listenUseDenoHttpServer(hono: Hono, option: ListenOption): Promise<AppServer> {
   return new Promise<AppServer>(function (resolve, reject) {
     const { https: httpsOptions = { key: undefined, cert: undefined } } = option;
     //@ts-ignore

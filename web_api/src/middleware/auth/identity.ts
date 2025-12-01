@@ -1,4 +1,4 @@
-import { HonoContext } from "@/hono/type.ts";
+import { HonoContext } from "@/global/context.ts";
 import { HTTPException } from "hono/http-exception";
 import { getCookie, setCookie } from "hono/cookie";
 import { UserInfo } from "./userInfo.ts";

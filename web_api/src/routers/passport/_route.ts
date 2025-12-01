@@ -1,5 +1,5 @@
 import { signAccessToken } from "@/global/jwt.ts";
-import { HonoContext } from "@/hono/type.ts";
+import { HonoContext } from "@/global/context.ts";
 import { RouteGroup } from "@/lib/route.ts";
 
 const routeGroup = new RouteGroup<HonoContext>();

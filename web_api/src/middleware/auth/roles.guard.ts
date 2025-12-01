@@ -1,4 +1,4 @@
-import { HonoContext } from "@/hono/type.ts";
+import { HonoContext } from "@/global/context.ts";
 import {
   getEndpointContext,
   createMetadataDecoratorFactory,

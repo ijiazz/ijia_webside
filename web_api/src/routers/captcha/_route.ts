@@ -1,4 +1,4 @@
-import { HonoContext } from "@/hono/type.ts";
+import { HonoContext } from "@/global/context.ts";
 import { RouteGroup } from "@/lib/route.ts";
 import { ImageCaptchaController } from "./-utils/captcha.controller.ts";
 
