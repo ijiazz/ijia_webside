@@ -2,7 +2,7 @@ import { post_group } from "@ijia/data/db";
 import { select } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
 import routeGroup from "../_route.ts";
-import { PostGroupItem } from "../-api.ts";
+import { PostGroupItem } from "@/dto/post.ts";
 
 export default routeGroup.create({
   method: "GET",

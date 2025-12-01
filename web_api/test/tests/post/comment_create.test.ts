@@ -8,8 +8,9 @@ import { DeepPartial } from "./utils/comment.ts";
 import { getUserCanCreateCommentLimit } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 import { afterTime } from "evlib";
 import { update } from "@asla/yoursql";
-import commentRoutes, { PostCommentDto } from "@/routers/post/comment/mod.ts";
+import commentRoutes from "@/routers/post/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
+import { PostCommentDto } from "@/dto/post_comment.ts";
 /* 
   本测试文件使用了公共数据库 publicDbPool
 */

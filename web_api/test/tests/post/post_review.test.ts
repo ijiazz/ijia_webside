@@ -1,13 +1,14 @@
 import { beforeEach, expect } from "vitest";
 import { Api, Context, JWT_TOKEN_KEY, test } from "../../fixtures/hono.ts";
 
-import postRoutes, {
+import postRoutes from "@/routers/post/mod.ts";
+import {
   PostReviewTarget,
   CommitReviewParam,
   CommitReviewResultDto,
   PostCommentReviewTarget,
   PostItemDto,
-} from "@/routers/post/mod.ts";
+} from "@/dto/post.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import { Role } from "@/middleware/auth.ts";
 import {

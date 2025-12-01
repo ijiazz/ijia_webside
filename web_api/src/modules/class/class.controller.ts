@@ -1,6 +1,6 @@
 import { Get } from "@asla/hono-decorator";
 import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
-import { ListDto } from "../../dto/dto_common.ts";
+import { ListDto } from "@/dto/common.ts";
 import { autoBody } from "@/global/pipe.ts";
 import { select } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";

@@ -1,5 +1,4 @@
 export { default } from "./_route.ts";
-export * from "./-api.ts";
 
 import "./.put.ts";
 import "./list.get.ts";

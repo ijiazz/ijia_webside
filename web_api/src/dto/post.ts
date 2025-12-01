@@ -1,4 +1,6 @@
-import { GetPlatformPostListParam, PlatformPostResponse } from "./_dto/platform_post.dto.ts";
+export * from "./post/_dto/mod.ts";
+
+import { GetPlatformPostListParam, PlatformPostResponse } from "./post/_dto/platform_post.dto.ts";
 import {
   CommitReviewParam,
   CommitReviewResultDto,
@@ -9,11 +11,8 @@ import {
   UpdatePostConfigParam,
   UpdatePostContentParam,
   PostGroupResponse,
-} from "./_dto/mod.ts";
-import { GetPostCommentListParam } from "./comment/_dto.ts";
-import { PostCommentApi } from "./comment/-api.ts";
-
-export * from "./_dto/mod.ts";
+} from "./post/_dto/mod.ts";
+import { GetPostCommentListParam, PostCommentApi } from "./post_comment.ts";
 
 export interface PostApi {
   /** 获取平台帖子列表 */

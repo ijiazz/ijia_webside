@@ -1,7 +1,7 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
 import { user, user_blacklist } from "@ijia/data/db";
-import { LoginType, passportController, UserLoginParamDto } from "@/modules/passport/mod.ts";
+import { passportController } from "@/modules/passport/mod.ts";
 import { applyController } from "@asla/hono-decorator";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
@@ -10,6 +10,7 @@ import { getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
+import { LoginType, UserLoginParamDto } from "@/dto/passport.ts";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
 

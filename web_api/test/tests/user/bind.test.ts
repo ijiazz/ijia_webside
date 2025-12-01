@@ -9,7 +9,7 @@ import {
   user_class_bind,
   user_platform_bind,
 } from "@ijia/data/db";
-import { BindPlatformParam, userController } from "@/modules/user/mod.ts";
+import { userController } from "@/modules/user/mod.ts";
 import { applyController } from "@asla/hono-decorator";
 import { bindPlatformAccount } from "@/modules/user/user.service.ts";
 
@@ -19,6 +19,7 @@ import { getUserClassId } from "./util.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { select, update } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
+import { BindPlatformParam } from "@/dto/user.ts";
 
 let AliceId: number;
 let AliceToken: string;

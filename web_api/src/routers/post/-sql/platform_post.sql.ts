@@ -13,9 +13,9 @@ import {
   AssetMediaType,
 } from "@ijia/data/db";
 import { createSearch, jsonb_build_object } from "@/global/sql_util.ts";
-import { GetListOption } from "@/dto/dto_common.ts";
-import { PostAssetType, PostUserInfo, PlatformPostItemDto } from "../-api.ts";
-import { AssetMediaDto, MulFormat, AssetImage } from "@/dto/media.dto.ts";
+import { GetListOption } from "@/dto/common.ts";
+import { PostAssetType, PostUserInfo, PlatformPostItemDto } from "@/dto/post.ts";
+import { AssetMediaDto, MulFormat, AssetImage } from "@/dto/media.ts";
 import { assetMediaToDto } from "../-utils/media.ts";
 import { getPostContentType } from "./sql_tool.ts";
 import { select } from "@asla/yoursql";

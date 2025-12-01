@@ -7,7 +7,8 @@ import { createPostGroup, testGetPost } from "./utils/prepare_post.ts";
 import { createPost } from "./utils/prepare_post.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
-import postRoutes, { PostItemDto } from "@/routers/post/mod.ts";
+import postRoutes from "@/routers/post/mod.ts";
+import { PostItemDto } from "@/dto/post.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);

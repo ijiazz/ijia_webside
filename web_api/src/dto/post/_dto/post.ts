@@ -1,6 +1,6 @@
 import { TextStructure } from "@ijia/data/db";
-import { CursorListDto } from "../../../dto/dto_common.ts";
-import { AssetMediaUploadFile } from "../../../dto/media.dto.ts";
+import { CursorListDto } from "../../common.ts";
+import { AssetMediaUploadFile } from "../../media.ts";
 import { PostGroupInfo } from "./post_group.ts";
 import { PostItemBase, PostUserInfo } from "./common.ts";
 

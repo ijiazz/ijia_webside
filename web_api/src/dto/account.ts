@@ -1,4 +1,4 @@
-import { EmailCaptchaReply, ImageCaptchaReply } from "../captcha/captcha.dto.ts";
+import { EmailCaptchaReply, ImageCaptchaReply } from "./captcha.ts";
 
 export type GetAccountAuthTokenParam = {
   emailCaptcha: EmailCaptchaReply;

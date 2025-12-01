@@ -1,7 +1,7 @@
-import { GetListOption } from "@/api.ts";
+import { GetListOption } from "@/dto/common.ts";
 import { pla_user, user, user_platform_bind } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
-import { UserAvatarDto } from "../live.dto.ts";
+import { UserAvatarDto } from "../../../dto/live.ts";
 import { select } from "@asla/yoursql";
 
 /** 获取所有用户的头像 */

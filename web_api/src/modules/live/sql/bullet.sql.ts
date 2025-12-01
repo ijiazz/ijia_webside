@@ -1,5 +1,5 @@
 import { post, user } from "@ijia/data/db";
-import { BulletChat } from "../live.dto.ts";
+import { BulletChat } from "../../../dto/live.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";

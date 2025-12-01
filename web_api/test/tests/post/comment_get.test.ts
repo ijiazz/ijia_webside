@@ -6,8 +6,9 @@ import { post } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
 import { prepareUniqueUser } from "../..//fixtures/user.ts";
 import { update } from "@asla/yoursql";
-import commentRoutes, { PostCommentDto } from "@/routers/post/comment/mod.ts";
+import commentRoutes from "@/routers/post/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
+import { PostCommentDto } from "@/dto/post_comment.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);

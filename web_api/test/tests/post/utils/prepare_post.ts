@@ -7,7 +7,7 @@ import {
   UpdatePostConfigParam,
   UpdatePostContentParam,
   PostReviewInfo,
-} from "@/routers/post/mod.ts";
+} from "@/dto/post.ts";
 import { dbPool, DbPool } from "@ijia/data/dbclient";
 import { prepareUniqueUser } from "../../../fixtures/user.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";

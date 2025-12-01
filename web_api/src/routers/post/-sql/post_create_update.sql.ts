@@ -5,7 +5,7 @@ import { textStructChecker } from "../-utils/text_struct.ts";
 import { HttpError } from "@/global/errors.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
-import { PostReviewType, CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "../_dto/mod.ts";
+import { PostReviewType, CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "@/dto/post.ts";
 
 export async function createPost(userId: number, param: CreatePostParam): Promise<{ id: number }> {
   param.content_text_structure = checkTypeCopy(param.content_text_structure, optional(textStructChecker));

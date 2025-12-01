@@ -1,4 +1,4 @@
-import { ImageCaptchaQuestion, ImageCaptchaReply } from "./captcha.dto.ts";
+import { ImageCaptchaQuestion, ImageCaptchaReply } from "@/dto/captcha.ts";
 import { captcha_picture, DbCaptchaPicture } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
 import { PipeInput, PipeOutput, Get, Post } from "@asla/hono-decorator";

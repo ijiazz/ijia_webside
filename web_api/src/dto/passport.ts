@@ -1,20 +1,22 @@
-import { EmailCaptchaQuestion } from "../captcha/captcha.dto.ts";
+export * from "./passport/dto.ts";
+
+import type { EmailCaptchaQuestion } from "./captcha.ts";
 import {
   AccountAuthenticateToken,
+  AccountSendEmailCaptchaParam,
   ChangeEmailParam,
   GetAccountAuthTokenParam,
-  AccountSendEmailCaptchaParam,
-} from "./account.dto.ts";
-import type {
+} from "./account.ts";
+import {
+  ChangePasswordParam,
   CreateUserProfileParam,
   CreateUserProfileResult,
+  PassportConfig,
+  RequestSendEmailCaptchaParam,
+  ResetPasswordParam,
   UserLoginParamDto,
   UserLoginResultDto,
-  RequestSendEmailCaptchaParam,
-  ChangePasswordParam,
-  PassportConfig,
-  ResetPasswordParam,
-} from "./passport.dto.ts";
+} from "./passport/dto.ts";
 
 export interface PassportApi {
   /** 获取登录相关的配置 */

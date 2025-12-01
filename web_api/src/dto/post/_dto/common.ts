@@ -1,5 +1,5 @@
 import { TextStructure } from "@ijia/data/db";
-import { AssetMediaDto } from "../../../dto/media.dto.ts";
+import { AssetMediaDto } from "../../media.ts";
 
 export type { TextStructure };
 export type PostAssetType = {

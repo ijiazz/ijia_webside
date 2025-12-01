@@ -4,8 +4,9 @@ import { post } from "@ijia/data/db";
 
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { createPost, preparePost, testGetPost, testGetSelfPost } from "./utils/prepare_post.ts";
-import postRoutes, { PostItemDto, PostUserInfo } from "@/routers/post/mod.ts";
+import postRoutes from "@/routers/post/mod.ts";
 import { update } from "@asla/yoursql";
+import { PostItemDto, PostUserInfo } from "@/dto/post.ts";
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);
 });

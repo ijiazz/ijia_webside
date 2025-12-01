@@ -3,9 +3,10 @@ import {
   RequestSendEmailCaptchaParam,
   ResetPasswordParam,
   UserLoginResultDto,
-  type CreateUserProfileParam,
-  type CreateUserProfileResult,
-} from "./passport.dto.ts";
+  CreateUserProfileParam,
+  CreateUserProfileResult,
+  PassportConfig,
+} from "@/dto/passport.ts";
 import { optional, array, integer } from "@asla/wokao";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { setCookie } from "hono/cookie";
@@ -16,14 +17,12 @@ import {
   imageCaptchaController,
   emailCaptchaService,
   emailCaptchaReplyChecker,
-  EmailCaptchaQuestion,
   EmailCaptchaType,
 } from "../captcha/mod.ts";
 import { autoBody } from "@/global/pipe.ts";
 import { Context } from "hono";
 import { appConfig } from "@/config.ts";
 import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/errors.ts";
-import { PassportConfig } from "./passport.dto.ts";
 import { sendResetPassportCaptcha, sendSignUpEmailCaptcha } from "./services/send_email_captcha.ts";
 import { signAccessToken } from "@/global/jwt.ts";
 import { user } from "@ijia/data/db";
@@ -33,6 +32,7 @@ import { resetAccountPassword } from "./sql/account.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import { dbPool } from "@ijia/data/dbclient";
+import { EmailCaptchaQuestion } from "@/dto/captcha.ts";
 
 @autoBody
 @Controller({})

@@ -1,6 +1,6 @@
 import { autoBody } from "@/global/pipe.ts";
 import { Controller, Get, PipeInput, PipeOutput } from "@asla/hono-decorator";
-import { ScreenAvatarRes, HomePageRes, GodPlatformDto, GetBulletChatListRes, GetBulletChatParam } from "./live.dto.ts";
+import { ScreenAvatarRes, HomePageRes, GodPlatformDto, GetBulletChatListRes, GetBulletChatParam } from "../../dto/live.ts";
 import { optionalPositiveInt, checkValue, optionalInt } from "@/global/check.ts";
 import { genScreenAvatar } from "./sql/avatar.ts";
 import { pla_user } from "@ijia/data/db";

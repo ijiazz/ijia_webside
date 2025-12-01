@@ -1,15 +1,12 @@
 import { autoBody } from "@/global/pipe.ts";
 import { Controller, Post, ToArguments, Use } from "@asla/hono-decorator";
-import { RequestSendEmailCaptchaParam } from "./passport.dto.ts";
+import { RequestSendEmailCaptchaParam } from "@/dto/passport.ts";
 import { HttpCaptchaError, HttpError } from "@/global/errors.ts";
 import {
-  EmailCaptchaQuestion,
-  EmailCaptchaReply,
   emailCaptchaReplyChecker,
   emailCaptchaService,
   EmailCaptchaType,
   imageCaptchaController,
-  ImageCaptchaReply,
   imageCaptchaReplyChecker,
 } from "../captcha/mod.ts";
 import { checkValueAsync, emailChecker } from "@/global/check.ts";
@@ -17,10 +14,11 @@ import { identity, UserInfo } from "@/middleware/auth.ts";
 import { HonoContext } from "@/hono/type.ts";
 import { signSysJWT, parseSysJWT } from "@/global/jwt.ts";
 import { sendAccountAuthEmailCaptcha, sendChangeEmailCaptcha } from "./services/send_email_captcha.ts";
-import { AccountAuthenticateToken, ChangeEmailParam, GetAccountAuthTokenParam } from "./account.dto.ts";
+import { AccountAuthenticateToken, ChangeEmailParam, GetAccountAuthTokenParam } from "@/dto/account.ts";
 import { optional } from "@asla/wokao";
 import { hashPasswordFrontEnd } from "./services/password.ts";
 import { changeAccountEmail, changeAccountPassword } from "./sql/account.ts";
+import { EmailCaptchaQuestion, EmailCaptchaReply, ImageCaptchaReply } from "@/dto/captcha.ts";
 
 @Use(identity)
 @autoBody

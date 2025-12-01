@@ -1,11 +1,12 @@
 import { user } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
-import { emailCaptchaService, CaptchaEmail, EmailCaptchaQuestion, EmailCaptchaType } from "../../captcha/mod.ts";
+import { emailCaptchaService, CaptchaEmail, EmailCaptchaType } from "../../captcha/mod.ts";
 import { createEmailCodeHtmlContent } from "../template/sigup-email-code.ts";
 import { appConfig } from "@/config.ts";
 import { HttpError } from "@/global/errors.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
+import { EmailCaptchaQuestion } from "@/dto/captcha.ts";
 
 export async function sendSignUpEmailCaptcha(email: string): Promise<EmailCaptchaQuestion> {
   const exists = await select({ email: true })

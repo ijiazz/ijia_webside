@@ -1,6 +1,6 @@
 import { expect, beforeEach, describe } from "vitest";
 import { test, Context, Api, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { LoginType, passportController } from "@/modules/passport/mod.ts";
+import { passportController } from "@/modules/passport/mod.ts";
 import accountController from "@/modules/passport/account.controller.ts";
 import { applyController } from "@asla/hono-decorator";
 import { emailCaptchaService } from "@/modules/captcha/mod.ts";
@@ -12,6 +12,7 @@ import { createUser } from "@/modules/passport/sql/signup.ts";
 import { user } from "@ijia/data/db";
 import { getUniqueEmail, getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
 import { update } from "@asla/yoursql";
+import { LoginType } from "@/dto/passport.ts";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   await initCaptcha();

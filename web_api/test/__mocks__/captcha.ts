@@ -1,4 +1,4 @@
-import { ImageCaptchaReply } from "@/api.ts";
+import { ImageCaptchaReply } from "@/dto/captcha.ts";
 import { imageCaptchaController } from "@/modules/captcha/captcha.controller.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 import { captcha_picture, DbCaptchaPictureCreate } from "@ijia/data/db";

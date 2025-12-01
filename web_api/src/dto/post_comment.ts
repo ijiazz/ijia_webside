@@ -1,10 +1,11 @@
+export * from "./post_comment/dto.ts";
+
 import {
   CreatePostCommentParam,
+  CreatePostCommentResponse,
   GetPostCommentListParam,
   PostCommentResponse,
-  CreatePostCommentResponse,
-} from "./_dto.ts";
-export * from "./_dto.ts";
+} from "./post_comment/dto.ts";
 
 export interface PostCommentApi {
   /** 发布评论 */

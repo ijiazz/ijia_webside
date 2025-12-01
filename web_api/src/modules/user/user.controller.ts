@@ -18,7 +18,7 @@ import {
   UpdateUserProfileParam,
   UserBasicDto,
   UserInfoDto,
-} from "./user.dto.ts";
+} from "@/dto/user.ts";
 import { array, enumType, optional, stringMatch } from "@asla/wokao";
 import { Controller, Delete, Get, Patch, PipeInput, Post, ToArguments, Use } from "@asla/hono-decorator";
 import { HonoContext } from "@/hono/type.ts";

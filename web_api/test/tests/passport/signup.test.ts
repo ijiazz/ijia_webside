@@ -1,7 +1,7 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
 import { user } from "@ijia/data/db";
-import { CreateUserProfileParam, passportController } from "@/modules/passport/mod.ts";
+import { passportController } from "@/modules/passport/mod.ts";
 import { applyController } from "@asla/hono-decorator";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
@@ -11,6 +11,7 @@ import { emailCaptchaService } from "@/modules/captcha/mod.ts";
 import { getUniqueEmail, getUniqueName } from "test/fixtures/user.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { select } from "@asla/yoursql";
+import { CreateUserProfileParam } from "@/dto/passport.ts";
 
 const AlicePassword = "123";
 

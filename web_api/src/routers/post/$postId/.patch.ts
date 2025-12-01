@@ -3,7 +3,7 @@ import { CheckTypeError, getBasicType, integer, optional, TypeCheckFn } from "@a
 import { HttpError } from "@/global/errors.ts";
 
 import routeGroup from "../_route.ts";
-import { UpdatePostConfigParam, UpdatePostContentParam } from "../-api.ts";
+import { UpdatePostConfigParam, UpdatePostContentParam } from "@/dto/post.ts";
 import { updatePostConfig, updatePostContent } from "../-sql/post_create_update.sql.ts";
 
 export default routeGroup.create({

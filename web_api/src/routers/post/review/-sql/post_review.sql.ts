@@ -1,5 +1,5 @@
 import { post, post_comment, post_group, post_review_info } from "@ijia/data/db";
-import { PostReviewType, PostReviewDto, PostReviewTarget, PostCommentReviewTarget } from "../../-api.ts";
+import { PostReviewType, PostReviewDto, PostReviewTarget, PostCommentReviewTarget } from "@/dto/post.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { getPostContentType } from "../../-sql/sql_tool.ts";
 import { dbPool } from "@ijia/data/dbclient";

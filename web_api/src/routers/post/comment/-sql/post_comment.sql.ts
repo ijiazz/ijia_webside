@@ -6,7 +6,7 @@ import {
   GetPostCommentListParam,
   PostCommentDto,
   PostCommentResponse,
-} from "../_dto.ts";
+} from "@/dto/post_comment.ts";
 import { HttpError } from "@/global/errors.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { parserTimestampCursor, toTimestampCursor } from "../../-utils/_util.ts";

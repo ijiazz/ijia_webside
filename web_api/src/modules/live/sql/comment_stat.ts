@@ -1,6 +1,6 @@
 import { pla_comment, pla_user } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
-import { GetListOption } from "@/dto/dto_common.ts";
+import { GetListOption } from "@/dto/common.ts";
 import { CommentStatByCount } from "../comment.api.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";

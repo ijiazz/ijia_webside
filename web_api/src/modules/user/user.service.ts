@@ -9,7 +9,7 @@ import {
   Platform,
 } from "@ijia/data/db";
 import { dbPool, ExecutableSql } from "@ijia/data/dbclient";
-import { UserBasicDto, UserInfoDto } from "./user.dto.ts";
+import { UserBasicDto, UserInfoDto } from "@/dto/user.ts";
 import { HttpError } from "@/global/errors.ts";
 import { deleteFrom, insertInto, select } from "@asla/yoursql";
 import { insertIntoValues, v } from "@/sql/utils.ts";

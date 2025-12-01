@@ -1,4 +1,19 @@
-import { InfiniteListDto, ListDto, Platform } from "../../dto/dto_common.ts";
+import { GetListOption, InfiniteListDto, ListDto, Platform } from "./common.ts";
+
+export interface LiveApi {
+  "GET /live/screen/avatar": {
+    response: ScreenAvatarRes;
+    query?: GetListOption;
+  };
+  "GET /live/screen/home": {
+    response: HomePageRes;
+  };
+
+  "GET /live/screen/bullet-chart": {
+    response: GetBulletChatListRes;
+    query?: GetBulletChatParam;
+  };
+}
 
 export type UserAvatarDto = {
   avatar_url: string;
