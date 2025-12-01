@@ -1,5 +1,5 @@
 import { HttpError } from "@/global/errors.ts";
-import { hashPasswordBackEnd } from "../services/password.ts";
+import { hashPasswordBackEnd } from "../-services/password.ts";
 import { createUser as getCreateUserSql } from "@ijia/data/query";
 import { initEmail } from "@/global/check.ts";
 

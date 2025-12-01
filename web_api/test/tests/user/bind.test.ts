@@ -14,7 +14,7 @@ import { applyController } from "@asla/hono-decorator";
 import { bindPlatformAccount } from "@/routers/user/mod.ts";
 
 import { signAccessToken } from "@/global/jwt.ts";
-import { createUser } from "@/modules/passport/sql/signup.ts";
+import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { getUserClassId } from "./util.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { select, update } from "@asla/yoursql";

@@ -1,4 +1,4 @@
-import { createHono } from "@/modules/serve.ts";
+import { createHono } from "@/routers/serve.ts";
 import { Hono } from "hono";
 import { test as viTest, DbContext } from "./db_connect.ts";
 import { HoFetch, createFetchSuite, InferFetchSuite, HoFetchStatusError } from "@asla/hofetch";

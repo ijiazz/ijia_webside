@@ -1,7 +1,7 @@
 import { user } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
 import { HttpError } from "@/global/errors.ts";
-import { hashPasswordBackEnd } from "../services/password.ts";
+import { hashPasswordBackEnd } from "../-services/password.ts";
 import { select, update } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 

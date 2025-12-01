@@ -1,12 +1,11 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
 import { user } from "@ijia/data/db";
-import { passportController } from "@/modules/passport/mod.ts";
-import { applyController } from "@asla/hono-decorator";
+import passportRoutes from "@/routers/passport/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
-import { createUser } from "@/modules/passport/sql/signup.ts";
-import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
+import { createUser } from "@/routers/passport/-sql/signup.ts";
+import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
 import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { getUniqueEmail, getUniqueName } from "test/fixtures/user.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
@@ -17,7 +16,7 @@ const AlicePassword = "123";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   await initCaptcha();
-  applyController(hono, passportController);
+  passportRoutes.apply(hono);
 });
 
 test("注册用户", async function ({ api, publicDbPool }) {

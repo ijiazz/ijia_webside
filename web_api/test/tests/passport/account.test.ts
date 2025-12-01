@@ -1,14 +1,12 @@
 import { expect, beforeEach, describe } from "vitest";
 import { test, Context, Api, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { passportController } from "@/modules/passport/mod.ts";
-import accountController from "@/modules/passport/account.controller.ts";
-import { applyController } from "@asla/hono-decorator";
+import passportRoutes from "@/routers/passport/mod.ts";
 import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
-import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
+import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
-import { createUser } from "@/modules/passport/sql/signup.ts";
+import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { user } from "@ijia/data/db";
 import { getUniqueEmail, getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
 import { update } from "@asla/yoursql";
@@ -16,8 +14,7 @@ import { LoginType } from "@/dto/passport.ts";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   await initCaptcha();
-  applyController(hono, passportController);
-  applyController(hono, accountController);
+  passportRoutes.apply(hono);
 });
 
 describe("获取账号authToken", function () {

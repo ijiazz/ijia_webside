@@ -1,6 +1,6 @@
+import { HonoContext } from "@/hono/type.ts";
 import { RouteGroup } from "@/lib/route.ts";
-import { setUserInfo } from "@/middleware/auth.ts";
 
-const routeGroup = new RouteGroup({ middlewares: [setUserInfo] });
+const routeGroup = new RouteGroup<HonoContext>();
 
 export default routeGroup;

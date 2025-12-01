@@ -1,14 +1,13 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context } from "../fixtures/hono.ts";
-import { imageCaptchaController } from "@/routers/captcha/mod.ts";
-import { applyController } from "@asla/hono-decorator";
+import captchaRoutes, { imageCaptchaController } from "@/routers/captcha/mod.ts";
 import { captcha_picture } from "@ijia/data/db";
 import { initCaptcha } from "../__mocks__/captcha.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 
 beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
-  applyController(hono, imageCaptchaController);
+  captchaRoutes.apply(hono);
   await initCaptcha();
 });
 
