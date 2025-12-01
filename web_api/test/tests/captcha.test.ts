@@ -1,6 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context } from "../fixtures/hono.ts";
-import { imageCaptchaController } from "@/modules/captcha/mod.ts";
+import { imageCaptchaController } from "@/routers/captcha/mod.ts";
 import { applyController } from "@asla/hono-decorator";
 import { captcha_picture } from "@ijia/data/db";
 import { initCaptcha } from "../__mocks__/captcha.ts";

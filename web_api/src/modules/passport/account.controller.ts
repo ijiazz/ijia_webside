@@ -8,7 +8,7 @@ import {
   EmailCaptchaType,
   imageCaptchaController,
   imageCaptchaReplyChecker,
-} from "../captcha/mod.ts";
+} from "../../routers/captcha/mod.ts";
 import { checkValueAsync, emailChecker } from "@/global/check.ts";
 import { identity, UserInfo } from "@/middleware/auth.ts";
 import { HonoContext } from "@/hono/type.ts";

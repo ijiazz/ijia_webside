@@ -1,6 +1,6 @@
 import { user } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
-import { emailCaptchaService, CaptchaEmail, EmailCaptchaType } from "../../captcha/mod.ts";
+import { emailCaptchaService, CaptchaEmail, EmailCaptchaType } from "../../../routers/captcha/mod.ts";
 import { createEmailCodeHtmlContent } from "../template/sigup-email-code.ts";
 import { appConfig } from "@/config.ts";
 import { HttpError } from "@/global/errors.ts";

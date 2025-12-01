@@ -1,10 +1,8 @@
 import { ImageCaptchaQuestion, ImageCaptchaReply } from "@/dto/captcha.ts";
 import { captcha_picture, DbCaptchaPicture } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
-import { PipeInput, PipeOutput, Get, Post } from "@asla/hono-decorator";
 import { HTTPException } from "hono/http-exception";
 import { SessionManager } from "./_SessionManage.ts";
-import { autoBody } from "@/global/pipe.ts";
 import { getOSS, getBucket } from "@ijia/data/oss";
 import { contentType } from "@std/media-types";
 import path from "node:path";
@@ -13,8 +11,7 @@ import { select, update } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 const BUCKET = getBucket();
 
-@autoBody
-class ImageCaptchaController {
+export class ImageCaptchaController {
   constructor() {
     if (ENV.MODE === RunMode.E2E) {
       console.log("E2E测试模式，验证码总是选择前 3 个图片");
@@ -99,8 +96,6 @@ class ImageCaptchaController {
     };
   }
 
-  @PipeInput((ctx) => ctx.req.query("sessionId"))
-  @Post("/captcha/image")
   async createSession(sessionId?: string): Promise<ImageCaptchaQuestion> {
     const data = await this.imageCreateSessionData();
     sessionId = await this.imageCaptcha.set(data, { sessionId });
@@ -174,14 +169,6 @@ class ImageCaptchaController {
     return !!pass;
   }
 
-  @PipeInput(function (ctx) {
-    return ctx.req.param("filepath");
-  })
-  @PipeOutput(function ({ stream, mime }, ctx) {
-    ctx.header("Content-Type", mime);
-    return ctx.body(stream, 200);
-  })
-  @Get("/captcha/image/:filepath")
   async getCaptchaImageStream(imageUri: string) {
     const imageId = await this.imageUrlToId(imageUri).catch(() => null);
     if (!imageId) throw new HTTPException(404);
@@ -195,8 +182,6 @@ class ImageCaptchaController {
     }
   }
 }
-export const imageCaptchaController = new ImageCaptchaController();
-
 type ImageCaptchaSession = {
   answers: (boolean | null)[];
   allIdList: string[];

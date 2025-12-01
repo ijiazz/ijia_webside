@@ -18,7 +18,7 @@ import {
   emailCaptchaService,
   emailCaptchaReplyChecker,
   EmailCaptchaType,
-} from "../captcha/mod.ts";
+} from "../../routers/captcha/mod.ts";
 import { autoBody } from "@/global/pipe.ts";
 import { Context } from "hono";
 import { appConfig } from "@/config.ts";

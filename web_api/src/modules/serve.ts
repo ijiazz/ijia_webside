@@ -7,11 +7,10 @@ import { userController } from "./user/mod.ts";
 import { passportController } from "./passport/mod.ts";
 import accountController from "./passport/account.controller.ts";
 import { classController } from "./class/mod.ts";
-import { imageCaptchaController } from "./captcha/mod.ts";
+import { imageCaptchaController } from "../routers/captcha/mod.ts";
 import { liveController } from "./live/live.controller.ts";
-import { appController } from "./app/app.controller.ts";
 
-import { commentRoutes, postRoutes } from "@/routers/mod.ts";
+import { commentRoutes, postRoutes, appRoutes } from "@/routers/mod.ts";
 
 export function createHonoApp() {
   const hono = createHono({ static: true });
@@ -24,10 +23,11 @@ export function createHonoApp() {
   applyController(hono, classController, options);
 
   applyController(hono, liveController, options);
-  applyController(hono, appController, options);
 
   postRoutes.apply(hono, options);
   commentRoutes.apply(hono, options);
+  appRoutes.apply(hono, options);
+
   return hono;
 }
 

@@ -7,7 +7,7 @@ import { applyController } from "@asla/hono-decorator";
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
 import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
-import { emailCaptchaService } from "@/modules/captcha/mod.ts";
+import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { getUniqueEmail, getUniqueName } from "test/fixtures/user.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { select } from "@asla/yoursql";

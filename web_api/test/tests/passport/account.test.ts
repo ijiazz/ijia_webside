@@ -3,7 +3,7 @@ import { test, Context, Api, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
 import { passportController } from "@/modules/passport/mod.ts";
 import accountController from "@/modules/passport/account.controller.ts";
 import { applyController } from "@asla/hono-decorator";
-import { emailCaptchaService } from "@/modules/captcha/mod.ts";
+import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
