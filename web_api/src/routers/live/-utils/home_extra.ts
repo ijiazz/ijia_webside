@@ -1,5 +1,5 @@
 import { Platform } from "@/dto/common.ts";
-import { GodPlatformDto } from "../../dto/live.ts";
+import { GodPlatformDto } from "../../../dto/live.ts";
 
 export const list: GodPlatformDto[] = [
   {

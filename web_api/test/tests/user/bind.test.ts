@@ -9,9 +9,9 @@ import {
   user_class_bind,
   user_platform_bind,
 } from "@ijia/data/db";
-import { userController } from "@/modules/user/mod.ts";
+import userRoutes from "@/routers/user/mod.ts";
 import { applyController } from "@asla/hono-decorator";
-import { bindPlatformAccount } from "@/modules/user/user.service.ts";
+import { bindPlatformAccount } from "@/routers/user/mod.ts";
 
 import { signAccessToken } from "@/global/jwt.ts";
 import { createUser } from "@/modules/passport/sql/signup.ts";
@@ -44,8 +44,7 @@ beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
   ])
     .client(ijiaDbPool)
     .query();
-
-  applyController(hono, userController);
+  userRoutes.apply(hono);
 });
 
 test("绑定检查", async function ({ api }) {

@@ -3,14 +3,13 @@ import { addServeStatic } from "../hono/serve_static.ts";
 import { applyController, ApplyControllerOption } from "@asla/hono-decorator";
 import { errorHandler } from "../global/http_error.ts";
 
-import { userController } from "./user/mod.ts";
 import { passportController } from "./passport/mod.ts";
 import accountController from "./passport/account.controller.ts";
-import { classController } from "./class/mod.ts";
 import { imageCaptchaController } from "../routers/captcha/mod.ts";
-import { liveController } from "./live/live.controller.ts";
+import liveRoutes from "../routers/live/mod.ts";
 
-import { commentRoutes, postRoutes, appRoutes } from "@/routers/mod.ts";
+import { commentRoutes, postRoutes, appRoutes, captchaRoutes, classRoutes } from "@/routers/mod.ts";
+import userRoutes from "@/routers/user/mod.ts";
 
 export function createHonoApp() {
   const hono = createHono({ static: true });
@@ -19,14 +18,14 @@ export function createHonoApp() {
   applyController(hono, accountController, options);
 
   applyController(hono, imageCaptchaController, options);
-  applyController(hono, userController, options);
-  applyController(hono, classController, options);
-
-  applyController(hono, liveController, options);
 
   postRoutes.apply(hono, options);
   commentRoutes.apply(hono, options);
   appRoutes.apply(hono, options);
+  captchaRoutes.apply(hono, options);
+  classRoutes.apply(hono, options);
+  userRoutes.apply(hono, options);
+  liveRoutes.apply(hono, options);
 
   return hono;
 }
