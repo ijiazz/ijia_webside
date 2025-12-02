@@ -1,5 +1,6 @@
-export { default, imageCaptchaController } from "./_route.ts";
-export * from "./-utils/Email.service.ts";
+export { default } from "./_route.ts";
+export * from "./-service/Email.service.ts";
+export * from "./-service/ImageCaptcha.service.ts";
 export * from "./-utils/check.ts";
 
 export * from "./image/$filepath.get.ts";

@@ -4,7 +4,7 @@ import { optional, integer } from "@asla/wokao";
 import { hashPasswordFrontEnd } from "./-services/password.ts";
 import { setCookie } from "hono/cookie";
 import { checkValue, emailChecker } from "@/global/check.ts";
-import { imageCaptchaReplyChecker, imageCaptchaController } from "../captcha/mod.ts";
+import { imageCaptchaReplyChecker, imageCaptchaService } from "../captcha/mod.ts";
 import { HttpCaptchaError, HttpError } from "@/global/errors.ts";
 import { accountLoginByEmail, accountLoginById, updateLastLoginTime } from "./-sql/login.ts";
 
@@ -19,7 +19,7 @@ export default routeGroup.create({
       let pass: boolean;
       if (body.captcha) {
         const captcha = checkValue(body.captcha, imageCaptchaReplyChecker());
-        pass = await imageCaptchaController.verify(captcha);
+        pass = await imageCaptchaService.verify(captcha);
       } else pass = false;
       if (!pass) throw new HttpCaptchaError();
     }

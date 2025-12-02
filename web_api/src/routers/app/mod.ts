@@ -1,2 +1,2 @@
 export { default } from "./_route.ts";
-import "./config/reload.get.ts";
+export * from "./config/reload.get.ts";

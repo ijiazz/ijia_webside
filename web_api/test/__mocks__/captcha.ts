@@ -1,5 +1,5 @@
 import { ImageCaptchaReply } from "@/dto/captcha.ts";
-import { imageCaptchaController } from "@/routers/captcha/mod.ts";
+import { imageCaptchaService } from "@/routers/captcha/mod.ts";
 import { createImageCaptchaSession } from "@/routers/captcha/mod.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 import { captcha_picture, DbCaptchaPictureCreate } from "@ijia/data/db";
@@ -22,7 +22,7 @@ export async function initCaptcha() {
 
 export async function createCaptchaSession(): Promise<ImageCaptchaReply> {
   const { imageUrlList, sessionId, survivalTime } = await createImageCaptchaSession();
-  const result = await imageCaptchaController.getAnswer(sessionId);
+  const result = await imageCaptchaService.getAnswer(sessionId);
   return {
     sessionId,
     selectedIndex: result.yes,

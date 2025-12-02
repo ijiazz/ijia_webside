@@ -1,17 +1,18 @@
 import { ImageCaptchaQuestion, ImageCaptchaReply } from "@/dto/captcha.ts";
-import { captcha_picture, DbCaptchaPicture } from "@ijia/data/db";
+import { captcha_picture } from "@ijia/data/db";
 import { dbPool } from "@ijia/data/dbclient";
 import { HTTPException } from "hono/http-exception";
-import { SessionManager } from "./_SessionManage.ts";
+import { SessionManager } from "../-utils/_SessionManage.ts";
 import { getOSS, getBucket } from "@ijia/data/oss";
 import { contentType } from "@std/media-types";
 import path from "node:path";
 import { ENV, RunMode } from "@/config.ts";
-import { select, update } from "@asla/yoursql";
+import { update } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
+import { getRandomImageCaptcha } from "../-sql/getRandomImageCaptcha.sql.ts";
 const BUCKET = getBucket();
 
-export class ImageCaptchaController {
+export class ImageCaptchaService {
   constructor() {
     if (ENV.MODE === RunMode.E2E) {
       console.log("E2E测试模式，验证码总是选择前 3 个图片");
@@ -20,21 +21,7 @@ export class ImageCaptchaController {
   readonly imageCaptcha = new SessionManager<ImageCaptchaSession>("Captcha:image", 3 * 60);
 
   private async imageCreateSessionData(): Promise<ImageCaptchaSession> {
-    const t = select({
-      id: true,
-      type: true,
-      is_true: true,
-    }).from(captcha_picture.name);
-    //TODO: 优化随机行的获取
-    //4 张确定值
-    const certain = t.where(`is_true IS NOT NULL`).orderBy("RANDOM()").limit(4);
-    //5 张不确定值
-    const equivocal = t.where(`is_true IS NULL`).orderBy("RANDOM()").limit(9); // limit 9 避免 certain 数量不足
-
-    const sql = `(${certain.toSelect()} UNION ALL ${equivocal.toSelect()}) LIMIT 9`;
-    const result = await dbPool
-      .queryRows<Pick<DbCaptchaPicture, "id" | "is_true" | "type">>(sql)
-      .then((item) => item.sort(() => Math.random() - 0.5));
+    const result = await getRandomImageCaptcha();
 
     const answer: (boolean | null)[] = new Array(result.length);
     const allIdList: string[] = new Array(result.length);
@@ -186,3 +173,5 @@ type ImageCaptchaSession = {
   answers: (boolean | null)[];
   allIdList: string[];
 };
+
+export const imageCaptchaService = new ImageCaptchaService();

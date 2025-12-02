@@ -1,6 +1,6 @@
 import routeGroup from "../_route.ts";
 import { checkValueAsync, emailChecker } from "@/global/check.ts";
-import { imageCaptchaReplyChecker, imageCaptchaController } from "@/routers/captcha/mod.ts";
+import { imageCaptchaReplyChecker, imageCaptchaService } from "@/routers/captcha/mod.ts";
 import { HttpCaptchaError, HttpError } from "@/global/errors.ts";
 import { sendResetPassportCaptcha } from "../-services/send_email_captcha.ts";
 import { user } from "@ijia/data/db";
@@ -19,7 +19,7 @@ export default routeGroup.create({
     });
   },
   async handler({ captchaReply, email }): Promise<EmailCaptchaQuestion> {
-    const pass = await imageCaptchaController.verify(captchaReply);
+    const pass = await imageCaptchaService.verify(captchaReply);
     if (!pass) throw new HttpCaptchaError();
 
     const [account] = await select<{ email: string; id: number }>({ email: true, id: true })

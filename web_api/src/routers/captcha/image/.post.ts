@@ -1,5 +1,6 @@
 import { ImageCaptchaQuestion } from "@/dto/captcha.ts";
-import routeGroup, { imageCaptchaController } from "../_route.ts";
+import routeGroup from "../_route.ts";
+import { imageCaptchaService } from "../-service/ImageCaptcha.service.ts";
 
 export default routeGroup.create({
   method: "POST",
@@ -12,5 +13,5 @@ export default routeGroup.create({
 });
 
 export async function createImageCaptchaSession(sessionId?: string): Promise<ImageCaptchaQuestion> {
-  return imageCaptchaController.createSession(sessionId);
+  return imageCaptchaService.createSession(sessionId);
 }

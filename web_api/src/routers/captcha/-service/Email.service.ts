@@ -1,5 +1,5 @@
 import { ENV, RunMode } from "@/config.ts";
-import { SessionManager } from "./_SessionManage.ts";
+import { SessionManager } from "../-utils/_SessionManage.ts";
 import { EmailCaptchaQuestion, EmailCaptchaReply } from "@/dto/captcha.ts";
 import { getEmailSender } from "@/services/email.ts";
 

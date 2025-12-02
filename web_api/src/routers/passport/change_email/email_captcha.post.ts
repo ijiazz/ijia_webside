@@ -2,7 +2,7 @@ import { HttpCaptchaError } from "@/global/errors.ts";
 import { checkValueAsync, emailChecker } from "@/global/check.ts";
 import { EmailCaptchaQuestion } from "@/dto/captcha.ts";
 import routeGroup from "../_route.ts";
-import { imageCaptchaController, imageCaptchaReplyChecker } from "@/routers/captcha/mod.ts";
+import { imageCaptchaService, imageCaptchaReplyChecker } from "@/routers/captcha/mod.ts";
 import { sendChangeEmailCaptcha } from "../-services/send_email_captcha.ts";
 
 export default routeGroup.create({
@@ -17,7 +17,7 @@ export default routeGroup.create({
     return { userId, ...body };
   },
   async handler({ captchaReply, email, userId }): Promise<EmailCaptchaQuestion> {
-    const pass = await imageCaptchaController.verify(captchaReply);
+    const pass = await imageCaptchaService.verify(captchaReply);
     if (!pass) throw new HttpCaptchaError();
     return sendChangeEmailCaptcha(email, userId);
   },
