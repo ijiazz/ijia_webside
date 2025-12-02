@@ -4,7 +4,7 @@ import routeGroup from "../_route.ts";
 import { UserInfo } from "@/middleware/auth.ts";
 import { ImageCaptchaReply } from "@/dto/captcha.ts";
 import { imageCaptchaService, imageCaptchaReplyChecker } from "@/routers/captcha/mod.ts";
-import { sendAccountAuthEmailCaptcha } from "../-services/send_email_captcha.ts";
+import { sendAccountAuthEmailCaptcha } from "../../captcha/-service/send_email_captcha.ts";
 
 export default routeGroup.create({
   method: "POST",
@@ -23,6 +23,6 @@ export default routeGroup.create({
     const pass = await imageCaptchaService.verify(captchaReply);
     if (!pass) throw new HttpCaptchaError();
     const userInfo = await user.getValidUserSampleInfo();
-    return sendAccountAuthEmailCaptcha(userInfo.email, userInfo.user_id);
+    return sendAccountAuthEmailCaptcha(userInfo.email);
   },
 });

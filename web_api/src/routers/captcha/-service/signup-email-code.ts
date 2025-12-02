@@ -1,12 +1,12 @@
 type GenOption = {
-  title: string;
+  message: string;
   code: string;
   /** 有效时间，单位秒 */
   time: number;
   appName: string;
 };
 export function createEmailCodeHtmlContent(option: GenOption) {
-  const { code, time, title, appName } = option;
+  const { code, time, message, appName } = option;
   const mit = Math.floor(time / 60);
   return ` <!doctype html>
 <html lang="zh">
@@ -18,7 +18,7 @@ export function createEmailCodeHtmlContent(option: GenOption) {
   <body style="margin:0; padding:0; background-color: #e6e6e6">
     <div style="color: #fff; background-color: rgb(49, 93, 170); padding: 18px;">
       <b style="font-size: 42px">${appName}</b>
-      <div style="line-height: 3">${title}</div>
+      <div style="line-height: 3">${message}</div>
     </div>
     <div style="display: flex; flex-direction: column; align-items: center;">
       <b style="color: rgb(36, 70, 77);  line-height: 4;">你的验证码为：</b>

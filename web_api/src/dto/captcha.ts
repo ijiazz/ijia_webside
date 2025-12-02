@@ -7,7 +7,15 @@ export interface CaptchaApi {
     };
   };
   /** 获取图像验证码文件流 */
-  "GET /captcha/image/:url": {};
+  "GET /captcha/image/:url": {
+    response: Uint8Array;
+  };
+
+  /** 发送邮箱验证码 */
+  "POST /captcha/email/send": {
+    body: SendEmailCaptchaParam;
+    response: EmailCaptchaQuestion;
+  };
 }
 
 export type CaptchaOption = {
@@ -34,3 +42,18 @@ export type EmailCaptchaQuestion = CaptchaOption & {
   sessionId: string;
 };
 export type VerificationCodeResult = {};
+
+export type SendEmailCaptchaParam = {
+  /** 人机判定回答 */
+  captchaReply: ImageCaptchaReply;
+  email: string;
+  actionType: EmailCaptchaActionType;
+};
+
+export enum EmailCaptchaActionType {
+  signup = "signup",
+  changeEmail = "changeEmail",
+  /** 更换邮箱 */
+  signAccountToken = "signAccountToken",
+  resetPassword = "resetPassword",
+}

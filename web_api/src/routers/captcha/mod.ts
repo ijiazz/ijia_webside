@@ -5,3 +5,5 @@ export * from "./-utils/check.ts";
 
 export * from "./image/$filepath.get.ts";
 export * from "./image/.post.ts";
+
+export * from "./email/send.post.ts";

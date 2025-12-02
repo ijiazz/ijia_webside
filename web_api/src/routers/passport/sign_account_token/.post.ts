@@ -1,8 +1,8 @@
 import { checkValueAsync } from "@/global/check.ts";
 import { signSysJWT } from "@/global/jwt.ts";
 import routeGroup from "../_route.ts";
-import { emailCaptchaReplyChecker, emailCaptchaService, EmailCaptchaType } from "@/routers/captcha/mod.ts";
-import { EmailCaptchaReply } from "@/dto/captcha.ts";
+import { emailCaptchaReplyChecker, emailCaptchaService } from "@/routers/captcha/mod.ts";
+import { EmailCaptchaActionType, EmailCaptchaReply } from "@/dto/captcha.ts";
 import { HttpCaptchaError } from "@/global/errors.ts";
 
 export default routeGroup.create({
@@ -24,6 +24,6 @@ export default routeGroup.create({
   },
 });
 async function verifyCaptcha(captchaReply: EmailCaptchaReply, email: string): Promise<void> {
-  const pass = await emailCaptchaService.verify(captchaReply, email, EmailCaptchaType.verifyAccountEmail);
+  const pass = await emailCaptchaService.verify(captchaReply, email, EmailCaptchaActionType.signAccountToken);
   if (!pass) throw new HttpCaptchaError();
 }

@@ -44,11 +44,6 @@ export interface PassportApi {
     response: null;
     body: ResetPasswordParam;
   };
-  /** 重置密码发送验证码 */
-  "POST /passport/reset_password/email_captcha": {
-    response: EmailCaptchaQuestion;
-    body: RequestSendEmailCaptchaParam;
-  };
 }
 export interface PassportApi {
   /** 修改密码 */

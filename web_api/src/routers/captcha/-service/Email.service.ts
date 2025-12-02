@@ -1,6 +1,6 @@
-import { ENV, RunMode } from "@/config.ts";
+import { appConfig, ENV, RunMode } from "@/config.ts";
 import { SessionManager } from "../-utils/_SessionManage.ts";
-import { EmailCaptchaQuestion, EmailCaptchaReply } from "@/dto/captcha.ts";
+import { EmailCaptchaActionType, EmailCaptchaQuestion, EmailCaptchaReply } from "@/dto/captcha.ts";
 import { getEmailSender } from "@/services/email.ts";
 
 class EmailCaptchaService {
@@ -15,7 +15,7 @@ class EmailCaptchaService {
   async #sendEmailCaptcha(config: CaptchaEmail) {
     await getEmailSender().sendEmail({
       targetEmail: config.recipient,
-      title: config.title,
+      title: `${appConfig.appName}验证码`,
       html: config.html,
       text: config.text,
     });
@@ -43,7 +43,7 @@ class EmailCaptchaService {
   async getAnswer(sessionId: string) {
     return this.session.get(sessionId);
   }
-  async verify(reply: EmailCaptchaReply, email: string, type: EmailCaptchaType): Promise<boolean> {
+  async verify(reply: EmailCaptchaReply, email: string, type: EmailCaptchaActionType): Promise<boolean> {
     const data = await this.session.get(reply.sessionId);
     if (!data) return false;
     const pass = data.code === reply.code && data.email === email && data.type === type;
@@ -52,22 +52,14 @@ class EmailCaptchaService {
   }
 }
 
-export enum EmailCaptchaType {
-  signup = "signup",
-  resetPassword = "resetPassword",
-  changeEmail = "changeEmail",
-  verifyAccountEmail = "verifyAccountEmail",
-}
-
 export const emailCaptchaService = new EmailCaptchaService();
 
 export type CaptchaEmail = {
-  type: EmailCaptchaType;
+  type: EmailCaptchaActionType;
   /** 过期时间 */
   expire: number;
   code: string;
   recipient: string;
-  title?: string;
   text?: string;
   html?: string;
 };
@@ -75,5 +67,5 @@ export type CaptchaEmail = {
 type EmailCaptchaSessionData = {
   code: string;
   email: string;
-  type: EmailCaptchaType;
+  type: EmailCaptchaActionType;
 };

@@ -1,7 +1,7 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
 import { user } from "@ijia/data/db";
-import passportRoutes from "@/routers/passport/mod.ts";
+import { captchaRoutes, passportRoutes } from "@/routers/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
@@ -10,10 +10,12 @@ import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { update } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
 import { LoginType, ResetPasswordParam } from "@/dto/passport.ts";
+import { EmailCaptchaActionType } from "@/dto/captcha.ts";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
+  captchaRoutes.apply(hono);
   passportRoutes.apply(hono);
   await initCaptcha();
 });
@@ -73,8 +75,8 @@ function commitResetPassword(api: Api, param: ResetPasswordParam) {
 }
 async function mockResetPasswordSendEmailCaptcha(api: Api, email: string) {
   const captchaReply = await createCaptchaSession();
-  const { sessionId } = await api["/passport/reset_password/email_captcha"].post({
-    body: { captchaReply, email: email },
+  const { sessionId } = await api["/captcha/email/send"].post({
+    body: { captchaReply, email: email, actionType: EmailCaptchaActionType.resetPassword },
   });
   const emailAnswer = await emailCaptchaService.getAnswer(sessionId);
 

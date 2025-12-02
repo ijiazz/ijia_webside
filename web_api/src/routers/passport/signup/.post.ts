@@ -2,12 +2,13 @@ import { CreateUserProfileParam, CreateUserProfileResult } from "@/dto/passport.
 import { optional, array } from "@asla/wokao";
 import { hashPasswordFrontEnd } from "../-services/password.ts";
 import { checkValue, emailChecker } from "@/global/check.ts";
-import { emailCaptchaService, emailCaptchaReplyChecker, EmailCaptchaType } from "@/routers/captcha/mod.ts";
+import { emailCaptchaService, emailCaptchaReplyChecker } from "@/routers/captcha/mod.ts";
 import { appConfig } from "@/config.ts";
 import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/errors.ts";
 import { createUser } from "../-sql/signup.ts";
 
 import routeGroup, { signToken } from "../_route.ts";
+import { EmailCaptchaActionType } from "@/dto/captcha.ts";
 
 export default routeGroup.create({
   method: "POST",
@@ -29,7 +30,7 @@ export default routeGroup.create({
     const verifyEmail = !appConfig.passport?.emailVerifyDisabled;
     if (verifyEmail) {
       const pass = body.emailCaptcha
-        ? await emailCaptchaService.verify(body.emailCaptcha, body.email, EmailCaptchaType.signup)
+        ? await emailCaptchaService.verify(body.emailCaptcha, body.email, EmailCaptchaActionType.signup)
         : false;
       if (!pass) throw new HttpCaptchaError();
     }

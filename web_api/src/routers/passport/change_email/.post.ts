@@ -1,9 +1,10 @@
 import { HttpCaptchaError, HttpError } from "@/global/errors.ts";
-import { emailCaptchaReplyChecker, emailCaptchaService, EmailCaptchaType } from "@/routers/captcha/mod.ts";
+import { emailCaptchaReplyChecker, emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { checkValueAsync, emailChecker } from "@/global/check.ts";
 import { changeAccountEmail } from "../-sql/account.ts";
 import routeGroup from "../_route.ts";
 import { parseSysJWT } from "@/global/jwt.ts";
+import { EmailCaptchaActionType } from "@/dto/captcha.ts";
 
 export default routeGroup.create({
   method: "POST",
@@ -20,7 +21,7 @@ export default routeGroup.create({
     return { userId: userInfo.user_id, param };
   },
   async handler({ param: body, userId }): Promise<void> {
-    const pass = await emailCaptchaService.verify(body.emailCaptcha, body.newEmail, EmailCaptchaType.changeEmail);
+    const pass = await emailCaptchaService.verify(body.emailCaptcha, body.newEmail, EmailCaptchaActionType.changeEmail);
     if (!pass) throw new HttpCaptchaError();
     await changeAccountEmail(userId, body.newEmail);
   },

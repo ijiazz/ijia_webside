@@ -10,5 +10,4 @@ export * from "./config.get.ts";
 export * from "./signup/.post.ts";
 export * from "./signup/email_captcha.post.ts";
 export * from "./login.post.ts";
-export * from "./reset_password/email_captcha.post.ts";
-export * from "./reset_password/.post.ts";
+export * from "./reset_password.post.ts";
