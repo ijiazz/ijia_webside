@@ -2,7 +2,6 @@ import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
 import { user, user_blacklist } from "@ijia/data/db";
 import passportRoutes from "@/routers/passport/mod.ts";
-import { applyController } from "@asla/hono-decorator";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";

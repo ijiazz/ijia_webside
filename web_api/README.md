@@ -1,11 +1,9 @@
 ## 说明
 
-`@asla/hono-decorator` 是封装的基于 Hono的 ECMA 装饰器库。类似 nestjs。仓库地址 https://github.com/asnowc/hono-decorator
-
-定义接口时，需要更新 `/web_api/src/modules/api.ts` 文件， 已便前端能够获得接口的类型提示与生成 API 文档\
+定义接口时，需要更新 `/web_api/src/dto` 下面的文件， 已便前端能够获得接口的类型提示与生成 API 文档\
 在 `/web_api` 目录下运行`pnpm genApiDoc` 可以生成 api 文档，输出在 `/web_api/docs/api` 目录下
 
-如果需要新增接口 Controller，需要 `/web_api/src/modules/serve.ts` 文件下注册到 hono
+如果需要新增模块，需要 `/web_api/src/bootstrap/hono_app.ts` 文件下注册到 hono
 
 ## 环境准备
 

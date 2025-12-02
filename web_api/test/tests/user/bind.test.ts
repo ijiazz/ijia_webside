@@ -10,7 +10,6 @@ import {
   user_platform_bind,
 } from "@ijia/data/db";
 import userRoutes from "@/routers/user/mod.ts";
-import { applyController } from "@asla/hono-decorator";
 import { bindPlatformAccount } from "@/routers/user/mod.ts";
 
 import { signAccessToken } from "@/global/jwt.ts";
