@@ -16,6 +16,11 @@ export interface CaptchaApi {
     body: SendEmailCaptchaParam;
     response: EmailCaptchaQuestion;
   };
+  /** 给自己发送邮箱验证码 */
+  "POST /captcha/email/send_self": {
+    body: SendSelfEmailCaptchaParam;
+    response: EmailCaptchaQuestion;
+  };
 }
 
 export type CaptchaOption = {
@@ -47,7 +52,12 @@ export type SendEmailCaptchaParam = {
   /** 人机判定回答 */
   captchaReply: ImageCaptchaReply;
   email: string;
-  actionType: EmailCaptchaActionType;
+  actionType: EmailCaptchaActionType.signup | EmailCaptchaActionType.changeEmail | EmailCaptchaActionType.resetPassword;
+};
+export type SendSelfEmailCaptchaParam = {
+  /** 人机判定回答 */
+  captchaReply: ImageCaptchaReply;
+  actionType: EmailCaptchaActionType.signAccountToken;
 };
 
 export enum EmailCaptchaActionType {

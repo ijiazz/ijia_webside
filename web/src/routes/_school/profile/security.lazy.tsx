@@ -11,6 +11,7 @@ import { useCurrentUser } from "@/common/user.ts";
 import { HoFetchStatusError } from "@asla/hofetch";
 import { CAN_HASH_PASSWORD, hashPassword } from "@/common/pwd_hash.ts";
 import { EmailInput } from "@/common/EmailInput.tsx";
+import { EmailCaptchaActionType } from "@/api.ts";
 
 export const Route = createLazyFileRoute("/_school/profile/security")({
   component: RouteComponent,
@@ -98,8 +99,12 @@ function ChangeEmailModal(props: { oldEmail?: string; open?: boolean; onClose?: 
   const step = useMemo(() => (token ? 1 : 0), [token]);
   const { run: sendNewEmailCaptcha, data: newEmailCaptcha } = useAsync(
     (email: string, sessionId: string, selected: number[]) =>
-      api["/passport/change_email/email_captcha"].post({
-        body: { email, captchaReply: { sessionId, selectedIndex: selected } },
+      api["/captcha/email/send"].post({
+        body: {
+          email,
+          captchaReply: { sessionId, selectedIndex: selected },
+          actionType: EmailCaptchaActionType.changeEmail,
+        },
       }),
   );
   const { run: changeEmail, loading } = useAsync(async (code: string, sessionId: string, newEmail: string) => {
@@ -182,8 +187,11 @@ function EmailAuthentication(props: {
 
   const { message } = useAntdStatic();
   const { run: sendEmailCaptcha, data: emailCaptcha } = useAsync(async (sessionId: string, selected: number[]) => {
-    return api["/passport/sign_account_token/email_captcha"].post({
-      body: { captchaReply: { sessionId, selectedIndex: selected } },
+    return api["/captcha/email/send_self"].post({
+      body: {
+        captchaReply: { sessionId, selectedIndex: selected },
+        actionType: EmailCaptchaActionType.signAccountToken,
+      },
     });
   });
   const { run: getAccountToken, loading: getTokenLoading } = useAsync(async (sessionId: string, code: string) => {

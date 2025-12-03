@@ -5,7 +5,6 @@ import { EmailCaptchaActionType, EmailCaptchaQuestion, SendEmailCaptchaParam } f
 import { enumType, ExpectType } from "@asla/wokao";
 import {
   checkEmailExists,
-  sendAccountAuthEmailCaptcha,
   sendChangeEmailCaptcha,
   sendResetPassportCaptcha,
   sendSignUpEmailCaptcha,
@@ -17,11 +16,10 @@ const inputSchema = {
   captchaReply: imageCaptchaReplyChecker(),
   email: emailChecker,
   actionType: enumType([
-    EmailCaptchaActionType.signAccountToken,
     EmailCaptchaActionType.changeEmail,
     EmailCaptchaActionType.signup,
     EmailCaptchaActionType.resetPassword,
-  ]), // just for type check
+  ] as const), // just for type check
 } satisfies ExpectType;
 
 export default routeGroup.create({
@@ -39,12 +37,6 @@ export default routeGroup.create({
         const userId = await checkEmailExists(email);
         if (!userId) throw new HttpError(406, "账号不存在");
         return sendResetPassportCaptcha(email);
-      }
-      case EmailCaptchaActionType.signAccountToken: {
-        //需要目标邮箱对应的账户存在
-        const userId = await checkEmailExists(email);
-        if (!userId) throw new HttpError(406, "账号不存在");
-        return sendAccountAuthEmailCaptcha(email);
       }
 
       case EmailCaptchaActionType.changeEmail: {

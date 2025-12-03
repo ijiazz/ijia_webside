@@ -5,7 +5,7 @@ import { select } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
 
 /** 从数据库获取有效用户信息 */
-export async function getValidUserSampleInfoByUserId(userId: number) {
+export async function getValidUserSampleInfoByUserId(userId: number): Promise<SampleUserInfo> {
   const [info] = await select({ user_id: "id", email: true, nickname: true, is_deleted: true })
     .from(user.name)
     .where([`id=${v(userId)}`])
@@ -17,6 +17,7 @@ export async function getValidUserSampleInfoByUserId(userId: number) {
 
   return info as SampleUserInfo;
 }
+
 export type SampleUserInfo = {
   user_id: number;
   email: string;

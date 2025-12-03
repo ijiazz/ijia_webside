@@ -1,8 +1,8 @@
 import { HttpCaptchaError, HttpError } from "@/global/errors.ts";
 import { emailCaptchaReplyChecker, emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { checkValueAsync, emailChecker } from "@/global/check.ts";
-import { changeAccountEmail } from "../-sql/account.ts";
-import routeGroup from "../_route.ts";
+import { changeAccountEmail } from "./-sql/account.ts";
+import routeGroup from "./_route.ts";
 import { parseSysJWT } from "@/global/jwt.ts";
 import { EmailCaptchaActionType } from "@/dto/captcha.ts";
 

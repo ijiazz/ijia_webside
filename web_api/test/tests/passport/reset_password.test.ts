@@ -11,6 +11,7 @@ import { update } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
 import { LoginType, ResetPasswordParam } from "@/dto/passport.ts";
 import { EmailCaptchaActionType } from "@/dto/captcha.ts";
+import { mockSendEmailCaptcha } from "./_mocks/captcha.ts";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
 
@@ -74,10 +75,8 @@ function commitResetPassword(api: Api, param: ResetPasswordParam) {
   });
 }
 async function mockResetPasswordSendEmailCaptcha(api: Api, email: string) {
-  const captchaReply = await createCaptchaSession();
-  const { sessionId } = await api["/captcha/email/send"].post({
-    body: { captchaReply, email: email, actionType: EmailCaptchaActionType.resetPassword },
-  });
+  const { sessionId } = await mockSendEmailCaptcha(api, email, EmailCaptchaActionType.resetPassword);
+
   const emailAnswer = await emailCaptchaService.getAnswer(sessionId);
 
   return { code: emailAnswer!.code, sessionId };

@@ -1,6 +1,6 @@
 import { checkValueAsync } from "@/global/check.ts";
 import { signSysJWT } from "@/global/jwt.ts";
-import routeGroup from "../_route.ts";
+import routeGroup from "./_route.ts";
 import { emailCaptchaReplyChecker, emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { EmailCaptchaActionType, EmailCaptchaReply } from "@/dto/captcha.ts";
 import { HttpCaptchaError } from "@/global/errors.ts";

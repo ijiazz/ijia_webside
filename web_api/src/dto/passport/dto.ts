@@ -45,10 +45,6 @@ export enum LoginType {
   email = "email",
 }
 
-export type RequestSendEmailCaptchaParam = {
-  captchaReply: ImageCaptchaReply;
-  email: string;
-};
 export type ChangePasswordParam = {
   newPassword: string;
   oldPassword: string;
