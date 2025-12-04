@@ -20,20 +20,26 @@ export function GodPlatform(props: GodPlatformProps) {
       </div>
       <h1 className="description">我们的大明星</h1>
       {platforms?.map((item) => {
-        const icon = item.platform ? THIRD_PART[item.platform]?.icon : undefined;
+        const platform = THIRD_PART[item.platform];
+        const icon = platform?.icon;
+        const platformName = platform?.name;
+
         const followersCount = item.stat?.followers_count ?? 0;
         const num = followerNumDetail ? followersCount : number(followersCount);
         return (
           <div key={item.platform + item.user_id}>
             <VLink to={item.home_url ?? undefined} target="_blank">
               <UserCard3D
-                title={
-                  <UserCardTitleCSS>
-                    {icon}
-                    {item.user_name}
-                  </UserCardTitleCSS>
+                title={item.user_name}
+                footer={
+                  <div style={{ display: "flex", gap: "1em" }}>
+                    <UserCardTitleCSS>
+                      {icon}
+                      {platformName}
+                    </UserCardTitleCSS>
+                    <div> {"粉丝：" + num}</div>
+                  </div>
                 }
-                footer={"粉丝：" + num}
                 avatar={item.avatar_url ? <AvatarCSS src={item.avatar_url} /> : undefined}
               ></UserCard3D>
             </VLink>

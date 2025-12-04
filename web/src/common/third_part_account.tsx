@@ -9,6 +9,7 @@ import bilibiliIco from "./third_part_platforms/bilibili.png";
 import weiboIco from "./third_part_platforms/weibo.png";
 import xiaohongshuIco from "./third_part_platforms/xiaohongshu.png";
 import qqmusicIco from "./third_part_platforms/qqmusic.png";
+import hongguoIco from "./third_part_platforms/hongguo.png";
 import { Platform } from "@/api.ts";
 
 export type ThirdPartSelectProps<T extends Platform | Platform[] = Platform | Platform[]> = Omit<
@@ -38,10 +39,10 @@ export const THIRD_PART: Record<Platform, { iconOutline?: ReactNode; icon?: Reac
   [Platform.bilibili]: {
     iconOutline: <BilibiliOutlined />,
     icon: <Icon src={bilibiliIco} />,
-    name: "Bilibili",
+    name: "bilibili",
   },
   [Platform.v5sing]: {
-    name: "5Sing音乐",
+    name: "5sing 音乐",
     icon: <Icon src={v5singIco} />,
   },
   [Platform.wangYiMusic]: {
@@ -53,8 +54,12 @@ export const THIRD_PART: Record<Platform, { iconOutline?: ReactNode; icon?: Reac
     icon: <Icon src={xiaohongshuIco} />,
   },
   [Platform.qqMusic]: {
-    name: "QQ音乐",
+    name: "QQ 音乐",
     icon: <Icon src={qqmusicIco} />,
+  },
+  [Platform.hongGuo]: {
+    name: "红果短剧",
+    icon: <Icon src={hongguoIco} style={{ borderRadius: "20%" }} />,
   },
 };
 const THIRD_PART_OPTION = Object.entries(THIRD_PART).map(([key, info]) => ({
@@ -66,6 +71,6 @@ const THIRD_PART_OPTION = Object.entries(THIRD_PART).map(([key, info]) => ({
   ),
   value: key,
 }));
-function Icon(props: { src: string }) {
-  return <img src={props.src} style={{ width: "1em", height: "1em", objectFit: "cover" }} />;
+function Icon(props: { src: string; style?: React.CSSProperties }) {
+  return <img src={props.src} style={{ width: "1em", height: "1em", objectFit: "cover", ...props.style }} />;
 }

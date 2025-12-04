@@ -29,7 +29,7 @@ const StyledWrapper = styled.div`
   perspective: 1000px;
 
   .card {
-    padding-top: 50px;
+    padding-top: 45px;
     /* border-radius: 10px; */
     border: 3px solid rgb(255, 255, 255);
     transform-style: preserve-3d;
@@ -58,7 +58,7 @@ const StyledWrapper = styled.div`
     background: rgba(4, 193, 250, 0.732);
     /* border-radius: 10px 100px 10px 10px; */
     transition: all 0.5s ease-in-out;
-    padding: 60px 25px 25px 25px;
+    padding: 50px 25px 25px 25px;
     transform-style: preserve-3d;
   }
 
@@ -92,10 +92,10 @@ const StyledWrapper = styled.div`
     cursor: pointer;
     margin-top: 1rem;
     display: inline-block;
-    text-transform: uppercase;
     color: white;
+    font-weight: 500;
     /* border-radius: 5px; */
-    padding: 0.5rem 0.7rem;
+    padding: 0.5rem 0;
     transition: all 0.5s ease-in-out;
     transform: translate3d(0px, 0px, 20px);
   }

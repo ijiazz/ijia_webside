@@ -37,6 +37,7 @@ export enum Platform {
   bilibili = "bilibili",
   /** 小红书 */
   xiaoHongShu = "xiaohonshu",
+  hongGuo = "hongGuo",
   /** 微博 */
   weibo = "weibo",
   /** 5Sing 音乐 */
