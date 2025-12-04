@@ -12,7 +12,7 @@ export const list: GodPlatformDto[] = [
   },
   {
     platform: Platform.hongGuo,
-    user_name: "佳佳子",
+    user_name: "邹佳佳",
     stat: { followers_count: 23000 },
     user_id: "",
     home_url: "https://bmlxkyy.com/s/jg4nbtj7x_k/",
