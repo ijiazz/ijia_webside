@@ -3,16 +3,31 @@ import { TextStructure } from "../post/_dto/mod.ts";
 
 export type PostCommentResponse = CursorListDto<PostCommentDto, string> & { needLogin?: boolean };
 
-export interface GetPostCommentListParam {
+export type GetPostCommentListOption = {
   number?: number;
   cursor?: string;
-  forward?: boolean; // 是否向前翻页
-  /** @deprecated */
-  commentId?: number; // 如果指定了 commentId，则仅获取该评论的信息
+  /** 是否向前翻页 */
+  forward?: boolean;
+};
 
-  //TODO
-  parentCommentId?: number; // 如果指定了 parentCommentId，则仅获取该评论的回复列表
-}
+export type GetPostCommentListByCommentIdParam = GetPostCommentListOption & {
+  /** 获取当前评论的信息 */
+  commentId: number;
+};
+export type GetPostCommentListByPostIdParam = GetPostCommentListOption & {
+  /** 获取指定作品的评论列表 */
+  postId: number;
+};
+
+export type GetPostCommentListByParentCommentIdParam = GetPostCommentListOption & {
+  /** 获取指定评论的回复列表 */
+  parentCommentId: number;
+};
+
+export type GetPostCommentListParam =
+  | GetPostCommentListByCommentIdParam
+  | GetPostCommentListByPostIdParam
+  | GetPostCommentListByParentCommentIdParam;
 
 export type PostCommentDto = {
   comment_id: number;

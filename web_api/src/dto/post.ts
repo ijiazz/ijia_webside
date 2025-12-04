@@ -12,7 +12,7 @@ import {
   UpdatePostContentParam,
   PostGroupResponse,
 } from "./post/_dto/mod.ts";
-import { GetPostCommentListParam, PostCommentApi } from "./post_comment.ts";
+import { PostCommentApi } from "./post_comment.ts";
 
 export interface PostApi extends PostCommentApi {}
 
@@ -73,7 +73,6 @@ export interface PostApi {
   /** 获取帖子审核列表 */
   "GET /post/review/next": {
     response: PostReviewItemDto;
-    query?: GetPostCommentListParam;
   };
   /** 获取帖子审核列表 */
   "POST /post/review/entity/:reviewId/commit": {

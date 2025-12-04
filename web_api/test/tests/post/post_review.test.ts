@@ -309,5 +309,5 @@ async function commitReviewNext<T>(
   }) as any;
 }
 async function getCommitList(api: Api, postId: number) {
-  return api["/post/content/:postId/comment"].get({ params: { postId: postId } });
+  return api["/post/comment/list"].get({ query: { postId: postId } });
 }

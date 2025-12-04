@@ -1,4 +1,4 @@
-import { CreateCommentItemData, GetPostCommentListParam } from "@/dto/post_comment.ts";
+import { CreateCommentItemData, GetPostCommentListOption, GetPostCommentListParam } from "@/dto/post_comment.ts";
 import {
   DbPostComment,
   post,
@@ -31,17 +31,21 @@ export class PostComment {
       [JWT_TOKEN_KEY]: option.token,
     });
   }
-  async getCommentList(option?: GetPostCommentListParam, token?: string) {
-    return this.api["/post/content/:postId/comment"].get({
-      params: { postId: this.postId },
-      query: option,
+  async getComment(commentId: number, token?: string) {
+    return this.api["/post/comment/list"].get({
+      query: { commentId },
       [JWT_TOKEN_KEY]: token,
     });
   }
-  async getReplyList(commentId: number, option?: GetPostCommentListParam, token?: string) {
-    return this.api["/post/comment/entity/:commentId/root_list"].get({
-      params: { commentId },
-      query: option,
+  async getCommentList(option?: GetPostCommentListOption, token?: string) {
+    return this.api["/post/comment/list"].get({
+      query: { ...option, postId: this.postId },
+      [JWT_TOKEN_KEY]: token,
+    });
+  }
+  async getReplyList(commentId: number, option?: GetPostCommentListOption, token?: string) {
+    return this.api["/post/comment/list"].get({
+      query: { ...option, parentCommentId: commentId },
       [JWT_TOKEN_KEY]: token,
     });
   }

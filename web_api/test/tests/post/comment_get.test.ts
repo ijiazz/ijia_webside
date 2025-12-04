@@ -136,11 +136,11 @@ test("获取指定 ID 的评论", async function ({ api, publicDbPool }) {
     textPrefix: "1-",
     replyId: g1[0],
   });
-  const rootList = await action.getCommentList({ commentId: g1[1] });
+  const rootList = await action.getComment(g1[1]);
   expect(rootList.items).toHaveLength(1);
   expect(rootList.items[0].content_text).toBe("root-1");
 
-  const replyList = await action.getReplyList(g1[0], { commentId: reply[1] });
+  const replyList = await action.getComment(reply[1]);
   expect(replyList.items).toHaveLength(1);
   expect(replyList.items[0].content_text).toBe("1-1");
 });
