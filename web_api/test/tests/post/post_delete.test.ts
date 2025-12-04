@@ -1,12 +1,10 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { applyController } from "@asla/hono-decorator";
-
-import { postController } from "@/modules/post/mod.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { preparePost, deletePost, getUserStatFromDb, UserStat, setPostLike, createPost } from "./utils/prepare_post.ts";
+import postRoutes from "@/routers/post/mod.ts";
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
+  postRoutes.apply(hono);
 });
 
 test("帖子删除后不能再获取", async function ({ api, publicDbPool }) {
@@ -16,7 +14,7 @@ test("帖子删除后不能再获取", async function ({ api, publicDbPool }) {
 
   expect(aliceList.length, "删除后，列表中不再包含该帖子").toBe(0);
 
-  const p = api["/post/content/:postId"].delete({ params: { postId: postInfo.id }, [JWT_TOKEN_KEY]: alice.token });
+  const p = api["/post/entity/:postId"].delete({ params: { postId: postInfo.id }, [JWT_TOKEN_KEY]: alice.token });
   await expect(p, "再次删除已删除的帖子，应该返回404").responseStatus(404);
 });
 test("不能删除别人的帖子", async function ({ api, publicDbPool }) {
@@ -26,7 +24,7 @@ test("不能删除别人的帖子", async function ({ api, publicDbPool }) {
   await expect(deletePost(api, postInfo.id, bob.token), "尝试删除别人的帖子，删除失败").responseStatus(404);
 
   await expect(
-    api["/post/content/:postId"].delete({ params: { postId: postInfo.id } }),
+    api["/post/entity/:postId"].delete({ params: { postId: postInfo.id } }),
     "未登录，尝试删除别人的帖子，删除失败",
   ).responseStatus(401);
 });

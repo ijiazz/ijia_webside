@@ -1,15 +1,15 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
 import { dclass, pla_user, Platform, PUBLIC_CLASS_ROOT_ID, user_class_bind, user_platform_bind } from "@ijia/data/db";
-import { UpdateUserProfileParam, userController } from "@/modules/user/mod.ts";
-import { applyController } from "@asla/hono-decorator";
+import userRoutes from "@/routers/user/mod.ts";
 
 import { getUserPublicClassId } from "./util.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
+import { UpdateUserProfileParam } from "@/dto/user.ts";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
-  applyController(hono, userController);
+  userRoutes.apply(hono);
 });
 test("获取用户信息", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");

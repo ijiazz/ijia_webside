@@ -1,5 +1,3 @@
-import { commentController, PostCommentDto, postController } from "@/modules/post/mod.ts";
-import { applyController } from "@asla/hono-decorator";
 import { beforeEach, describe, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 import { prepareCommentPost, prepareCommentToDb } from "./utils/prepare_comment.ts";
@@ -8,10 +6,13 @@ import { post } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
 import { prepareUniqueUser } from "../..//fixtures/user.ts";
 import { update } from "@asla/yoursql";
+import commentRoutes from "@/routers/post/comment/mod.ts";
+import postRoutes from "@/routers/post/mod.ts";
+import { PostCommentDto } from "@/dto/post_comment.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
-  applyController(hono, commentController);
+  postRoutes.apply(hono);
+  commentRoutes.apply(hono);
 });
 
 test("分页获取根评论列表", async function ({ api, publicDbPool }) {
@@ -135,11 +136,11 @@ test("获取指定 ID 的评论", async function ({ api, publicDbPool }) {
     textPrefix: "1-",
     replyId: g1[0],
   });
-  const rootList = await action.getCommentList({ commentId: g1[1] });
+  const rootList = await action.getComment(g1[1]);
   expect(rootList.items).toHaveLength(1);
   expect(rootList.items[0].content_text).toBe("root-1");
 
-  const replyList = await action.getReplyList(g1[0], { commentId: reply[1] });
+  const replyList = await action.getComment(reply[1]);
   expect(replyList.items).toHaveLength(1);
   expect(replyList.items[0].content_text).toBe("1-1");
 });

@@ -1,5 +1,5 @@
 import { api, JWT_TOKEN_KEY } from "@/__mocks__/fetch.ts";
-import { CreatePostParam } from "@api/api.ts";
+import { CreatePostParam } from "@api/dto.ts";
 import { post_group } from "@ijia/data/db";
 import { getAppUrlFromRoute } from "@/fixtures/test.ts";
 import { dbPool } from "@ijia/data/dbclient";
@@ -20,7 +20,7 @@ export async function createPostGroup(name: string, description?: string) {
 }
 
 export async function createPost(postParam: CreatePostParam, token: string) {
-  return api["/post/content"].put({
+  return api["/post/entity"].put({
     body: postParam,
     [JWT_TOKEN_KEY]: token,
   });
@@ -32,9 +32,8 @@ export async function createCommentUseApi(config: {
   replyCommentId?: number;
 }) {
   const { postId, text, replyCommentId, token } = config;
-  return api["/post/content/:postId/comment"].put({
-    params: { postId },
-    body: { text, replyCommentId },
+  return api["/post/comment/entity"].put({
+    body: { text, replyCommentId, postId },
     [JWT_TOKEN_KEY]: token,
   });
 }

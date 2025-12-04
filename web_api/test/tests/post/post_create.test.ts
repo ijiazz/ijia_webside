@@ -1,18 +1,17 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import { applyController } from "@asla/hono-decorator";
 import { post, post_review_info, TextStructure, TextStructureType, TextStructureUser } from "@ijia/data/db";
 
-import { postController } from "@/modules/post/mod.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
-import { PostItemDto } from "@/api.ts";
 import { createPostGroup, testGetPost } from "./utils/prepare_post.ts";
 import { createPost } from "./utils/prepare_post.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
+import postRoutes from "@/routers/post/mod.ts";
+import { PostItemDto } from "@/dto/post.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
+  postRoutes.apply(hono);
 });
 
 test("发布一条帖子", async function ({ api, publicDbPool }) {

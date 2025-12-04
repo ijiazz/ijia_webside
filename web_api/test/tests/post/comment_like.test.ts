@@ -1,7 +1,5 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import { applyController } from "@asla/hono-decorator";
-import { commentController, postController } from "@/modules/post/mod.ts";
 import {
   getCommentStat,
   prepareCommentPost,
@@ -17,10 +15,12 @@ import { post_comment, post_review_info, PostReviewType } from "@ijia/data/db";
 import { insertIntoValues } from "@/sql/utils.ts";
 import { dbPool } from "@ijia/data/dbclient";
 import { select } from "@asla/yoursql";
+import commentRoutes from "@/routers/post/comment/mod.ts";
+import postRoutes from "@/routers/post/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
-  applyController(hono, commentController);
+  postRoutes.apply(hono);
+  commentRoutes.apply(hono);
 });
 
 test("点赞评论，评论计数应加1, 取消应减1", async function ({ api, publicDbPool }) {

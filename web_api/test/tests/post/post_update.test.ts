@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect } from "vitest";
 import { Context, test } from "../../fixtures/hono.ts";
-import { applyController } from "@asla/hono-decorator";
 import { post, TextStructureType } from "@ijia/data/db";
 
-import { postController } from "@/modules/post/mod.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import {
   createPostGroup,
@@ -16,9 +14,10 @@ import { getPostReviewStatus, markReviewed, preparePost, ReviewStatus } from "./
 import { DeepPartial } from "./utils/comment.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
+import postRoutes from "@/routers/post/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
+  postRoutes.apply(hono);
 });
 
 test("更新自己的发布的帖子的内容", async function ({ api, publicDbPool }) {

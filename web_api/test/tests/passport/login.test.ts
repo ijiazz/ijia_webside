@@ -1,15 +1,15 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
 import { user, user_blacklist } from "@ijia/data/db";
-import { LoginType, passportController, UserLoginParamDto } from "@/modules/passport/mod.ts";
-import { applyController } from "@asla/hono-decorator";
+import passportRoutes from "@/routers/passport/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
-import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
+import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
 import { getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
-import { createUser } from "@/modules/passport/sql/signup.ts";
+import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
+import { LoginType, UserLoginParamDto } from "@/dto/passport.ts";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
 
@@ -19,7 +19,7 @@ async function prepareUniqueUserWithPwd(emailName: string, password: string = Al
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   await initCaptcha();
-  applyController(hono, passportController);
+  passportRoutes.apply(hono);
 });
 
 test("登录需要验证码", async function ({ api, publicDbPool }) {

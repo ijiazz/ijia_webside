@@ -1,4 +1,4 @@
-import { CreateCommentItemData, GetPostCommentListParam } from "@/modules/post/comment.dto.ts";
+import { CreateCommentItemData, GetPostCommentListOption, GetPostCommentListParam } from "@/dto/post_comment.ts";
 import {
   DbPostComment,
   post,
@@ -9,7 +9,7 @@ import {
 } from "@ijia/data/db";
 import { Api, JWT_TOKEN_KEY } from "test/fixtures/hono.ts";
 import { preparePost } from "./prepare_post.ts";
-import { createComment } from "@/modules/post/sql/post_comment.ts";
+import { createComment } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import { dbPool } from "@ijia/data/dbclient";
@@ -26,23 +26,26 @@ export class PostComment {
       token?: string;
     } = {},
   ) {
-    return this.api["/post/content/:postId/comment"].put({
-      params: { postId: this.postId },
-      body: { text, replyCommentId: option.replyCommentId },
+    return this.api["/post/comment/entity"].put({
+      body: { text, replyCommentId: option.replyCommentId, postId: this.postId },
       [JWT_TOKEN_KEY]: option.token,
     });
   }
-  async getCommentList(option?: GetPostCommentListParam, token?: string) {
-    return this.api["/post/content/:postId/comment"].get({
-      params: { postId: this.postId },
-      query: option,
+  async getComment(commentId: number, token?: string) {
+    return this.api["/post/comment/list"].get({
+      query: { commentId },
       [JWT_TOKEN_KEY]: token,
     });
   }
-  async getReplyList(commentId: number, option?: GetPostCommentListParam, token?: string) {
-    return this.api["/post/comment/entity/:commentId/root_list"].get({
-      params: { commentId },
-      query: option,
+  async getCommentList(option?: GetPostCommentListOption, token?: string) {
+    return this.api["/post/comment/list"].get({
+      query: { ...option, postId: this.postId },
+      [JWT_TOKEN_KEY]: token,
+    });
+  }
+  async getReplyList(commentId: number, option?: GetPostCommentListOption, token?: string) {
+    return this.api["/post/comment/list"].get({
+      query: { ...option, parentCommentId: commentId },
       [JWT_TOKEN_KEY]: token,
     });
   }
@@ -55,20 +58,20 @@ export class PostComment {
 }
 
 export async function setCommentLike(api: Api, commentId: number, token?: string) {
-  return api["/post/comment/like/:commentId"].post({
+  return api["/post/comment/entity/:commentId/like"].post({
     params: { commentId },
     [JWT_TOKEN_KEY]: token,
   });
 }
 export async function cancelCommentLike(api: Api, commentId: number, token?: string) {
-  return api["/post/comment/like/:commentId"].post({
+  return api["/post/comment/entity/:commentId/like"].post({
     params: { commentId },
     query: { isCancel: true },
     [JWT_TOKEN_KEY]: token,
   });
 }
 export async function reportComment(api: Api, commentId: number, reason?: string, token?: string) {
-  return api["/post/comment/report/:commentId"].post({
+  return api["/post/comment/entity/:commentId/report"].post({
     params: { commentId },
     body: { reason },
     [JWT_TOKEN_KEY]: token,

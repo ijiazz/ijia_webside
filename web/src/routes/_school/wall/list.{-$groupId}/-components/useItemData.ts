@@ -71,7 +71,7 @@ export function useItemData(option: { filter?: PostQueryFilter } = {}) {
       return old;
     });
     const reloading = reloadingRef.current;
-    const promise = api["/post/like/:postId"].post({ params: { postId: id }, query: { isCancel } });
+    const promise = api["/post/entity/:postId/like"].post({ params: { postId: id }, query: { isCancel } });
     if (!reloading[id]) {
       reloading[id] = promise;
     }

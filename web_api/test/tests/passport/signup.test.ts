@@ -1,22 +1,25 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
 import { user } from "@ijia/data/db";
-import { CreateUserProfileParam, passportController } from "@/modules/passport/mod.ts";
-import { applyController } from "@asla/hono-decorator";
+import { passportRoutes, captchaRoutes } from "@/routers/mod.ts";
 
-import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
-import { createUser } from "@/modules/passport/sql/signup.ts";
-import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
-import { emailCaptchaService } from "@/modules/captcha/mod.ts";
+import { initCaptcha } from "../../__mocks__/captcha.ts";
+import { createUser } from "@/routers/passport/-sql/signup.ts";
+import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
+import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { getUniqueEmail, getUniqueName } from "test/fixtures/user.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { select } from "@asla/yoursql";
+import { CreateUserProfileParam } from "@/dto/passport.ts";
+import { EmailCaptchaActionType } from "@/dto.ts";
+import { mockSendEmailCaptcha } from "./_mocks/captcha.ts";
 
 const AlicePassword = "123";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   await initCaptcha();
-  applyController(hono, passportController);
+  passportRoutes.apply(hono);
+  captchaRoutes.apply(hono);
 });
 
 test("注册用户", async function ({ api, publicDbPool }) {
@@ -91,10 +94,7 @@ async function signup(api: Api, param: CreateUserProfileParam) {
   });
 }
 async function mockSignUpSendEmailCaptcha(api: Api, email: string) {
-  const captchaReply = await createCaptchaSession();
-  const { sessionId } = await api["/passport/signup/email_captcha"].post({
-    body: { captchaReply, email: email },
-  });
+  const { sessionId } = await mockSendEmailCaptcha(api, email, EmailCaptchaActionType.signup);
   const emailAnswer = await emailCaptchaService.getAnswer(sessionId);
 
   return { code: emailAnswer!.code, sessionId };

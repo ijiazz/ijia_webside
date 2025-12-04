@@ -11,7 +11,7 @@ import { api, isHttpErrorCode } from "@/common/http.ts";
 import { getPathByRoute } from "@/app.ts";
 import { useCurrentUser } from "@/common/user.ts";
 import { EmailInput } from "../../../../common/EmailInput.tsx";
-import { PassportConfig } from "@/api.ts";
+import { EmailCaptchaActionType, PassportConfig } from "@/api.ts";
 import { MaskBoard } from "../-components/MaskBoard.tsx";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Route as ParentRoute } from "./route.tsx";
@@ -51,8 +51,12 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
   const go = useRedirect({ defaultPath: () => getPathByRoute("/profile/center") });
   const { run: sendEmailCaptcha, data: emailCaptcha } = useAsync(
     (email: string, sessionId: string, selected: number[]) =>
-      api["/passport/signup/email_captcha"].post({
-        body: { email, captchaReply: { sessionId, selectedIndex: selected } },
+      api["/captcha/email/send"].post({
+        body: {
+          email,
+          captchaReply: { sessionId, selectedIndex: selected },
+          actionType: EmailCaptchaActionType.signup,
+        },
       }),
   );
   const { loading: signupLoading, run: onSubmit } = useAsync(async function (value: FormValues) {

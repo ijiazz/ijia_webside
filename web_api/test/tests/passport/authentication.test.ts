@@ -1,7 +1,6 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import { userController } from "@/modules/user/mod.ts";
-import { applyController } from "@asla/hono-decorator";
+import userRoutes from "@/routers/user/mod.ts";
 import { HoFetch } from "@asla/hofetch";
 import { signAccessToken } from "@/global/jwt.ts";
 import { afterTime } from "evlib";
@@ -9,7 +8,7 @@ import { user } from "@ijia/data/db";
 import { insertIntoValues } from "@/sql/utils.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, userController);
+  userRoutes.apply(hono);
 });
 test("token 过期应返回 401", async function ({ hoFetch }) {
   await expect(getInfo(hoFetch, "errToken")).responseStatus(401);

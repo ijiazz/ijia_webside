@@ -12,6 +12,7 @@ import { useTimeoutJump } from "@/hooks/timeout_jump.ts";
 import { tryHashPassword } from "../../../common/pwd_hash.ts";
 import { MaskBoard } from "./-components/MaskBoard.tsx";
 import { ArrowLeftOutlined } from "@ant-design/icons";
+import { EmailCaptchaActionType } from "@/api.ts";
 
 export const Route = createLazyFileRoute("/_theme/passport/find-account")({
   component: RouteComponent,
@@ -94,8 +95,12 @@ function Email(props: { disabled?: boolean; onOk?: () => void }) {
   const { disabled, onOk } = props;
   const { run: sendEmailCaptcha, data: emailCaptcha } = useAsync(
     (email: string, sessionId: string, selected: number[]) =>
-      api["/passport/reset_password/email_captcha"].post({
-        body: { email, captchaReply: { sessionId, selectedIndex: selected } },
+      api["/captcha/email/send"].post({
+        body: {
+          email,
+          actionType: EmailCaptchaActionType.resetPassword,
+          captchaReply: { sessionId, selectedIndex: selected },
+        },
       }),
   );
 

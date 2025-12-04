@@ -1,22 +1,22 @@
 import { expect, beforeEach, describe } from "vitest";
 import { test, Context, Api, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { LoginType, passportController } from "@/modules/passport/mod.ts";
-import accountController from "@/modules/passport/account.controller.ts";
-import { applyController } from "@asla/hono-decorator";
-import { emailCaptchaService } from "@/modules/captcha/mod.ts";
+import { captchaRoutes, passportRoutes } from "@/routers/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
-import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
+import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
-import { createUser } from "@/modules/passport/sql/signup.ts";
+import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { user } from "@ijia/data/db";
 import { getUniqueEmail, getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
 import { update } from "@asla/yoursql";
+import { LoginType } from "@/dto/passport.ts";
+import { EmailCaptchaActionType } from "@/dto/captcha.ts";
+import { mockSendEmailCaptcha, mockSendSelfEmailCaptcha } from "./_mocks/captcha.ts";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   await initCaptcha();
-  applyController(hono, passportController);
-  applyController(hono, accountController);
+  passportRoutes.apply(hono);
+  captchaRoutes.apply(hono);
 });
 
 describe("获取账号authToken", function () {
@@ -41,7 +41,7 @@ describe("修改邮箱", async function () {
     const accountToken = await getAccountToken(api, alice.token);
 
     const newEmail = getUniqueEmail("news");
-    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail, alice.token);
+    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail);
     await api["/passport/change_email"].post({
       body: { newEmail: newEmail, emailCaptcha: emailCaptchaAnswer, accountToken },
       [JWT_TOKEN_KEY]: alice.token,
@@ -53,7 +53,7 @@ describe("修改邮箱", async function () {
     const accountToken = await getAccountToken(api, alice.token);
     const newEmail = getUniqueEmail("news");
     const bobEmail = getUniqueEmail("bob");
-    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail, alice.token);
+    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail);
     const promise = api["/passport/change_email"].post({
       body: { newEmail: bobEmail, emailCaptcha: emailCaptchaAnswer, accountToken },
       [JWT_TOKEN_KEY]: alice.token,
@@ -63,7 +63,7 @@ describe("修改邮箱", async function () {
   test("邮箱已被注册，尝试修改发送将无法发送验证码", async function ({ api }) {
     const alice = await prepareUniqueUser("alice");
     const bob = await prepareUniqueUser("bob");
-    await expect(mockChangeEmailSendEmailCaptcha(api, alice.email, alice.token), "邮箱已被注册").responseStatus(406);
+    await expect(mockChangeEmailSendEmailCaptcha(api, alice.email), "邮箱已被注册").responseStatus(406);
   });
   test("邮箱不能修改成已注册的邮箱", async function ({ api }) {
     const alice = await prepareUniqueUser("alice");
@@ -71,7 +71,7 @@ describe("修改邮箱", async function () {
 
     const BobEmail = "bob@ijiazz.cn";
 
-    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, BobEmail, alice.token);
+    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, BobEmail);
 
     // 获取验证码后立即抢注一个账号
     const newsId = await createUser(BobEmail, { password: alice.email });
@@ -89,7 +89,7 @@ describe("修改邮箱", async function () {
     const prefix = getUniqueName("Abc1");
     const newEmail = `${prefix}@IJIAzz.中文`;
 
-    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail, alice.token);
+    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail);
     await api["/passport/change_email"].post({
       body: { newEmail: newEmail, emailCaptcha: emailCaptchaAnswer, accountToken },
       [JWT_TOKEN_KEY]: alice.token,
@@ -101,7 +101,7 @@ describe("修改邮箱", async function () {
     const accountToken = await getAccountToken(api, alice.token);
     await update(user.name).set({ is_deleted: "true" }).where(`id=${alice.id}`).client(publicDbPool);
     const newEmail = "news@ijiazz.cn";
-    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail, alice.token);
+    const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail);
     const promise = api["/passport/change_email"].post({
       body: { newEmail: newEmail, emailCaptcha: emailCaptchaAnswer, accountToken },
       [JWT_TOKEN_KEY]: alice.token,
@@ -143,27 +143,14 @@ async function aliceLoin(api: Api, email: string, password: string) {
     body: { email: email, method: LoginType.email, password: password, captcha },
   });
 }
-
-async function mockChangeEmailSendEmailCaptcha(api: Api, email: string, token: string) {
-  const captchaReply = await createCaptchaSession();
-  const { sessionId } = await api["/passport/change_email/email_captcha"].post({
-    body: { captchaReply, email: email },
-    [JWT_TOKEN_KEY]: token,
-  });
-  const emailAnswer = await emailCaptchaService.getAnswer(sessionId);
-
-  return { code: emailAnswer!.code, sessionId };
+function mockChangeEmailSendEmailCaptcha(api: Api, email: string) {
+  return mockSendEmailCaptcha(api, email, EmailCaptchaActionType.changeEmail);
 }
-async function mockSignAuthTokenEmailSendEmailCaptcha(api: Api, token: string) {
-  const captchaReply = await createCaptchaSession();
-  const { sessionId } = await api["/passport/sign_account_token/email_captcha"].post({
-    body: { captchaReply },
-    [JWT_TOKEN_KEY]: token,
-  });
-  const emailAnswer = await emailCaptchaService.getAnswer(sessionId);
 
-  return { code: emailAnswer!.code, sessionId };
+function mockSignAuthTokenEmailSendEmailCaptcha(api: Api, token: string) {
+  return mockSendSelfEmailCaptcha(api, token, EmailCaptchaActionType.signAccountToken);
 }
+
 async function getAccountToken(api: Api, userToken: string) {
   const emailAnswer = await mockSignAuthTokenEmailSendEmailCaptcha(api, userToken);
   const res = await api["/passport/sign_account_token"].post({

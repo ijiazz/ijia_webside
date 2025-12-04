@@ -1,23 +1,22 @@
-import { applyController } from "@asla/hono-decorator";
 import { beforeEach, describe, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import { postController } from "@/modules/post/post.controller.ts";
-import { commentController } from "@/modules/post/comment.controller.ts";
 import { testGetPost, deletePost, updatePostConfigFormApi } from "./utils/prepare_post.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { PostComment, getCommentDbRow, prepareCommentPost, getPostCommentTotal } from "./utils/prepare_comment.ts";
-import { PostCommentDto } from "@/modules/post/comment.dto.ts";
 import { DbPostComment, post } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
-import { getUserCanCreateCommentLimit } from "@/modules/post/sql/post_comment.ts";
+import { getUserCanCreateCommentLimit } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 import { afterTime } from "evlib";
 import { update } from "@asla/yoursql";
+import commentRoutes from "@/routers/post/comment/mod.ts";
+import postRoutes from "@/routers/post/mod.ts";
+import { PostCommentDto } from "@/dto/post_comment.ts";
 /* 
   本测试文件使用了公共数据库 publicDbPool
 */
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
-  applyController(hono, commentController);
+  postRoutes.apply(hono);
+  commentRoutes.apply(hono);
 });
 
 describe("根评论创建", function () {

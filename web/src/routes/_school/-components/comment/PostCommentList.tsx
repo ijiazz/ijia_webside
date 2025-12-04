@@ -1,7 +1,7 @@
 import { useAsync } from "@/hooks/async.ts";
 import { Avatar, Button, Divider, Input, Typography } from "antd";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { PostCommentResponse } from "@/api.ts";
+import { PostCommentDto } from "@/api.ts";
 import { CommentTree, useCommentData, findNodeRoot } from "./CommentItem.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { CloseOutlined, UserOutlined } from "@ant-design/icons";
@@ -14,9 +14,9 @@ import {
   getPostData,
   loadCommentItem,
   loadCommentList,
-  loadCommentReplyList,
   PostCommentNode,
   setCommentLike,
+  loadComment,
 } from "./api.ts";
 import { CommentHeader } from "./CommentHeader.tsx";
 import { CommentFooter } from "./CommentFooter.tsx";
@@ -60,7 +60,7 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
   const loadRoot = useAsync(async (nextCursor?: string | null) => {
     if (typeof postId !== "number") return undefined;
 
-    const res = await loadCommentList(postId, { cursor: nextCursor ?? undefined, number: 10 });
+    const res = await loadCommentList({ postId, cursor: nextCursor ?? undefined, number: 10 });
     const nodeList = res.items.map((item) => commentDtoToCommentNode(item, null));
     pushList(nodeList);
     return res;
@@ -71,7 +71,8 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
     forceRender();
     let nodeList: PostCommentNode[];
     try {
-      const res = await loadCommentReplyList(parent.comment_id, {
+      const res = await loadCommentList({
+        parentCommentId: parent.comment_id,
         cursor: parent.childrenCursor ?? undefined,
         number: 5,
       });
@@ -95,19 +96,13 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
     const newCommendId = await createComment(postId, { text }, replyId);
     setText("");
     setReplyingComment(null);
-    let res: PostCommentResponse;
+    let comment: PostCommentDto | undefined;
     try {
-      if (replyingComment) {
-        const loadId = replyingComment.root_comment_id ?? replyingComment.comment_id;
-        res = await loadCommentReplyList(loadId, { commentId: newCommendId });
-      } else {
-        res = await loadCommentList(postId, { commentId: newCommendId });
-      }
+      comment = await loadComment(newCommendId);
     } catch (error) {
       message.error("已创建评论但刷新失败，请手动刷新评论");
       throw error;
     }
-    const comment = res.items[0];
     if (comment) {
       const addTarget = replyingComment ? findNodeRoot(replyingComment) : null;
       addItem(commentDtoToCommentNode(comment, addTarget), addTarget);
@@ -237,7 +232,7 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
         onClose={() => setReportOpen(null)}
         onSubmit={async (reason) => {
           if (!reportOpen) return;
-          const { success } = await api["/post/comment/report/:commentId"].post({
+          const { success } = await api["/post/comment/entity/:commentId/report"].post({
             body: { reason },
             params: { commentId: reportOpen.comment_id },
           });
@@ -271,12 +266,9 @@ function useReload(config: {
     const id = node.comment_id;
     const reloadIng = reloadingRef.current;
     const promise = loadCommentItem(node)
-      .then((res) => {
+      .then((item) => {
         if (reloadIng[id] === undefined) return; // 已被后调用来的更新
-
-        const item = res[0];
         if (!item) return;
-
         ref.current.replaceItem(item); // 直接替换
       })
       .finally(() => {

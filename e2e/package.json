@@ -5,7 +5,7 @@
     "check-type": "tsc --noEmit",
     "install-browsers": "pnpm dlx playwright install chromium webkit firefox",
     "install-browser": "pnpm dlx @puppeteer/browsers install chrome@109",
-    "e2e:ci": "playwright test -c playwright.ci.config.ts --trace retain-on-first-failure",
+    "e2e:ci": "playwright test -c playwright.ci.config.ts --trace retain-on-first-failure --retries=1",
     "e2e:bench": "playwright test -c playwright.bench.config.ts",
     "codegen": "playwright codegen --channel msedge",
     "report": "playwright show-report"

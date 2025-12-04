@@ -16,11 +16,9 @@ export async function createComment(
   data: { text: string },
   replyCommentId?: number | null,
 ): Promise<number> {
-  const { id } = await api["/post/content/:postId/comment"].put({
-    params: {
-      postId: +postId,
-    },
+  const { id } = await api["/post/comment/entity"].put({
     body: {
+      postId: postId,
       text: data.text,
       replyCommentId: typeof replyCommentId === "number" ? replyCommentId : undefined,
     },
@@ -54,40 +52,24 @@ export function getPostData(postId: number, isSelf?: boolean) {
     return item;
   });
 }
-export function loadCommentList(postId: number, query?: GetPostCommentListParam) {
-  return api["/post/content/:postId/comment"].get({
-    params: { postId },
+export function loadCommentList(query: GetPostCommentListParam) {
+  return api["/post/comment/list"].get({
     query: query,
   });
 }
-export function loadCommentReplyList(commentId: number, query?: GetPostCommentListParam) {
-  return api["/post/comment/entity/:commentId/root_list"].get({
-    params: { commentId: commentId },
-    query: query,
-  });
+export async function loadComment(commentId: number): Promise<PostCommentDto | undefined> {
+  const res = await loadCommentList({ commentId: commentId });
+  return res.items[0];
 }
 
-export async function loadCommentItem(node: PostCommentNode): Promise<PostCommentNode[]> {
-  let res: PostCommentNode[];
-  debugger;
-  if (typeof node.root_comment_id === "number") {
-    const { items } = await api["/post/comment/entity/:commentId/root_list"].get({
-      params: { commentId: node.root_comment_id },
-      query: { commentId: node.comment_id },
-    });
-    res = items.map((item) => commentDtoToCommentNode(item, node));
-  } else {
-    const { items } = await api["/post/content/:postId/comment"].get({
-      params: { postId: node.post_id },
-      query: { commentId: node.comment_id },
-    });
-    res = items.map((item) => commentDtoToCommentNode(item, null));
-  }
-  return res;
+export async function loadCommentItem(node: PostCommentNode): Promise<PostCommentNode | undefined> {
+  const comment = await loadComment(node.comment_id);
+  if (!comment) return;
+  return commentDtoToCommentNode(comment, node);
 }
 
 export async function setCommentLike(commentId: number, isCancel: boolean): Promise<boolean> {
-  const { success } = await api["/post/comment/like/:commentId"].post({
+  const { success } = await api["/post/comment/entity/:commentId/like"].post({
     params: { commentId },
     query: { isCancel },
   });

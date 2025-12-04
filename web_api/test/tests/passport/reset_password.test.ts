@@ -1,20 +1,23 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
 import { user } from "@ijia/data/db";
-import { LoginType, passportController, ResetPasswordParam } from "@/modules/passport/mod.ts";
-import { applyController } from "@asla/hono-decorator";
+import { captchaRoutes, passportRoutes } from "@/routers/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
-import { hashPasswordFrontEnd } from "@/modules/passport/services/password.ts";
-import { createUser } from "@/modules/passport/sql/signup.ts";
-import { emailCaptchaService } from "@/modules/captcha/mod.ts";
+import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
+import { createUser } from "@/routers/passport/-sql/signup.ts";
+import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { update } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
+import { LoginType, ResetPasswordParam } from "@/dto/passport.ts";
+import { EmailCaptchaActionType } from "@/dto/captcha.ts";
+import { mockSendEmailCaptcha } from "./_mocks/captcha.ts";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
-  applyController(hono, passportController);
+  captchaRoutes.apply(hono);
+  passportRoutes.apply(hono);
   await initCaptcha();
 });
 test("重置密码", async function ({ api }) {
@@ -72,10 +75,8 @@ function commitResetPassword(api: Api, param: ResetPasswordParam) {
   });
 }
 async function mockResetPasswordSendEmailCaptcha(api: Api, email: string) {
-  const captchaReply = await createCaptchaSession();
-  const { sessionId } = await api["/passport/reset_password/email_captcha"].post({
-    body: { captchaReply, email: email },
-  });
+  const { sessionId } = await mockSendEmailCaptcha(api, email, EmailCaptchaActionType.resetPassword);
+
   const emailAnswer = await emailCaptchaService.getAnswer(sessionId);
 
   return { code: emailAnswer!.code, sessionId };

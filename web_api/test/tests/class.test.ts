@@ -1,13 +1,12 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context } from "../fixtures/hono.ts";
 import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
-import { applyController } from "@asla/hono-decorator";
 
-import { classController } from "@/modules/class/class.controller.ts";
+import classRoutes from "@/routers/class/mod.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, classController);
+  classRoutes.apply(hono);
 });
 
 test("获取公共班级", async function ({ api, ijiaDbPool }) {

@@ -83,9 +83,8 @@ function getLikeBtn(locator: Locator) {
   return locator.locator(".e2e-post-comment-like-btn");
 }
 function createRootComment(postId: number, content: string, token?: string) {
-  return api["/post/content/:postId/comment"].put({
-    body: { text: content },
-    params: { postId },
+  return api["/post/comment/entity"].put({
+    body: { text: content, postId },
     [JWT_TOKEN_KEY]: token,
   });
 }

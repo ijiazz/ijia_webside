@@ -57,7 +57,7 @@ export function PublishPost(props: {
     onEditOk?.(editId);
   });
   const { run: commitCreate, loading: createLoading } = useAsync(async (data: CreatePostParam) => {
-    const { id } = await api["/post/content"].put({ body: data });
+    const { id } = await api["/post/entity"].put({ body: data });
     message.success("已发布");
     onCreateOk?.(id);
   });
@@ -113,13 +113,13 @@ export function PublishPost(props: {
   );
 }
 async function updatePostContent(postId: string, content: Omit<UpdatePostContentParam, "type">) {
-  await api["/post/content/:postId"].patch({
+  await api["/post/entity/:postId"].patch({
     params: { postId },
     body: { ...content, type: "content" },
   });
 }
 async function updatePostConfig(postId: string, config: Omit<UpdatePostConfigParam, "type">) {
-  await api["/post/content/:postId"].patch({
+  await api["/post/entity/:postId"].patch({
     params: { postId },
     body: { ...config, type: "config" },
   });

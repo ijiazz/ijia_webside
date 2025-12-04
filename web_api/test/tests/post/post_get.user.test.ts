@@ -1,15 +1,14 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { applyController } from "@asla/hono-decorator";
 import { DbPostCreate, post } from "@ijia/data/db";
 
-import { postController } from "@/modules/post/mod.ts";
 import { prepareUser } from "../../fixtures/user.ts";
-import { getPostList } from "@/modules/post/sql/post_list.ts";
+import { getPostList } from "@/routers/post/-sql/post_list.sql.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
+import postRoutes from "@/routers/post/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
-  applyController(hono, postController);
+  postRoutes.apply(hono);
 });
 
 test("分页获取帖子列表", async function ({ api, ijiaDbPool }) {
