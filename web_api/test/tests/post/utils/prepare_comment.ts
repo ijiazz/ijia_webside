@@ -26,9 +26,8 @@ export class PostComment {
       token?: string;
     } = {},
   ) {
-    return this.api["/post/content/:postId/comment"].put({
-      params: { postId: this.postId },
-      body: { text, replyCommentId: option.replyCommentId },
+    return this.api["/post/comment/entity"].put({
+      body: { text, replyCommentId: option.replyCommentId, postId: this.postId },
       [JWT_TOKEN_KEY]: option.token,
     });
   }
@@ -55,20 +54,20 @@ export class PostComment {
 }
 
 export async function setCommentLike(api: Api, commentId: number, token?: string) {
-  return api["/post/comment/like/:commentId"].post({
+  return api["/post/comment/entity/:commentId/like"].post({
     params: { commentId },
     [JWT_TOKEN_KEY]: token,
   });
 }
 export async function cancelCommentLike(api: Api, commentId: number, token?: string) {
-  return api["/post/comment/like/:commentId"].post({
+  return api["/post/comment/entity/:commentId/like"].post({
     params: { commentId },
     query: { isCancel: true },
     [JWT_TOKEN_KEY]: token,
   });
 }
 export async function reportComment(api: Api, commentId: number, reason?: string, token?: string) {
-  return api["/post/comment/report/:commentId"].post({
+  return api["/post/comment/entity/:commentId/report"].post({
     params: { commentId },
     body: { reason },
     [JWT_TOKEN_KEY]: token,

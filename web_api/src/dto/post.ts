@@ -14,15 +14,14 @@ import {
 } from "./post/_dto/mod.ts";
 import { GetPostCommentListParam, PostCommentApi } from "./post_comment.ts";
 
+export interface PostApi extends PostCommentApi {}
+
 export interface PostApi {
   /** 获取平台帖子列表 */
   "GET /post/god_list": {
     response: PlatformPostResponse;
     query?: GetPlatformPostListParam;
   };
-}
-
-export interface PostApi {
   /** 获取作品分组 */
   "GET /post/group/list": {
     response: PostGroupResponse;
@@ -36,20 +35,20 @@ export interface PostApi {
     query?: GetPostListParam;
   };
   /** 创建作品 */
-  "PUT /post/content": {
+  "PUT /post/entity": {
     body: CreatePostParam;
     response: {
       id: number;
     };
   };
   /** 删除作品 */
-  "DELETE /post/content/:postId": {};
+  "DELETE /post/entity/:postId": {};
   /** 更新作品 */
-  "PATCH /post/content/:postId": {
+  "PATCH /post/entity/:postId": {
     body: UpdatePostContentParam | UpdatePostConfigParam;
   };
   /** 点赞作品 */
-  "POST /post/like/:postId": {
+  "POST /post/entity/:postId/like": {
     query?: {
       isCancel?: boolean;
     };
@@ -58,7 +57,7 @@ export interface PostApi {
     };
   };
   /** 举报作品 */
-  "POST /post/report/:postId": {
+  "POST /post/entity/:postId/report": {
     params?: {
       postId: number;
     };
@@ -83,5 +82,3 @@ export interface PostApi {
     body: CommitReviewParam;
   };
 }
-
-export interface PostApi extends PostCommentApi {}

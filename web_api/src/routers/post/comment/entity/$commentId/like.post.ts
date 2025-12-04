@@ -1,10 +1,10 @@
 import { checkValue, queryInt } from "@/global/check.ts";
-import routeGroup from "../_route.ts";
-import { cancelCommentLike, setCommentLike } from "../../-sql/post_like.sql.ts";
+import routeGroup from "../../_route.ts";
+import { cancelCommentLike, setCommentLike } from "../../../-sql/post_like.sql.ts";
 
 export default routeGroup.create({
   method: "POST",
-  routePath: "/post/comment/like/:commentId",
+  routePath: "/post/comment/entity/:commentId/like",
   async validateInput(ctx) {
     const commentId = checkValue(ctx.req.param("commentId"), queryInt);
     const isCancel = checkValue(ctx.req.query("isCancel"), (value) => (value === "true" ? true : false));

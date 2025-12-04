@@ -1,10 +1,10 @@
 import { checkValue, queryInt } from "@/global/check.ts";
-import routeGroup from "../_route.ts";
-import { reportComment } from "../../-sql/report.sql.ts";
+import routeGroup from "../../_route.ts";
+import { reportComment } from "../../../-sql/report.sql.ts";
 
 export default routeGroup.create({
   method: "POST",
-  routePath: "/post/comment/report/:commentId",
+  routePath: "/post/comment/entity/:commentId/report",
   async validateInput(ctx) {
     const commentId = checkValue(ctx.req.param("commentId"), queryInt);
     const userId = await ctx.get("userInfo").getUserId();

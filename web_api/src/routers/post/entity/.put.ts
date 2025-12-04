@@ -1,15 +1,15 @@
-import { createPost } from "./-sql/post_create_update.sql.ts";
+import { createPost } from "../-sql/post_create_update.sql.ts";
 import { CheckTypeError, getBasicType, integer, optional } from "@asla/wokao";
-import { getUserDateCount } from "./-sql/post_list.sql.ts";
+import { getUserDateCount } from "../-sql/post_list.sql.ts";
 
-import routeGroup from "./_route.ts";
+import routeGroup from "../_route.ts";
 import { checkValueAsync } from "@/global/check.ts";
 import { appConfig } from "@/config.ts";
 import { HttpError } from "@/global/errors.ts";
 
 export default routeGroup.create({
   method: "PUT",
-  routePath: "/post/content",
+  routePath: "/post/entity",
   async validateInput(ctx) {
     const { req } = ctx;
     const userInfo = ctx.get("userInfo");

@@ -7,7 +7,11 @@ export interface GetPostCommentListParam {
   number?: number;
   cursor?: string;
   forward?: boolean; // 是否向前翻页
+  /** @deprecated */
   commentId?: number; // 如果指定了 commentId，则仅获取该评论的信息
+
+  //TODO
+  parentCommentId?: number; // 如果指定了 parentCommentId，则仅获取该评论的回复列表
 }
 
 export type PostCommentDto = {
@@ -43,7 +47,9 @@ export type PostCommentDto = {
   children?: PostCommentDto[]; // 回复的评论
 };
 
-export type CreatePostCommentParam = CreateCommentItemData;
+export type CreatePostCommentParam = CreateCommentItemData & {
+  postId: number;
+};
 export type CreateCommentItemData = {
   text: string;
   replyCommentId?: number;

@@ -1,8 +1,8 @@
 import { checkValue, checkValueAsync } from "@/global/check.ts";
-import routeGroup from "../../_route.ts";
+import routeGroup from "../../../_route.ts";
 import { enumType, integer, optional } from "@asla/wokao";
 import { CommitReviewResultDto, PostReviewType } from "@/dto/post.ts";
-import { commitReview, getReview } from "../-sql/post_review.sql.ts";
+import { commitReview, getReview } from "../../-sql/post_review.sql.ts";
 import { requiredRoles, Role } from "@/middleware/auth.ts";
 
 export default routeGroup.create({

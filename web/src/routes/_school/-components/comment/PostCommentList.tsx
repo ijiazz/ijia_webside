@@ -237,7 +237,7 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
         onClose={() => setReportOpen(null)}
         onSubmit={async (reason) => {
           if (!reportOpen) return;
-          const { success } = await api["/post/comment/report/:commentId"].post({
+          const { success } = await api["/post/comment/entity/:commentId/report"].post({
             body: { reason },
             params: { commentId: reportOpen.comment_id },
           });

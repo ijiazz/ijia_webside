@@ -7,7 +7,7 @@ import routeGroup from "../_route.ts";
 
 export default routeGroup.create({
   method: "DELETE",
-  routePath: "/post/content/:postId",
+  routePath: "/post/entity/:postId",
   async validateInput(ctx) {
     const userInfo = ctx.get("userInfo");
     const postId = checkValue(ctx.req.param("postId"), integer.positive);

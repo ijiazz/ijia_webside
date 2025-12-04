@@ -57,7 +57,7 @@ export async function getPostReviewStatus(postId: number): Promise<ReviewStatus>
 }
 
 export async function createPost(api: Api, body: CreatePostParam, token: string) {
-  return api["/post/content"].put({ body: body, [JWT_TOKEN_KEY]: token });
+  return api["/post/entity"].put({ body: body, [JWT_TOKEN_KEY]: token });
 }
 
 export async function updatePostContentFromApi(
@@ -66,7 +66,7 @@ export async function updatePostContentFromApi(
   body: Omit<UpdatePostContentParam, "type">,
   token: string,
 ) {
-  return api["/post/content/:postId"].patch({
+  return api["/post/entity/:postId"].patch({
     params: { postId },
     body: { ...body, type: "content" },
     [JWT_TOKEN_KEY]: token,
@@ -78,7 +78,7 @@ export async function updatePostConfigFormApi(
   body: Omit<UpdatePostConfigParam, "type">,
   token: string,
 ) {
-  return api["/post/content/:postId"].patch({
+  return api["/post/entity/:postId"].patch({
     params: { postId },
     body: { ...body, type: "config" },
     [JWT_TOKEN_KEY]: token,
@@ -122,13 +122,13 @@ export async function testGetSelfPost(api: Api, postId: number, token: string): 
   return items[0];
 }
 export async function deletePost(api: Api, postId: number, token?: string) {
-  return api["/post/content/:postId"].delete({
+  return api["/post/entity/:postId"].delete({
     params: { postId: postId },
     [JWT_TOKEN_KEY]: token,
   });
 }
 export function reportPost(api: Api, postId: number, token: string, reason?: string) {
-  return api["/post/report/:postId"].post({
+  return api["/post/entity/:postId/report"].post({
     params: { postId: postId },
     body: { reason: reason },
     [JWT_TOKEN_KEY]: token,
@@ -136,13 +136,13 @@ export function reportPost(api: Api, postId: number, token: string, reason?: str
 }
 
 export async function setPostLike(api: Api, postId: number, token: string) {
-  return api["/post/like/:postId"].post({
+  return api["/post/entity/:postId/like"].post({
     params: { postId: postId },
     [JWT_TOKEN_KEY]: token,
   });
 }
 export async function cancelPostLike(api: Api, postId: number, token: string) {
-  return api["/post/like/:postId"].post({
+  return api["/post/entity/:postId/like"].post({
     params: { postId: postId },
     query: { isCancel: true },
     [JWT_TOKEN_KEY]: token,

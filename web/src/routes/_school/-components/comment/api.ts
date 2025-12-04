@@ -16,11 +16,9 @@ export async function createComment(
   data: { text: string },
   replyCommentId?: number | null,
 ): Promise<number> {
-  const { id } = await api["/post/content/:postId/comment"].put({
-    params: {
-      postId: +postId,
-    },
+  const { id } = await api["/post/comment/entity"].put({
     body: {
+      postId: postId,
       text: data.text,
       replyCommentId: typeof replyCommentId === "number" ? replyCommentId : undefined,
     },
@@ -87,7 +85,7 @@ export async function loadCommentItem(node: PostCommentNode): Promise<PostCommen
 }
 
 export async function setCommentLike(commentId: number, isCancel: boolean): Promise<boolean> {
-  const { success } = await api["/post/comment/like/:commentId"].post({
+  const { success } = await api["/post/comment/entity/:commentId/like"].post({
     params: { commentId },
     query: { isCancel },
   });

@@ -56,7 +56,7 @@ export function PostList(props: PostListProps) {
     modal.confirm({
       title: "删除确认",
       onOk: () => {
-        return api["/post/content/:postId"].delete({ params: { postId: item.post_id } }).then(() => {
+        return api["/post/entity/:postId"].delete({ params: { postId: item.post_id } }).then(() => {
           itemsCtrl.deleteItem(item.post_id);
           message.success("删除成功");
         });
@@ -148,7 +148,7 @@ export function PostList(props: PostListProps) {
         onClose={() => setReportOpen(undefined)}
         onSubmit={async (reason) => {
           if (!reportOpen) return;
-          const { success } = await api["/post/report/:postId"].post({
+          const { success } = await api["/post/entity/:postId/report"].post({
             body: { reason },
             params: { postId: reportOpen.post_id },
           });

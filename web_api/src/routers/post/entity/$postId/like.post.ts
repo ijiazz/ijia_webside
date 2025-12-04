@@ -1,11 +1,11 @@
-import { cancelPostLike, setPostLike } from "../-sql/post_like.sql.ts";
+import { cancelPostLike, setPostLike } from "../../-sql/post_like.sql.ts";
 import { checkValue } from "@/global/check.ts";
 import { integer } from "@asla/wokao";
-import routeGroup from "../_route.ts";
+import routeGroup from "../../_route.ts";
 
 export default routeGroup.create({
   method: "POST",
-  routePath: "/post/like/:postId",
+  routePath: "/post/entity/:postId/like",
   async validateInput(ctx) {
     const { req } = ctx;
     const userInfo = ctx.get("userInfo");

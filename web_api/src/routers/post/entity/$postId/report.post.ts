@@ -1,11 +1,11 @@
 import { checkValue, checkValueAsync } from "@/global/check.ts";
-import { reportPost } from "../-sql/report.sql.ts";
-import routeGroup from "../_route.ts";
+import { reportPost } from "../../-sql/report.sql.ts";
+import routeGroup from "../../_route.ts";
 import { integer, optional } from "@asla/wokao";
 
 export default routeGroup.create({
   method: "POST",
-  routePath: "/post/report/:postId",
+  routePath: "/post/entity/:postId/report",
   async validateInput(ctx) {
     const userInfo = ctx.get("userInfo");
     const userId = await userInfo.getUserId();
