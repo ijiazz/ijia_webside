@@ -1,12 +1,15 @@
+import { Context } from "hono";
+
 interface HonoLike {
   on(method: string, routePath: string, ...handlers: MiddlewareHandler<any>[]): void;
 }
-interface HonoContextLike {
-  text(text: string): Response;
-  body(body: unknown): Response;
-  json(json: unknown): Response;
-  newResponse(body: unknown, status?: number): Response;
-}
+// interface HonoContextLike {
+//   text(text: string): Response;
+//   body(body: unknown): Response;
+//   json(json: unknown): Response;
+//   newResponse(body: unknown, status?: number): Response;
+// }
+type HonoContextLike = Context;
 
 type MiddlewareHandler<C> = (ctx: C, next: () => Promise<void>) => Promise<Response | void>;
 
@@ -117,20 +120,21 @@ function createAutoHandler<C extends HonoContextLike, Res = unknown, Input = unk
 
 function toResponse(result: unknown, ctx: HonoContextLike): Response {
   switch (typeof result) {
-    case "string":
-      return ctx.text(result);
+    case "number":
+    case "string": {
+      const contentType = ctx.res.headers.get("Content-Type");
+      if (!contentType) ctx.header("Content-Type", "text/plain; charset=utf-8");
+      return ctx.body(result.toString());
+    }
     case "object": {
       if (result === null) return ctx.body(null);
       if (result instanceof Response) return result;
       else if (result instanceof ReadableStream || result instanceof Uint8Array) return ctx.body(result);
-
       return ctx.json(result);
     }
-    case "number":
-      return ctx.text(result.toString());
     case "undefined":
       return ctx.body(null);
     default:
-      return ctx.newResponse("unknown body type", 500);
+      return ctx.text("unknown body type", 500);
   }
 }
