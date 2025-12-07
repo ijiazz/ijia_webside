@@ -3,7 +3,6 @@ import { dbPool } from "@/db/client.ts";
 import { createInitIjiaDb } from "@ijia/data/testlib";
 import process from "node:process";
 import { redisPool, RedisPool } from "@ijia/data/cache";
-import { RedisFlushModes } from "@redis/client";
 import { PgDbQueryPool, DbManage, parserDbConnectUrl } from "@asla/pg";
 
 export interface DbContext {
@@ -68,7 +67,7 @@ export const test = viTest.extend<DbContext>({
     url.pathname = VITEST_WORKER_ID.toString();
     redisPool.url = url;
     const conn = await redisPool.connect();
-    await conn.flushDb(RedisFlushModes.SYNC);
+    await conn.flushDb("SYNC");
     conn.release();
     use(redisPool);
     const used = redisPool.totalCount - redisPool.idleCount;
