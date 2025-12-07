@@ -1,5 +1,5 @@
 import { enumPlatform, Platform, pla_user, user_platform_bind } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { array, enumType, optional, stringMatch } from "@asla/wokao";
 import { checkValueAsync } from "@/global/check.ts";
 import { HttpError } from "@/global/errors.ts";
@@ -44,32 +44,32 @@ export default routeGroup.create({
     if (ENV.IS_PROD) {
       const checkServer = getCheckerServer();
       userInfo = await checkServer.checkPlatformUserInfo(platformUseId, userId);
-      const [user] = await select({ avatar: true })
-        .from(pla_user.name)
-        .where(`platform=${v(userInfo.platform)} AND pla_uid=${v(userInfo.pla_uid)}`)
-        .limit(1)
-        .dataClient(dbPool)
-        .queryRows();
+      const [user] = await dbPool.queryRows(
+        select({ avatar: true })
+          .from(pla_user.name)
+          .where(`platform=${v(userInfo.platform)} AND pla_uid=${v(userInfo.pla_uid)}`)
+          .limit(1),
+      );
       if (user?.avatar) userInfo.avatarPath = `/file/avatar/${user.avatar}`;
     } else {
       userInfo = await getPlatformUserInfo(platform, platformUseId, userId);
     }
     if (!userInfo.pass) throw new HttpError(403, { message: "检测不通过" });
 
-    const [bindInfo] = await select<{
-      user_id: number;
-      platform: Platform;
-      pla_uid: string;
-    }>({
-      user_id: true,
-      platform: true,
-      pla_uid: true,
-    })
-      .from(user_platform_bind.name)
-      .where([`platform=${v(platform)}`, `pla_uid=${v(userInfo.pla_uid)}`])
-      .limit(1)
-      .dataClient(dbPool)
-      .queryRows();
+    const [bindInfo] = await dbPool.queryRows(
+      select<{
+        user_id: number;
+        platform: Platform;
+        pla_uid: string;
+      }>({
+        user_id: true,
+        platform: true,
+        pla_uid: true,
+      })
+        .from(user_platform_bind.name)
+        .where([`platform=${v(platform)}`, `pla_uid=${v(userInfo.pla_uid)}`])
+        .limit(1),
+    );
     return {
       platformUser: userInfo,
       bind: bindInfo,

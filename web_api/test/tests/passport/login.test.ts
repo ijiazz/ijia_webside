@@ -84,27 +84,29 @@ test("邮箱或学号不存在，应返回提示", async function ({ api, public
 });
 test("已删除的用户不能登录", async function ({ api, publicDbPool }) {
   const userInfo = await prepareUniqueUserWithPwd("alice@ijiazz.cn");
-  await update(user.name)
-    .set({ is_deleted: "true" })
-    .where(`id=${v(userInfo.id)}`)
-    .client(publicDbPool);
+  await publicDbPool.execute(
+    update(user.name)
+      .set({ is_deleted: "true" })
+      .where(`id=${v(userInfo.id)}`),
+  );
   await expect(
     loginUseCaptcha(api, { id: userInfo.id.toString(), method: LoginType.id, password: userInfo.password! }),
   ).rejects.throwErrorEqualBody(401, { message: "账号或密码错误" });
 });
 test("黑名单用户不能登录", async function ({ api, publicDbPool }) {
   const info = await prepareUniqueUserWithPwd("alice@ijiazz.cn");
-  await insertIntoValues(user_blacklist.name, { user_id: info.id, reason: "测试" }).client(publicDbPool);
+  await publicDbPool.execute(insertIntoValues(user_blacklist.name, { user_id: info.id, reason: "测试" }));
   await expect(
     loginUseCaptcha(api, { id: info.id.toString(), method: LoginType.id, password: AlicePassword }),
   ).rejects.throwErrorEqualBody(423, { message: "账号已被冻结" });
 });
 test("无密码直接登录", async function ({ api, publicDbPool }) {
   const userInfo = await prepareUniqueUserWithPwd("alice@ijiazz.cn");
-  await update(user.name)
-    .set({ password: "null", pwd_salt: "null" })
-    .where(`id=${v(userInfo.id)}`)
-    .client(publicDbPool);
+  await publicDbPool.execute(
+    update(user.name)
+      .set({ password: "null", pwd_salt: "null" })
+      .where(`id=${v(userInfo.id)}`),
+  );
   const captcha = await createCaptchaSession();
 
   const p = loginUseCaptcha(api, {

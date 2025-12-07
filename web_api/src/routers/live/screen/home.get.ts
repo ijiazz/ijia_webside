@@ -1,11 +1,12 @@
 import { HomePageRes, GodPlatformDto } from "@/dto/live.ts";
 import { optionalPositiveInt, checkValue } from "@/global/check.ts";
 import { pla_user } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { select } from "@asla/yoursql";
 
 import routeGroup from "../_route.ts";
 import { list } from "../-utils/home_extra.ts";
+import { QueryRowsResult } from "@asla/pg";
 
 export default routeGroup.create({
   method: "GET",
@@ -28,7 +29,9 @@ export default routeGroup.create({
     const wb = select({ ...selectColumns, home_url: "'https://weibo.com/u/'||pla_uid" })
       .from(pla_user.name)
       .where(["platform='weibo' ", " pla_uid='6201382716'"]);
-    const [dyData, wbData] = await dbPool.multipleQueryRows<[GodPlatformDto, GodPlatformDto]>([dy, wb].join(";"));
+    const [dyData, wbData] = await dbPool
+      .query<[QueryRowsResult<GodPlatformDto>, QueryRowsResult<GodPlatformDto>]>([dy, wb])
+      .then(([r1, r2]) => [r1.rows, r2.rows]);
 
     const platforms: GodPlatformDto[] = [...list];
 

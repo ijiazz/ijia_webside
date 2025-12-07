@@ -3,7 +3,7 @@ import { PlatformUserBasicInfoCheckResult } from "@/services/douyin.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
 import { pla_user, Platform } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { checkSignatureStudentId } from "./user.service.ts";
 
 export async function getPlatformUserInfo(
@@ -17,24 +17,24 @@ export async function getPlatformUserInfo(
   } else {
     where = `pla_uid=${v(pla_uid)}`;
   }
-  const [res] = await select<{
-    platform: Platform;
-    pla_uid: string;
-    signature: string;
-    avatar: string;
-    user_name: string;
-  }>({
-    pla_uid: true,
-    signature: true,
-    avatar: true,
-    user_name: true,
-    platform: true,
-  })
-    .from(pla_user.name)
-    .where(where)
-    .limit(1)
-    .dataClient(dbPool)
-    .queryRows();
+  const [res] = await dbPool.queryRows(
+    select<{
+      platform: Platform;
+      pla_uid: string;
+      signature: string;
+      avatar: string;
+      user_name: string;
+    }>({
+      pla_uid: true,
+      signature: true,
+      avatar: true,
+      user_name: true,
+      platform: true,
+    })
+      .from(pla_user.name)
+      .where(where)
+      .limit(1),
+  );
   if (!res) throw new HttpError(400, { message: "账号不存在" });
   if (!checkSignatureStudentId(userId, res.signature))
     throw new HttpError(403, { message: "审核不通过。没有从账号检测到学号" });

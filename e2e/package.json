@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
-    "@asla/yoursql": "~0.11.1",
+    "@asla/pg": "npm:@jsr/asla__pg@^0.2.0",
+    "@asla/yoursql": "npm:@jsr/asla__yoursql@~0.12.0",
     "@ijia/data": "workspace:^",
     "@playwright/test": "^1.55.0",
     "@types/node": "^24.5.2",

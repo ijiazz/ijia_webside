@@ -13,35 +13,34 @@ beforeEach(async ({ page }) => {
   Alice = await initAlice();
   const aliceToken = await loginGetToken(Alice.email, Alice.password);
 
-  const res = await insertIntoValues(
-    pla_user.name,
-    [
-      {
-        pla_uid: "alice",
-        platform: Platform.douYin,
-        user_name: "Alice",
-        extra: { sec_uid: "sec_alice" },
-        signature: `IJIA学号：<${Alice.id}>`,
-      },
-      {
-        pla_uid: "bob",
-        platform: Platform.douYin,
-        user_name: "Bob",
-        extra: { sec_uid: "sec_bob" },
-        signature: `IJIA学号：<${Alice.id}>`,
-      },
-    ].map((item) => {
-      const uuid = crypto.randomUUID().replaceAll("-", "");
-      return {
-        ...item,
-        pla_uid: item.pla_uid + ":" + uuid,
-        extra: { ...item.extra, sec_uid: item.extra.sec_uid + ":" + uuid },
-      };
-    }),
-  )
-    .returning(["pla_uid", "platform", "user_name", "extra"])
-    .dataClient(dbPool)
-    .queryRows();
+  const res = await dbPool.queryRows(
+    insertIntoValues(
+      pla_user.name,
+      [
+        {
+          pla_uid: "alice",
+          platform: Platform.douYin,
+          user_name: "Alice",
+          extra: { sec_uid: "sec_alice" },
+          signature: `IJIA学号：<${Alice.id}>`,
+        },
+        {
+          pla_uid: "bob",
+          platform: Platform.douYin,
+          user_name: "Bob",
+          extra: { sec_uid: "sec_bob" },
+          signature: `IJIA学号：<${Alice.id}>`,
+        },
+      ].map((item) => {
+        const uuid = crypto.randomUUID().replaceAll("-", "");
+        return {
+          ...item,
+          pla_uid: item.pla_uid + ":" + uuid,
+          extra: { ...item.extra, sec_uid: item.extra.sec_uid + ":" + uuid },
+        };
+      }),
+    ).returning(["pla_uid", "platform", "user_name", "extra"]),
+  );
 
   users = res.map((u) => ({ user_name: u.user_name, sec_uid: u.extra.sec_uid }));
 
@@ -115,14 +114,13 @@ async function addBind(page: Page, sec_id: string) {
 }
 
 async function clearPublicClass() {
-  await deleteFrom(dclass.name)
-    .where("parent_class_id=" + v(PUBLIC_CLASS_ROOT_ID))
-    .client(dbPool)
-    .queryCount();
+  await dbPool.execute(deleteFrom(dclass.name).where("parent_class_id=" + v(PUBLIC_CLASS_ROOT_ID)));
 }
 async function initPublicClass() {
-  await insertIntoValues(dclass.name, [
-    { class_name: "e2e-8", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-    { class_name: "e2e-1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-  ]).client(dbPool);
+  await dbPool.execute(
+    insertIntoValues(dclass.name, [
+      { class_name: "e2e-8", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+      { class_name: "e2e-1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+    ]),
+  );
 }

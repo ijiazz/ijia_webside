@@ -41,14 +41,15 @@ async function insertMock() {
     { platform: Platform.douYin, pla_uid: "dy0" },
     { platform: Platform.douYin, pla_uid: "dy1" },
   ];
-  await dbPool.query(deleteFrom(pla_user.name));
-  await insertIntoValues(pla_user.name, users).onConflict(["platform", "pla_uid"]).doNotThing().client(dbPool);
-  await insertIntoValues(watching_pla_user.name, [
-    { level: USER_LEVEL.god, platform: users[0].platform, pla_uid: users[0].pla_uid },
-    { level: USER_LEVEL.god, platform: users[1].platform, pla_uid: users[1].pla_uid },
-  ])
-    .onConflict(["platform", "pla_uid"])
-    .doNotThing()
-    .client(dbPool);
+  await dbPool.execute(deleteFrom(pla_user.name));
+  await dbPool.execute(insertIntoValues(pla_user.name, users).onConflict(["platform", "pla_uid"]).doNotThing());
+  await dbPool.execute(
+    insertIntoValues(watching_pla_user.name, [
+      { level: USER_LEVEL.god, platform: users[0].platform, pla_uid: users[0].pla_uid },
+      { level: USER_LEVEL.god, platform: users[1].platform, pla_uid: users[1].pla_uid },
+    ])
+      .onConflict(["platform", "pla_uid"])
+      .doNotThing(),
+  );
   return users;
 }

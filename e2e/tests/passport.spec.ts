@@ -42,11 +42,11 @@ test("注册账号", async function ({ page, webInfo }) {
   await expect(page, "注册成功后导航到个人配置页").toHaveURL(/\/profile\/center/, {});
 
   await expect(
-    select("*")
-      .from(user.name)
-      .where(`email=` + v(email))
-      .client(dbPool)
-      .queryCount(),
+    dbPool.queryCount(
+      select("*")
+        .from(user.name)
+        .where(`email=` + v(email)),
+    ),
     "注册成功",
   ).resolves.toBe(1);
 });
@@ -126,9 +126,7 @@ test("修改邮箱", async function ({ page }) {
   const Alice = await initAlice();
   const token = await loginGetToken(Alice.email, Alice.password);
   const changeEmail = "changenew@ijiazz.cn";
-  await deleteFrom(user.name)
-    .where("email=" + v(changeEmail))
-    .client(dbPool);
+  await dbPool.execute(deleteFrom(user.name).where("email=" + v(changeEmail)));
   await page.goto(getAppUrlFromRoute("/profile/security", token));
 
   await page.getByRole("button", { name: "修 改" }).click();

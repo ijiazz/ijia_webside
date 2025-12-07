@@ -6,7 +6,7 @@ const PG_URL = process.env.PG_URL || "pg://postgres@127.0.0.1:5432/postgres";
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 
 export default {
-  esbuild: { target: "es2023" },
+  esbuild: { target: "es2024" },
   test: {
     env: {
       TEST_LOGIN_DB: PG_URL,
@@ -16,7 +16,7 @@ export default {
     },
 
     include: ["./test/**/*.test.ts"],
-    setupFiles: ["../deps/ijia-data/test/setup/extend_yoursql.ts", "./test/asserts/asserts.ts"],
+    setupFiles: ["./test/asserts/asserts.ts"],
   },
   plugins: [tsconfigPaths({})],
 } satisfies ViteUserConfig;

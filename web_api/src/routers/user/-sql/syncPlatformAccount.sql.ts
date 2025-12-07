@@ -1,5 +1,5 @@
 import { Platform, pla_user, user_platform_bind, user } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { HttpError } from "@/global/errors.ts";
 import { select, update } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
@@ -23,7 +23,7 @@ export async function syncPlatformAccountFromDb(userId: number, param: { platfor
     })
     .from(targetData.toSelect("target"))
     .where("public.user.id=target.user_id");
-  const count = await sql.client(dbPool).queryCount();
+  const count = await dbPool.queryCount(sql);
   if (count === 0) throw new HttpError(403, { message: "账号不存在" });
   if (count !== 1) throw new Error("修改超过一个账号" + sql.genSql());
 }

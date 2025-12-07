@@ -1,5 +1,4 @@
 import { DbUserAvatarCreate, pla_asset, pla_comment, pla_user, user_avatar } from "@ijia/data/db";
-import { DbQuery } from "@ijia/data/dbclient";
 import type {
   CommentReplyItemDto,
   CommentRootItemDto,
@@ -11,6 +10,7 @@ import type {
 import { createSearch } from "@/global/sql_util.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { select, update } from "@asla/yoursql";
+import { DbQuery } from "@asla/yoursql/client";
 const operation = {
   andEq(value: Record<string, any>): string[] {
     let values: string[] = [];

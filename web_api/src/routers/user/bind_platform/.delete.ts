@@ -1,5 +1,5 @@
 import { user_platform_bind, user_profile, user_class_bind, PUBLIC_CLASS_ROOT_ID, dclass } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { checkValueAsync } from "@/global/check.ts";
 import { HttpError } from "@/global/errors.ts";
 import { deleteFrom, select, update } from "@asla/yoursql";
@@ -46,7 +46,7 @@ export default routeGroup.create({
           .where(`parent_class_id=${v(PUBLIC_CLASS_ROOT_ID)} AND id=user_class_bind.class_id`)
           .toSelect()}`,
       ]);
-      await db.multipleQuery(deleteCommentStat.toString() + ";" + deleteClass.toString());
+      await db.execute([deleteCommentStat, deleteClass]);
     }
     await db.commit();
   },

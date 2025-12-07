@@ -51,10 +51,9 @@ test("允许选择不确定的选项", async function ({ api, ijiaDbPool }) {
   })
     .from(captcha_picture.name)
     .where(`id in (${unknownId.map((id) => v(id)).join(", ")})`)
-    .orderBy("id")
-    .dataClient(ijiaDbPool);
+    .orderBy("id");
 
-  const old = await unknownItems.queryRows();
+  const old = await ijiaDbPool.queryRows(unknownItems);
   expect(
     old.map((item) => ({ yes_count: item.yes_count, no_count: item.no_count })),
     "初始值为0",
@@ -67,7 +66,7 @@ test("允许选择不确定的选项", async function ({ api, ijiaDbPool }) {
 
   expect(isPass).toBe(true);
 
-  const news = await unknownItems.queryRows();
+  const news = await ijiaDbPool.queryRows(unknownItems);
 
   expect(
     news.map((item) => item.yes_count),

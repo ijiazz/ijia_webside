@@ -129,7 +129,8 @@ function toResponse(result: unknown, ctx: HonoContextLike): Response {
     case "object": {
       if (result === null) return ctx.body(null);
       if (result instanceof Response) return result;
-      else if (result instanceof ReadableStream || result instanceof Uint8Array) return ctx.body(result);
+      else if (result instanceof ReadableStream) return ctx.body(result);
+      else if (result instanceof Uint8Array) return ctx.body(result as Uint8Array<ArrayBuffer>);
       return ctx.json(result);
     }
     case "undefined":

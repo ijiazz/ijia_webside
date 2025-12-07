@@ -8,7 +8,7 @@ import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
 import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { update } from "@asla/yoursql";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { LoginType, ResetPasswordParam } from "@/dto/passport.ts";
 import { EmailCaptchaActionType } from "@/dto/captcha.ts";
 import { mockSendEmailCaptcha } from "./_mocks/captcha.ts";
@@ -53,7 +53,7 @@ test("重置密码必须传正确的验证码", async function ({ api }) {
 });
 test("已注销账号不能重置密码", async function ({ api }) {
   const Alice = await prepareUniqueUser("alice");
-  await update(user.name).set({ is_deleted: "true" }).where(`id=${Alice.userId}`).client(dbPool).query();
+  await dbPool.execute(update(user.name).set({ is_deleted: "true" }).where(`id=${Alice.userId}`));
   const emailCaptchaAnswer = await mockResetPasswordSendEmailCaptcha(api, Alice.email);
   const newPassword = await hashPasswordFrontEnd("newPassword123");
 

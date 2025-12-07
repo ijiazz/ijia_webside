@@ -1,4 +1,4 @@
-FROM node:22-alpine AS prepare
+FROM node:24-alpine AS prepare
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
@@ -29,7 +29,7 @@ RUN pnpm run --filter=@ijia/web-api build
 RUN pnpm deploy --filter=@ijia/web-api --prod /dist/web-api
 
 
-FROM node:22-alpine AS web-api
+FROM node:24-alpine AS web-api
 WORKDIR /serve/web-api
 COPY --from=build /dist/web-api .
 EXPOSE 3000

@@ -2,7 +2,7 @@ import { post, post_comment, post_group, post_review_info } from "@ijia/data/db"
 import { PostReviewType, PostReviewDto, PostReviewTarget, PostCommentReviewTarget } from "@/dto/post.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { getPostContentType } from "../../-sql/sql_tool.ts";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
 
@@ -97,7 +97,7 @@ export async function getReview(
     })
     .orderBy(["re.create_time ASC"])
     .limit(1);
-  const data = await data1.dataClient(dbPool).queryRows();
+  const data = await dbPool.queryRows(data1);
 
   return data[0] as PostReviewDto<any> | undefined;
 }

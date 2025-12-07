@@ -2,7 +2,7 @@ import { Role } from "@/middleware/auth.ts";
 import { signAccessToken } from "@/global/jwt.ts";
 import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { v } from "@/sql/utils.ts";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 
 /** 将角色绑定到用户，如果角色不存在，则创建 */
 export async function bindUserRole(userId: number, rolesInput: Set<Role> | Role[]) {

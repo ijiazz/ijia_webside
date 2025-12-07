@@ -27,7 +27,7 @@ test("过期的token请求后应返回删除 cookie", async function ({ hoFetch 
 });
 
 test("刷新 token 后应返回新的 token", async function ({ hoFetch, ijiaDbPool }) {
-  await insertIntoValues(user.name, { id: 1, email: "test@example" }).client(ijiaDbPool);
+  await ijiaDbPool.execute(insertIntoValues(user.name, { id: 1, email: "test@example" }));
   const token = await signAccessToken(1, { survivalSeconds: 0.05, refreshSurvivalSeconds: 2 });
   await afterTime(50);
   const res = await getInfo(hoFetch, token.token);

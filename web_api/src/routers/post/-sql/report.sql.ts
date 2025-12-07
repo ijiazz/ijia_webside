@@ -7,7 +7,7 @@ import {
   PostReviewType,
   user_profile,
 } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { DEFAULT_REPORT_WEIGHT, REPORT_THRESHOLD } from "../-utils/const.ts";
 import { HttpError } from "@/global/errors.ts";
 import { v } from "@/sql/utils.ts";
@@ -29,16 +29,17 @@ export async function setPostToReviewing(postId: number): Promise<string> {
   return `${PostReviewType.post}-${postId}`;
 }
 export async function setPostCommentToReviewing(commentId: number): Promise<string> {
-  await insertInto(post_review_info.name, ["type", "target_id"])
-    .select(
-      select([v(PostReviewType.postComment), "id"])
-        .from(post_comment.name)
-        .where([`id=${v(commentId)}`, "NOT is_delete"])
-        .genSql(),
-    )
-    .onConflict("type, target_id")
-    .doNotThing()
-    .client(dbPool);
+  await dbPool.execute(
+    insertInto(post_review_info.name, ["type", "target_id"])
+      .select(
+        select([v(PostReviewType.postComment), "id"])
+          .from(post_comment.name)
+          .where([`id=${v(commentId)}`, "NOT is_delete"])
+          .genSql(),
+      )
+      .onConflict("type, target_id")
+      .doNotThing(),
+  );
   return `${PostReviewType.postComment}-${commentId}`;
 }
 export async function reportPost(postId: number, userId: number, reason?: string): Promise<number> {

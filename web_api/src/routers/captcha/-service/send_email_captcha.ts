@@ -1,5 +1,5 @@
 import { user } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { emailCaptchaService, CaptchaEmail } from "./Email.service.ts";
 import { createEmailCodeHtmlContent } from "./signup-email-code.ts";
 import { appConfig } from "@/config.ts";
@@ -68,11 +68,11 @@ async function sendEmailCaptcha(
 
 // 有一些需要用户有效
 export async function checkEmailExists(email: string): Promise<number | undefined> {
-  const [account] = await select<{ email: string; id: number }>({ email: true, id: true })
-    .from(user.name)
-    .where(`email=${v(email)}`)
-    .limit(1)
-    .dataClient(dbPool)
-    .queryRows();
+  const [account] = await dbPool.queryRows(
+    select<{ email: string; id: number }>({ email: true, id: true })
+      .from(user.name)
+      .where(`email=${v(email)}`)
+      .limit(1),
+  );
   return account?.id;
 }
