@@ -1,5 +1,5 @@
 import { user_profile, DbUserProfileCreate } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { optional } from "@asla/wokao";
 import { checkValue, checkValueAsync, date } from "@/global/check.ts";
 import { HttpError } from "@/global/errors.ts";

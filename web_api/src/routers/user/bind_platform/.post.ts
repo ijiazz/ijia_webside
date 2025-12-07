@@ -1,6 +1,6 @@
 import routeGroup from "../_route.ts";
 import { enumPlatform, Platform, user_platform_bind } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { enumType } from "@asla/wokao";
 import { checkValueAsync } from "@/global/check.ts";
 import { HttpError } from "@/global/errors.ts";
@@ -26,11 +26,11 @@ export default routeGroup.create({
   async handler({ userId, account: bind }) {
     if (bind.platform !== Platform.douYin) throw new HttpError(409, { message: "暂不支持绑定该平台" });
     const platform = bind.platform as Platform;
-    const [{ count }] = await select<{ count: number }>("count(*) ::INT")
-      .from(user_platform_bind.name)
-      .where(`user_id=${v(userId)}`)
-      .dataClient(dbPool)
-      .queryRows();
+    const { count } = await dbPool.queryFirstRow(
+      select<{ count: number }>("count(*) ::INT")
+        .from(user_platform_bind.name)
+        .where(`user_id=${v(userId)}`),
+    );
     if (count > 5) throw new HttpError(409, { message: "最多绑定5个平台账号" });
     await bindPlatformAccount(userId, platform, bind.pla_uid);
     if (count === 0) {

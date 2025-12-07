@@ -10,17 +10,18 @@ beforeEach<Context>(async ({ hono }) => {
 });
 
 test("获取公共班级", async function ({ api, ijiaDbPool }) {
-  const created = await insertIntoValues(dclass.name, [
-    { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-    { class_name: "2", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-    { class_name: "3", parent_class_id: null },
-    { class_name: "4", parent_class_id: null },
-  ])
-    .onConflict("id")
-    .doNotThing()
-    .returning("*")
-    .dataClient(ijiaDbPool)
-    .queryRows()
+  const created = await ijiaDbPool
+    .queryRows(
+      insertIntoValues(dclass.name, [
+        { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+        { class_name: "2", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+        { class_name: "3", parent_class_id: null },
+        { class_name: "4", parent_class_id: null },
+      ])
+        .onConflict("id")
+        .doNotThing()
+        .returning("*"),
+    )
     .then((res) => res.map((item) => item.id));
 
   const classes = await api["/class/public"].get();

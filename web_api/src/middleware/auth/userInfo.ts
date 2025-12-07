@@ -5,7 +5,7 @@ import { getValidUserSampleInfoByUserId, SampleUserInfo } from "@/sql/user.ts";
 import { setTimeoutUnRef } from "@/global/utils.ts";
 import { v } from "@/sql/utils.ts";
 import { select, SqlStatement } from "@asla/yoursql";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 
 async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
   if (!roles.length) return false;
@@ -21,19 +21,19 @@ async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
   return res > 0;
 }
 async function getUserRoleNameList(userId: number): Promise<UserWithRole> {
-  const [userInfo] = await select<UserWithRole>({
-    user_id: "u.id",
-    email: "u.email",
-    nickname: "u.nickname",
-    role_id_list: select<{ role_id: "string" }>({ role_id: "array_agg(bind.role_id)" })
-      .from(user_role_bind.name, { as: "bind" })
-      .where(`bind.user_id=${v(userId)}`)
-      .toSelect(),
-  })
-    .from(user.name, { as: "u" })
-    .where("NOT u.is_deleted")
-    .dataClient(dbPool)
-    .queryRows();
+  const [userInfo] = await dbPool.queryRows(
+    select<UserWithRole>({
+      user_id: "u.id",
+      email: "u.email",
+      nickname: "u.nickname",
+      role_id_list: select<{ role_id: "string" }>({ role_id: "array_agg(bind.role_id)" })
+        .from(user_role_bind.name, { as: "bind" })
+        .where(`bind.user_id=${v(userId)}`)
+        .toSelect(),
+    })
+      .from(user.name, { as: "u" })
+      .where("NOT u.is_deleted"),
+  );
   if (!userInfo) throw new HttpError(400, "账号不存在");
   if (!userInfo.role_id_list) userInfo.role_id_list = [];
   return userInfo;

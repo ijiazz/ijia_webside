@@ -1,4 +1,4 @@
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import {
   pla_asset,
   pla_comment,
@@ -20,6 +20,7 @@ import { assetMediaToDto } from "../-utils/media.ts";
 import { getPostContentType } from "./sql_tool.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
+import { QueryRowsResult } from "@asla/pg";
 
 export type GetAssetListOption = GetListOption & {
   platform?: Platform;
@@ -117,7 +118,9 @@ async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total
     .limit(number, offset);
 
   const totalSql = createJoin(select("count(*)::INT"));
-  const [counts, items] = await dbPool.multipleQueryRows([totalSql, itemsSql]);
+  const [counts, items] = await dbPool
+    .query<[QueryRowsResult, QueryRowsResult]>([totalSql, itemsSql])
+    .then(([r1, r2]) => [r1.rows, r2.rows]);
   return {
     total: counts[0].count,
     items,

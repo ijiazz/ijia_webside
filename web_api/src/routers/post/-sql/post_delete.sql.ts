@@ -1,5 +1,5 @@
 import { v } from "@/sql/utils.ts";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 
 /**
  * 将帖子标记为删除

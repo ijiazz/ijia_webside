@@ -13,6 +13,7 @@ import { select } from "@asla/yoursql";
 import { CreateUserProfileParam } from "@/dto/passport.ts";
 import { EmailCaptchaActionType } from "@/dto.ts";
 import { mockSendEmailCaptcha } from "./_mocks/captcha.ts";
+import { dbPool } from "@/db/client.ts";
 
 const AlicePassword = "123";
 
@@ -27,7 +28,7 @@ test("注册用户", async function ({ api, publicDbPool }) {
   const emailAnswer = await mockSignUpSendEmailCaptcha(api, email);
   const result = await signup(api, { email: email, password: AlicePassword, emailCaptcha: emailAnswer });
   await expect(
-    select({ email: true }).from(user.name).where(`id=${result.userId}`).dataClient(publicDbPool).queryCount(),
+    publicDbPool.queryCount(select({ email: true }).from(user.name).where(`id=${result.userId}`)),
   ).resolves.toBe(1);
 });
 test("必须传正确的邮件验证码", async function ({ api, publicDbPool }) {

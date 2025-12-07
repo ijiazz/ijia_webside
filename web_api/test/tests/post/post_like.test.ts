@@ -19,7 +19,7 @@ import { post, PostReviewType } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
 import { getReviewTarget } from "@/routers/post/review/-sql/post_review.sql.ts";
 import { select, update } from "@asla/yoursql";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import postRoutes from "@/routers/post/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
@@ -222,7 +222,7 @@ test("有效举报人数达到3人，帖子将进入审核状态", async functio
 test("审核通过的帖子，举报达到3人后，帖子仍然是审核通过", async function ({ api, publicDbPool }) {
   const { post: p, alice } = await preparePost(api);
 
-  await update(post.name).set({ is_review_pass: "true" }).where(`id=${p.id}`).client(publicDbPool).queryCount();
+  await publicDbPool.execute(update(post.name).set({ is_review_pass: "true" }).where(`id=${p.id}`));
 
   const bo2 = await prepareUniqueUser("bob2");
   const bob3 = await prepareUniqueUser("bob3");
@@ -264,18 +264,16 @@ test("已举报的帖子，不能再点赞", async function ({ api, publicDbPool
 });
 
 const getPostLikeCount = (postId: number) => {
-  return select({ like_count: true })
-    .from(post.name)
-    .where(`id=${postId}`)
-    .dataClient(dbPool)
-    .queryFirstRow()
+  return dbPool
+    .queryFirstRow(select({ like_count: true }).from(post.name).where(`id=${postId}`))
     .then((item) => item.like_count);
 };
 function getPostReportCount(postId: number) {
-  return select<{ report_count: number }>({ report_count: "ROUND(dislike_count::NUMERIC /100, 2)" })
-    .from(post.name)
-    .where(`id=${postId}`)
-    .dataClient(dbPool)
-    .queryFirstRow()
+  return dbPool
+    .queryFirstRow(
+      select<{ report_count: number }>({ report_count: "ROUND(dislike_count::NUMERIC /100, 2)" })
+        .from(post.name)
+        .where(`id=${postId}`),
+    )
     .then((item) => +item.report_count);
 }

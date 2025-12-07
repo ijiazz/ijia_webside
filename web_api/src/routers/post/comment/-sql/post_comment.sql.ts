@@ -1,5 +1,5 @@
 import { post, post_comment } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { CreateCommentData, CreateCommentItemData } from "@/dto/post_comment.ts";
 import { HttpError } from "@/global/errors.ts";
 import { v } from "@/sql/utils.ts";
@@ -101,12 +101,12 @@ export async function getUserCanCreateCommentLimit(userId: number, second: numbe
   if (typeof second !== "number" || second <= 0) {
     throw new Error("second 必须是大于0的数字");
   }
-  const list = await select({ create_time: true, id: true })
-    .from(post_comment.name)
-    .where([`user_id=${v(userId)}`, `now() - create_time < interval ' ${second} second'`])
-    .limit(1)
-    .dataClient(dbPool)
-    .queryRows();
+  const list = await dbPool.queryRows(
+    select({ create_time: true, id: true })
+      .from(post_comment.name)
+      .where([`user_id=${v(userId)}`, `now() - create_time < interval ' ${second} second'`])
+      .limit(1),
+  );
 
   return list.length === 0;
 }

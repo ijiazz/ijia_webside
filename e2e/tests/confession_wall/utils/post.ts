@@ -13,10 +13,11 @@ export async function clearPostGroup() {
   await dbPool.query(`DELETE FROM post_group`);
 }
 export async function createPostGroup(name: string, description?: string) {
-  await insertIntoValues(post_group.name, { description, name: name })
-    .onConflict("id")
-    .doUpdate({ name: "'发布分组测试'" })
-    .client(dbPool);
+  await dbPool.execute(
+    insertIntoValues(post_group.name, { description, name: name })
+      .onConflict("id")
+      .doUpdate({ name: "'发布分组测试'" }),
+  );
 }
 
 export async function createPost(postParam: CreatePostParam, token: string) {

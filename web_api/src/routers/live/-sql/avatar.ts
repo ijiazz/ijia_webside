@@ -1,26 +1,27 @@
 import { GetListOption } from "@/dto/common.ts";
 import { pla_user, user, user_platform_bind } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { UserAvatarDto } from "../../../dto/live.ts";
 import { select } from "@asla/yoursql";
+import { QueryRowsResult } from "@asla/pg";
 
 /** 获取所有用户的头像 */
 export async function genScreenAvatar(limit: number): Promise<UserAvatarDto[]> {
   if (!limit) throw new Error("limit is required");
-  return select<UserAvatarDto>({
-    avatar_url: "'/file/avatar/'||u.avatar",
-    id: "u.id",
-    name: "u.nickname",
-  })
-    .from(user.name, { as: "u" })
-    .where([
-      "u.avatar IS NOT NULL",
-      `EXISTS ${select("1").from(user_platform_bind.name, { as: "bind" }).where(`bind.user_id=u.id`).toSelect()}`,
-    ])
-    .orderBy("RANDOM()")
-    .limit(limit)
-    .dataClient(dbPool)
-    .queryRows();
+  return dbPool.queryRows(
+    select<UserAvatarDto>({
+      avatar_url: "'/file/avatar/'||u.avatar",
+      id: "u.id",
+      name: "u.nickname",
+    })
+      .from(user.name, { as: "u" })
+      .where([
+        "u.avatar IS NOT NULL",
+        `EXISTS ${select("1").from(user_platform_bind.name, { as: "bind" }).where(`bind.user_id=u.id`).toSelect()}`,
+      ])
+      .orderBy("RANDOM()")
+      .limit(limit),
+  );
 }
 export async function genAllAvatar(option: GetListOption) {
   const { number = 20, offset = 0 } = option;
@@ -33,7 +34,9 @@ export async function genAllAvatar(option: GetListOption) {
     .orderBy("u.pla_uid")
     .limit(number, offset);
   const totalSql = select<{ count: number }>("count(*)::INT").from(pla_user.name);
-  const [items, [total]] = await dbPool.multipleQueryRows(itemsSql + ";" + totalSql);
+  const [items, [total]] = await dbPool
+    .query<[QueryRowsResult, QueryRowsResult]>([itemsSql, totalSql])
+    .then(([r1, r2]) => [r1.rows, r2.rows]);
 
   return {
     items,

@@ -1,5 +1,5 @@
 import { post, post_group, post_like, user } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { GetPostListParam, PostItemDto, PostUserInfo } from "@/dto/post.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { getPostContentType } from "./sql_tool.ts";
@@ -170,11 +170,11 @@ export async function getPostList(
 }
 
 export async function getUserDateCount(userId: number) {
-  const { count } = await select<{ count: number }>({ count: "count(*)::INT" })
-    .from(post.name, { as: "p" })
-    .where([`user_id=${v(userId)}`, `DATE(p.create_time) = CURRENT_DATE`])
-    .dataClient(dbPool)
-    .queryFirstRow();
+  const { count } = await dbPool.queryFirstRow(
+    select<{ count: number }>({ count: "count(*)::INT" })
+      .from(post.name, { as: "p" })
+      .where([`user_id=${v(userId)}`, `DATE(p.create_time) = CURRENT_DATE`]),
+  );
   return count;
 }
 

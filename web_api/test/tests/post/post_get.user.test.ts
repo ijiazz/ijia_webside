@@ -32,7 +32,7 @@ test("分页获取帖子列表", async function ({ api, ijiaDbPool }) {
     };
     baseDate -= oneDay; // 每个帖子的发布时间间隔1秒
   }
-  await insertIntoValues(post.name, values).client(ijiaDbPool);
+  await ijiaDbPool.execute(insertIntoValues(post.name, values));
 
   const list1 = await getPostList(undefined, 10);
   expect(list1.items.length).toBe(10);
@@ -65,7 +65,7 @@ test("向前分页", async function ({ api, ijiaDbPool }) {
     content_text: "test",
     publish_time: new Date(baseDate), // 插入一个时间重复的
   };
-  await insertIntoValues(post.name, f).client(ijiaDbPool);
+  await ijiaDbPool.execute(insertIntoValues(post.name, f));
 
   const { before_cursor } = await getPostList();
 
@@ -78,7 +78,7 @@ test("向前分页", async function ({ api, ijiaDbPool }) {
     };
     baseDate += oneDay; // 每个帖子的发布时间间隔1秒
   }
-  await insertIntoValues(post.name, values).client(ijiaDbPool);
+  await ijiaDbPool.execute(insertIntoValues(post.name, values));
 
   const list1 = await getPostList({ cursor: before_cursor ?? undefined, forward: true, number: 2 });
 

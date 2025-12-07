@@ -54,11 +54,11 @@ test("审核中的帖子只有自己能查看", async function ({ api, publicDbP
 
   const { id } = await createPost(api, { content_text: "test1分组" }, alice.token);
 
-  await update(post.name)
-    .set({ is_reviewing: "true" })
-    .where([`id=${id}`])
-    .client(publicDbPool)
-    .queryCount();
+  await publicDbPool.execute(
+    update(post.name)
+      .set({ is_reviewing: "true" })
+      .where([`id=${id}`]),
+  );
   const aliceView = await testGetSelfPost(api, id, alice.token);
   expect(aliceView.post_id).toBe(id);
   expect(aliceView.status).toMatchObject({
@@ -75,11 +75,11 @@ test("审核失败的帖子只有自己能查看", async function ({ api, public
   const bob = await prepareUniqueUser("bob");
   const { id } = await createPost(api, { content_text: "test" }, alice.token);
 
-  await update(post.name)
-    .set({ is_review_pass: "false" })
-    .where([`id=${id}`])
-    .client(publicDbPool)
-    .query();
+  await publicDbPool.execute(
+    update(post.name)
+      .set({ is_review_pass: "false" })
+      .where([`id=${id}`]),
+  );
 
   const aliceView = await testGetSelfPost(api, id, alice.token);
   expect(aliceView.post_id).toBe(id);

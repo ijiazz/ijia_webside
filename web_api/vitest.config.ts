@@ -16,7 +16,7 @@ export default {
     },
 
     include: ["./test/**/*.test.ts"],
-    setupFiles: ["../deps/ijia-data/test/setup/extend_yoursql.ts", "./test/asserts/asserts.ts"],
+    setupFiles: ["./test/asserts/asserts.ts"],
   },
   plugins: [tsconfigPaths({})],
 } satisfies ViteUserConfig;

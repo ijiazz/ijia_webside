@@ -1,5 +1,5 @@
 import { post, post_comment, user, post_comment_like } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { GetPostCommentListOption, PostCommentDto, PostCommentResponse } from "@/dto/post_comment.ts";
 import { HttpError } from "@/global/errors.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
@@ -35,7 +35,7 @@ export async function getCommentList(
     currUserSql = "null";
   }
 
-  const raw = await select<Record<string, any>>([
+  const sql = select<Record<string, any>>([
     "c.post_id",
     "c.id as comment_id",
     "c.root_comment_id",
@@ -105,9 +105,9 @@ export async function getCommentList(
       return where;
     })
     .orderBy(["c.create_time ASC", "c.id ASC"])
-    .limit(number)
-    .dataClient(dbPool)
-    .queryRows();
+    .limit(number);
+
+  const raw = await dbPool.queryRows(sql);
 
   raw.forEach((item) => {
     const currUser = item.curr_user;

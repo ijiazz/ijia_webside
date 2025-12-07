@@ -5,7 +5,7 @@ import { watching_pla_user, pla_user, USER_LEVEL, Platform, DbPlaUserCreate } fr
 import { insertPosts } from "../../__mocks__/posts.ts";
 import { signAccessToken } from "@/global/jwt.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import godListRoute from "@/routers/post/god_list.get.ts";
 
 beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
@@ -65,13 +65,13 @@ async function insertMock() {
     { platform: Platform.weibo, pla_uid: "wb0" },
     { platform: Platform.weibo, pla_uid: "wb1" },
   ];
-  await insertIntoValues(pla_user.name, users).client(dbPool).query();
-  await insertIntoValues(watching_pla_user.name, [
-    { level: USER_LEVEL.god, platform: users[0].platform, pla_uid: users[0].pla_uid },
-    { level: USER_LEVEL.second, platform: users[1].platform, pla_uid: users[1].pla_uid },
-    { level: USER_LEVEL.god, platform: users[2].platform, pla_uid: users[2].pla_uid },
-  ])
-    .client(dbPool)
-    .query();
+  await dbPool.execute(insertIntoValues(pla_user.name, users));
+  await dbPool.execute(
+    insertIntoValues(watching_pla_user.name, [
+      { level: USER_LEVEL.god, platform: users[0].platform, pla_uid: users[0].pla_uid },
+      { level: USER_LEVEL.second, platform: users[1].platform, pla_uid: users[1].pla_uid },
+      { level: USER_LEVEL.god, platform: users[2].platform, pla_uid: users[2].pla_uid },
+    ]),
+  );
   return users;
 }

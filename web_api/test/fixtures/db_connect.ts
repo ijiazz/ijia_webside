@@ -1,16 +1,17 @@
 import { test as viTest, afterAll, vi } from "vitest";
-import { DbPool, parserDbUrl, dbPool } from "@ijia/data/dbclient";
-import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
+import { dbPool } from "@/db/client.ts";
+import { createInitIjiaDb } from "@ijia/data/testlib";
 import process from "node:process";
 import { redisPool, RedisPool } from "@ijia/data/cache";
 import { RedisFlushModes } from "@redis/client";
+import { PgDbQueryPool, DbManage, parserDbConnectUrl } from "@asla/pg";
 
 export interface DbContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
-  ijiaDbPool: DbPool;
+  ijiaDbPool: PgDbQueryPool;
   /** 初始化一个空的数据库（初始表和初始数据），需要注意，不同测试之间会共享同一个实例和数据库, 以优化测试速度，如果需要一个全新的数据库，请使用 ijiaDbPool */
-  publicDbPool: DbPool;
-  emptyDbPool: DbPool;
+  publicDbPool: PgDbQueryPool;
+  emptyDbPool: PgDbQueryPool;
   redis: RedisPool;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
@@ -19,7 +20,7 @@ const DB_CONNECT_INFO = getConfigEnv(process.env);
 const TEST_REDIS_RUL = process.env.TEST_REDIS_RUL!;
 
 const pubDbName = DB_NAME_PREFIX + "pub_" + VITEST_WORKER_ID;
-let publicDbPool: DbPool | Promise<DbPool> | undefined;
+let publicDbPool: PgDbQueryPool | Promise<PgDbQueryPool> | undefined;
 
 afterAll(async function () {
   if (publicDbPool) {
@@ -80,9 +81,9 @@ export const test = viTest.extend<DbContext>({
 function getConfigEnv(env: Record<string, string | undefined>) {
   const url = env["TEST_LOGIN_DB"];
   if (!url) throw new Error("缺少 TEST_LOGIN_DB 环境变量");
-  return parserDbUrl(url);
+  return parserDbConnectUrl(url);
 }
-async function clearDropDb(pool: DbPool, dbName: string) {
+async function clearDropDb(pool: PgDbQueryPool, dbName: string) {
   await pool.close(true);
   const useCount = pool.totalCount - pool.idleCount;
   try {

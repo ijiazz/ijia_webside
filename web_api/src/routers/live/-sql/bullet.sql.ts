@@ -3,14 +3,14 @@ import { BulletChat } from "../../../dto/live.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
-import { dbPool, ExecutableSql } from "@ijia/data/dbclient";
+import { dbPool, ExecutableSQL } from "@/db/client.ts";
 
 type GetBulletChartOptions = {
   groupId: number | null;
   pageSize: number;
   page: number;
 };
-export function genGetBulletChart(options: GetBulletChartOptions): ExecutableSql<BulletChat[]> {
+export function genGetBulletChart(options: GetBulletChartOptions): ExecutableSQL<BulletChat[]> {
   const { groupId, pageSize, page } = options;
   const sql = select<BulletChat>({
     text: "p.content_text",
@@ -38,7 +38,6 @@ export function genGetBulletChart(options: GetBulletChartOptions): ExecutableSql
       return conditions;
     })
     .orderBy("p.like_count DESC, p.id ASC")
-    .limit(pageSize, page * pageSize)
-    .dataClient(dbPool, ({ rows }) => rows);
-  return sql;
+    .limit(pageSize, page * pageSize);
+  return dbPool.createQueryableSQL(sql, (pool, s) => pool.queryRows(s));
 }

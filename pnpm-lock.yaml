@@ -33,31 +33,22 @@ importers:
 
   deps/ijia-data:
     dependencies:
+      '@asla/pg':
+        specifier: npm:@jsr/asla__pg@^0.2.0
+        version: '@jsr/asla__pg@0.2.0'
       '@asla/yoursql':
-        specifier: ~0.11.1
-        version: 0.11.1
+        specifier: npm:@jsr/asla__yoursql@~0.12.0
+        version: '@jsr/asla__yoursql@0.12.0'
       '@redis/client':
         specifier: ^5.9.0
         version: 5.9.0
       evlib:
         specifier: ^3.1.3
         version: 3.1.3
-      pg:
-        specifier: ^8.16.3
-        version: 8.16.3
-      pg-cursor:
-        specifier: ^2.15.3
-        version: 2.15.3(pg@8.16.3)
     devDependencies:
       '@types/node':
         specifier: ^24.10.0
         version: 24.10.0
-      '@types/pg':
-        specifier: ^8.15.6
-        version: 8.15.6
-      '@types/pg-cursor':
-        specifier: ^2.7.2
-        version: 2.7.2
       vitest:
         specifier: ^4.0.8
         version: 4.0.8(@types/node@24.10.0)(terser@5.39.0)(tsx@4.20.5)(yaml@2.7.0)
@@ -67,9 +58,12 @@ importers:
       '@asla/hofetch':
         specifier: npm:@jsr/asla__hofetch@^0.0.1
         version: '@jsr/asla__hofetch@0.0.1'
+      '@asla/pg':
+        specifier: npm:@jsr/asla__pg@^0.2.0
+        version: '@jsr/asla__pg@0.2.0'
       '@asla/yoursql':
-        specifier: ~0.11.1
-        version: 0.11.1
+        specifier: npm:@jsr/asla__yoursql@~0.12.0
+        version: '@jsr/asla__yoursql@0.12.0'
       '@ijia/data':
         specifier: workspace:^
         version: link:../deps/ijia-data
@@ -182,12 +176,15 @@ importers:
       '@asla/hofetch':
         specifier: npm:@jsr/asla__hofetch@^0.0.1
         version: '@jsr/asla__hofetch@0.0.1'
+      '@asla/pg':
+        specifier: npm:@jsr/asla__pg@^0.2.0
+        version: '@jsr/asla__pg@0.2.0'
       '@asla/wokao':
         specifier: npm:@jsr/asla__wokao@^0.0.3
         version: '@jsr/asla__wokao@0.0.3'
       '@asla/yoursql':
-        specifier: ~0.11.1
-        version: 0.11.1
+        specifier: npm:@jsr/asla__yoursql@~0.12.0
+        version: '@jsr/asla__yoursql@0.12.0'
       '@hono/node-server':
         specifier: ^1.13.7
         version: 1.13.8(hono@4.7.4)
@@ -282,10 +279,6 @@ packages:
       antd: '>=5.22.6'
       react: '>=19.0.0'
       react-dom: '>=19.0.0'
-
-  '@asla/yoursql@0.11.1':
-    resolution: {integrity: sha512-th3tF0r/7WgUuz4ZTgQcC0ySwc0TD5bbf7NDzrlIOKLcxJ68f6EPF1LYrbR9yvY7h8H+M32VAh0AtTdjYHGJdw==}
-    engines: {node: '>=18'}
 
   '@babel/code-frame@7.26.2':
     resolution: {integrity: sha512-RJlIHRueQgwWitWgF8OdFYGZX328Ax5BCemNGlqHfplnRT9ESi8JkFlvaVYbS+UubVY6dpv87Fs2u5M29iNFVQ==}
@@ -1289,8 +1282,14 @@ packages:
   '@jsr/asla__hofetch@0.0.1':
     resolution: {integrity: sha512-UO90cqDucrg3M3Fxea1Jrw15DLP2N+3pQAbAyNolnL6jx2ANEDhb1NGrTFMfZ5xVUQcB01KhhqpaKW2eE3FTYw==, tarball: https://npm.jsr.io/~/11/@jsr/asla__hofetch/0.0.1.tgz}
 
+  '@jsr/asla__pg@0.2.0':
+    resolution: {integrity: sha512-i3TQhSwFqqKzgf8GFENouLRE8tyILumo0wXJTbPaJsHX/t6CgsiW2Ppl0YFHu3UXTXJ71EkXn3vvybNOmL35Ww==, tarball: https://npm.jsr.io/~/11/@jsr/asla__pg/0.2.0.tgz}
+
   '@jsr/asla__wokao@0.0.3':
     resolution: {integrity: sha512-Q+cBBaiO2mR+P51Mu4XXXRAvrKdILQ8Af1Q0YA18K1spV7RpdGrHzWnYBUXVBpZbPFd1Gcgk9BRA3mlyfdhX6g==, tarball: https://npm.jsr.io/~/11/@jsr/asla__wokao/0.0.3.tgz}
+
+  '@jsr/asla__yoursql@0.12.0':
+    resolution: {integrity: sha512-ljnWTe41JGTVqAWA8NP4WR5THwVCaOMBiFsRMhBEY10PjWu7DxfSq9eMbuB3fnO1efYhcHdfzxavrfCvwuHUSQ==, tarball: https://npm.jsr.io/~/11/@jsr/asla__yoursql/0.12.0.tgz}
 
   '@jsr/std__bytes@1.0.5':
     resolution: {integrity: sha512-jcyXQSy5zAh2/6NLMWUkhJuQ0HihY5RwWF5RvpZyEmpmBaokkTwPkev0sqHzNJJvNusDUMznVBIclTT9augCkg==, tarball: https://npm.jsr.io/~/11/@jsr/std__bytes/1.0.5.tgz}
@@ -1455,51 +1454,61 @@ packages:
     resolution: {integrity: sha512-mrA0v3QMy6ZSvEuLs0dMxcO2LnaCONs1Z73GUDBHWbY8tFFocM6yl7YyMu7rz4zS81NDSqhrUuolyZXGi8TEqg==}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.35.0':
     resolution: {integrity: sha512-DnYhhzcvTAKNexIql8pFajr0PiDGrIsBYPRvCKlA5ixSS3uwo/CWNZxB09jhIapEIg945KOzcYEAGGSmTSpk7A==}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.35.0':
     resolution: {integrity: sha512-uagpnH2M2g2b5iLsCTZ35CL1FgyuzzJQ8L9VtlJ+FckBXroTwNOaD0z0/UF+k5K3aNQjbm8LIVpxykUOQt1m/A==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.35.0':
     resolution: {integrity: sha512-XQxVOCd6VJeHQA/7YcqyV0/88N6ysSVzRjJ9I9UA/xXpEsjvAgDTgH3wQYz5bmr7SPtVK2TsP2fQ2N9L4ukoUg==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-loongarch64-gnu@4.35.0':
     resolution: {integrity: sha512-5pMT5PzfgwcXEwOaSrqVsz/LvjDZt+vQ8RT/70yhPU06PTuq8WaHhfT1LW+cdD7mW6i/J5/XIkX/1tCAkh1W6g==}
     cpu: [loong64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-powerpc64le-gnu@4.35.0':
     resolution: {integrity: sha512-c+zkcvbhbXF98f4CtEIP1EBA/lCic5xB0lToneZYvMeKu5Kamq3O8gqrxiYYLzlZH6E3Aq+TSW86E4ay8iD8EA==}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-gnu@4.35.0':
     resolution: {integrity: sha512-s91fuAHdOwH/Tad2tzTtPX7UZyytHIRR6V4+2IGlV0Cej5rkG0R61SX4l4y9sh0JBibMiploZx3oHKPnQBKe4g==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-s390x-gnu@4.35.0':
     resolution: {integrity: sha512-hQRkPQPLYJZYGP+Hj4fR9dDBMIM7zrzJDWFEMPdTnTy95Ljnv0/4w/ixFw3pTBMEuuEuoqtBINYND4M7ujcuQw==}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.35.0':
     resolution: {integrity: sha512-Pim1T8rXOri+0HmV4CdKSGrqcBWX0d1HoPnQ0uw0bdp1aP5SdQVNBy8LjYncvnLgu3fnnCt17xjWGd4cqh8/hA==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.35.0':
     resolution: {integrity: sha512-QysqXzYiDvQWfUiTm8XmJNO2zm9yC9P/2Gkrwg2dH9cxotQzunBHYr6jk4SujCTqnfGxduOmQcI7c2ryuW8XVg==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-win32-arm64-msvc@4.35.0':
     resolution: {integrity: sha512-OUOlGqPkVJCdJETKOCEf1mw848ZyJ5w50/rZ/3IBQVdLfR5jk/6Sr5m3iO2tdPgwo0x7VcncYuOvMhBWZq8ayg==}
@@ -1635,12 +1644,6 @@ packages:
 
   '@types/parse-json@4.0.2':
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
-
-  '@types/pg-cursor@2.7.2':
-    resolution: {integrity: sha512-m3xT8bVFCvx98LuzbvXyuCdT/Hjdd/v8ml4jL4K1QF70Y8clOfCFdgoaEB1FWdcSwcpoFYZTJQaMD9/GQ27efQ==}
-
-  '@types/pg@8.15.6':
-    resolution: {integrity: sha512-NoaMtzhxOrubeL/7UZuNTrejB4MPAJ0RpxZqXQf2qXuVlTPuG6Y8p4u9dKRaue4yjmC7ZhzVO2/Yyyn25znrPQ==}
 
   '@types/react-dom@19.0.4':
     resolution: {integrity: sha512-4fSQ8vWFkg+TGhePfUzVmat3eC14TXYSsiiDSLI0dVLsrm9gZFABjPy/Qu6TKgl1tq1Bu1yDsuQgY3A3DOjCcg==}
@@ -2342,9 +2345,6 @@ packages:
 
   pg-protocol@1.10.3:
     resolution: {integrity: sha512-6DIBgBQaTKDJyxnXaLiLR8wBpQQcGWuAESkRBX/t6OwA8YsqP+iVSiond2EDy6Y/dsGk8rh/jtax3js5NeV7JQ==}
-
-  pg-protocol@1.8.0:
-    resolution: {integrity: sha512-jvuYlEkL03NRvOoyoRktBK7+qU5kOvlAwvmrH8sr3wbLrOdVWsRxQfz8mMy9sZFsqJ1hEWNfdWKI4SAmoL+j7g==}
 
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
@@ -3233,8 +3233,6 @@ snapshots:
       antd: 5.27.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
-
-  '@asla/yoursql@0.11.1': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:
@@ -4400,7 +4398,17 @@ snapshots:
 
   '@jsr/asla__hofetch@0.0.1': {}
 
+  '@jsr/asla__pg@0.2.0':
+    dependencies:
+      '@jsr/asla__yoursql': 0.12.0
+      pg: 8.16.3
+      pg-cursor: 2.15.3(pg@8.16.3)
+    transitivePeerDependencies:
+      - pg-native
+
   '@jsr/asla__wokao@0.0.3': {}
+
+  '@jsr/asla__yoursql@0.12.0': {}
 
   '@jsr/std__bytes@1.0.5': {}
 
@@ -4754,17 +4762,6 @@ snapshots:
       '@types/node': 22.13.10
 
   '@types/parse-json@4.0.2': {}
-
-  '@types/pg-cursor@2.7.2':
-    dependencies:
-      '@types/node': 24.10.0
-      '@types/pg': 8.15.6
-
-  '@types/pg@8.15.6':
-    dependencies:
-      '@types/node': 24.10.0
-      pg-protocol: 1.8.0
-      pg-types: 2.2.0
 
   '@types/react-dom@19.0.4(@types/react@19.0.10)':
     dependencies:
@@ -5486,8 +5483,6 @@ snapshots:
       pg: 8.16.3
 
   pg-protocol@1.10.3: {}
-
-  pg-protocol@1.8.0: {}
 
   pg-types@2.2.0:
     dependencies:

@@ -74,21 +74,21 @@ test("发布帖子，如果选择了分组，发布后将直接进入审核状�
 
   const { id } = await createPost(api, { content_text: "test1分组", group_id: groupId }, alice.token);
 
-  const info = await select({ is_reviewing: true, create_time: true, publish_time: true })
-    .from(post.name)
-    .where(`id = ${v(id)}`)
-    .dataClient(publicDbPool)
-    .queryFirstRow();
+  const info = await publicDbPool.queryFirstRow(
+    select({ is_reviewing: true, create_time: true, publish_time: true })
+      .from(post.name)
+      .where(`id = ${v(id)}`),
+  );
 
   expect(info.is_reviewing).toBe(true);
   expect(info.create_time).not.toBe(null);
   expect(info.publish_time).toBe(null);
 
-  const reviewQueue = await select({ target_id: true })
-    .from(post_review_info.name)
-    .where(`type='post' AND target_id=${v(id)}`)
-    .dataClient(publicDbPool)
-    .queryFirstRow();
+  const reviewQueue = await publicDbPool.queryFirstRow(
+    select({ target_id: true })
+      .from(post_review_info.name)
+      .where(`type='post' AND target_id=${v(id)}`),
+  );
   expect(reviewQueue).not.toBeNull();
 });
 test("发布的文本限制5000个字符", async function ({ publicDbPool, api }) {

@@ -1,17 +1,17 @@
 import routeGroup from "./_route.ts";
 import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { select } from "@asla/yoursql";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 
 export default routeGroup.create({
   method: "GET",
   routePath: "/class/public",
   async handler() {
-    const items = await select<ClassOption>({ class_id: "id", class_name: true, description: true })
-      .from(dclass.name)
-      .where(`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`)
-      .dataClient(dbPool)
-      .queryRows();
+    const items = await dbPool.queryRows(
+      select<ClassOption>({ class_id: "id", class_name: true, description: true })
+        .from(dclass.name)
+        .where(`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`),
+    );
 
     return {
       items: items,

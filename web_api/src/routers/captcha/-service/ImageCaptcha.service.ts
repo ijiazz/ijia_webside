@@ -1,6 +1,6 @@
 import { ImageCaptchaQuestion, ImageCaptchaReply } from "@/dto/captcha.ts";
 import { captcha_picture } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { HTTPException } from "hono/http-exception";
 import { SessionManager } from "../-utils/_SessionManage.ts";
 import { getOSS, getBucket } from "@ijia/data/oss";

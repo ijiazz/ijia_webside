@@ -1,6 +1,6 @@
 import { ENV, appConfig, constWatcher } from "@/config.ts";
 import { createHonoApp } from "./bootstrap/hono_app.ts";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { listenHttpServer, ListenOption } from "@/bootstrap/listen.ts";
 import { redisPool } from "@ijia/data/cache";
 import { watchIjia } from "@/services/waitch_live/user_live.service.ts";

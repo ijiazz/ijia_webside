@@ -1,10 +1,11 @@
 import { Page, test } from "@playwright/test";
 import process from "node:process";
-import { dbPool, DbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { env } from "@/playwright.config.ts";
+import { DbQueryPool } from "@asla/pg";
 
 export interface Context {
-  dbPool: DbPool;
+  dbPool: DbQueryPool;
   appPage: Page;
   webInfo: typeof env;
 }

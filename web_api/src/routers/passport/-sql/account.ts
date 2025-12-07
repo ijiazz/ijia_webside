@@ -1,5 +1,5 @@
 import { user } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { HttpError } from "@/global/errors.ts";
 import { hashPasswordBackEnd } from "../-services/password.ts";
 import { select, update } from "@asla/yoursql";
@@ -33,28 +33,28 @@ export async function resetAccountPassword(email: string, newPwd: string) {
   const salt = crypto.randomUUID().replaceAll("-", ""); //16byte
   const password = await hashPasswordBackEnd(newPwd, salt);
 
-  const count = await update(user.name)
-    .set({ password: v(password), pwd_salt: v(salt) })
-    .where([`email=${v(email)}`, "NOT is_deleted"])
-    .client(dbPool)
-    .queryCount();
+  const count = await dbPool.queryCount(
+    update(user.name)
+      .set({ password: v(password), pwd_salt: v(salt) })
+      .where([`email=${v(email)}`, "NOT is_deleted"]),
+  );
   if (count === 0) {
     throw new HttpError(409, { message: "账号不存在" });
   }
 }
 export async function changeAccountEmail(userId: number, newEmail: string) {
-  const count = await update(user.name)
-    .set({ email: v(newEmail) })
-    .where([
-      `id=${v(userId)}`,
-      `NOT EXISTS ${select("*")
-        .from(user.name)
-        .where(`email=${v(newEmail)}`)
-        .toSelect()}`,
-      "NOT is_deleted",
-    ])
-    .client(dbPool)
-    .queryCount();
+  const count = await dbPool.queryCount(
+    update(user.name)
+      .set({ email: v(newEmail) })
+      .where([
+        `id=${v(userId)}`,
+        `NOT EXISTS ${select("*")
+          .from(user.name)
+          .where(`email=${v(newEmail)}`)
+          .toSelect()}`,
+        "NOT is_deleted",
+      ]),
+  );
   if (count === 0) {
     throw new HttpError(409, { message: "账号不存在" });
   }

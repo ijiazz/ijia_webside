@@ -8,48 +8,48 @@ import {
   user_profile,
   Platform,
 } from "@ijia/data/db";
-import { dbPool, ExecutableSql } from "@ijia/data/dbclient";
+import { dbPool, ExecutableSQL } from "@/db/client.ts";
 import { UserBasicDto, UserInfoDto } from "@/dto/user.ts";
 import { HttpError } from "@/global/errors.ts";
 import { deleteFrom, insertInto, select } from "@asla/yoursql";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 
-export function setUserPublicClass(userId: number, classId: number | null): ExecutableSql {
-  return insertInto(user_class_bind.name, ["class_id", "user_id"])
-    .select(() => {
+export function setUserPublicClass(userId: number, classId: number | null): ExecutableSQL {
+  return dbPool.createExecutableSQL(
+    insertInto(user_class_bind.name, ["class_id", "user_id"]).select(() => {
       return select({ class_id: "id", user_id: v(userId) })
         .from(dclass.name)
         .where([`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`, `id=${v(classId)}`])
         .genSql();
-    })
-    .client(dbPool);
+    }),
+  );
 }
-export function deletePublicClassOfUser(userId: number): ExecutableSql {
-  return deleteFrom(user_class_bind.name)
-    .where([
+export function deletePublicClassOfUser(userId: number): ExecutableSQL {
+  return dbPool.createExecutableSQL(
+    deleteFrom(user_class_bind.name).where([
       `user_id=${v(userId)}`,
       "EXISTS " +
         select("*")
           .from(dclass.name)
           .where([`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`, `class.id=user_class_bind.class_id`])
           .toSelect(),
-    ])
-    .client(dbPool);
+    ]),
+  );
 }
 export async function getUserBasic(userId: number): Promise<UserBasicDto> {
-  const users = await select<UserBasicDto>({
-    user_id: "id",
-    email: "email",
-    avatar_url: "'/file/avatar/'||avatar",
-    nickname: true,
-    is_official: `(SELECT EXISTS ${getUserBindAccount(userId).toSelect()})`,
-    primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,
-  })
-    .from(user.name, { as: "u" })
-    .where(`u.id=${v(userId)}`)
-    .limit(1)
-    .dataClient(dbPool)
-    .queryRows();
+  const users = await dbPool.queryRows(
+    select<UserBasicDto>({
+      user_id: "id",
+      email: "email",
+      avatar_url: "'/file/avatar/'||avatar",
+      nickname: true,
+      is_official: `(SELECT EXISTS ${getUserBindAccount(userId).toSelect()})`,
+      primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,
+    })
+      .from(user.name, { as: "u" })
+      .where(`u.id=${v(userId)}`)
+      .limit(1),
+  );
   if (!users.length) throw new HttpError(404, { message: "用户不存在" });
   const userInfo = users[0];
   return userInfo;
@@ -58,20 +58,20 @@ export async function getUserProfile(userId: number): Promise<UserInfoDto> {
   const profile = select({ acquaintance_time: true, comment_stat_enabled: true, live_notice: true })
     .from(user_profile.name)
     .where(`user_id=${v(userId)}`);
-  const users = await select<UserInfoDto>({
-    user_id: "id",
-    email: "email",
-    avatar_url: "'/file/avatar/'||avatar",
-    nickname: true,
-    primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,
-    bind_accounts: `(SELECT json_agg(row_to_json(accounts)) FROM ${getUserBindAccount(userId).toSelect()} AS accounts)`,
-    profile: `(SELECT row_to_json(profile) FROM ${profile.toSelect()} AS profile)`,
-  })
-    .from(user.name, { as: "u" })
-    .where(`u.id=${v(userId)}`)
-    .limit(1)
-    .dataClient(dbPool)
-    .queryRows();
+  const users = await dbPool.queryRows(
+    select<UserInfoDto>({
+      user_id: "id",
+      email: "email",
+      avatar_url: "'/file/avatar/'||avatar",
+      nickname: true,
+      primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,
+      bind_accounts: `(SELECT json_agg(row_to_json(accounts)) FROM ${getUserBindAccount(userId).toSelect()} AS accounts)`,
+      profile: `(SELECT row_to_json(profile) FROM ${profile.toSelect()} AS profile)`,
+    })
+      .from(user.name, { as: "u" })
+      .where(`u.id=${v(userId)}`)
+      .limit(1),
+  );
   if (!users.length) throw new HttpError(404, { message: "用户不存在" });
   const userInfo = users[0];
   if (!userInfo.bind_accounts) userInfo.bind_accounts = [];
@@ -79,11 +79,11 @@ export async function getUserProfile(userId: number): Promise<UserInfoDto> {
   return userInfo;
 }
 export async function bindPlatformAccount(userId: number, platform: Platform, pla_uid: string, skipCheck?: boolean) {
-  const [plaUser] = await select<{ signature?: string }>({ signature: true })
-    .from(pla_user.name)
-    .where(`platform=${v(platform)} AND pla_uid=${v(pla_uid)}`)
-    .dataClient(dbPool)
-    .queryRows();
+  const [plaUser] = await dbPool.queryRows(
+    select<{ signature?: string }>({ signature: true })
+      .from(pla_user.name)
+      .where(`platform=${v(platform)} AND pla_uid=${v(pla_uid)}`),
+  );
   if (!plaUser) throw new HttpError(400, { message: "平台账号不存在" });
   if (!skipCheck) {
     if (!checkSignatureStudentId(userId, plaUser.signature)) {

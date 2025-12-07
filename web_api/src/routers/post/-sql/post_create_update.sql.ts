@@ -1,11 +1,12 @@
 import { post, post_review_info, TextStructure, user_profile } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
 import { textStructChecker } from "../-utils/text_struct.ts";
 import { HttpError } from "@/global/errors.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
 import { PostReviewType, CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "@/dto/post.ts";
+import { QueryRowsResult } from "@asla/pg";
 
 export async function createPost(userId: number, param: CreatePostParam): Promise<{ id: number }> {
   param.content_text_structure = checkTypeCopy(param.content_text_structure, optional(textStructChecker));
@@ -18,7 +19,8 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
   if (param.is_anonymous) optionBit |= 0b1000_0000;
   if (param.comment_disabled) optionBit |= 0b0100_0000;
   await using t = dbPool.begin();
-  const [insert] = await t.multipleQueryRows([
+
+  const [insert] = await t.query<[QueryRowsResult<{ id: number; group_id: number | null }>, QueryRowsResult]>([
     insertIntoValues(post.name, {
       user_id: userId,
       content_text: content_text ? content_text : null,
@@ -29,12 +31,12 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
       is_hide,
       options: toBit(8, optionBit),
       is_reviewing: group_id === undefined ? false : true,
-    }).returning<{ id: number; group_id: number | null }>(["id", "group_id"]),
+    }).returning(["id", "group_id"]),
     update(user_profile.name)
       .set({ post_count: "post_count + 1" })
       .where(`user_id=${v(userId)}`),
   ]);
-  const row = insert[0];
+  const row = insert.rows[0];
   if (row.group_id !== null) {
     await t.queryCount(getAddReviewRecord(PostReviewType.post, row.id));
   }
@@ -98,16 +100,16 @@ export async function updatePostContent(
 
 export async function updatePostConfig(postId: number, userId: number, param: UpdatePostConfigParam): Promise<number> {
   const { comment_disabled, is_hide } = param;
-  const updateContentSql = await update(post.name)
-    .set({
-      options: updatePostOption("options", { comment_disabled }), // 设置评论关闭
-      is_hide: is_hide === undefined ? undefined : v(is_hide),
-    })
-    .where(() => {
-      return [`user_id=${v(userId)}`, `id=${v(postId)}`, `(NOT is_delete)`];
-    })
-    .client(dbPool)
-    .queryCount();
+  const updateContentSql = await dbPool.queryCount(
+    update(post.name)
+      .set({
+        options: updatePostOption("options", { comment_disabled }), // 设置评论关闭
+        is_hide: is_hide === undefined ? undefined : v(is_hide),
+      })
+      .where(() => {
+        return [`user_id=${v(userId)}`, `id=${v(postId)}`, `(NOT is_delete)`];
+      }),
+  );
   return updateContentSql;
 }
 

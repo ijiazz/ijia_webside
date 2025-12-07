@@ -1,6 +1,6 @@
 import { select } from "@asla/yoursql";
 import { user_profile, user } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { PromiseConcurrency } from "evlib/async";
 
 /**

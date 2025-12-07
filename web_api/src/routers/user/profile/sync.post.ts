@@ -1,5 +1,5 @@
 import { Platform, pla_user } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { checkValueAsync } from "@/global/check.ts";
 import { HttpError } from "@/global/errors.ts";
 import { getCheckerServer } from "@/services/douyin.ts";
@@ -24,11 +24,11 @@ export default routeGroup.create({
   async handler({ userId, platform, pla_uid }) {
     if (ENV.IS_PROD) {
       if (platform === Platform.douYin) {
-        const [info] = await select<{ sec_uid: string }>({ sec_uid: "(extra->>'sec_uid')" })
-          .from(pla_user.name)
-          .where(`platform=${v(platform)} AND pla_uid=${v(pla_uid)}`)
-          .dataClient(dbPool)
-          .queryRows();
+        const [info] = await dbPool.queryRows(
+          select<{ sec_uid: string }>({ sec_uid: "(extra->>'sec_uid')" })
+            .from(pla_user.name)
+            .where(`platform=${v(platform)} AND pla_uid=${v(pla_uid)}`),
+        );
         if (info) await getCheckerServer().syncUserInfo(platform, info.sec_uid);
         else throw new HttpError(404, { message: "账号不存在" });
       } else {

@@ -1,4 +1,4 @@
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { HttpError } from "@/global/errors.ts";
 import { hashPasswordBackEnd } from "../-services/password.ts";
 import { user, user_blacklist } from "@ijia/data/db";
@@ -14,11 +14,11 @@ export async function accountLoginByEmail(email: string, password?: string): Pro
   return loginCheck(user, password);
 }
 export async function updateLastLoginTime(id: number) {
-  await update(user.name)
-    .set({ last_login_time: "now()" })
-    .where([`id=${v(id)}`, "last_login_time < now()"])
-    .client(dbPool)
-    .queryCount();
+  await dbPool.queryCount(
+    update(user.name)
+      .set({ last_login_time: "now()" })
+      .where([`id=${v(id)}`, "last_login_time < now()"]),
+  );
 }
 async function loginCheck(user: LoginUserInfo | undefined, password?: string): Promise<number> {
   if (!user) throw new HttpError(401, { message: "账号或密码错误" });
@@ -35,17 +35,18 @@ async function expectPasswordIsEqual(user: LoginUserInfo, inputPassword?: string
   return typeof inputPassword === "string" && user.password === inputPassword;
 }
 function selectUser(where: string) {
-  return select<LoginUserInfo>({
-    user_id: "id",
-    password: true,
-    pwd_salt: true,
-    in_blacklist: `EXISTS ${select("1").from(user_blacklist.name).where("user_id = u.id").toSelect()}`,
-  })
-    .from(user.name, { as: "u" })
-    .where(["NOT is_deleted", where])
-    .limit(1)
-    .dataClient(dbPool)
-    .queryRows()
+  return dbPool
+    .queryRows(
+      select<LoginUserInfo>({
+        user_id: "id",
+        password: true,
+        pwd_salt: true,
+        in_blacklist: `EXISTS ${select("1").from(user_blacklist.name).where("user_id = u.id").toSelect()}`,
+      })
+        .from(user.name, { as: "u" })
+        .where(["NOT is_deleted", where])
+        .limit(1),
+    )
     .then((rows) => rows[0]);
 }
 type LoginUserInfo = {

@@ -13,22 +13,22 @@ beforeEach<Context>(async ({ hono, publicDbPool }) => {
 });
 test("获取用户信息", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  const classes = await insertIntoValues(dclass.name, [
-    { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-    { class_name: "2" },
-    { class_name: "3" },
-  ])
-    .returning("*")
-    .dataClient(publicDbPool)
-    .queryRows()
+  const classes = await publicDbPool
+    .queryRows(
+      insertIntoValues(dclass.name, [
+        { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+        { class_name: "2" },
+        { class_name: "3" },
+      ]).returning("*"),
+    )
     .then((res) => res.map((item) => item.id));
 
-  await insertIntoValues(
-    user_class_bind.name,
-    classes.map((class_id) => ({ class_id, user_id: alice.id })),
-  )
-    .client(publicDbPool)
-    .queryCount();
+  await publicDbPool.queryRows(
+    insertIntoValues(
+      user_class_bind.name,
+      classes.map((class_id) => ({ class_id, user_id: alice.id })),
+    ),
+  );
 
   await expect(apiGetBasicInfo(api, alice.token)).resolves.toMatchObject({
     user_id: alice.id,
@@ -50,16 +50,16 @@ test("获取用户信息", async function ({ api, publicDbPool }) {
 });
 test("获取用户信息-绑定账号后", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  await insertIntoValues(pla_user.name, [
-    { pla_uid: "1", platform: Platform.douYin },
-    { pla_uid: "2", platform: Platform.douYin },
-    { pla_uid: "3", platform: Platform.douYin },
-  ])
-    .client(publicDbPool)
-    .queryCount();
-  await insertIntoValues(user_platform_bind.name, [{ pla_uid: "1", platform: Platform.douYin, user_id: alice.id }])
-    .client(publicDbPool)
-    .queryCount();
+  await publicDbPool.queryCount(
+    insertIntoValues(pla_user.name, [
+      { pla_uid: "1", platform: Platform.douYin },
+      { pla_uid: "2", platform: Platform.douYin },
+      { pla_uid: "3", platform: Platform.douYin },
+    ]),
+  );
+  await publicDbPool.queryCount(
+    insertIntoValues(user_platform_bind.name, [{ pla_uid: "1", platform: Platform.douYin, user_id: alice.id }]),
+  );
 
   await expect(apiGetBasicInfo(api, alice.token)).resolves.toMatchObject({
     user_id: alice.id,
@@ -73,15 +73,15 @@ test("获取用户信息-绑定账号后", async function ({ api, publicDbPool }
 });
 test("只能选择公共班级，且公共班级只能选一个", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  const classes = await insertIntoValues(dclass.name, [
-    { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-    { class_name: "2", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-    { class_name: "3" },
-    { class_name: "4" },
-  ])
-    .returning("*")
-    .dataClient(publicDbPool)
-    .queryRows()
+  const classes = await publicDbPool
+    .queryRows(
+      insertIntoValues(dclass.name, [
+        { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+        { class_name: "2", parent_class_id: PUBLIC_CLASS_ROOT_ID },
+        { class_name: "3" },
+        { class_name: "4" },
+      ]).returning("*"),
+    )
     .then((res) => res.map((item) => item.id));
 
   await expect(apiUpdateProfile(api, { primary_class_id: classes[2] }, alice.token), "只能选择公共班级").responseStatus(

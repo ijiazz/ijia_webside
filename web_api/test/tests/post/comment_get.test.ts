@@ -164,7 +164,7 @@ describe("部分帖子状态下不能获取评论", () => {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
 
-    await update(post.name).set({ is_reviewing: "true" }).where(`id=${action.postId}`).client(publicDbPool).query(); // 设置作品为审核中
+    await publicDbPool.execute(update(post.name).set({ is_reviewing: "true" }).where(`id=${action.postId}`)); // 设置作品为审核中
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
@@ -174,7 +174,7 @@ describe("部分帖子状态下不能获取评论", () => {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
 
-    await update(post.name).set({ is_review_pass: "false" }).where(`id=${postInfo.id}`).client(publicDbPool).query(); // 设置作品为审核不通过
+    await publicDbPool.execute(update(post.name).set({ is_review_pass: "false" }).where(`id=${postInfo.id}`)); // 设置作品为审核不通过
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
