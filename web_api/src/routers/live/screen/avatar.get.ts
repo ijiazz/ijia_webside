@@ -1,7 +1,7 @@
 import routeGroup from "../_route.ts";
 import { ScreenAvatarRes } from "@/dto/live.ts";
 import { genScreenAvatar } from "../-sql/avatar.ts";
-import { redisPool } from "@ijia/data/cache";
+import { redisPool } from "@/services/redis.ts";
 
 let screenAvatarCache: Promise<{ data: string; zeroMs?: number }> | undefined;
 export default routeGroup.create({

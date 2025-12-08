@@ -1,1 +1,1 @@
-export { dbPool, type ExecutableSQL } from "@ijia/data/dbclient";
+export { dbPool, type ExecutableSQL } from "@/db/client.ts";

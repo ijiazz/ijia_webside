@@ -8,11 +8,12 @@ import {
   user_profile,
   Platform,
 } from "@ijia/data/db";
-import { dbPool, ExecutableSQL } from "@/db/client.ts";
+import { dbPool } from "@/db/client.ts";
 import { UserBasicDto, UserInfoDto } from "@/dto/user.ts";
 import { HttpError } from "@/global/errors.ts";
 import { deleteFrom, insertInto, select } from "@asla/yoursql";
 import { insertIntoValues, v } from "@/sql/utils.ts";
+import { ExecutableSQL } from "@asla/pg";
 
 export function setUserPublicClass(userId: number, classId: number | null): ExecutableSQL {
   return dbPool.createExecutableSQL(

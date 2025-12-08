@@ -2,7 +2,7 @@ import { api, JWT_TOKEN_KEY } from "@/__mocks__/fetch.ts";
 import { CreatePostParam } from "@api/dto.ts";
 import { post_group } from "@ijia/data/db";
 import { getAppUrlFromRoute } from "@/fixtures/test.ts";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 
 export async function clearPosts() {
