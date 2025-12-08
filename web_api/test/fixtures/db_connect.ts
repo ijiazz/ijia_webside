@@ -2,7 +2,7 @@ import { test as viTest, afterAll, vi } from "vitest";
 import { dbPool } from "@/db/client.ts";
 import { createInitIjiaDb } from "@ijia/data/testlib";
 import process from "node:process";
-import { redisPool, RedisPool } from "@ijia/data/cache";
+import { redisPool, RedisPool } from "@/services/redis.ts";
 import { PgDbQueryPool, DbManage, parserDbConnectUrl } from "@asla/pg";
 
 export interface DbContext {

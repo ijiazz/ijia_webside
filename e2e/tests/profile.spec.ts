@@ -3,7 +3,7 @@ import { AccountInfo, initAlice, loginGetToken } from "@/__mocks__/user.ts";
 import { dclass, pla_user, Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { Page } from "@playwright/test";
 import { deleteFrom, v } from "@asla/yoursql";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 const { expect, beforeEach, beforeAll, describe } = test;
 

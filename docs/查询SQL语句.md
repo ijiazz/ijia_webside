@@ -10,36 +10,21 @@
 
 sql 生成器使用 `@asla/yoursql`(https://github.com/asnowc/yoursql)。你需要了解一下使用方法
 
-`@ijia/data/dbclient` 重新导出了 `@asla/yoursql` , 并扩展了一些方法、构造了业务相关的表。所以从`@asla/yoursql` 的导入都需要改成 `@ijia/data/dbclient`。 具体扩展方法见 https://github.com/ijiazz/school_db/blob/main/src/yoursql/pg.ts#L17
-
-**获取所有公共班级的示例**
-
-```ts
-import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
-
-const rows = await dclass
-  .select("class_id AS id, class_name")
-  .where(`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`)
-  .queryRows();
-```
-
 **安全转换值，避免 SQL 注入**
 
 ```ts
 import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
-import v from "@ijia/data/dbclient";
-
-const rows = await dclass
-  .select("class_id AS id, class_name")
-  .where(`parent_class_id=${v(PUBLIC_CLASS_ROOT_ID)}`) // 如果 PUBLIC_CLASS_ROOT_ID 是用户参数，需要用 v 函数转换，这会将 JavaScript 值转换成 SQL 值
-  .queryRows();
+import { dbPool } from "@/db/client.ts";
+import v from "@/db/client.ts";
+// 如果 PUBLIC_CLASS_ROOT_ID 是用户参数，需要用 v 函数转换，这会将 JavaScript 值转换成 SQL 值
+const rows = await dbPool.queryRows(`SELECT * FROM class WHERE id=${v(PUBLIC_CLASS_ROOT_ID)}`);
 ```
 
 **直接使用 SQL 文本查询**
 
 ```ts
 import { v, dclass } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 
 const sqlStr = await dclass
   .select("class_id AS id, class_name")
@@ -62,7 +47,7 @@ await transaction.commit();
 ## Redis 操作
 
 ```ts
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/services/redis";
 
 // 从连接池获取 redis 客户端实例，示例方法参见官方文档 https://www.npmjs.com/package/redis
 using redis = await redisPool.connect(); // 使用 using ，不需要手动释放连接

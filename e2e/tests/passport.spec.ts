@@ -1,7 +1,7 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { user } from "@ijia/data/db";
 import { initAlice, loginGetToken, initBob } from "@/__mocks__/user.ts";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { Page } from "@playwright/test";
 import { deleteFrom, select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";

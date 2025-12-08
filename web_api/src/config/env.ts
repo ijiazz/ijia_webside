@@ -26,7 +26,7 @@ export const ENV = {
   CHECK_SERVER: env.CHECK_SERVER,
   WATCH_CONFIG: !!env.WATCH_CONFIG,
   JWT_KEY: getJwtKey(),
-
+  DATABASE_URL: env.DATABASE_URL,
   REDIS_CONNECT_URL: env.REDIS_CONNECT_URL,
   ...getListen(),
 };

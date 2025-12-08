@@ -16,7 +16,7 @@ export default {
     },
 
     include: ["./test/**/*.test.ts"],
-    setupFiles: ["./test/asserts/asserts.ts"],
+    setupFiles: ["./test/asserts/asserts.ts", "./test/setup/db.ts"],
   },
   plugins: [tsconfigPaths({})],
 } satisfies ViteUserConfig;

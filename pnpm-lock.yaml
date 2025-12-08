@@ -33,19 +33,16 @@ importers:
 
   deps/ijia-data:
     dependencies:
-      '@asla/pg':
-        specifier: npm:@jsr/asla__pg@^0.2.0
-        version: '@jsr/asla__pg@0.2.0'
       '@asla/yoursql':
         specifier: npm:@jsr/asla__yoursql@~0.12.0
         version: '@jsr/asla__yoursql@0.12.0'
-      '@redis/client':
-        specifier: ^5.9.0
-        version: 5.9.0
       evlib:
         specifier: ^3.1.3
         version: 3.1.3
     devDependencies:
+      '@asla/pg':
+        specifier: npm:@jsr/asla__pg@^0.2.0
+        version: '@jsr/asla__pg@0.2.0'
       '@types/node':
         specifier: ^24.10.0
         version: 24.10.0
@@ -191,6 +188,9 @@ importers:
       '@ijia/data':
         specifier: workspace:^
         version: link:../deps/ijia-data
+      '@redis/client':
+        specifier: ^5.9.0
+        version: 5.9.0
       '@std/jsonc':
         specifier: npm:@jsr/std__jsonc@^1.0.1
         version: '@jsr/std__jsonc@1.0.1'

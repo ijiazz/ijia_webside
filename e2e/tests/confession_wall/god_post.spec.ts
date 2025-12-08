@@ -3,7 +3,7 @@ import { initAlice, loginGetToken } from "@/__mocks__/user.ts";
 import { DbPlaUserCreate, pla_asset, pla_user, Platform, USER_LEVEL, watching_pla_user } from "@ijia/data/db";
 import { insertPosts } from "@api-test/__mocks__/posts.ts";
 import { deleteFrom } from "@asla/yoursql";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/db/client.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 const { expect, beforeEach, beforeAll, describe } = test;
 
