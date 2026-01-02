@@ -23,7 +23,7 @@
     "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
     "@asla/pg": "npm:@jsr/asla__pg@^0.2.0",
     "@asla/wokao": "npm:@jsr/asla__wokao@^0.0.3",
-    "@asla/yoursql": "npm:@jsr/asla__yoursql@~0.12.0",
+    "@asla/yoursql": "npm:@jsr/asla__yoursql@^0.13.0",
     "@hono/node-server": "^1.19.6",
     "@ijia/data": "workspace:^",
     "@redis/client": "^5.9.0",

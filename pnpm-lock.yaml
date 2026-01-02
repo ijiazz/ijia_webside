@@ -34,8 +34,8 @@ importers:
   deps/ijia-data:
     dependencies:
       '@asla/yoursql':
-        specifier: npm:@jsr/asla__yoursql@~0.12.0
-        version: '@jsr/asla__yoursql@0.12.0'
+        specifier: npm:@jsr/asla__yoursql@~0.13.0
+        version: '@jsr/asla__yoursql@0.13.0'
       evlib:
         specifier: ^3.1.3
         version: 3.1.3
@@ -59,8 +59,8 @@ importers:
         specifier: npm:@jsr/asla__pg@^0.2.0
         version: '@jsr/asla__pg@0.2.0'
       '@asla/yoursql':
-        specifier: npm:@jsr/asla__yoursql@~0.12.0
-        version: '@jsr/asla__yoursql@0.12.0'
+        specifier: npm:@jsr/asla__yoursql@^0.13.0
+        version: '@jsr/asla__yoursql@0.13.0'
       '@ijia/data':
         specifier: workspace:^
         version: link:../deps/ijia-data
@@ -180,8 +180,8 @@ importers:
         specifier: npm:@jsr/asla__wokao@^0.0.3
         version: '@jsr/asla__wokao@0.0.3'
       '@asla/yoursql':
-        specifier: npm:@jsr/asla__yoursql@~0.12.0
-        version: '@jsr/asla__yoursql@0.12.0'
+        specifier: npm:@jsr/asla__yoursql@^0.13.0
+        version: '@jsr/asla__yoursql@0.13.0'
       '@hono/node-server':
         specifier: ^1.19.6
         version: 1.19.6(hono@4.10.7)
@@ -1287,6 +1287,9 @@ packages:
 
   '@jsr/asla__yoursql@0.12.0':
     resolution: {integrity: sha512-ljnWTe41JGTVqAWA8NP4WR5THwVCaOMBiFsRMhBEY10PjWu7DxfSq9eMbuB3fnO1efYhcHdfzxavrfCvwuHUSQ==, tarball: https://npm.jsr.io/~/11/@jsr/asla__yoursql/0.12.0.tgz}
+
+  '@jsr/asla__yoursql@0.13.0':
+    resolution: {integrity: sha512-wju9pokxu6RcaRziM/pWbhJYvFY9UFa//thTIc05Wdj4jTap63sq4DbwF4YnMRmI1GIeRcJyhtpGkjImcuDZBQ==, tarball: https://npm.jsr.io/~/11/@jsr/asla__yoursql/0.13.0.tgz}
 
   '@jsr/std__bytes@1.0.5':
     resolution: {integrity: sha512-jcyXQSy5zAh2/6NLMWUkhJuQ0HihY5RwWF5RvpZyEmpmBaokkTwPkev0sqHzNJJvNusDUMznVBIclTT9augCkg==, tarball: https://npm.jsr.io/~/11/@jsr/std__bytes/1.0.5.tgz}
@@ -4367,6 +4370,8 @@ snapshots:
   '@jsr/asla__wokao@0.0.3': {}
 
   '@jsr/asla__yoursql@0.12.0': {}
+
+  '@jsr/asla__yoursql@0.13.0': {}
 
   '@jsr/std__bytes@1.0.5': {}
 

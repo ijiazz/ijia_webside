@@ -1,7 +1,6 @@
 import { dbPool } from "@/db/client.ts";
 import {
   pla_asset,
-  pla_comment,
   pla_user,
   Platform,
   pla_asset_media,
@@ -220,12 +219,6 @@ export async function getGodPost(option?: GetAssetListOption) {
     total: raw.total,
     items,
   };
-}
-function selectAssetStat(selectableSymbol: string) {
-  return select({ asset_id: "c.asset_id", count: "count(*)::INT" })
-    .from(selectableSymbol, { as: "t" })
-    .innerJoin(pla_comment.name, { as: "c", on: "c.asset_id=t.asset_id" })
-    .groupBy("c.asset_id");
 }
 
 export type AssetStat = {
