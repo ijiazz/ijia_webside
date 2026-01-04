@@ -1,14 +1,18 @@
 //@ts-check
 import { defineConfig } from "rollup";
-import tsPlugin from "@rollup/plugin-typescript";
+import esmTsPlugin from "@rollup/plugin-typescript";
 import path from "node:path";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import packageJson from "../package.json" with { type: "json" };
 
+const root = path.resolve(import.meta.dirname, "..");
+const sourceRoot = path.join(root, "src");
+const deps = Object.keys(packageJson.dependencies);
+
 /** @type {any} */
-const typescriptPlugin = tsPlugin;
+const typescriptPlugin = esmTsPlugin;
 export default defineConfig({
-  input: { main: "src/main.ts" },
+  input: { main: "src/main.ts", dto: "src/dto.ts" },
   output: {
     format: "es",
     dir: "dist",
@@ -21,11 +25,12 @@ export default defineConfig({
       compilerOptions: {
         module: "NodeNext",
         target: "es2023",
-        baseUrl: ".",
-        rootDir: ".",
+        baseUrl: root,
+        rootDir: "./src",
         outDir: "dist",
         noEmit: false,
         declaration: true,
+        declarationDir: "./dist",
       },
     }),
     // nodeResolve({ resolveOnly: [] }),
@@ -42,6 +47,3 @@ export default defineConfig({
     }
   },
 });
-const root = path.resolve(import.meta.dirname, "..");
-const sourceRoot = path.join(root, "src");
-const deps = Object.keys(packageJson.dependencies);

@@ -15,7 +15,9 @@
     "start": "node --env-file=.env dist/main.js",
     "genApiDoc": "typedoc --tsconfig tsconfig.model.json"
   },
-  "exports": {},
+  "exports": {
+    "dto": "./dist/dto.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
