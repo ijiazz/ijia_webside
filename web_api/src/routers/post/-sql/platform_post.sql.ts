@@ -33,7 +33,7 @@ export type GetAssetListOption = GetListOption & {
 function selectAssetResource(setKey: string) {
   return select(
     `json_agg(${jsonb_build_object({
-      media_type: `SELECT type FROM sys.file WHERE bucket=${v(BUCKETS.PLA_POST_MEDIA)} AND filename=media.filename`,
+      media_type: "media.media_type",
       index: "media.index",
       level: "media.level",
       filename: "media.filename",
