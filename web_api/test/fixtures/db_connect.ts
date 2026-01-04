@@ -31,7 +31,7 @@ afterAll(async function () {
 export const test = viTest.extend<DbContext>({
   async ijiaDbPool({}, use) {
     const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
-    await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true, extra: true });
+    await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true });
     dbPool.connectOption = { ...DB_CONNECT_INFO, database: dbName };
     dbPool.open();
     await use(dbPool);
@@ -41,7 +41,7 @@ export const test = viTest.extend<DbContext>({
     console.log("publicDbPool init", !!publicDbPool);
     if (!publicDbPool) {
       publicDbPool = (async () => {
-        await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true, extra: true });
+        await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true });
         dbPool.connectOption = { ...DB_CONNECT_INFO, database: pubDbName };
         dbPool.open();
         publicDbPool = dbPool;

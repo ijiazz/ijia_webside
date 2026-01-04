@@ -1,15 +1,15 @@
-import { DbPlaAssetMedia } from "@ijia/data/db";
 import { AssetMediaDto } from "@/dto/media.ts";
 import { getBucket } from "@ijia/data/oss";
 import { PostAssetType } from "@/dto/post.ts";
 
 const prefix = "/file/" + getBucket().PLA_POST_MEDIA + "/";
-export function assetMediaToDto(item: DbPlaAssetMedia): AssetMediaDto["origin"] {
-  const filename = item.file_id + (item.ext ? "." + item.ext : "");
+export function assetMediaToDto(item: { filename?: string }): AssetMediaDto["origin"] {
+  //TODO 补充类型
+
   return {
-    url: prefix + filename + "?" + item.hash_type + "=" + item.hash,
-    size: item.size!,
-    meta: item.meta as any,
+    url: item.filename ? prefix + item.filename : "",
+    size: 0,
+    meta: {},
   };
 }
 export function getPostAssetsType(type: string | number): PostAssetType {

@@ -1,10 +1,9 @@
 import { ExecutableSQL } from "@asla/pg";
 import { select } from "@asla/yoursql";
-import { captcha_picture } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 
 export function getRandomImageCaptcha(): ExecutableSQL<CaptchaRes[]> {
-  const t = select("id, type, is_true").from(captcha_picture.name);
+  const t = select("id, type, is_true").from("captcha_picture");
   //TODO: 优化随机行的获取
   //4 张确定值
   const certain = t.where(`is_true IS NOT NULL`).orderBy("RANDOM()").limit(4);

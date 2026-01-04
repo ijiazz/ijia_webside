@@ -1,6 +1,6 @@
 import { getCheckerServer } from "@/services/douyin.ts";
 import { getSubscribeLiveEmails, sendEmailMany } from "./notice_user_email.ts";
-import { log, LogLevel } from "@ijia/data/db";
+import { LogLevel } from "@ijia/data/db";
 import { appConfig } from "@/config.ts";
 import { getEmailSender } from "../email.ts";
 import { toErrorStr } from "evlib";
@@ -85,7 +85,7 @@ export class IjiaWatch extends UserLive {
     try {
       return await checkServer.userIsLive(this.uid);
     } catch (error) {
-      const sql = insertIntoValues(log.name, {
+      const sql = insertIntoValues("sys.log", {
         info: { error: toErrorStr(error) },
         name: "直播轮询",
         level: LogLevel.error,
@@ -132,7 +132,7 @@ async function sendLiveNotificationEmails() {
 
   try {
     await dbPool.execute(
-      insertIntoValues(log.name, {
+      insertIntoValues("sys.log", {
         info: {
           总发送用户数: res.total,
           发送总耗时: useTime,

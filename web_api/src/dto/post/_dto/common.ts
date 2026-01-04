@@ -1,7 +1,6 @@
 import { TextStructure } from "@ijia/data/db";
 import { AssetMediaDto } from "../../media.ts";
 
-export type { TextStructure };
 export type PostAssetType = {
   hasText: boolean;
   hasImage: boolean;

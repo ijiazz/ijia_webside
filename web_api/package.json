@@ -21,7 +21,7 @@
   "license": "ISC",
   "dependencies": {
     "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
-    "@asla/pg": "npm:@jsr/asla__pg@^0.2.0",
+    "@asla/pg": "npm:@jsr/asla__pg@^0.2.1",
     "@asla/wokao": "npm:@jsr/asla__wokao@^0.0.3",
     "@asla/yoursql": "npm:@jsr/asla__yoursql@^0.13.0",
     "@hono/node-server": "^1.19.6",

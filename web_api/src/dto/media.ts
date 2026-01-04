@@ -1,4 +1,6 @@
-import type { AudioMediaFile, ImageFileMeta, VideoFileMeta } from "@ijia/data/db";
+import { MediaType, ImageFileMeta, VideoFileMeta, AudioFileMeta, DbSysFile } from "@ijia/data/db";
+
+export { MediaType } from "@ijia/data/db";
 
 type AssetMediaBase<T> = {
   covers?: MulFormat<AssetImage>;
@@ -9,7 +11,7 @@ type AssetMediaBase<T> = {
 
 export type AssetMediaUploadFile = {
   tmp_file_id: string;
-  type: AssetMediaType;
+  type: MediaType;
 };
 
 export type AssetMediaInfoDto<Meta extends {} = Record<string, any>> = {
@@ -18,18 +20,18 @@ export type AssetMediaInfoDto<Meta extends {} = Record<string, any>> = {
   meta: Meta;
 };
 
-export type AssetVideo = AssetMediaInfoDto<VideoFileMeta>;
-export type AssetImage = AssetMediaInfoDto<ImageFileMeta>;
-export type AssetAudio = AssetMediaInfoDto<AudioMediaFile>;
+export type AssetVideo = AssetMediaInfoDto<{}>; //TODO
+export type AssetImage = AssetMediaInfoDto<{}>; //TODO
+export type AssetAudio = AssetMediaInfoDto<{}>; //TODO
 
 export type AssetVideoDetail = AssetMediaBase<AssetVideo> & {
-  type: AssetMediaType.video;
+  type: MediaType.video;
 };
 export type AssetAudioDetail = AssetMediaBase<AssetAudio> & {
-  type: AssetMediaType.audio;
+  type: MediaType.audio;
 };
 export type AssetImageDetail = AssetMediaBase<AssetImage> & {
-  type: AssetMediaType.image;
+  type: MediaType.image;
 };
 
 export type AssetMediaDto = AssetVideoDetail | AssetAudioDetail | AssetImageDetail;
@@ -40,8 +42,8 @@ export enum MediaLevel {
   origin = "origin",
   thumb = "thumb",
 }
-export enum AssetMediaType {
-  video = "video",
-  audio = "audio",
-  image = "image",
-}
+// export enum MediaType {
+//   video = "video",
+//   audio = "audio",
+//   image = "image",
+// }
