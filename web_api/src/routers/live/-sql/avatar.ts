@@ -1,7 +1,6 @@
-import { GetListOption } from "@/dto/common.ts";
+import { GetListOption, UserAvatarDto } from "@/dto.ts";
 import { pla_user, user, user_platform_bind } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
-import { UserAvatarDto } from "../../../dto/live.ts";
 import { select } from "@asla/yoursql";
 import { QueryRowsResult } from "@asla/pg";
 

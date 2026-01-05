@@ -1,4 +1,4 @@
-import { CreatePostCommentResponse } from "@/dto/post_comment.ts";
+import { CreatePostCommentResponse } from "@/dto.ts";
 import routeGroup from "../_route.ts";
 import { HttpError } from "@/global/errors.ts";
 import { createComment, getUserCanCreateCommentLimit } from "../-sql/post_comment.sql.ts";

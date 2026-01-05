@@ -1,4 +1,4 @@
-import { EmailCaptchaReply, ImageCaptchaReply } from "../captcha.ts";
+import type { EmailCaptchaReply, ImageCaptchaReply } from "../captcha.ts";
 
 export type CreateUserProfileParam = {
   email: string;

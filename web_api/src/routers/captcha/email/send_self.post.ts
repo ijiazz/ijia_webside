@@ -1,7 +1,7 @@
 import routeGroup from "../_route.ts";
 import { checkValueAsync } from "@/global/check.ts";
 import { HttpCaptchaError, HttpError } from "@/global/errors.ts";
-import { EmailCaptchaActionType, EmailCaptchaQuestion, SendSelfEmailCaptchaParam } from "@/dto/captcha.ts";
+import { EmailCaptchaActionType, EmailCaptchaQuestion, SendSelfEmailCaptchaParam } from "@/dto.ts";
 import { enumType, ExpectType } from "@asla/wokao";
 import { sendAccountAuthEmailCaptcha } from "../-service/send_email_captcha.ts";
 import { imageCaptchaService } from "../-service/ImageCaptcha.service.ts";

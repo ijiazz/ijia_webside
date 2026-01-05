@@ -1,5 +1,5 @@
 import routeGroup from "../_route.ts";
-import { ScreenAvatarRes } from "@/dto/live.ts";
+import { ScreenAvatarRes } from "@/dto.ts";
 import { genScreenAvatar } from "../-sql/avatar.ts";
 import { redisPool } from "@/services/redis.ts";
 

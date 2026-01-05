@@ -1,5 +1,5 @@
 temp/
 node_modules/
 dist/
-web_api/docs/api/
+web_dto/docs/api/
 web/.*

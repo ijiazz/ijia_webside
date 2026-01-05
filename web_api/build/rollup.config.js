@@ -12,7 +12,7 @@ const deps = Object.keys(packageJson.dependencies);
 /** @type {any} */
 const typescriptPlugin = esmTsPlugin;
 export default defineConfig({
-  input: { main: "src/main.ts", dto: "src/dto.ts" },
+  input: { main: "src/main.ts" },
   output: {
     format: "es",
     dir: "dist",

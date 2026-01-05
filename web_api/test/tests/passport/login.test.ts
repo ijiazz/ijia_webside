@@ -9,7 +9,7 @@ import { getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
 import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
-import { LoginType, UserLoginParamDto } from "@/dto/passport.ts";
+import { LoginType, UserLoginParamDto } from "@/dto.ts";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
 

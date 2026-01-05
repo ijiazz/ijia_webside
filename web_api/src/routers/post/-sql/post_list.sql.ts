@@ -1,9 +1,8 @@
 import { post, post_group, post_like, user } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
-import { GetPostListParam, PostItemDto, PostUserInfo } from "@/dto/post.ts";
+import { GetPostListParam, PostItemDto, PostUserInfo, CursorListDto } from "@/dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { getPostContentType } from "./sql_tool.ts";
-import { CursorListDto } from "@/dto/common.ts";
 import { HttpError } from "@/global/errors.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";

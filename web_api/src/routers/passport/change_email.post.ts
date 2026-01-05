@@ -4,7 +4,7 @@ import { checkValueAsync, emailChecker } from "@/global/check.ts";
 import { changeAccountEmail } from "./-sql/account.ts";
 import routeGroup from "./_route.ts";
 import { parseSysJWT } from "@/global/jwt.ts";
-import { EmailCaptchaActionType } from "@/dto/captcha.ts";
+import { EmailCaptchaActionType } from "@/dto.ts";
 
 export default routeGroup.create({
   method: "POST",

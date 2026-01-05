@@ -1,7 +1,7 @@
 import { checkValue, optionalInt } from "@/global/check.ts";
 import routeGroup from "./_route.ts";
 import { ExpectType, optional } from "@asla/wokao";
-import { GetPostCommentListParam, PostCommentResponse } from "@/dto/post_comment.ts";
+import { GetPostCommentListParam, PostCommentResponse } from "@/dto.ts";
 import { getCommentList } from "./-sql/get_comment.sql.ts";
 
 export default routeGroup.create({

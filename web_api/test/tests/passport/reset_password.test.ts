@@ -9,8 +9,7 @@ import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { update } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
-import { LoginType, ResetPasswordParam } from "@/dto/passport.ts";
-import { EmailCaptchaActionType } from "@/dto/captcha.ts";
+import { LoginType, ResetPasswordParam, EmailCaptchaActionType } from "@/dto.ts";
 import { mockSendEmailCaptcha } from "./_mocks/captcha.ts";
 
 const AlicePassword = await hashPasswordFrontEnd("123");

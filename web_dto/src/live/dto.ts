@@ -1,4 +1,4 @@
-import { InfiniteListDto, ListDto, Platform } from "../common.ts";
+import type { InfiniteListDto, ListDto, SocialPlatform } from "../common.ts";
 
 export type UserAvatarDto = {
   avatar_url: string;
@@ -17,7 +17,7 @@ export type HomePageRes = {
 
 export type GodPlatformDto = {
   user_id: string;
-  platform: Platform;
+  platform: SocialPlatform;
   user_name: string;
   home_url?: string | null;
   avatar_url?: string | null;

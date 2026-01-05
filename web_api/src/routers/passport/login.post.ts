@@ -1,5 +1,5 @@
 import routeGroup, { signToken } from "./_route.ts";
-import { LoginType, UserLoginResultDto } from "@/dto/passport.ts";
+import { LoginType, UserLoginResultDto } from "@/dto.ts";
 import { optional, integer } from "@asla/wokao";
 import { hashPasswordFrontEnd } from "./-services/password.ts";
 import { setCookie } from "hono/cookie";

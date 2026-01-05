@@ -10,7 +10,7 @@ import { afterTime } from "evlib";
 import { update } from "@asla/yoursql";
 import commentRoutes from "@/routers/post/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
-import { PostCommentDto } from "@/dto/post_comment.ts";
+import { PostCommentDto } from "@/dto.ts";
 /* 
   本测试文件使用了公共数据库 publicDbPool
 */

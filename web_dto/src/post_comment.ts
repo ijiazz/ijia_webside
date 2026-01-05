@@ -1,6 +1,6 @@
 export * from "./post_comment/dto.ts";
 
-import {
+import type {
   CreatePostCommentParam,
   CreatePostCommentResponse,
   GetPostCommentListParam,

@@ -1,4 +1,4 @@
-import { PostResponse } from "@/dto/post.ts";
+import { PostResponse } from "@/dto.ts";
 import { checkValue } from "@/global/check.ts";
 import { integer, optional } from "@asla/wokao";
 import { getPostList } from "./-sql/post_list.sql.ts";

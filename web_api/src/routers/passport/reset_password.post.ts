@@ -1,4 +1,4 @@
-import { ResetPasswordParam } from "@/dto/passport.ts";
+import { ResetPasswordParam, EmailCaptchaActionType } from "@/dto.ts";
 import { optional } from "@asla/wokao";
 import { hashPasswordFrontEnd } from "./-services/password.ts";
 import { checkValueAsync } from "@/global/check.ts";
@@ -6,7 +6,6 @@ import { emailCaptchaService, emailCaptchaReplyChecker } from "@/routers/captcha
 import { HttpError } from "@/global/errors.ts";
 import { resetAccountPassword } from "./-sql/account.ts";
 import routeGroup from "./_route.ts";
-import { EmailCaptchaActionType } from "@/dto/captcha.ts";
 
 export default routeGroup.create({
   method: "POST",

@@ -10,7 +10,7 @@ import weiboIco from "./third_part_platforms/weibo.png";
 import xiaohongshuIco from "./third_part_platforms/xiaohongshu.png";
 import qqmusicIco from "./third_part_platforms/qqmusic.png";
 import hongguoIco from "./third_part_platforms/hongguo.png";
-import { Platform } from "@/api.ts";
+import { Platform, SocialPlatform } from "@/api.ts";
 
 export type ThirdPartSelectProps<T extends Platform | Platform[] = Platform | Platform[]> = Omit<
   SelectProps<T>,
@@ -25,39 +25,39 @@ export function ThirdPartSelect(props: ThirdPartSelectProps<Platform[]> & { mode
 export function ThirdPartSelect(props: ThirdPartSelectProps & { mode?: "multiple" }) {
   return <Select {...props} options={THIRD_PART_OPTION} />;
 }
-export const THIRD_PART: Record<Platform, { iconOutline?: ReactNode; icon?: ReactNode; name: string }> = {
-  [Platform.douYin]: {
+export const THIRD_PART: Record<SocialPlatform, { iconOutline?: ReactNode; icon?: ReactNode; name: string }> = {
+  [SocialPlatform.douYin]: {
     iconOutline: <TikTokOutlined />,
     icon: <Icon src={douyinIco} />,
     name: "抖音",
   },
-  [Platform.weibo]: {
+  [SocialPlatform.weibo]: {
     iconOutline: <WeiboOutlined />,
     icon: <Icon src={weiboIco} />,
     name: "微博",
   },
-  [Platform.bilibili]: {
+  [SocialPlatform.bilibili]: {
     iconOutline: <BilibiliOutlined />,
     icon: <Icon src={bilibiliIco} />,
     name: "bilibili",
   },
-  [Platform.v5sing]: {
+  [SocialPlatform.v5sing]: {
     name: "5sing 音乐",
     icon: <Icon src={v5singIco} />,
   },
-  [Platform.wangYiMusic]: {
+  [SocialPlatform.wangYiMusic]: {
     name: "网易云音乐",
     icon: <Icon src={wangyimusicIco} />,
   },
-  [Platform.xiaoHongShu]: {
+  [SocialPlatform.xiaoHongShu]: {
     name: "小红书",
     icon: <Icon src={xiaohongshuIco} />,
   },
-  [Platform.qqMusic]: {
+  [SocialPlatform.qqMusic]: {
     name: "QQ 音乐",
     icon: <Icon src={qqmusicIco} />,
   },
-  [Platform.hongGuo]: {
+  [SocialPlatform.hongGuo]: {
     name: "红果短剧",
     icon: <Icon src={hongguoIco} style={{ borderRadius: "20%" }} />,
   },

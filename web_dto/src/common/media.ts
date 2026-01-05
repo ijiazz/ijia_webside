@@ -1,6 +1,13 @@
-import { MediaType, ImageFileMeta, VideoFileMeta, AudioFileMeta, DbSysFile } from "@ijia/data/db";
-
-export { MediaType } from "@ijia/data/db";
+export enum MediaType {
+  video = "video",
+  audio = "audio",
+  image = "image",
+}
+export enum MediaLevel {
+  other = "other",
+  origin = "origin",
+  thumb = "thumb",
+}
 
 type AssetMediaBase<T> = {
   covers?: MulFormat<AssetImage>;
@@ -37,13 +44,3 @@ export type AssetImageDetail = AssetMediaBase<AssetImage> & {
 export type AssetMediaDto = AssetVideoDetail | AssetAudioDetail | AssetImageDetail;
 
 export type MulFormat<T> = { [key: string]: T | undefined };
-export enum MediaLevel {
-  other = "other",
-  origin = "origin",
-  thumb = "thumb",
-}
-// export enum MediaType {
-//   video = "video",
-//   audio = "audio",
-//   image = "image",
-// }

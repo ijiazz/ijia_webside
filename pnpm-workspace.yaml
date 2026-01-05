@@ -1,5 +1,6 @@
 packages:
   - web_api
   - web
+  - web_dto
   - deps/*
   - e2e

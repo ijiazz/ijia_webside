@@ -1,7 +1,7 @@
 export * from "./passport/dto.ts";
 
-import { AccountAuthenticateToken, ChangeEmailParam, GetAccountAuthTokenParam } from "./passport/account.ts";
-import {
+import type { AccountAuthenticateToken, ChangeEmailParam, GetAccountAuthTokenParam } from "./passport/account.ts";
+import type {
   ChangePasswordParam,
   CreateUserProfileParam,
   CreateUserProfileResult,

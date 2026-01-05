@@ -1,4 +1,4 @@
-import { UserInfoDto } from "@/dto/user.ts";
+import { UserInfoDto } from "@/dto.ts";
 import { getUserProfile } from "../-sql/user.service.ts";
 import routeGroup from "../_route.ts";
 

@@ -1,6 +1,5 @@
-import { AssetMediaDto } from "@/dto/media.ts";
 import { getBucket } from "@ijia/data/oss";
-import { PostAssetType } from "@/dto/post.ts";
+import { PostAssetType, AssetMediaDto } from "@/dto.ts";
 
 const prefix = "/file/" + getBucket().PLA_POST_MEDIA + "/";
 export function assetMediaToDto(item: { filename?: string }): AssetMediaDto["origin"] {

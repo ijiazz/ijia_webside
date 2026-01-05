@@ -1,9 +1,8 @@
-import { Platform } from "@/dto/common.ts";
-import { GodPlatformDto } from "../../../dto/live.ts";
+import { SocialPlatform, GodPlatformDto } from "@/dto.ts";
 
 export const list: GodPlatformDto[] = [
   {
-    platform: Platform.bilibili,
+    platform: SocialPlatform.bilibili,
     user_name: "佳佳佳-zZ",
     stat: { followers_count: 120000 },
     user_id: "18429568",
@@ -11,7 +10,7 @@ export const list: GodPlatformDto[] = [
     avatar_url: "/main/avatar/bilibili.webp",
   },
   {
-    platform: Platform.hongGuo,
+    platform: SocialPlatform.hongGuo,
     user_name: "邹佳佳",
     stat: { followers_count: 23000 },
     user_id: "",
@@ -19,7 +18,7 @@ export const list: GodPlatformDto[] = [
     avatar_url: "/main/avatar/honguo.jpg",
   },
   {
-    platform: Platform.xiaoHongShu,
+    platform: SocialPlatform.xiaoHongShu,
     user_name: "佳佳子_zZ",
     stat: { followers_count: 15000 },
     user_id: "",
@@ -27,7 +26,7 @@ export const list: GodPlatformDto[] = [
     avatar_url: "/main/avatar/xiaohongshu.webp",
   },
   {
-    platform: Platform.v5sing,
+    platform: SocialPlatform.v5sing,
     user_name: "佳佳佳_zZ",
     stat: { followers_count: 3480 },
     user_id: "",
@@ -35,7 +34,7 @@ export const list: GodPlatformDto[] = [
     avatar_url: "/main/avatar/5sing.jpg",
   },
   {
-    platform: Platform.wangYiMusic,
+    platform: SocialPlatform.wangYiMusic,
     user_name: "佳佳佳_zZ",
     stat: { followers_count: 11833 },
     user_id: "372467686",
@@ -43,7 +42,7 @@ export const list: GodPlatformDto[] = [
     avatar_url: "/main/avatar/wangyi.jpg",
   },
   {
-    platform: Platform.qqMusic,
+    platform: SocialPlatform.qqMusic,
     user_name: "佳佳佳_zZ",
     stat: { followers_count: 6614 },
     user_id: "372467686",

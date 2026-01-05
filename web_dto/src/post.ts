@@ -1,7 +1,7 @@
 export * from "./post/_dto/mod.ts";
 
-import { GetPlatformPostListParam, PlatformPostResponse } from "./post/_dto/platform_post.dto.ts";
-import {
+import type { GetPlatformPostListParam, PlatformPostResponse } from "./post/_dto/platform_post.dto.ts";
+import type {
   CommitReviewParam,
   CommitReviewResultDto,
   CreatePostParam,
@@ -12,7 +12,7 @@ import {
   UpdatePostContentParam,
   PostGroupResponse,
 } from "./post/_dto/mod.ts";
-import { PostCommentApi } from "./post_comment.ts";
+import type { PostCommentApi } from "./post_comment.ts";
 
 export interface PostApi extends PostCommentApi {}
 

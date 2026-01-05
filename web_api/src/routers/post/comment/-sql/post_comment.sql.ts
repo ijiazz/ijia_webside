@@ -1,6 +1,6 @@
 import { post, post_comment } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
-import { CreateCommentData, CreateCommentItemData } from "@/dto/post_comment.ts";
+import { CreateCommentData, CreateCommentItemData } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";

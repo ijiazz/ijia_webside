@@ -1,8 +1,6 @@
-import { TextStructure } from "@ijia/data/db";
-import { CursorListDto } from "../../common.ts";
-import { AssetMediaUploadFile } from "../../media.ts";
-import { PostGroupInfo } from "./post_group.ts";
-import { PostItemBase, PostUserInfo } from "./common.ts";
+import type { CursorListDto, TextStructure, AssetMediaUploadFile } from "../../common.ts";
+import type { PostGroupInfo } from "./post_group.ts";
+import type { PostItemBase, PostUserInfo } from "./common.ts";
 
 export type PostResponse = CursorListDto<PostItemDto, string> & { needLogin?: boolean };
 
