@@ -6,21 +6,27 @@ RUN corepack enable && corepack prepare pnpm@10.4.0 --activate
 WORKDIR /build
 ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
 
-FROM prepare AS install
+FROM prepare AS installed
 ADD ./deps/ijia-data/package.json ./deps/ijia-data/package.json
 ADD ./web_dto/package.json ./web_dto/package.json
 ADD ./web_api/package.json ./web_api/package.json
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-FROM install AS ijia-data
-ADD ./deps/ijia-data ./deps/ijia-data
-ADD ./web_dto ./web_dto
+FROM installed AS build-deps
+
+ADD ./deps/ijia-data/tsconfig.json ./deps/ijia-data/lib.deno.d.ts ./deps/ijia-data/
+ADD ./deps/ijia-data/src ./deps/ijia-data/src
+
+ADD ./web_dto/tsconfig.json ./web_dto/
+ADD ./web_dto/src ./web_dto/src
+
 RUN pnpm run init-deps
 
-FROM install AS build
 
-COPY --from=ijia-data /build/deps/ijia-data ./deps/ijia-data
-COPY --from=ijia-data /build/web_dto ./web_dto
+FROM installed AS build
+
+COPY --from=build-deps /build/deps/ijia-data ./deps/ijia-data
+COPY --from=build-deps /build/web_dto ./web_dto
 
 ADD ./web_api/tsconfig.json ./web_api/config.jsonc ./web_api/
 ADD ./web_api/build ./web_api/build

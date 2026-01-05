@@ -3,14 +3,14 @@
   "scripts": {
     "init-deps": "pnpm run init-ijia-data && pnpm run init-api-types",
     "init-api-types": "pnpm run --filter @ijia/api-types build",
-    "init-ijia-data": "rollup -c deps/ijia-data/build/rollup.config.mjs",
+    "init-ijia-data": "tsc -p deps/ijia-data/tsconfig.json",
     "check-type": "pnpm run -r check-type",
     "check-fmt": "pnpm prettier --check web_api web e2e"
   },
   "engines": {
     "node": ">=22"
   },
-  "packageManager": "pnpm@10.4.0",
+  "packageManager": "pnpm@10.27.0",
   "publishConfig": {
     "registry": "https://registry.npm.org"
   },

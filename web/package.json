@@ -42,7 +42,6 @@
     "@vitejs/plugin-legacy": "^6.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "inquirer": "^12.4.1",
-    "rollup-plugin-terser": "^7.0.2",
     "vite": "^6.0.11",
     "vite-tsconfig-paths": "^5.1.4"
   },

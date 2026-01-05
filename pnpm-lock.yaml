@@ -37,15 +37,15 @@ importers:
         specifier: npm:@jsr/asla__yoursql@^0.13.0
         version: '@jsr/asla__yoursql@0.13.0'
       '@jsr/asla__pg':
-        specifier: ^0.2.1
-        version: 0.2.1
+        specifier: ^0.2.2
+        version: 0.2.2
       evlib:
         specifier: ^3.1.3
         version: 3.1.3
     devDependencies:
       '@asla/pg':
-        specifier: npm:@jsr/asla__pg@^0.2.1
-        version: '@jsr/asla__pg@0.2.1'
+        specifier: npm:@jsr/asla__pg@^0.2.2
+        version: '@jsr/asla__pg@0.2.2'
       '@types/node':
         specifier: ^24.10.0
         version: 24.10.0
@@ -59,8 +59,8 @@ importers:
         specifier: npm:@jsr/asla__hofetch@^0.0.1
         version: '@jsr/asla__hofetch@0.0.1'
       '@asla/pg':
-        specifier: npm:@jsr/asla__pg@^0.2.1
-        version: '@jsr/asla__pg@0.2.1'
+        specifier: npm:@jsr/asla__pg@^0.2.2
+        version: '@jsr/asla__pg@0.2.2'
       '@asla/yoursql':
         specifier: npm:@jsr/asla__yoursql@^0.13.0
         version: '@jsr/asla__yoursql@0.13.0'
@@ -164,9 +164,6 @@ importers:
       inquirer:
         specifier: ^12.4.1
         version: 12.4.3(@types/node@24.10.1)
-      rollup-plugin-terser:
-        specifier: ^7.0.2
-        version: 7.0.2(rollup@4.35.0)
       vite:
         specifier: ^6.0.11
         version: 6.2.2(@types/node@24.10.1)(terser@5.39.0)(tsx@4.20.5)(yaml@2.8.2)
@@ -180,8 +177,8 @@ importers:
         specifier: npm:@jsr/asla__hofetch@^0.0.1
         version: '@jsr/asla__hofetch@0.0.1'
       '@asla/pg':
-        specifier: npm:@jsr/asla__pg@^0.2.1
-        version: '@jsr/asla__pg@0.2.1'
+        specifier: npm:@jsr/asla__pg@^0.2.2
+        version: '@jsr/asla__pg@0.2.2'
       '@asla/wokao':
         specifier: npm:@jsr/asla__wokao@^0.0.3
         version: '@jsr/asla__wokao@0.0.3'
@@ -1291,8 +1288,8 @@ packages:
   '@jsr/asla__hofetch@0.0.1':
     resolution: {integrity: sha512-UO90cqDucrg3M3Fxea1Jrw15DLP2N+3pQAbAyNolnL6jx2ANEDhb1NGrTFMfZ5xVUQcB01KhhqpaKW2eE3FTYw==, tarball: https://npm.jsr.io/~/11/@jsr/asla__hofetch/0.0.1.tgz}
 
-  '@jsr/asla__pg@0.2.1':
-    resolution: {integrity: sha512-/OXlI+Mz6Qhd1doHD/HAESLYqLgPtlMZAl7vThWUo3WX0NRFSi9pRl3WMnwEy7V3kUY/ahnr+uZA9MUhZ4nQMg==, tarball: https://npm.jsr.io/~/11/@jsr/asla__pg/0.2.1.tgz}
+  '@jsr/asla__pg@0.2.2':
+    resolution: {integrity: sha512-O7nuWKxNadUJdmBxivASkpoto3EBvqP71SS1vnGVsdWmZVThHzjwp50cc1l+IgR/G7dWMcdZtpyIfRghXhyWQQ==, tarball: https://npm.jsr.io/~/11/@jsr/asla__pg/0.2.2.tgz}
 
   '@jsr/asla__wokao@0.0.3':
     resolution: {integrity: sha512-Q+cBBaiO2mR+P51Mu4XXXRAvrKdILQ8Af1Q0YA18K1spV7RpdGrHzWnYBUXVBpZbPFd1Gcgk9BRA3mlyfdhX6g==, tarball: https://npm.jsr.io/~/11/@jsr/asla__wokao/0.0.3.tgz}
@@ -1459,51 +1456,61 @@ packages:
     resolution: {integrity: sha512-mrA0v3QMy6ZSvEuLs0dMxcO2LnaCONs1Z73GUDBHWbY8tFFocM6yl7YyMu7rz4zS81NDSqhrUuolyZXGi8TEqg==}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.35.0':
     resolution: {integrity: sha512-DnYhhzcvTAKNexIql8pFajr0PiDGrIsBYPRvCKlA5ixSS3uwo/CWNZxB09jhIapEIg945KOzcYEAGGSmTSpk7A==}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.35.0':
     resolution: {integrity: sha512-uagpnH2M2g2b5iLsCTZ35CL1FgyuzzJQ8L9VtlJ+FckBXroTwNOaD0z0/UF+k5K3aNQjbm8LIVpxykUOQt1m/A==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.35.0':
     resolution: {integrity: sha512-XQxVOCd6VJeHQA/7YcqyV0/88N6ysSVzRjJ9I9UA/xXpEsjvAgDTgH3wQYz5bmr7SPtVK2TsP2fQ2N9L4ukoUg==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-loongarch64-gnu@4.35.0':
     resolution: {integrity: sha512-5pMT5PzfgwcXEwOaSrqVsz/LvjDZt+vQ8RT/70yhPU06PTuq8WaHhfT1LW+cdD7mW6i/J5/XIkX/1tCAkh1W6g==}
     cpu: [loong64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-powerpc64le-gnu@4.35.0':
     resolution: {integrity: sha512-c+zkcvbhbXF98f4CtEIP1EBA/lCic5xB0lToneZYvMeKu5Kamq3O8gqrxiYYLzlZH6E3Aq+TSW86E4ay8iD8EA==}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-gnu@4.35.0':
     resolution: {integrity: sha512-s91fuAHdOwH/Tad2tzTtPX7UZyytHIRR6V4+2IGlV0Cej5rkG0R61SX4l4y9sh0JBibMiploZx3oHKPnQBKe4g==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-s390x-gnu@4.35.0':
     resolution: {integrity: sha512-hQRkPQPLYJZYGP+Hj4fR9dDBMIM7zrzJDWFEMPdTnTy95Ljnv0/4w/ixFw3pTBMEuuEuoqtBINYND4M7ujcuQw==}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.35.0':
     resolution: {integrity: sha512-Pim1T8rXOri+0HmV4CdKSGrqcBWX0d1HoPnQ0uw0bdp1aP5SdQVNBy8LjYncvnLgu3fnnCt17xjWGd4cqh8/hA==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.35.0':
     resolution: {integrity: sha512-QysqXzYiDvQWfUiTm8XmJNO2zm9yC9P/2Gkrwg2dH9cxotQzunBHYr6jk4SujCTqnfGxduOmQcI7c2ryuW8XVg==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-win32-arm64-msvc@4.35.0':
     resolution: {integrity: sha512-OUOlGqPkVJCdJETKOCEf1mw848ZyJ5w50/rZ/3IBQVdLfR5jk/6Sr5m3iO2tdPgwo0x7VcncYuOvMhBWZq8ayg==}
@@ -2083,10 +2090,6 @@ packages:
   globrex@0.1.2:
     resolution: {integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==}
 
-  has-flag@4.0.0:
-    resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
-    engines: {node: '>=8'}
-
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
@@ -2155,10 +2158,6 @@ packages:
     resolution: {integrity: sha512-3wVJEonAns1OETX83uWsk5IAne2S5zfDcntD2hbtU23LelSqNXzXs9zKjMPOLMzroCgIjCfjYAEHrd2D6FOkiA==}
     engines: {node: '>=18'}
 
-  jest-worker@26.6.2:
-    resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
-    engines: {node: '>= 10.13.0'}
-
   js-cookie@2.2.1:
     resolution: {integrity: sha512-HvdH2LzI/EAZcUwA8+0nKNtWHqS+ZmijLA30RwZA0bo7ToCckjK5MkGhjED9KoRcXO6BaGI3I9UIzSA1FKFPOQ==}
 
@@ -2224,9 +2223,6 @@ packages:
   meow@13.2.0:
     resolution: {integrity: sha512-pxQJQzB6djGPXh08dacEloMFopsOqGVRKFPYvPOt9XDZ1HasbgDZA74CJGreSU4G3Ak7EFJGoiH2auq+yXISgA==}
     engines: {node: '>=18'}
-
-  merge-stream@2.0.0:
-    resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
 
   merge2@1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
@@ -2392,9 +2388,6 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
-
-  randombytes@2.1.0:
-    resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
   rc-cascader@3.34.0:
     resolution: {integrity: sha512-KpXypcvju9ptjW9FaN2NFcA2QH9E9LHKq169Y0eWtH4e/wHQ5Wh5qZakAgvb8EKZ736WZ3B0zLLOBsrsja5Dag==}
@@ -2706,12 +2699,6 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
-  rollup-plugin-terser@7.0.2:
-    resolution: {integrity: sha512-w3iIaU4OxcF52UUXiZNsNeuXIMDvFrr+ZXK6bFZ0Q60qyVfq4uLptoS4bbq3paG3x216eQllFZX7zt6TIImguQ==}
-    deprecated: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-terser
-    peerDependencies:
-      rollup: ^2.0.0
-
   rollup@4.35.0:
     resolution: {integrity: sha512-kg6oI4g+vc41vePJyO6dHt/yl0Rz3Thv0kJeVQ3D1kS3E5XSuKbPc29G4IpT/Kv1KQwgHVcN+HtyS+HYLNSvQg==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
@@ -2730,9 +2717,6 @@ packages:
   rxjs@7.8.2:
     resolution: {integrity: sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==}
 
-  safe-buffer@5.2.1:
-    resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
-
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
@@ -2749,9 +2733,6 @@ packages:
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
-
-  serialize-javascript@4.0.0:
-    resolution: {integrity: sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw==}
 
   seroval-plugins@1.3.3:
     resolution: {integrity: sha512-16OL3NnUBw8JG1jBLUoZJsLnQq0n5Ua6aHalhJK4fMQkz1lqR7Osz1sA30trBtd9VUDc2NgkuRCn8+/pBwqZ+w==}
@@ -2835,10 +2816,6 @@ packages:
 
   stylis@4.3.6:
     resolution: {integrity: sha512-yQ3rwFWRfwNUY7H5vpU0wfdkNSnvnJinhF9830Swlaxl03zsOjCfmX0ugac+3LtK0lYSgwL/KXc8oYL3mG4YFQ==}
-
-  supports-color@7.2.0:
-    resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
-    engines: {node: '>=8'}
 
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
@@ -4358,7 +4335,7 @@ snapshots:
 
   '@jsr/asla__hofetch@0.0.1': {}
 
-  '@jsr/asla__pg@0.2.1':
+  '@jsr/asla__pg@0.2.2':
     dependencies:
       '@jsr/asla__yoursql': 0.13.0
       pg: 8.16.3
@@ -5223,8 +5200,6 @@ snapshots:
 
   globrex@0.1.2: {}
 
-  has-flag@4.0.0: {}
-
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
@@ -5286,12 +5261,6 @@ snapshots:
 
   isbot@5.1.30: {}
 
-  jest-worker@26.6.2:
-    dependencies:
-      '@types/node': 24.10.1
-      merge-stream: 2.0.0
-      supports-color: 7.2.0
-
   js-cookie@2.2.1: {}
 
   js-cookie@3.0.5: {}
@@ -5346,8 +5315,6 @@ snapshots:
   mdurl@2.0.0: {}
 
   meow@13.2.0: {}
-
-  merge-stream@2.0.0: {}
 
   merge2@1.4.1: {}
 
@@ -5484,10 +5451,6 @@ snapshots:
   punycode.js@2.3.1: {}
 
   queue-microtask@1.2.3: {}
-
-  randombytes@2.1.0:
-    dependencies:
-      safe-buffer: 5.2.1
 
   rc-cascader@3.34.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
@@ -5898,14 +5861,6 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rollup-plugin-terser@7.0.2(rollup@4.35.0):
-    dependencies:
-      '@babel/code-frame': 7.27.1
-      jest-worker: 26.6.2
-      rollup: 4.35.0
-      serialize-javascript: 4.0.0
-      terser: 5.39.0
-
   rollup@4.35.0:
     dependencies:
       '@types/estree': 1.0.6
@@ -5945,8 +5900,6 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  safe-buffer@5.2.1: {}
-
   safer-buffer@2.1.2: {}
 
   scheduler@0.25.0: {}
@@ -5958,10 +5911,6 @@ snapshots:
       compute-scroll-into-view: 3.1.1
 
   semver@6.3.1: {}
-
-  serialize-javascript@4.0.0:
-    dependencies:
-      randombytes: 2.1.0
 
   seroval-plugins@1.3.3(seroval@1.3.2):
     dependencies:
@@ -6028,10 +5977,6 @@ snapshots:
   stylis@4.2.0: {}
 
   stylis@4.3.6: {}
-
-  supports-color@7.2.0:
-    dependencies:
-      has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
 

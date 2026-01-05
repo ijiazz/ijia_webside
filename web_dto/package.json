@@ -10,7 +10,7 @@
     "build": "tsc"
   },
   "exports": {
-    ".": "./mod.js"
+    ".": "./dist/mod.js"
   },
   "keywords": [],
   "author": "",
