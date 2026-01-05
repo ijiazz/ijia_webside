@@ -1,7 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "init-deps": "pnpm run init-ijia-data",
+    "init-deps": "pnpm run init-ijia-data && pnpm run init-api-types",
+    "init-api-types": "pnpm run --filter @ijia/api-types build",
     "init-ijia-data": "rollup -c deps/ijia-data/build/rollup.config.mjs",
     "check-type": "pnpm run -r check-type",
     "check-fmt": "pnpm prettier --check web_api web e2e"

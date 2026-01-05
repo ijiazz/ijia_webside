@@ -29,6 +29,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-use": "^17.6.0",
+    "@ijia/api-types": "workspace:^",
     "three": "^0.173.0"
   },
   "devDependencies": {

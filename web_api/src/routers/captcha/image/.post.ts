@@ -1,4 +1,4 @@
-import { ImageCaptchaQuestion } from "@/dto/captcha.ts";
+import { ImageCaptchaQuestion } from "@/dto.ts";
 import routeGroup from "../_route.ts";
 import { imageCaptchaService } from "../-service/ImageCaptcha.service.ts";
 

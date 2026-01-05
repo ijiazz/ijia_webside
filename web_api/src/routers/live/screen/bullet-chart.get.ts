@@ -1,4 +1,4 @@
-import { GetBulletChatListRes, GetBulletChatParam } from "@/dto/live.ts";
+import { GetBulletChatListRes, GetBulletChatParam } from "@/dto.ts";
 import { checkValue, optionalInt } from "@/global/check.ts";
 import { genGetBulletChart } from "../-sql/bullet.sql.ts";
 import { appConfig } from "@/config.ts";

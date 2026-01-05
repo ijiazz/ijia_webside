@@ -1,4 +1,4 @@
-import { CursorListDto, TextStructure } from "../common.ts";
+import type { CursorListDto, TextStructure } from "../common.ts";
 
 export type PostCommentResponse = CursorListDto<PostCommentDto, string> & { needLogin?: boolean };
 

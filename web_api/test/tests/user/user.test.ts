@@ -6,7 +6,7 @@ import userRoutes from "@/routers/user/mod.ts";
 import { getUserPublicClassId } from "./util.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
-import { UpdateUserProfileParam } from "@/dto/user.ts";
+import { UpdateUserProfileParam } from "@/dto.ts";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   userRoutes.apply(hono);

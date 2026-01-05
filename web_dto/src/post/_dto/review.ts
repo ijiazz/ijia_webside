@@ -1,5 +1,5 @@
-import { PostCommentDto } from "../../post_comment.ts";
-import { PostItemDto } from "./post.ts";
+import type { PostCommentDto } from "../../post_comment.ts";
+import type { PostItemDto } from "./post.ts";
 
 export enum PostReviewType {
   post = "post",

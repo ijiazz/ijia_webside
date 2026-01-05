@@ -18,7 +18,7 @@ import { getUserClassId } from "./util.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { select, update } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
-import { BindPlatformParam } from "@/dto/user.ts";
+import { BindPlatformParam } from "@/dto.ts";
 
 let AliceId: number;
 let AliceToken: string;

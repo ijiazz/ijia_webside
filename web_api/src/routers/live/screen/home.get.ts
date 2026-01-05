@@ -1,4 +1,4 @@
-import { HomePageRes, GodPlatformDto } from "@/dto/live.ts";
+import { HomePageRes, GodPlatformDto } from "@/dto.ts";
 import { optionalPositiveInt, checkValue } from "@/global/check.ts";
 import { pla_user } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";

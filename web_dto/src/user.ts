@@ -1,4 +1,4 @@
-import { Platform } from "./common.ts";
+import type { Platform } from "./common.ts";
 
 export interface UserApi {
   /** 绑定平台 */

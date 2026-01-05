@@ -1,4 +1,4 @@
-import { ImageCaptchaQuestion, ImageCaptchaReply } from "@/dto/captcha.ts";
+import { ImageCaptchaQuestion, ImageCaptchaReply } from "@/dto.ts";
 import { dbPool } from "@/db/client.ts";
 import { HTTPException } from "hono/http-exception";
 import { SessionManager } from "../-utils/_SessionManage.ts";

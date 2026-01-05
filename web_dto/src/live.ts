@@ -1,5 +1,5 @@
-import { GetListOption } from "./common.ts";
-import { GetBulletChatListRes, GetBulletChatParam, HomePageRes, ScreenAvatarRes } from "./live/dto.ts";
+import type { GetListOption } from "./common.ts";
+import type { GetBulletChatListRes, GetBulletChatParam, HomePageRes, ScreenAvatarRes } from "./live/dto.ts";
 
 export * from "./live/dto.ts";
 

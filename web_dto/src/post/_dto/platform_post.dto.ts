@@ -1,6 +1,5 @@
-import { Platform } from "@ijia/data/db";
-import { ListDto } from "../../common.ts";
-import { PostItemBase, PostUserInfo } from "./common.ts";
+import { type ListDto, Platform } from "../../common.ts";
+import type { PostItemBase, PostUserInfo } from "./common.ts";
 
 export type PlatformPostResponse = ListDto<PlatformPostItemDto> & { needLogin?: boolean };
 
@@ -26,4 +25,3 @@ export interface PlatformPostItemDto extends PostItemBase {
   platform: Platform;
   url?: string;
 }
-export * from "../../media.ts";

@@ -1,4 +1,4 @@
-import { ImageCaptchaReply } from "@/dto/captcha.ts";
+import { ImageCaptchaReply } from "@/dto.ts";
 import { imageCaptchaService } from "@/routers/captcha/mod.ts";
 import { createImageCaptchaSession } from "@/routers/captcha/mod.ts";
 import { insertIntoValues } from "@/sql/utils.ts";

@@ -6,7 +6,7 @@ import { getCheckerServer } from "@/services/douyin.ts";
 
 import routeGroup from "./_route.ts";
 import { getGodPost } from "./-sql/platform_post.sql.ts";
-import { GetPlatformPostListParam, PlatformPostResponse } from "@/dto/post.ts";
+import { GetPlatformPostListParam, PlatformPostResponse } from "@/dto.ts";
 
 export default routeGroup.create({
   method: "GET",

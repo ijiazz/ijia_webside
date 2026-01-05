@@ -5,8 +5,12 @@
     "moduleResolution": "NodeNext",
     "types": [],
     "lib": ["ESNext"],
+    "verbatimModuleSyntax": true,
+    "rewriteRelativeImportExtensions": true,
     "baseUrl": ".",
-    "rootDir": "."
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "noEmit": false
   },
-  "files": ["./_api.ts"]
+  "files": ["./src/mod.ts"]
 }

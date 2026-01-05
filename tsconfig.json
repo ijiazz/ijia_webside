@@ -4,6 +4,11 @@
     "moduleResolution": "NodeNext",
     "lib": ["ESNext"],
     "strict": true,
+
+    "isolatedDeclarations": false,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+
     "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "allowJs": true,

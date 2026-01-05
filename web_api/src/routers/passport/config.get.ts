@@ -1,4 +1,4 @@
-import { PassportConfig } from "@/dto/passport.ts";
+import { PassportConfig } from "@/dto.ts";
 import routeGroup from "./_route.ts";
 import { appConfig } from "@/config.ts";
 

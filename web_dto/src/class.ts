@@ -1,4 +1,4 @@
-import { ListDto } from "./common.ts";
+import type { ListDto } from "./common.ts";
 
 export interface ClassApi {
   /** 获取公共班级列表 */

@@ -91,6 +91,9 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.0
         version: 11.14.0(@emotion/react@11.14.0(@types/react@19.0.10)(react@19.0.0))(@types/react@19.0.10)(react@19.0.0)
+      '@ijia/api-types':
+        specifier: workspace:^
+        version: link:../web_dto
       '@microsoft/clarity':
         specifier: ^1.0.0
         version: 1.0.0
@@ -188,6 +191,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.6
         version: 1.19.6(hono@4.10.7)
+      '@ijia/api-types':
+        specifier: workspace:^
+        version: link:../web_dto
       '@ijia/data':
         specifier: workspace:^
         version: link:../deps/ijia-data
@@ -219,15 +225,18 @@ importers:
       '@types/nodemailer':
         specifier: ^6.4.17
         version: 6.4.17
-      typedoc:
-        specifier: ^0.28.15
-        version: 0.28.15(typescript@5.8.2)
       vite-tsconfig-paths:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.8.2)(vite@6.2.2(@types/node@24.10.1)(terser@5.39.0)(tsx@4.20.5)(yaml@2.8.2))
       vitest:
         specifier: ^4.0.15
         version: 4.0.15(@types/node@24.10.1)(terser@5.39.0)(tsx@4.20.5)(yaml@2.8.2)
+
+  web_dto:
+    devDependencies:
+      typedoc:
+        specifier: ^0.28.15
+        version: 0.28.15(typescript@5.8.2)
 
 packages:
 

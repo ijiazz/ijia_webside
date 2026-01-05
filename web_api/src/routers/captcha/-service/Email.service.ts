@@ -1,6 +1,6 @@
 import { appConfig, ENV, RunMode } from "@/config.ts";
 import { SessionManager } from "../-utils/_SessionManage.ts";
-import { EmailCaptchaQuestion, EmailCaptchaReply } from "@/dto/captcha.ts";
+import { EmailCaptchaQuestion, EmailCaptchaReply } from "@/dto.ts";
 import { getEmailSender } from "@/services/email.ts";
 
 class EmailCaptchaService {

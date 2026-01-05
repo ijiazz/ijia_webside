@@ -1,4 +1,4 @@
-import { ListDto } from "../../common.ts";
+import type { ListDto } from "../../common.ts";
 
 export type PostGroupItem = {
   group_id: number;

@@ -8,18 +8,19 @@ ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
 
 FROM prepare AS install
 ADD ./deps/ijia-data/package.json ./deps/ijia-data/package.json
+ADD ./web_dto/package.json ./web_dto/package.json
 ADD ./web_api/package.json ./web_api/package.json
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 FROM install AS ijia-data
-ADD ./deps/ijia-data/tsconfig.json ./deps/ijia-data/
-ADD ./deps/ijia-data/build ./deps/ijia-data/build
-ADD ./deps/ijia-data/src ./deps/ijia-data/src
-RUN pnpm run init-ijia-data
+ADD ./deps/ijia-data ./deps/ijia-data
+ADD ./web_dto ./web_dto
+RUN pnpm run init-deps
 
 FROM install AS build
 
 COPY --from=ijia-data /build/deps/ijia-data ./deps/ijia-data
+COPY --from=ijia-data /build/web_dto ./web_dto
 
 ADD ./web_api/tsconfig.json ./web_api/config.jsonc ./web_api/
 ADD ./web_api/build ./web_api/build

@@ -1,4 +1,4 @@
-import { SendSelfEmailCaptchaParam, SendEmailCaptchaParam } from "@/dto/captcha.ts";
+import { SendSelfEmailCaptchaParam, SendEmailCaptchaParam } from "@/dto.ts";
 import { createCaptchaSession } from "../../../__mocks__/captcha.ts";
 import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { Api, JWT_TOKEN_KEY } from "../../../fixtures/hono.ts";
