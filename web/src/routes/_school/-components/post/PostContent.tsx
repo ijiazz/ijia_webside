@@ -144,7 +144,7 @@ export function PostContent(props: PostContentProps) {
               default:
                 break;
             }
-            return index === 8 ? (
+            return index === 8 && total > 9 ? (
               <div className="post-multiple-omit">
                 {element}
                 <div style={{ color: theme.colorBorderSecondary }}>+{total - 9}</div>
