@@ -3,6 +3,7 @@ import React, { ReactNode } from "react";
 
 import { GithubOutlined } from "@ant-design/icons";
 import { Link } from "@tanstack/react-router";
+import { RECORD_SITE } from "./host.ts";
 
 const footerLinks: {
   icon?: ReactNode;
@@ -13,6 +14,10 @@ const footerLinks: {
     icon: <GithubOutlined />,
     text: "GitHub",
     link: "https://github.com/ijiazz/ijia_webside",
+  },
+  {
+    text: "更新日志",
+    link: `${RECORD_SITE}/updates/`,
   },
   {
     text: "关于本站",
