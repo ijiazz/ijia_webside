@@ -1,0 +1,21 @@
+{
+  "name": "@ijia/api-types",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "check-type": "tsc --noEmit",
+    "genApiDoc": "typedoc",
+    "build": "tsc"
+  },
+  "exports": {
+    ".": "./dist/mod.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typedoc": "^0.28.15"
+  }
+}

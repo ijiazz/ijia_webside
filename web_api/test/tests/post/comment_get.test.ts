@@ -8,7 +8,7 @@ import { prepareUniqueUser } from "../..//fixtures/user.ts";
 import { update } from "@asla/yoursql";
 import commentRoutes from "@/routers/post/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
-import { PostCommentDto } from "@/dto/post_comment.ts";
+import { PostCommentDto } from "@/dto.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);

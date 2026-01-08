@@ -5,7 +5,7 @@ import { createEmailCodeHtmlContent } from "./signup-email-code.ts";
 import { appConfig } from "@/config.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
-import { EmailCaptchaActionType, EmailCaptchaQuestion } from "@/dto/captcha.ts";
+import { EmailCaptchaActionType, EmailCaptchaQuestion } from "@/dto.ts";
 
 export async function sendSignUpEmailCaptcha(email: string): Promise<EmailCaptchaQuestion> {
   const expire = 5 * 60; // 5 分钟有效期

@@ -8,5 +8,5 @@
     "paths": { "@/*": ["./src/*"] },
     "jsx": "react"
   },
-  "exclude": ["node_modules", "dist", "scripts", "./_api.ts"]
+  "exclude": ["node_modules", "dist", "scripts", "../web_dto/_api.ts"]
 }

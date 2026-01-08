@@ -1,7 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context } from "../fixtures/hono.ts";
 import captchaRoutes, { imageCaptchaService } from "@/routers/captcha/mod.ts";
-import { captcha_picture } from "@ijia/data/db";
 import { initCaptcha } from "../__mocks__/captcha.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
@@ -49,7 +48,7 @@ test("允许选择不确定的选项", async function ({ api, ijiaDbPool }) {
     yes_count: true,
     no_count: true,
   })
-    .from(captcha_picture.name)
+    .from("captcha_picture")
     .where(`id in (${unknownId.map((id) => v(id)).join(", ")})`)
     .orderBy("id");
 

@@ -1,27 +1,32 @@
 import { dbPool } from "@/db/client.ts";
 import {
   pla_asset,
-  pla_comment,
   pla_user,
   Platform,
-  pla_asset_media,
   DbPlaAssetMedia,
   MediaLevel,
   TextStructure,
   watching_pla_user,
   USER_LEVEL,
-  AssetMediaType,
+  MediaType,
 } from "@ijia/data/db";
 import { createSearch, jsonb_build_object } from "@/global/sql_util.ts";
-import { GetListOption } from "@/dto/common.ts";
-import { PostAssetType, PostUserInfo, PlatformPostItemDto } from "@/dto/post.ts";
-import { AssetMediaDto, MulFormat, AssetImage } from "@/dto/media.ts";
+import {
+  GetListOption,
+  PostAssetType,
+  PostUserInfo,
+  PlatformPostItemDto,
+  AssetMediaDto,
+  MulFormat,
+  AssetImage,
+} from "@/dto.ts";
 import { assetMediaToDto } from "../-utils/media.ts";
 import { getPostContentType } from "./sql_tool.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import { QueryRowsResult } from "@asla/pg";
-
+import { getBucket } from "@ijia/data/oss";
+const BUCKETS = getBucket();
 export type GetAssetListOption = GetListOption & {
   platform?: Platform;
   userId?: string;
@@ -31,11 +36,19 @@ export type GetAssetListOption = GetListOption & {
   sort?: Record<"digg_total" | "forward_total" | "collection_num", "ASC" | "DESC">;
 };
 
-function selectAssetResource(setKey: string, keys?: Record<string, string | boolean>) {
-  return select(`json_agg(${keys ? jsonb_build_object(keys, "media") : "media"})`)
-    .from(pla_asset_media.name, { as: "media" })
+function selectAssetResource(setKey: string) {
+  return select(
+    `json_agg(${jsonb_build_object({
+      media_type: "media.media_type",
+      index: "media.index",
+      level: "media.level",
+      filename: "media.filename",
+    })})`,
+  )
+    .from("pla.asset_media", { as: "media" })
     .where(`media.platform=${setKey}.platform AND media.asset_id=${setKey}.asset_id AND index IS NOT NULL`);
 }
+type RawMedia = Pick<DbPlaAssetMedia, "filename" | "index" | "level"> & { media_type: MediaType };
 type SelectAssetList = {
   post_id: string;
   platform: Platform;
@@ -45,7 +58,7 @@ type SelectAssetList = {
   content_text: string | null;
   content_text_structure: TextStructure[] | null;
   author: PostUserInfo & { extra: Record<string, any> };
-  media: DbPlaAssetMedia[] | null;
+  media: RawMedia[] | null;
 };
 async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total: number; items: SelectAssetList[] }> {
   const { number = 20, offset = 0, platform, userId, sort, includeHidden } = option;
@@ -138,7 +151,7 @@ function toPostListDto(list: SelectAssetList[]) {
       const group = indexGroup.data;
       const formats = toFormats(group, assetMediaToDto);
       let cover: AssetImage | undefined;
-      if (indexGroup.type === AssetMediaType.image) {
+      if (indexGroup.type === MediaType.image) {
         cover = getCover(formats as MulFormat<AssetImage>);
       } else if (covers) {
         cover = getCover(covers as MulFormat<AssetImage>);
@@ -221,12 +234,6 @@ export async function getGodPost(option?: GetAssetListOption) {
     items,
   };
 }
-function selectAssetStat(selectableSymbol: string) {
-  return select({ asset_id: "c.asset_id", count: "count(*)::INT" })
-    .from(selectableSymbol, { as: "t" })
-    .innerJoin(pla_comment.name, { as: "c", on: "c.asset_id=t.asset_id" })
-    .groupBy("c.asset_id");
-}
 
 export type AssetStat = {
   comment_total: number;
@@ -235,14 +242,14 @@ export type AssetStat = {
   collection_num: number;
 };
 
-function groupByIndex<T extends { index: number; level?: string | null; type: AssetMediaType }>(
+function groupByIndex<T extends { index: number; level?: string | null; media_type: MediaType }>(
   list: T[],
-): ({ type: AssetMediaType; data: T[] } | undefined)[] {
-  const groups: ({ type: AssetMediaType; data: T[] } | undefined)[] = [];
+): ({ type: MediaType; data: T[] } | undefined)[] {
+  const groups: ({ type: MediaType; data: T[] } | undefined)[] = [];
   for (const item of list) {
     const index = item.index;
     if (index === null) continue;
-    if (!groups[index]) groups[index] = { type: item.type, data: [] };
+    if (!groups[index]) groups[index] = { type: item.media_type, data: [] };
     groups[index].data.push(item);
   }
   return groups;

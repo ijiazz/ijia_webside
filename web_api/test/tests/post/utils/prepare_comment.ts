@@ -1,4 +1,4 @@
-import { CreateCommentItemData, GetPostCommentListOption, GetPostCommentListParam } from "@/dto/post_comment.ts";
+import { CreateCommentItemData, GetPostCommentListOption } from "@/dto.ts";
 import {
   DbPostComment,
   post,

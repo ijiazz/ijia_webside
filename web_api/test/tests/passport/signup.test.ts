@@ -10,10 +10,8 @@ import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { getUniqueEmail, getUniqueName } from "test/fixtures/user.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { select } from "@asla/yoursql";
-import { CreateUserProfileParam } from "@/dto/passport.ts";
-import { EmailCaptchaActionType } from "@/dto.ts";
+import { EmailCaptchaActionType, CreateUserProfileParam } from "@/dto.ts";
 import { mockSendEmailCaptcha } from "./_mocks/captcha.ts";
-import { dbPool } from "@/db/client.ts";
 
 const AlicePassword = "123";
 

@@ -8,7 +8,7 @@ import {
   CommitReviewResultDto,
   PostCommentReviewTarget,
   PostItemDto,
-} from "@/dto/post.ts";
+} from "@/dto.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import { Role } from "@/middleware/auth.ts";
 import {

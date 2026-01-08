@@ -5,7 +5,7 @@ import { textStructChecker } from "../-utils/text_struct.ts";
 import { HttpError } from "@/global/errors.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
-import { PostReviewType, CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "@/dto/post.ts";
+import { PostReviewType, CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "@/dto.ts";
 import { QueryRowsResult } from "@asla/pg";
 
 export async function createPost(userId: number, param: CreatePostParam): Promise<{ id: number }> {

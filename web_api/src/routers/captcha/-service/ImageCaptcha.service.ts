@@ -1,5 +1,4 @@
-import { ImageCaptchaQuestion, ImageCaptchaReply } from "@/dto/captcha.ts";
-import { captcha_picture } from "@ijia/data/db";
+import { ImageCaptchaQuestion, ImageCaptchaReply } from "@/dto.ts";
 import { dbPool } from "@/db/client.ts";
 import { HTTPException } from "hono/http-exception";
 import { SessionManager } from "../-utils/_SessionManage.ts";
@@ -135,10 +134,10 @@ export class ImageCaptchaService {
     if (pass && ENV.MODE !== RunMode.E2E) {
       const assertCorrect = Array.from(pass.assertCorrect);
       const assertError = Array.from(pass.assertError);
-      const add = update(captcha_picture.name)
+      const add = update("captcha_picture")
         .set({ yes_count: "yes_count + 1" })
         .where(`id in (${assertCorrect.map((value) => v(value)).join(",")})`);
-      const sub = update(captcha_picture.name)
+      const sub = update("captcha_picture")
         .set({ no_count: "no_count + 1" })
         .where(`id in (${assertError.map((value) => v(value)).join(",")})`);
 

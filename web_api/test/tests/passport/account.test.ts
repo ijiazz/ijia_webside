@@ -9,8 +9,7 @@ import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { user } from "@ijia/data/db";
 import { getUniqueEmail, getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
 import { update } from "@asla/yoursql";
-import { LoginType } from "@/dto/passport.ts";
-import { EmailCaptchaActionType } from "@/dto/captcha.ts";
+import { LoginType, EmailCaptchaActionType } from "@/dto.ts";
 import { mockSendEmailCaptcha, mockSendSelfEmailCaptcha } from "./_mocks/captcha.ts";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {

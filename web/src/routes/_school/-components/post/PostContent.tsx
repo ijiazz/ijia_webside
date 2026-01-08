@@ -10,7 +10,7 @@ import { useThemeToken } from "@/provider/mod.tsx";
 import styled from "@emotion/styled";
 import React, { CSSProperties, useMemo, useState } from "react";
 import { ReactNode } from "react";
-import { AssetMediaType } from "@/api.ts";
+import { MediaType } from "@/api.ts";
 import { DownOutlined, FileImageOutlined, UpOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 import { Link } from "@tanstack/react-router";
@@ -123,7 +123,7 @@ export function PostContent(props: PostContentProps) {
 
             let element: ReactNode;
             switch (item.type) {
-              case AssetMediaType.image: {
+              case MediaType.image: {
                 const image = item.cover ?? item.origin;
                 element = (
                   <PostImage
@@ -135,7 +135,7 @@ export function PostContent(props: PostContentProps) {
                 );
                 break;
               }
-              case AssetMediaType.video: {
+              case MediaType.video: {
                 element = (
                   <PostVideo key={index} item={item.origin} cover={item.cover?.url} className="post-media-item" />
                 );
@@ -163,10 +163,10 @@ export function PostContent(props: PostContentProps) {
 function getSingleMedia(item?: AssetMediaDto) {
   if (!item) return <InvalidAsset />;
   switch (item.type) {
-    case AssetMediaType.video: {
+    case MediaType.video: {
       return <PostVideo item={item.origin} cover={item.cover?.url} className="post-media-item" />;
     }
-    case AssetMediaType.image: {
+    case MediaType.image: {
       const image = item.cover ?? item.origin;
       return <PostImage style={{ width: "100%", height: "100%" }} className="post-media-item" item={image} />;
     }

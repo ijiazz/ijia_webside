@@ -1,6 +1,6 @@
 import { post, post_comment, user, post_comment_like } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
-import { GetPostCommentListOption, PostCommentDto, PostCommentResponse } from "@/dto/post_comment.ts";
+import { GetPostCommentListOption, PostCommentDto, PostCommentResponse } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { parserTimestampCursor, toTimestampCursor } from "../../-utils/_util.ts";

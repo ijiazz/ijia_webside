@@ -1,4 +1,4 @@
-import { CreateUserProfileParam, CreateUserProfileResult } from "@/dto/passport.ts";
+import { CreateUserProfileParam, CreateUserProfileResult, EmailCaptchaActionType } from "@/dto.ts";
 import { optional, array } from "@asla/wokao";
 import { hashPasswordFrontEnd } from "../-services/password.ts";
 import { checkValue, emailChecker } from "@/global/check.ts";
@@ -8,7 +8,6 @@ import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/erro
 import { createUser } from "../-sql/signup.ts";
 
 import routeGroup, { signToken } from "../_route.ts";
-import { EmailCaptchaActionType } from "@/dto/captcha.ts";
 
 export default routeGroup.create({
   method: "POST",

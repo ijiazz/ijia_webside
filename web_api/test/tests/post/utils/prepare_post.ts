@@ -1,13 +1,7 @@
 import { JWT_TOKEN_KEY, Api } from "../../../fixtures/hono.ts";
 import { DbUserProfile, post, post_group, post_review_info, PostReviewType, user_profile } from "@ijia/data/db";
 
-import {
-  CreatePostParam,
-  PostItemDto,
-  UpdatePostConfigParam,
-  UpdatePostContentParam,
-  PostReviewInfo,
-} from "@/dto/post.ts";
+import { CreatePostParam, PostItemDto, UpdatePostConfigParam, UpdatePostContentParam, PostReviewInfo } from "@/dto.ts";
 import { dbPool } from "@/db/client.ts";
 import { prepareUniqueUser } from "../../../fixtures/user.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
