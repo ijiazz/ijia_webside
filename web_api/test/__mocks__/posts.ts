@@ -1,5 +1,5 @@
 import { insertIntoValues } from "@/sql/utils.ts";
-import { DbPlaAssetCreate, pla_asset, Platform } from "@ijia/data/db";
+import { DbPlaAssetCreate, Platform } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 
 export async function insertPosts(size: number, platform: Platform, pla_uid: string) {
@@ -14,5 +14,5 @@ export async function insertPosts(size: number, platform: Platform, pla_uid: str
       publish_time: new Date(date + i * 1000 * 60 * 60),
     };
   }
-  await dbPool.execute(insertIntoValues(pla_asset.name, posts));
+  await dbPool.execute(insertIntoValues("pla_asset", posts));
 }

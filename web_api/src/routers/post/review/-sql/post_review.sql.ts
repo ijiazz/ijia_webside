@@ -1,4 +1,3 @@
-import { post, post_comment, post_group, post_review_info } from "@ijia/data/db";
 import { PostReviewType, PostReviewDto, PostReviewTarget, PostCommentReviewTarget } from "@/dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { getPostContentType } from "../../-sql/sql_tool.ts";
@@ -60,8 +59,8 @@ export async function getReview(
             group: jsonb_build_object({ group_id: "g.id", group_name: "g.name" }),
           }),
         )
-          .from(post.name, { as: "p" })
-          .leftJoin(post_group.name, { as: "g", on: "g.id=p.group_id" })
+          .from("public.post", { as: "p" })
+          .leftJoin("post_group", { as: "g", on: "g.id=p.group_id" })
           .where([`re.target_id=p.id`])
           .toSelect()}
         WHEN ${v(PostReviewType.postComment)} THEN
@@ -77,13 +76,13 @@ export async function getReview(
             is_root_reply_count: "c.is_root_reply_count",
           }),
         )
-          .from(post_comment.name, { as: "c" })
+          .from("post_comment", { as: "c" })
           .where([`re.target_id=c.id`])
           .toSelect()}
         ELSE NULL
       END`,
   })
-    .from(post_review_info.name, { as: "re" })
+    .from("post_review_info", { as: "re" })
     .where(() => {
       if (reviewingOnly) {
         return ["re.is_review_pass IS NULL"];

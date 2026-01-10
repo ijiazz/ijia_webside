@@ -28,7 +28,7 @@ import {
   reportComment,
   setCommentLike,
 } from "./utils/prepare_comment.ts";
-import { PostReviewType, user_profile } from "@ijia/data/db";
+import { PostReviewType } from "@ijia/data/db";
 import { select } from "@asla/yoursql";
 import commentRoutes from "@/routers/post/comment/mod.ts";
 
@@ -219,7 +219,7 @@ test("帖子审核通过后，应更新举报用户的审核正确/错误统计"
   const getUserReportStat = () => {
     return ijiaDbPool
       .queryMap(
-        select({ user_id: true, report_correct_count: true, report_error_count: true }).from(user_profile.name),
+        select({ user_id: true, report_correct_count: true, report_error_count: true }).from("user_profile"),
         "user_id",
       )
       .then((res) => Object.fromEntries(res));
@@ -269,7 +269,7 @@ test("评论审核通过后，应更新举报用户的审核正确/错误统计"
           user_id: true,
           report_correct_count: "report_subjective_correct_count",
           report_error_count: "report_subjective_error_count",
-        }).from(user_profile.name),
+        }).from("user_profile"),
         "user_id",
       )
       .then((res) => Object.fromEntries(res));

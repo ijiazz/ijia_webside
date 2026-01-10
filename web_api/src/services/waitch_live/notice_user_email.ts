@@ -1,5 +1,4 @@
 import { select } from "@asla/yoursql";
-import { user_profile, user } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { PromiseConcurrency } from "evlib/async";
 
@@ -34,8 +33,8 @@ export async function* getSubscribeLiveEmails(): AsyncGenerator<WatchInfo, void,
     email: "u.email",
     domain: "split_part(u.email,'@',2)",
   })
-    .from(user_profile.name, { as: "profile" })
-    .innerJoin(user.name, { as: "u", on: "profile.user_id=u.id" })
+    .from("user_profile", { as: "profile" })
+    .innerJoin("public.user", { as: "u", on: "profile.user_id=u.id" })
     .where(["profile.live_notice", "NOT u.is_deleted"])
     .orderBy("domain");
   await using cursor = await dbPool.cursor<WatchInfo>(sql, { defaultSize: 100 });

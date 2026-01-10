@@ -1,4 +1,4 @@
-import { user_platform_bind, user_profile, user_class_bind, PUBLIC_CLASS_ROOT_ID, dclass } from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { checkValueAsync } from "@/global/check.ts";
 import { HttpError } from "@/global/errors.ts";
@@ -21,7 +21,7 @@ export default routeGroup.create({
       pla_uid,
     };
     await using db = dbPool.begin("REPEATABLE READ");
-    const deleteBind = deleteFrom(user_platform_bind.name).where([
+    const deleteBind = deleteFrom("user_platform_bind").where([
       `platform=${v(bind.platform)}`,
       `pla_uid=${v(bind.pla_uid)}`,
       `user_id=${v(userId)}`,
@@ -31,18 +31,18 @@ export default routeGroup.create({
 
     const [reset] = await db.queryRows(
       select<{ count: number }>("count(*)::INT")
-        .from(user_platform_bind.name)
+        .from("user_platform_bind")
         .where(`user_id=${v(userId)}`),
     );
 
     if (reset.count === 0) {
-      const deleteCommentStat = update(user_profile.name)
+      const deleteCommentStat = update("user_profile")
         .set({ comment_stat_enabled: "FALSE" })
         .where(`user_id=${v(userId)}`);
-      const deleteClass = deleteFrom(user_class_bind.name).where([
+      const deleteClass = deleteFrom("user_class_bind").where([
         `user_id=${v(userId)}`,
         `EXISTS ${select("*")
-          .from(dclass.name)
+          .from("class")
           .where(`parent_class_id=${v(PUBLIC_CLASS_ROOT_ID)} AND id=user_class_bind.class_id`)
           .toSelect()}`,
       ]);

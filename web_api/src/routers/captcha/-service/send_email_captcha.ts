@@ -1,4 +1,3 @@
-import { user } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { emailCaptchaService, CaptchaEmail } from "./Email.service.ts";
 import { createEmailCodeHtmlContent } from "./signup-email-code.ts";
@@ -70,7 +69,7 @@ async function sendEmailCaptcha(
 export async function checkEmailExists(email: string): Promise<number | undefined> {
   const [account] = await dbPool.queryRows(
     select<{ email: string; id: number }>({ email: true, id: true })
-      .from(user.name)
+      .from("public.user")
       .where(`email=${v(email)}`)
       .limit(1),
   );

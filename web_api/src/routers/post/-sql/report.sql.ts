@@ -1,25 +1,17 @@
-import {
-  post,
-  post_comment,
-  post_comment_like,
-  post_review_info,
-  post_like,
-  PostReviewType,
-  user_profile,
-} from "@ijia/data/db";
+import { PostReviewType } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { DEFAULT_REPORT_WEIGHT, REPORT_THRESHOLD } from "../-utils/const.ts";
 import { HttpError } from "@/global/errors.ts";
 import { v } from "@/sql/utils.ts";
 import { insertInto, select, update } from "@asla/yoursql";
 export async function setPostToReviewing(postId: number): Promise<string> {
-  const sqlText = `WITH need_add_review AS (${update(post.name)
+  const sqlText = `WITH need_add_review AS (${update("public.post")
     .set({ is_reviewing: v(true) })
     .where([`id=${v(postId)}`, "NOT is_delete", `NOT is_reviewing`])
     .returning("id AS post_id")
     .toString()}
   )
-  INSERT INTO ${post_review_info.name} (type, target_id)
+  INSERT INTO post_review_info (type, target_id)
   SELECT ${v(PostReviewType.post)}, post_id FROM need_add_review
   ON CONFLICT (type, target_id) DO
   UPDATE SET is_review_pass = NULL
@@ -30,10 +22,10 @@ export async function setPostToReviewing(postId: number): Promise<string> {
 }
 export async function setPostCommentToReviewing(commentId: number): Promise<string> {
   await dbPool.execute(
-    insertInto(post_review_info.name, ["type", "target_id"])
+    insertInto("post_review_info", ["type", "target_id"])
       .select(
         select([v(PostReviewType.postComment), "id"])
-          .from(post_comment.name)
+          .from("post_comment")
           .where([`id=${v(commentId)}`, "NOT is_delete"])
           .genSql(),
       )
@@ -45,11 +37,11 @@ export async function setPostCommentToReviewing(commentId: number): Promise<stri
 export async function reportPost(postId: number, userId: number, reason?: string): Promise<number> {
   const sql = `WITH old AS(
     ${select(["weight"])
-      .from(post_like.name)
+      .from("post_like")
       .where([`post_id=${v(postId)}`, `user_id=${v(userId)}`])
       .genSql()}
   ), insert_report AS (
-  ${insertInto(post_like.name, ["weight", "post_id", "user_id", "reason"])
+  ${insertInto("post_like", ["weight", "post_id", "user_id", "reason"])
     .select(
       select([
         `${v(DEFAULT_REPORT_WEIGHT)} AS weight`,
@@ -57,7 +49,7 @@ export async function reportPost(postId: number, userId: number, reason?: string
         `${v(userId)} AS user_id`,
         `${reason ? v(reason) : "NULL"} AS reason`,
       ])
-        .from(post.name, { as: "p" })
+        .from("public.post", { as: "p" })
         .where([`id=${v(postId)}`, `(NOT is_delete)`])
         .toString(),
     )
@@ -68,17 +60,17 @@ export async function reportPost(postId: number, userId: number, reason?: string
   ), count_data AS (
     SELECT insert_report.post_id, (${getReportWeight("insert_report.user_id", REPORT_THRESHOLD)}) AS weight FROM insert_report
   ), update_post_count AS (
-    UPDATE ${post.name} SET 
+    UPDATE public.post SET 
       dislike_count = dislike_count + count_data.weight,
       is_reviewing = (CASE WHEN (is_review_pass IS NULL AND (dislike_count + count_data.weight) >=${v(REPORT_THRESHOLD)}) 
         THEN TRUE ELSE is_reviewing
         END
       )
     FROM count_data
-    WHERE ${post.name}.id = count_data.post_id
+    WHERE public.post.id = count_data.post_id
     RETURNING post_id, is_reviewing, dislike_count
   ), insert_reviewing AS (
-    INSERT INTO ${post_review_info.name} (type, target_id)
+    INSERT INTO post_review_info (type, target_id)
     SELECT ${v(PostReviewType.post)}, post_id FROM update_post_count
     WHERE is_reviewing
     RETURNING target_id
@@ -100,11 +92,11 @@ export async function reportPost(postId: number, userId: number, reason?: string
 export async function reportComment(commentId: number, userId: number, reason?: string): Promise<number> {
   const sql = `WITH old AS(
     ${select(["weight"])
-      .from(post_comment_like.name)
+      .from("post_comment_like")
       .where([`comment_id=${v(commentId)}`, `user_id=${v(userId)}`])
       .toString()}
   ), insert_report AS (
-  ${insertInto(post_comment_like.name, ["weight", "comment_id", "user_id", "reason"])
+  ${insertInto("post_comment_like", ["weight", "comment_id", "user_id", "reason"])
     .select(
       select([
         `${v(DEFAULT_REPORT_WEIGHT)} AS weight`,
@@ -112,7 +104,7 @@ export async function reportComment(commentId: number, userId: number, reason?: 
         `${v(userId)} AS user_id`,
         `${reason ? v(reason) : "NULL"} AS reason`,
       ])
-        .from(post_comment.name, { as: "p" })
+        .from("post_comment", { as: "p" })
         .where([`id=${v(commentId)}`, `(NOT is_delete)`])
         .toString(),
     )
@@ -123,13 +115,13 @@ export async function reportComment(commentId: number, userId: number, reason?: 
   ), count_data AS (
     SELECT insert_report.comment_id, (${getReportWeight("insert_report.user_id", REPORT_THRESHOLD)}) AS weight FROM insert_report
   ), update_count AS (
-    UPDATE ${post_comment.name} SET 
+    UPDATE post_comment SET 
       dislike_count = dislike_count + count_data.weight
     FROM count_data
-    WHERE ${post_comment.name}.id = count_data.comment_id
+    WHERE post_comment.id = count_data.comment_id
     RETURNING comment_id, dislike_count
   ), add_reviewing AS (
-  ${insertInto(post_review_info.name, ["type", "target_id"])
+  ${insertInto("post_review_info", ["type", "target_id"])
     .select(
       select([v(PostReviewType.postComment), "comment_id"])
         .from("update_count")
@@ -160,7 +152,7 @@ function getReportWeight(userId: string, threshold: number) {
         ELSE (report_correct_count * 100) / (report_correct_count + report_error_count)
       END`,
   )
-    .from(user_profile.name)
+    .from("user_profile")
     .where(`user_id=${userId}`)
     .genSql();
 }

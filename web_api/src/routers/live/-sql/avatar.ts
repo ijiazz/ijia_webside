@@ -1,5 +1,4 @@
 import { GetListOption, UserAvatarDto } from "@/dto.ts";
-import { pla_user, user, user_platform_bind } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { select } from "@asla/yoursql";
 import { QueryRowsResult } from "@asla/pg";
@@ -13,10 +12,10 @@ export async function genScreenAvatar(limit: number): Promise<UserAvatarDto[]> {
       id: "u.id",
       name: "u.nickname",
     })
-      .from(user.name, { as: "u" })
+      .from("public.user", { as: "u" })
       .where([
         "u.avatar IS NOT NULL",
-        `EXISTS ${select("1").from(user_platform_bind.name, { as: "bind" }).where(`bind.user_id=u.id`).toSelect()}`,
+        `EXISTS ${select("1").from("user_platform_bind", { as: "bind" }).where(`bind.user_id=u.id`).toSelect()}`,
       ])
       .orderBy("RANDOM()")
       .limit(limit),
@@ -29,10 +28,10 @@ export async function genAllAvatar(option: GetListOption) {
     id: "u.platform||u.pla_uid",
     name: "u.user_name",
   })
-    .from(pla_user.name, { as: "u" })
+    .from("pla_user", { as: "u" })
     .orderBy("u.pla_uid")
     .limit(number, offset);
-  const totalSql = select<{ count: number }>("count(*)::INT").from(pla_user.name);
+  const totalSql = select<{ count: number }>("count(*)::INT").from("pla_user");
   const [items, [total]] = await dbPool
     .query<[QueryRowsResult, QueryRowsResult]>([itemsSql, totalSql])
     .then(([r1, r2]) => [r1.rows, r2.rows]);

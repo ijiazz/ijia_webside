@@ -1,4 +1,3 @@
-import { user } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { HttpError } from "@/global/errors.ts";
 import { hashPasswordBackEnd } from "../-services/password.ts";
@@ -15,7 +14,7 @@ export async function changeAccountPassword(uid: number, oldPwd: string, newPwd:
     password: true,
     pwd_salt: true,
   })
-    .from(user.name)
+    .from("public.user")
     .where([`id=${v(uid)}`, "NOT is_deleted"])
     .limit(1);
   const userInfo: LoginUserInfo | undefined = await conn.queryRows(userInfoQuery).then((rows) => rows[0]);
@@ -23,7 +22,7 @@ export async function changeAccountPassword(uid: number, oldPwd: string, newPwd:
 
   await expectPasswordIsEqual(userInfo, oldPwd);
   await conn.queryCount(
-    update(user.name)
+    update("public.user")
       .set({ password: v(password), pwd_salt: v(salt) })
       .where(`id=${v(uid)}`),
   );
@@ -34,7 +33,7 @@ export async function resetAccountPassword(email: string, newPwd: string) {
   const password = await hashPasswordBackEnd(newPwd, salt);
 
   const count = await dbPool.queryCount(
-    update(user.name)
+    update("public.user")
       .set({ password: v(password), pwd_salt: v(salt) })
       .where([`email=${v(email)}`, "NOT is_deleted"]),
   );
@@ -44,12 +43,12 @@ export async function resetAccountPassword(email: string, newPwd: string) {
 }
 export async function changeAccountEmail(userId: number, newEmail: string) {
   const count = await dbPool.queryCount(
-    update(user.name)
+    update("public.user")
       .set({ email: v(newEmail) })
       .where([
         `id=${v(userId)}`,
         `NOT EXISTS ${select("*")
-          .from(user.name)
+          .from("public.user")
           .where(`email=${v(newEmail)}`)
           .toSelect()}`,
         "NOT is_deleted",

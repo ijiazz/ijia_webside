@@ -1,6 +1,6 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { DbPostCreate, post } from "@ijia/data/db";
+import { DbPostCreate } from "@ijia/data/db";
 
 import { prepareUser } from "../../fixtures/user.ts";
 import { getPostList } from "@/routers/post/-sql/post_list.sql.ts";
@@ -32,7 +32,7 @@ test("分页获取帖子列表", async function ({ api, ijiaDbPool }) {
     };
     baseDate -= oneDay; // 每个帖子的发布时间间隔1秒
   }
-  await ijiaDbPool.execute(insertIntoValues(post.name, values));
+  await ijiaDbPool.execute(insertIntoValues("public.post", values));
 
   const list1 = await getPostList(undefined, 10);
   expect(list1.items.length).toBe(10);
@@ -65,7 +65,7 @@ test("向前分页", async function ({ api, ijiaDbPool }) {
     content_text: "test",
     publish_time: new Date(baseDate), // 插入一个时间重复的
   };
-  await ijiaDbPool.execute(insertIntoValues(post.name, f));
+  await ijiaDbPool.execute(insertIntoValues("public.post", f));
 
   const { before_cursor } = await getPostList();
 
@@ -78,7 +78,7 @@ test("向前分页", async function ({ api, ijiaDbPool }) {
     };
     baseDate += oneDay; // 每个帖子的发布时间间隔1秒
   }
-  await ijiaDbPool.execute(insertIntoValues(post.name, values));
+  await ijiaDbPool.execute(insertIntoValues("public.post", values));
 
   const list1 = await getPostList({ cursor: before_cursor ?? undefined, forward: true, number: 2 });
 

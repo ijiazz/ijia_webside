@@ -1,6 +1,6 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { initAlice, loginGetToken } from "@/__mocks__/user.ts";
-import { DbPlaUserCreate, pla_asset, pla_user, Platform, USER_LEVEL, watching_pla_user } from "@ijia/data/db";
+import { DbPlaUserCreate, Platform, USER_LEVEL } from "@ijia/data/db";
 import { insertPosts } from "@api-test/__mocks__/posts.ts";
 import { deleteFrom } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
@@ -18,7 +18,7 @@ describe.skip("登录的账号", function () {
 
 test.skip("游客查看帖子列表", async function ({ page, browser }) {
   await insertMock();
-  await dbPool.query(deleteFrom(pla_asset.name));
+  await dbPool.query(deleteFrom("pla_asset"));
   await insertPosts(12, Platform.douYin, "dy0");
   await insertPosts(12, Platform.douYin, "dy1");
   await page.goto(getAppUrlFromRoute(POST_ROUTE));
@@ -41,10 +41,10 @@ async function insertMock() {
     { platform: Platform.douYin, pla_uid: "dy0" },
     { platform: Platform.douYin, pla_uid: "dy1" },
   ];
-  await dbPool.execute(deleteFrom(pla_user.name));
-  await dbPool.execute(insertIntoValues(pla_user.name, users).onConflict(["platform", "pla_uid"]).doNotThing());
+  await dbPool.execute(deleteFrom("pla_user"));
+  await dbPool.execute(insertIntoValues("pla_user", users).onConflict(["platform", "pla_uid"]).doNotThing());
   await dbPool.execute(
-    insertIntoValues(watching_pla_user.name, [
+    insertIntoValues("watching_pla_user", [
       { level: USER_LEVEL.god, platform: users[0].platform, pla_uid: users[0].pla_uid },
       { level: USER_LEVEL.god, platform: users[1].platform, pla_uid: users[1].pla_uid },
     ])

@@ -1,5 +1,5 @@
 import routeGroup from "./_route.ts";
-import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { select } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
 
@@ -9,7 +9,7 @@ export default routeGroup.create({
   async handler() {
     const items = await dbPool.queryRows(
       select<ClassOption>({ class_id: "id", class_name: true, description: true })
-        .from(dclass.name)
+        .from("public.class")
         .where(`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`),
     );
 

@@ -1,4 +1,3 @@
-import { post, post_comment, user, post_comment_like } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { GetPostCommentListOption, PostCommentDto, PostCommentResponse } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
@@ -27,7 +26,7 @@ export async function getCommentList(
 
       /** like_weight 用量计算 is_like 和 is_report */
       like_weight: `${select("weight")
-        .from(post_comment_like.name)
+        .from("post_comment_like")
         .where(["comment_id=c.id", `user_id=${v(currentUserId)}`])
         .toSelect()}`,
     });
@@ -55,7 +54,7 @@ export async function getCommentList(
         ELSE
       ${jsonb_build_object({
         user: select(`${jsonb_build_object({ user_id: "id", user_name: "nickname" })} `)
-          .from(user.name)
+          .from("public.user")
           .where("reply.user_id=id")
           .toSelect(),
         comment_id: "c.parent_comment_id",
@@ -63,10 +62,10 @@ export async function getCommentList(
       })}
         END) AS reply_to`,
   ])
-    .from(post_comment.name, { as: "c" })
-    .innerJoin(user.name, { as: "u", on: "c.user_id=u.id" })
-    .innerJoin(post.name, { as: "p", on: ["c.post_id=p.id", "NOT p.is_delete"] })
-    .leftJoin(post_comment.name, { as: "reply", on: "c.parent_comment_id=reply.id" })
+    .from("post_comment", { as: "c" })
+    .innerJoin("public.user", { as: "u", on: "c.user_id=u.id" })
+    .innerJoin("public.post", { as: "p", on: ["c.post_id=p.id", "NOT p.is_delete"] })
+    .leftJoin("post_comment", { as: "reply", on: "c.parent_comment_id=reply.id" })
     .where(() => {
       const where = [`NOT c.is_delete`];
 

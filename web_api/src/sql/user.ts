@@ -1,5 +1,5 @@
 import { HttpError } from "@/global/errors.ts";
-import { user } from "@ijia/data/db";
+
 import { v } from "./utils.ts";
 import { select } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
@@ -8,7 +8,7 @@ import { dbPool } from "@/db/client.ts";
 export async function getValidUserSampleInfoByUserId(userId: number): Promise<SampleUserInfo> {
   const [info] = await dbPool.queryRows(
     select({ user_id: "id", email: true, nickname: true, is_deleted: true })
-      .from(user.name)
+      .from("public.user")
       .where([`id=${v(userId)}`]),
   );
   if (!info) throw new HttpError(400, "账号不存在");

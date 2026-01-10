@@ -1,5 +1,4 @@
 import { verifyAccessToken, AccessTokenData, refreshAccessToken, SignInfo, SignResult } from "@/global/jwt.ts";
-import { user, user_role_bind } from "@ijia/data/db";
 import { HttpError, RequiredLoginError } from "@/global/errors.ts";
 import { getValidUserSampleInfoByUserId, SampleUserInfo } from "@/sql/user.ts";
 import { setTimeoutUnRef } from "@/global/utils.ts";
@@ -9,7 +8,7 @@ import { dbPool } from "@/db/client.ts";
 
 async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
   if (!roles.length) return false;
-  const statement1 = select({ role_id: true }).from(user_role_bind.name);
+  const statement1 = select({ role_id: true }).from("user_role_bind");
 
   let statement2: SqlStatement;
   if (roles.length === 1) {
@@ -27,11 +26,11 @@ async function getUserRoleNameList(userId: number): Promise<UserWithRole> {
       email: "u.email",
       nickname: "u.nickname",
       role_id_list: select<{ role_id: "string" }>({ role_id: "array_agg(bind.role_id)" })
-        .from(user_role_bind.name, { as: "bind" })
+        .from("user_role_bind", { as: "bind" })
         .where(`bind.user_id=${v(userId)}`)
         .toSelect(),
     })
-      .from(user.name, { as: "u" })
+      .from("public.user", { as: "u" })
       .where("NOT u.is_deleted"),
   );
   if (!userInfo) throw new HttpError(400, "账号不存在");

@@ -3,7 +3,7 @@ import { test, Context } from "../../fixtures/hono.ts";
 import { testGetPost, deletePost, updatePostConfigFormApi } from "./utils/prepare_post.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { PostComment, getCommentDbRow, prepareCommentPost, getPostCommentTotal } from "./utils/prepare_comment.ts";
-import { DbPostComment, post } from "@ijia/data/db";
+import { DbPostComment } from "@ijia/data/db";
 import { DeepPartial } from "./utils/comment.ts";
 import { getUserCanCreateCommentLimit } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 import { afterTime } from "evlib";
@@ -239,7 +239,7 @@ test("对不存在的评论回复", async function ({ api, publicDbPool }) {
 test("审核中的作品不能新增评论和回复评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token });
-  await publicDbPool.execute(update(post.name).set({ is_reviewing: "true" }).where(`id=${postInfo.id}`));
+  await publicDbPool.execute(update("public.post").set({ is_reviewing: "true" }).where(`id=${postInfo.id}`));
   await expect(getPostCommentTotal(postInfo.id)).resolves.toBe(1);
 
   await expect(action.createComment("2", { token: alice.token })).responseStatus(404);
@@ -252,7 +252,7 @@ test("审核中的作品不能新增评论和回复评论", async function ({ ap
 test("审核不通过的作品不能新增评论和回复评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token });
-  await publicDbPool.execute(update(post.name).set({ is_review_pass: "false" }).where(`id=${postInfo.id}`));
+  await publicDbPool.execute(update("public.post").set({ is_review_pass: "false" }).where(`id=${postInfo.id}`));
   await expect(getPostCommentTotal(postInfo.id)).resolves.toBe(1);
 
   await expect(action.createComment("2", { token: alice.token })).responseStatus(404);

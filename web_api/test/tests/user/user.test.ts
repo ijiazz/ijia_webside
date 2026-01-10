@@ -1,6 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { dclass, pla_user, Platform, PUBLIC_CLASS_ROOT_ID, user_class_bind, user_platform_bind } from "@ijia/data/db";
+import { Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import userRoutes from "@/routers/user/mod.ts";
 
 import { getUserPublicClassId } from "./util.ts";
@@ -15,7 +15,7 @@ test("获取用户信息", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   const classes = await publicDbPool
     .queryRows(
-      insertIntoValues(dclass.name, [
+      insertIntoValues("public.class", [
         { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
         { class_name: "2" },
         { class_name: "3" },
@@ -25,7 +25,7 @@ test("获取用户信息", async function ({ api, publicDbPool }) {
 
   await publicDbPool.queryRows(
     insertIntoValues(
-      user_class_bind.name,
+      "user_class_bind",
       classes.map((class_id) => ({ class_id, user_id: alice.id })),
     ),
   );
@@ -51,14 +51,14 @@ test("获取用户信息", async function ({ api, publicDbPool }) {
 test("获取用户信息-绑定账号后", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   await publicDbPool.queryCount(
-    insertIntoValues(pla_user.name, [
+    insertIntoValues("pla_user", [
       { pla_uid: "1", platform: Platform.douYin },
       { pla_uid: "2", platform: Platform.douYin },
       { pla_uid: "3", platform: Platform.douYin },
     ]),
   );
   await publicDbPool.queryCount(
-    insertIntoValues(user_platform_bind.name, [{ pla_uid: "1", platform: Platform.douYin, user_id: alice.id }]),
+    insertIntoValues("user_platform_bind", [{ pla_uid: "1", platform: Platform.douYin, user_id: alice.id }]),
   );
 
   await expect(apiGetBasicInfo(api, alice.token)).resolves.toMatchObject({
@@ -75,7 +75,7 @@ test("只能选择公共班级，且公共班级只能选一个", async function
   const alice = await prepareUniqueUser("alice");
   const classes = await publicDbPool
     .queryRows(
-      insertIntoValues(dclass.name, [
+      insertIntoValues("public.class", [
         { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
         { class_name: "2", parent_class_id: PUBLIC_CLASS_ROOT_ID },
         { class_name: "3" },

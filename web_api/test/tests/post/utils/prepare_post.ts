@@ -1,5 +1,5 @@
 import { JWT_TOKEN_KEY, Api } from "../../../fixtures/hono.ts";
-import { DbUserProfile, post, post_group, post_review_info, PostReviewType, user_profile } from "@ijia/data/db";
+import { DbUserProfile, PostReviewType } from "@ijia/data/db";
 
 import { CreatePostParam, PostItemDto, UpdatePostConfigParam, UpdatePostContentParam, PostReviewInfo } from "@/dto.ts";
 import { dbPool } from "@/db/client.ts";
@@ -19,7 +19,7 @@ export async function markReviewed(
   } = {},
 ) {
   return dbPool.queryCount(
-    update(post.name)
+    update("public.post")
       .set({
         is_reviewing: v(status.reviewing),
         is_review_pass: v(status.review_pass),
@@ -40,11 +40,11 @@ export async function getPostReviewStatus(postId: number): Promise<ReviewStatus>
           reviewer_id: "reviewer_id",
         }),
       )
-        .from(post_review_info.name)
+        .from("post_review_info")
         .where([`type=${v(PostReviewType.post)}`, `target_id=${v(postId)}`])
         .toSelect(),
     })
-      .from(post.name)
+      .from("public.post")
       .where(`id=${postId}`),
   );
 
@@ -94,9 +94,7 @@ export async function preparePost(api: Api, option?: CreatePostParam) {
 }
 
 export async function createPostGroup(pool: DbQueryPool, name: string): Promise<number> {
-  const result = await pool.queryRows(
-    insertIntoValues(post_group.name, [{ name: name, public_sort: 0 }]).returning("id"),
-  );
+  const result = await pool.queryRows(insertIntoValues("post_group", [{ name: name, public_sort: 0 }]).returning("id"));
   return result[0].id;
 }
 /** 获取一个指定帖子 */
@@ -164,7 +162,7 @@ export async function getUserStatFromDb(userId: number): Promise<UserStat> {
       report_subjective_correct_count: true,
       report_subjective_error_count: true,
     })
-      .from(user_profile.name)
+      .from("user_profile")
       .where(`user_id=${v(userId)}`),
   );
 

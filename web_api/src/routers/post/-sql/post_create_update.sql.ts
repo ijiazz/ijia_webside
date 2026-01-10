@@ -1,4 +1,4 @@
-import { post, post_review_info, TextStructure, user_profile } from "@ijia/data/db";
+import { TextStructure } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
 import { textStructChecker } from "../-utils/text_struct.ts";
@@ -21,7 +21,7 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
   await using t = dbPool.begin();
 
   const [insert] = await t.query<[QueryRowsResult<{ id: number; group_id: number | null }>, QueryRowsResult]>([
-    insertIntoValues(post.name, {
+    insertIntoValues("public.post", {
       user_id: userId,
       content_text: content_text ? content_text : null,
       content_text_struct: content_text_structure ? new String(v(JSON.stringify(content_text_structure))) : null,
@@ -32,7 +32,7 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
       options: toBit(8, optionBit),
       is_reviewing: group_id === undefined ? false : true,
     }).returning(["id", "group_id"]),
-    update(user_profile.name)
+    update("user_profile")
       .set({ post_count: "post_count + 1" })
       .where(`user_id=${v(userId)}`),
   ]);
@@ -68,7 +68,7 @@ export async function updatePostContent(
       update_content_text_struct = struct?.length ? v(JSON.stringify(struct)) : "NULL";
     }
   }
-  const sql = update(post.name)
+  const sql = update("public.post")
     .set({
       content_text: update_content_text,
       content_text_struct: update_content_text_struct,
@@ -101,7 +101,7 @@ export async function updatePostContent(
 export async function updatePostConfig(postId: number, userId: number, param: UpdatePostConfigParam): Promise<number> {
   const { comment_disabled, is_hide } = param;
   const updateContentSql = await dbPool.queryCount(
-    update(post.name)
+    update("public.post")
       .set({
         options: updatePostOption("options", { comment_disabled }), // 设置评论关闭
         is_hide: is_hide === undefined ? undefined : v(is_hide),
@@ -171,7 +171,7 @@ function checkContent(contentText: string, struct?: TextStructure[] | null) {
 }
 
 function getAddReviewRecord(type: PostReviewType, target_id: number) {
-  return insertIntoValues(post_review_info.name, { type, target_id }).onConflict(["type", "target_id"]).doUpdate({
+  return insertIntoValues("post_review_info", { type, target_id }).onConflict(["type", "target_id"]).doUpdate({
     create_time: "now()",
     is_review_pass: "NULL",
     remark: "NULL",

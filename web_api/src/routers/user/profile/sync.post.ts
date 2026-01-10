@@ -1,4 +1,4 @@
-import { Platform, pla_user } from "@ijia/data/db";
+import { Platform } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { checkValueAsync } from "@/global/check.ts";
 import { HttpError } from "@/global/errors.ts";
@@ -26,7 +26,7 @@ export default routeGroup.create({
       if (platform === Platform.douYin) {
         const [info] = await dbPool.queryRows(
           select<{ sec_uid: string }>({ sec_uid: "(extra->>'sec_uid')" })
-            .from(pla_user.name)
+            .from("pla_user")
             .where(`platform=${v(platform)} AND pla_uid=${v(pla_uid)}`),
         );
         if (info) await getCheckerServer().syncUserInfo(platform, info.sec_uid);

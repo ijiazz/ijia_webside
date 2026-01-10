@@ -1,4 +1,4 @@
-import { enumPlatform, Platform, pla_user, user_platform_bind } from "@ijia/data/db";
+import { enumPlatform, Platform } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { array, enumType, optional, stringMatch } from "@asla/wokao";
 import { checkValueAsync } from "@/global/check.ts";
@@ -46,7 +46,7 @@ export default routeGroup.create({
       userInfo = await checkServer.checkPlatformUserInfo(platformUseId, userId);
       const [user] = await dbPool.queryRows(
         select({ avatar: true })
-          .from(pla_user.name)
+          .from("pla_user")
           .where(`platform=${v(userInfo.platform)} AND pla_uid=${v(userInfo.pla_uid)}`)
           .limit(1),
       );
@@ -66,7 +66,7 @@ export default routeGroup.create({
         platform: true,
         pla_uid: true,
       })
-        .from(user_platform_bind.name)
+        .from("user_platform_bind")
         .where([`platform=${v(platform)}`, `pla_uid=${v(userInfo.pla_uid)}`])
         .limit(1),
     );

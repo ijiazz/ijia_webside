@@ -1,6 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, JWT_TOKEN_KEY, Api } from "../../fixtures/hono.ts";
-import { watching_pla_user, pla_user, USER_LEVEL, Platform, DbPlaUserCreate } from "@ijia/data/db";
+import { USER_LEVEL, Platform, DbPlaUserCreate } from "@ijia/data/db";
 
 import { insertPosts } from "../../__mocks__/posts.ts";
 import { signAccessToken } from "@/global/jwt.ts";
@@ -65,9 +65,9 @@ async function insertMock() {
     { platform: Platform.weibo, pla_uid: "wb0" },
     { platform: Platform.weibo, pla_uid: "wb1" },
   ];
-  await dbPool.execute(insertIntoValues(pla_user.name, users));
+  await dbPool.execute(insertIntoValues("pla_user", users));
   await dbPool.execute(
-    insertIntoValues(watching_pla_user.name, [
+    insertIntoValues("watching_pla_user", [
       { level: USER_LEVEL.god, platform: users[0].platform, pla_uid: users[0].pla_uid },
       { level: USER_LEVEL.second, platform: users[1].platform, pla_uid: users[1].pla_uid },
       { level: USER_LEVEL.god, platform: users[2].platform, pla_uid: users[2].pla_uid },

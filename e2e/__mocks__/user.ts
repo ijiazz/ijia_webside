@@ -1,4 +1,3 @@
-import { user } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { createUser } from "@ijia/data/query";
 import { api } from "@/__mocks__/fetch.ts";
@@ -12,7 +11,7 @@ export const E2E_PASSWORD = {
 };
 
 async function getNextUserId() {
-  const sql = v.gen`SELECT nextval(pg_get_serial_sequence(${user.name}, 'id'))::INT AS id`;
+  const sql = v.gen`SELECT nextval(pg_get_serial_sequence('public.user', 'id'))::INT AS id`;
   const { id: id } = await dbPool.queryFirstRow<{ id: number }>(sql);
   return id;
 }

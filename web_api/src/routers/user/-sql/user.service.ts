@@ -1,13 +1,4 @@
-import {
-  dclass,
-  user_class_bind,
-  PUBLIC_CLASS_ROOT_ID,
-  user,
-  user_platform_bind,
-  pla_user,
-  user_profile,
-  Platform,
-} from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID, Platform } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { UserBasicDto, UserInfoDto } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
@@ -17,9 +8,9 @@ import { ExecutableSQL } from "@asla/pg";
 
 export function setUserPublicClass(userId: number, classId: number | null): ExecutableSQL {
   return dbPool.createExecutableSQL(
-    insertInto(user_class_bind.name, ["class_id", "user_id"]).select(() => {
+    insertInto("user_class_bind", ["class_id", "user_id"]).select(() => {
       return select({ class_id: "id", user_id: v(userId) })
-        .from(dclass.name)
+        .from("public.class")
         .where([`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`, `id=${v(classId)}`])
         .genSql();
     }),
@@ -27,11 +18,11 @@ export function setUserPublicClass(userId: number, classId: number | null): Exec
 }
 export function deletePublicClassOfUser(userId: number): ExecutableSQL {
   return dbPool.createExecutableSQL(
-    deleteFrom(user_class_bind.name).where([
+    deleteFrom("user_class_bind").where([
       `user_id=${v(userId)}`,
       "EXISTS " +
         select("*")
-          .from(dclass.name)
+          .from("public.class")
           .where([`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`, `class.id=user_class_bind.class_id`])
           .toSelect(),
     ]),
@@ -47,7 +38,7 @@ export async function getUserBasic(userId: number): Promise<UserBasicDto> {
       is_official: `(SELECT EXISTS ${getUserBindAccount(userId).toSelect()})`,
       primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,
     })
-      .from(user.name, { as: "u" })
+      .from("public.user", { as: "u" })
       .where(`u.id=${v(userId)}`)
       .limit(1),
   );
@@ -57,7 +48,7 @@ export async function getUserBasic(userId: number): Promise<UserBasicDto> {
 }
 export async function getUserProfile(userId: number): Promise<UserInfoDto> {
   const profile = select({ acquaintance_time: true, comment_stat_enabled: true, live_notice: true })
-    .from(user_profile.name)
+    .from("user_profile")
     .where(`user_id=${v(userId)}`);
   const users = await dbPool.queryRows(
     select<UserInfoDto>({
@@ -69,7 +60,7 @@ export async function getUserProfile(userId: number): Promise<UserInfoDto> {
       bind_accounts: `(SELECT json_agg(row_to_json(accounts)) FROM ${getUserBindAccount(userId).toSelect()} AS accounts)`,
       profile: `(SELECT row_to_json(profile) FROM ${profile.toSelect()} AS profile)`,
     })
-      .from(user.name, { as: "u" })
+      .from("public.user", { as: "u" })
       .where(`u.id=${v(userId)}`)
       .limit(1),
   );
@@ -82,7 +73,7 @@ export async function getUserProfile(userId: number): Promise<UserInfoDto> {
 export async function bindPlatformAccount(userId: number, platform: Platform, pla_uid: string, skipCheck?: boolean) {
   const [plaUser] = await dbPool.queryRows(
     select<{ signature?: string }>({ signature: true })
-      .from(pla_user.name)
+      .from("pla_user")
       .where(`platform=${v(platform)} AND pla_uid=${v(pla_uid)}`),
   );
   if (!plaUser) throw new HttpError(400, { message: "平台账号不存在" });
@@ -92,15 +83,15 @@ export async function bindPlatformAccount(userId: number, platform: Platform, pl
     }
   }
   await using q = dbPool.begin();
-  await q.query(deleteFrom(user_platform_bind.name).where(`platform=${v(platform)} AND pla_uid=${v(pla_uid)}`));
-  await q.queryCount(insertIntoValues(user_platform_bind.name, { pla_uid, platform, user_id: userId }));
+  await q.query(deleteFrom("user_platform_bind").where(`platform=${v(platform)} AND pla_uid=${v(pla_uid)}`));
+  await q.queryCount(insertIntoValues("user_platform_bind", { pla_uid, platform, user_id: userId }));
   await q.commit();
 }
 
 function getUserPublicClass(userId: number) {
   return select(["bind_class.class_id", "class.class_name"])
-    .from(user_class_bind.name, { as: "bind_class" })
-    .innerJoin(dclass.name, {
+    .from("user_class_bind", { as: "bind_class" })
+    .innerJoin("public.class", {
       as: "class",
       on: [
         `bind_class.user_id=${v(userId)}`,
@@ -120,8 +111,8 @@ function getUserBindAccount(userId: number) {
     create_time: "bind.create_time",
     key: "bind.platform||'-'||bind.pla_uid",
   })
-    .from(user_platform_bind.name, { as: "bind" })
-    .innerJoin(pla_user.name, {
+    .from("user_platform_bind", { as: "bind" })
+    .innerJoin("pla_user", {
       as: "pla_user",
       on: ["bind.platform=pla_user.platform", `bind.user_id=${v(userId)}`, "bind.pla_uid=pla_user.pla_uid"],
     });

@@ -1,5 +1,5 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { user } from "@ijia/data/db";
+
 import { initAlice, loginGetToken, initBob } from "@/__mocks__/user.ts";
 import { dbPool } from "@/db/client.ts";
 import { Page } from "@playwright/test";
@@ -9,7 +9,7 @@ const { expect, beforeEach } = test;
 
 test("注册账号", async function ({ page, webInfo }) {
   const email = "test_signup@ijiazz.cn";
-  await dbPool.queryCount(deleteFrom(user.name).where("email=" + v(email)));
+  await dbPool.queryCount(deleteFrom("public.user").where("email=" + v(email)));
 
   await page.goto(getAppUrlFromRoute("/passport/signup"));
 
@@ -44,7 +44,7 @@ test("注册账号", async function ({ page, webInfo }) {
   await expect(
     dbPool.queryCount(
       select("*")
-        .from(user.name)
+        .from("public.user")
         .where(`email=` + v(email)),
     ),
     "注册成功",
@@ -126,7 +126,7 @@ test("修改邮箱", async function ({ page }) {
   const Alice = await initAlice();
   const token = await loginGetToken(Alice.email, Alice.password);
   const changeEmail = "changenew@ijiazz.cn";
-  await dbPool.execute(deleteFrom(user.name).where("email=" + v(changeEmail)));
+  await dbPool.execute(deleteFrom("public.user").where("email=" + v(changeEmail)));
   await page.goto(getAppUrlFromRoute("/profile/security", token));
 
   await page.getByRole("button", { name: "修 改" }).click();

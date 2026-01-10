@@ -1,6 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
-import { user } from "@ijia/data/db";
+
 import { passportRoutes, captchaRoutes } from "@/routers/mod.ts";
 
 import { initCaptcha } from "../../__mocks__/captcha.ts";
@@ -26,7 +26,7 @@ test("注册用户", async function ({ api, publicDbPool }) {
   const emailAnswer = await mockSignUpSendEmailCaptcha(api, email);
   const result = await signup(api, { email: email, password: AlicePassword, emailCaptcha: emailAnswer });
   await expect(
-    publicDbPool.queryCount(select({ email: true }).from(user.name).where(`id=${result.userId}`)),
+    publicDbPool.queryCount(select({ email: true }).from("public.user").where(`id=${result.userId}`)),
   ).resolves.toBe(1);
 });
 test("必须传正确的邮件验证码", async function ({ api, publicDbPool }) {

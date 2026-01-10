@@ -1,6 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
-import { user } from "@ijia/data/db";
+
 import { captchaRoutes, passportRoutes } from "@/routers/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
@@ -52,7 +52,7 @@ test("重置密码必须传正确的验证码", async function ({ api }) {
 });
 test("已注销账号不能重置密码", async function ({ api }) {
   const Alice = await prepareUniqueUser("alice");
-  await dbPool.execute(update(user.name).set({ is_deleted: "true" }).where(`id=${Alice.userId}`));
+  await dbPool.execute(update("public.user").set({ is_deleted: "true" }).where(`id=${Alice.userId}`));
   const emailCaptchaAnswer = await mockResetPasswordSendEmailCaptcha(api, Alice.email);
   const newPassword = await hashPasswordFrontEnd("newPassword123");
 

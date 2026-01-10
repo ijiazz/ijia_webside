@@ -1,5 +1,5 @@
 import routeGroup from "../_route.ts";
-import { enumPlatform, Platform, user_platform_bind } from "@ijia/data/db";
+import { enumPlatform, Platform } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { enumType } from "@asla/wokao";
 import { checkValueAsync } from "@/global/check.ts";
@@ -28,7 +28,7 @@ export default routeGroup.create({
     const platform = bind.platform as Platform;
     const { count } = await dbPool.queryFirstRow(
       select<{ count: number }>("count(*) ::INT")
-        .from(user_platform_bind.name)
+        .from("user_platform_bind")
         .where(`user_id=${v(userId)}`),
     );
     if (count > 5) throw new HttpError(409, { message: "最多绑定5个平台账号" });

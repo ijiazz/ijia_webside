@@ -1,4 +1,3 @@
-import { post, post_group, post_like, user } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { GetPostListParam, PostItemDto, PostUserInfo, CursorListDto } from "@/dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
@@ -38,7 +37,7 @@ export async function getPostList(
 
       /** like_weight 用量计算 is_like 和 is_report */
       like_weight: `${select("weight")
-        .from(post_like.name)
+        .from("post_like")
         .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
         .toSelect()}`,
     });
@@ -64,7 +63,7 @@ export async function getPostList(
     create_time: "p.create_time",
     update_time: "CASE WHEN p.update_time=p.create_time THEN NULL ELSE p.update_time END",
     like_weight: `${select("weight")
-      .from(post_like.name)
+      .from("post_like")
       .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
       .toSelect()}`,
     type: getPostContentType("p.content_type"),
@@ -86,9 +85,9 @@ export async function getPostList(
     }),
     status: jsonb_build_object({ review_pass: "p.is_review_pass", is_reviewing: "p.is_reviewing" }),
   })
-    .from(post.name, { as: "p" })
-    .innerJoin(user.name, { as: "u", on: "u.id=p.user_id" })
-    .leftJoin(post_group.name, { as: "g", on: "g.id=p.group_id" })
+    .from("public.post", { as: "p" })
+    .innerJoin("public.user", { as: "u", on: "u.id=p.user_id" })
+    .leftJoin("post_group", { as: "g", on: "g.id=p.group_id" })
     .where(() => {
       const where: string[] = [`NOT p.is_delete`];
 
@@ -171,7 +170,7 @@ export async function getPostList(
 export async function getUserDateCount(userId: number) {
   const { count } = await dbPool.queryFirstRow(
     select<{ count: number }>({ count: "count(*)::INT" })
-      .from(post.name, { as: "p" })
+      .from("public.post", { as: "p" })
       .where([`user_id=${v(userId)}`, `DATE(p.create_time) = CURRENT_DATE`]),
   );
   return count;

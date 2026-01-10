@@ -1,12 +1,5 @@
 import { CreateCommentItemData, GetPostCommentListOption } from "@/dto.ts";
-import {
-  DbPostComment,
-  post,
-  post_comment,
-  post_review_info,
-  DbPostReviewInfoCreate,
-  PostReviewType,
-} from "@ijia/data/db";
+import { DbPostComment, DbPostReviewInfoCreate, PostReviewType } from "@ijia/data/db";
 import { Api, JWT_TOKEN_KEY } from "test/fixtures/hono.ts";
 import { preparePost } from "./prepare_post.ts";
 import { createComment } from "@/routers/post/comment/-sql/post_comment.sql.ts";
@@ -80,7 +73,7 @@ export async function reportComment(api: Api, commentId: number, reason?: string
 
 /** 直接从数据库查询评论的数据 */
 export async function getCommentDbRow(commentId: number) {
-  return dbPool.queryFirstRow(select("*").from(post_comment.name).where(`id=${commentId}`).limit(1));
+  return dbPool.queryFirstRow(select("*").from("post_comment").where(`id=${commentId}`).limit(1));
 }
 export async function prepareCommentPost(api: Api) {
   const post1 = await preparePost(api, undefined);
@@ -91,7 +84,7 @@ export async function getPostCommentTotal(postId: number) {
   return dbPool
     .queryFirstRow(
       select("comment_num")
-        .from(post.name)
+        .from("public.post")
         .where(`id=${v(postId)}`),
     )
     .then((r) => r.comment_num);
@@ -105,7 +98,7 @@ export type CommentInfo = Pick<DbPostComment, "like_count" | "dislike_count">;
 export async function getCommentStat(commentId: number): Promise<CommentInfo> {
   return dbPool.queryFirstRow(
     select<CommentInfo>({ like_count: true, dislike_count: true })
-      .from(post_comment.name)
+      .from("post_comment")
       .where(`id=${v(commentId)}`),
   );
 }
@@ -118,7 +111,7 @@ export async function getCommentReviewStatus(commentId: number): Promise<Comment
       reviewed_time: true,
       reviewer_id: true,
     })
-      .from(post_review_info.name)
+      .from("post_review_info")
       .where([`type=${v(PostReviewType.postComment)}`, `target_id=${commentId}`]),
   );
 

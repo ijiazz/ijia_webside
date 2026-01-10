@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect } from "vitest";
 import { Context, test } from "../../fixtures/hono.ts";
-import { post, TextStructureType } from "@ijia/data/db";
+import { TextStructureType } from "@ijia/data/db";
 
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import {
@@ -124,7 +124,7 @@ test("更新审核不通过的帖子，审核数据重置", async function ({ ap
   const groupId = await createPostGroup(publicDbPool, "测试分组");
   const alice = await prepareUniqueUser("alice");
   const result = await publicDbPool.queryRows(
-    insertIntoValues(post.name, [
+    insertIntoValues("public.post", [
       {
         content_text: "未审核",
         is_review_pass: null,
@@ -163,7 +163,7 @@ test("更新审核不通过的帖子，审核数据重置", async function ({ ap
 test("只更新帖子的隐藏状态，审核状态和审核数据不变", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   const result = await publicDbPool.queryMap(
-    insertIntoValues(post.name, [
+    insertIntoValues("public.post", [
       {
         content_text: "未审核",
         is_review_pass: null,
@@ -201,7 +201,7 @@ test("只更新帖子的隐藏状态，审核状态和审核数据不变", async
       is_review_pass: true,
       is_reviewing: true,
     })
-      .from(post.name)
+      .from("public.post")
       .where(`user_id=${v(alice.id)}`),
     "id",
   );

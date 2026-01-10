@@ -2,7 +2,7 @@ import { HttpError } from "@/global/errors.ts";
 import { PlatformUserBasicInfoCheckResult } from "@/services/douyin.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
-import { pla_user, Platform } from "@ijia/data/db";
+import { Platform } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { checkSignatureStudentId } from "./user.service.ts";
 
@@ -31,7 +31,7 @@ export async function getPlatformUserInfo(
       user_name: true,
       platform: true,
     })
-      .from(pla_user.name)
+      .from("pla_user")
       .where(where)
       .limit(1),
   );

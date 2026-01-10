@@ -6,7 +6,7 @@ import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { createUser } from "@/routers/passport/-sql/signup.ts";
-import { user } from "@ijia/data/db";
+
 import { getUniqueEmail, getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
 import { update } from "@asla/yoursql";
 import { LoginType, EmailCaptchaActionType } from "@/dto.ts";
@@ -98,7 +98,7 @@ describe("修改邮箱", async function () {
   test("已注销账号不能修改邮箱", async function ({ api, publicDbPool }) {
     const alice = await prepareUniqueUser("alice");
     const accountToken = await getAccountToken(api, alice.token);
-    await publicDbPool.execute(update(user.name).set({ is_deleted: "true" }).where(`id=${alice.id}`));
+    await publicDbPool.execute(update("public.user").set({ is_deleted: "true" }).where(`id=${alice.id}`));
     const newEmail = "news@ijiazz.cn";
     const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail);
     const promise = api["/passport/change_email"].post({

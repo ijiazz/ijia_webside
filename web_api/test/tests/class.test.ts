@@ -1,6 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context } from "../fixtures/hono.ts";
-import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 
 import classRoutes from "@/routers/class/mod.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
@@ -12,7 +12,7 @@ beforeEach<Context>(async ({ hono }) => {
 test("获取公共班级", async function ({ api, ijiaDbPool }) {
   const created = await ijiaDbPool
     .queryRows(
-      insertIntoValues(dclass.name, [
+      insertIntoValues("public.class", [
         { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
         { class_name: "2", parent_class_id: PUBLIC_CLASS_ROOT_ID },
         { class_name: "3", parent_class_id: null },

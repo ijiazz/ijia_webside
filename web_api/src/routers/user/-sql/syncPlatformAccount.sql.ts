@@ -1,4 +1,4 @@
-import { Platform, pla_user, user_platform_bind, user } from "@ijia/data/db";
+import { Platform } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { HttpError } from "@/global/errors.ts";
 import { select, update } from "@asla/yoursql";
@@ -12,11 +12,11 @@ export async function syncPlatformAccountFromDb(userId: number, param: { platfor
     user_name: "p_u.user_name",
     avatar: "p_u.avatar",
   })
-    .from(user_platform_bind.name, { as: "bind" })
-    .innerJoin(pla_user.name, { as: "p_u", on: [`bind.platform=p_u.platform`, `bind.pla_uid=p_u.pla_uid`] })
+    .from("user_platform_bind", { as: "bind" })
+    .innerJoin("pla_user", { as: "p_u", on: [`bind.platform=p_u.platform`, `bind.pla_uid=p_u.pla_uid`] })
     .where([`bind.platform=${v(param.platform)}`, `bind.pla_uid=${v(param.pla_uid)}`, `bind.user_id=${v(userId)}`]);
 
-  const sql = await update(user.name)
+  const sql = await update("public.user")
     .set({
       avatar: "target.avatar",
       nickname: "target.user_name",

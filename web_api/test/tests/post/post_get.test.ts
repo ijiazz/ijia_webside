@@ -1,6 +1,5 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { post } from "@ijia/data/db";
 
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { createPost, preparePost, testGetPost, testGetSelfPost } from "./utils/prepare_post.ts";
@@ -55,7 +54,7 @@ test("审核中的帖子只有自己能查看", async function ({ api, publicDbP
   const { id } = await createPost(api, { content_text: "test1分组" }, alice.token);
 
   await publicDbPool.execute(
-    update(post.name)
+    update("public.post")
       .set({ is_reviewing: "true" })
       .where([`id=${id}`]),
   );
@@ -76,7 +75,7 @@ test("审核失败的帖子只有自己能查看", async function ({ api, public
   const { id } = await createPost(api, { content_text: "test" }, alice.token);
 
   await publicDbPool.execute(
-    update(post.name)
+    update("public.post")
       .set({ is_review_pass: "false" })
       .where([`id=${id}`]),
   );

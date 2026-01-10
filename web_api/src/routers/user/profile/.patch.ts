@@ -1,4 +1,4 @@
-import { user_profile, DbUserProfileCreate } from "@ijia/data/db";
+import { DbUserProfileCreate } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { optional } from "@asla/wokao";
 import { checkValue, checkValueAsync, date } from "@/global/check.ts";
@@ -49,7 +49,7 @@ export default routeGroup.create({
         profileUpdate.comment_stat_enabled = body.comment_stat_enabled;
       }
       if (updateProfile) {
-        const sql = insertIntoValues(user_profile.name, { user_id: userId, ...profileUpdate })
+        const sql = insertIntoValues("user_profile", { user_id: userId, ...profileUpdate })
           .onConflict("user_id")
           .doUpdate("SET " + updateSet(profileUpdate));
 

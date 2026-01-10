@@ -1,4 +1,3 @@
-import { post, user } from "@ijia/data/db";
 import { BulletChat } from "@/dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { select } from "@asla/yoursql";
@@ -23,8 +22,8 @@ export function genGetBulletChart(options: GetBulletChartOptions): ExecutableSQL
       avatar_url: "'/file/avatar/'||u.avatar",
     }),
   })
-    .from(post.name, { as: "p" })
-    .innerJoin(user.name, { as: "u", on: "p.user_id = u.id" })
+    .from("public.post", { as: "p" })
+    .innerJoin("public.user", { as: "u", on: "p.user_id = u.id" })
     .where(() => {
       const conditions: string[] = [
         `NOT p.is_delete`,

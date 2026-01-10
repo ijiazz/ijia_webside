@@ -13,7 +13,7 @@ sql 生成器使用 `@asla/yoursql`(https://github.com/asnowc/yoursql)。你需�
 **安全转换值，避免 SQL 注入**
 
 ```ts
-import { dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import v from "@/db/client.ts";
 // 如果 PUBLIC_CLASS_ROOT_ID 是用户参数，需要用 v 函数转换，这会将 JavaScript 值转换成 SQL 值
@@ -23,12 +23,13 @@ const rows = await dbPool.queryRows(`SELECT * FROM class WHERE id=${v(PUBLIC_CLA
 **直接使用 SQL 文本查询**
 
 ```ts
-import { v, dclass } from "@ijia/data/db";
+import { v } from "@ijia/data/db";
+import { select } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
 
-const sqlStr = await dclass
-  .select("class_id AS id, class_name")
-  .where(`parent_class_id=${PUBLIC_CLASS_ROOT_ID}`)
+const sqlStr = select("class_id AS id, class_name")
+  .from("class")
+  .where(`parent_class_id=${v(PUBLIC_CLASS_ROOT_ID)}`)
   .toString(); // 可以不执行查询，而转成 SQL 字符串，方便调试
 
 using conn = await dbPool.connect(); // 使用using ，不需要手动释放连接

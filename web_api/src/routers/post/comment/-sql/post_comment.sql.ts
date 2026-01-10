@@ -1,4 +1,3 @@
-import { post, post_comment } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { CreateCommentData, CreateCommentItemData } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
@@ -10,7 +9,7 @@ export async function createComment(
   userId: number,
   paramList: CreateCommentItemData[],
 ): Promise<CreateCommentData[]> {
-  const commentTable = post_comment.name;
+  const commentTable = "post_comment";
 
   const insertRaw = select([
     "data.content_text",
@@ -33,7 +32,7 @@ export async function createComment(
         )
         .toSelect("data");
     })
-    .innerJoin(post.name, {
+    .innerJoin("public.post", {
       as: "p",
       // 只有符合条件的帖子才可以添加评论
       on: [
@@ -44,7 +43,7 @@ export async function createComment(
         `NOT p.is_hide`, // 帖子未设置仅作者可见
       ],
     })
-    .leftJoin(post_comment.name, { as: "parent", on: `parent.id=data.parent_comment_id` })
+    .leftJoin("post_comment", { as: "parent", on: `parent.id=data.parent_comment_id` })
     .where([
       `(data.parent_comment_id IS NULL OR NOT parent.is_delete)`, //如果是回复，需要确保父评论未被删除
       `(get_bit(p.options, 1)='0' OR p.user_id=${v(userId)})`, //如果已关闭评论区，只有帖子作者能创建评论 //TODO: 这个放到 insert 来判断比较好，现在这种没法返回 403
@@ -57,13 +56,13 @@ export async function createComment(
       SELECT * FROM data 
       RETURNING id, post_id, parent_comment_id, root_comment_id 
     ), update_post AS (
-      UPDATE ${post.name} SET
+      UPDATE public.post SET
         comment_num = comment_num + post_count.count
       FROM (
          SELECT post_id, count(*) as count FROM inserted GROUP BY post_id
       ) AS post_count
-      WHERE ${post.name}.id = post_count.post_id
-      RETURNING ${post.name}.id
+      WHERE public.post.id = post_count.post_id
+      RETURNING public.post.id
     ), group_cid AS (
       SELECT parent_comment_id AS id, 0 AS root_add_count, count(*) AS parent_add_count FROM inserted
       WHERE parent_comment_id IS NOT NULL
@@ -103,7 +102,7 @@ export async function getUserCanCreateCommentLimit(userId: number, second: numbe
   }
   const list = await dbPool.queryRows(
     select({ create_time: true, id: true })
-      .from(post_comment.name)
+      .from("post_comment")
       .where([`user_id=${v(userId)}`, `now() - create_time < interval ' ${second} second'`])
       .limit(1),
   );

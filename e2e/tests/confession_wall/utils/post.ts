@@ -1,6 +1,5 @@
 import { api, JWT_TOKEN_KEY } from "@/__mocks__/fetch.ts";
 import { CreatePostParam } from "@api/dto.ts";
-import { post_group } from "@ijia/data/db";
 import { getAppUrlFromRoute } from "@/fixtures/test.ts";
 import { dbPool } from "@/db/client.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
@@ -14,9 +13,7 @@ export async function clearPostGroup() {
 }
 export async function createPostGroup(name: string, description?: string) {
   await dbPool.execute(
-    insertIntoValues(post_group.name, { description, name: name })
-      .onConflict("id")
-      .doUpdate({ name: "'发布分组测试'" }),
+    insertIntoValues("post_group", { description, name: name }).onConflict("id").doUpdate({ name: "'发布分组测试'" }),
   );
 }
 

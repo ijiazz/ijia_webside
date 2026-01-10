@@ -1,6 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api } from "../../fixtures/hono.ts";
-import { user, user_blacklist } from "@ijia/data/db";
+import {} from "@ijia/data/db";
 import passportRoutes from "@/routers/passport/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
@@ -85,7 +85,7 @@ test("邮箱或学号不存在，应返回提示", async function ({ api, public
 test("已删除的用户不能登录", async function ({ api, publicDbPool }) {
   const userInfo = await prepareUniqueUserWithPwd("alice@ijiazz.cn");
   await publicDbPool.execute(
-    update(user.name)
+    update("public.user")
       .set({ is_deleted: "true" })
       .where(`id=${v(userInfo.id)}`),
   );
@@ -95,7 +95,7 @@ test("已删除的用户不能登录", async function ({ api, publicDbPool }) {
 });
 test("黑名单用户不能登录", async function ({ api, publicDbPool }) {
   const info = await prepareUniqueUserWithPwd("alice@ijiazz.cn");
-  await publicDbPool.execute(insertIntoValues(user_blacklist.name, { user_id: info.id, reason: "测试" }));
+  await publicDbPool.execute(insertIntoValues("user_blacklist", { user_id: info.id, reason: "测试" }));
   await expect(
     loginUseCaptcha(api, { id: info.id.toString(), method: LoginType.id, password: AlicePassword }),
   ).rejects.throwErrorEqualBody(423, { message: "账号已被冻结" });
@@ -103,7 +103,7 @@ test("黑名单用户不能登录", async function ({ api, publicDbPool }) {
 test("无密码直接登录", async function ({ api, publicDbPool }) {
   const userInfo = await prepareUniqueUserWithPwd("alice@ijiazz.cn");
   await publicDbPool.execute(
-    update(user.name)
+    update("public.user")
       .set({ password: "null", pwd_salt: "null" })
       .where(`id=${v(userInfo.id)}`),
   );

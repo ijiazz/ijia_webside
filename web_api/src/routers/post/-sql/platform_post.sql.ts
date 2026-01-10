@@ -1,15 +1,5 @@
 import { dbPool } from "@/db/client.ts";
-import {
-  pla_asset,
-  pla_user,
-  Platform,
-  DbPlaAssetMedia,
-  MediaLevel,
-  TextStructure,
-  watching_pla_user,
-  USER_LEVEL,
-  MediaType,
-} from "@ijia/data/db";
+import { Platform, DbPlaAssetMedia, MediaLevel, TextStructure, USER_LEVEL, MediaType } from "@ijia/data/db";
 import { createSearch, jsonb_build_object } from "@/global/sql_util.ts";
 import {
   GetListOption,
@@ -64,12 +54,12 @@ async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total
   const { number = 20, offset = 0, platform, userId, sort, includeHidden } = option;
   const createJoin = (statement: ReturnType<typeof select>) => {
     return statement
-      .from(watching_pla_user.name, { as: "god_user" })
-      .innerJoin(pla_user.name, {
+      .from("watching_pla_user", { as: "god_user" })
+      .innerJoin("pla_user", {
         as: "u",
         on: ["u.platform=god_user.platform ", " u.pla_uid=god_user.pla_uid", `god_user.level >=${USER_LEVEL.god}`],
       })
-      .innerJoin(pla_asset.name, {
+      .innerJoin("pla_asset", {
         as: "p",
         on: () => {
           const where = ["p.platform=u.platform", "p.pla_uid=u.pla_uid"];

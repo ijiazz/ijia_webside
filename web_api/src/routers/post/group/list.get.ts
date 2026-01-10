@@ -1,4 +1,3 @@
-import { post_group } from "@ijia/data/db";
 import { select } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
 import routeGroup from "../_route.ts";
@@ -11,7 +10,7 @@ export default routeGroup.create({
   async handler() {
     const list = await dbPool.queryRows(
       select({ group_desc: "description", group_id: "id", group_name: "name" })
-        .from(post_group.name)
+        .from("post_group")
         .orderBy("public_sort ASC"),
     );
     for (const item of list) {

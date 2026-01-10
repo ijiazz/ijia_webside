@@ -1,4 +1,3 @@
-import { post, post_comment, post_comment_like, post_like, user_profile } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { DEFAULT_LIKE_WEIGHT } from "../-utils/const.ts";
 import { deleteFrom, insertInto, select, withAs } from "@asla/yoursql";
@@ -6,10 +5,10 @@ import { v } from "@/sql/utils.ts";
 
 export async function setPostLike(postId: number, userId: number): Promise<number> {
   const base = withAs("changed_record", () =>
-    insertInto(post_like.name, ["weight", "post_id", "user_id"])
+    insertInto("post_like", ["weight", "post_id", "user_id"])
       .select(
         select([`${v(DEFAULT_LIKE_WEIGHT)} as weight`, "id AS post_id", `${v(userId)} AS user_id`]) // 如果改为插入多个，只需更改这个语句
-          .from(post.name)
+          .from("public.post")
           .where([`id=${v(postId)}`, `(NOT is_delete)`, `(user_id=${v(userId)} OR NOT is_hide)`])
           .toString(),
       )
@@ -20,10 +19,10 @@ export async function setPostLike(postId: number, userId: number): Promise<numbe
   )
     .as(
       "update_post",
-      `UPDATE ${post.name} SET like_count = like_count + c.count
+      `UPDATE public.post AS p SET like_count = like_count + c.count
       FROM (SELECT post_id, count(*) FROM changed_record GROUP BY post_id) AS c
-      WHERE ${post.name}.id = c.post_id
-      RETURNING id AS post_id, ${post.name}.user_id AS user_id`,
+      WHERE p.id = c.post_id
+      RETURNING id AS post_id, p.user_id AS user_id`,
     )
     .as(
       "user_stat",
@@ -43,11 +42,11 @@ export async function setPostLike(postId: number, userId: number): Promise<numbe
     )
     .as(
       "update_user_stat",
-      `UPDATE ${user_profile.name}
-      SET post_like_count = ${user_profile.name}.post_like_count + user_stat.post_like_count,
-          post_like_get_count = ${user_profile.name}.post_like_get_count + user_stat.post_like_get_count
+      `UPDATE user_profile
+      SET post_like_count = user_profile.post_like_count + user_stat.post_like_count,
+          post_like_get_count = user_profile.post_like_get_count + user_stat.post_like_get_count
       FROM user_stat
-      WHERE ${user_profile.name}.user_id = user_stat.user_id`,
+      WHERE user_profile.user_id = user_stat.user_id`,
     )
     .toString();
   const sqlText = `${base}\nSELECT COUNT(*)::INT FROM changed_record
@@ -59,17 +58,17 @@ export async function setPostLike(postId: number, userId: number): Promise<numbe
 
 export async function cancelPostLike(postId: number, userId: number) {
   const base = withAs("changed_record", () =>
-    deleteFrom(post_like.name)
+    deleteFrom("post_like")
       .where([`post_id=${v(postId)}`, `user_id=${v(userId)}`, "weight>0"])
       .returning(["post_id", "user_id"])
       .toString(),
   )
     .as(
       "update_post",
-      `UPDATE ${post.name} SET like_count = like_count - c.count
+      `UPDATE public.post SET like_count = like_count - c.count
       FROM (SELECT post_id, count(*) FROM changed_record GROUP BY post_id) AS c
-      WHERE ${post.name}.id = c.post_id
-      RETURNING id AS post_id, ${post.name}.user_id AS user_id, is_delete`,
+      WHERE public.post.id = c.post_id
+      RETURNING id AS post_id, public.post.user_id AS user_id, is_delete`,
     )
     .as(
       "user_stat",
@@ -90,11 +89,11 @@ export async function cancelPostLike(postId: number, userId: number) {
     )
     .as(
       `update_user_stat`,
-      `UPDATE ${user_profile.name} SET 
-      post_like_count = ${user_profile.name}.post_like_count - user_stat.post_like_count,
-      post_like_get_count = ${user_profile.name}.post_like_get_count - user_stat.post_like_get_count
+      `UPDATE user_profile SET 
+      post_like_count = user_profile.post_like_count - user_stat.post_like_count,
+      post_like_get_count = user_profile.post_like_get_count - user_stat.post_like_get_count
     FROM user_stat
-    WHERE ${user_profile.name}.user_id = user_stat.user_id`,
+    WHERE user_profile.user_id = user_stat.user_id`,
     );
   const sql = `${base}\nSELECT COUNT(*)::INT FROM changed_record
   `;
@@ -106,10 +105,10 @@ export async function cancelPostLike(postId: number, userId: number) {
 export async function setCommentLike(commentId: number, userId: number) {
   const sql = `
     WITH insert AS(
-    ${insertInto(post_comment_like.name, ["weight", "comment_id", "user_id"])
+    ${insertInto("post_comment_like", ["weight", "comment_id", "user_id"])
       .select(() => {
         return select([`${v(DEFAULT_LIKE_WEIGHT)} as weight`, "id AS comment_id", `${v(userId)} AS user_id`])
-          .from(post_comment.name)
+          .from("post_comment")
           .where([`id=${v(commentId)}`, `(NOT is_delete)`])
           .toString();
       })
@@ -117,10 +116,10 @@ export async function setCommentLike(commentId: number, userId: number) {
       .doNotThing()
       .returning("comment_id")}
     ), update_comment_stat AS(
-      UPDATE ${post_comment.name} SET
+      UPDATE post_comment SET
         like_count=like_count + 1
       FROM insert
-      WHERE insert.comment_id =  ${post_comment.name}.id
+      WHERE insert.comment_id = post_comment.id
       RETURNING post_id
     )
     SELECT count(*)::INT FROM insert
@@ -133,14 +132,14 @@ export async function setCommentLike(commentId: number, userId: number) {
 export async function cancelCommentLike(commentId: number, userId: number): Promise<number> {
   const sql = `
     WITH updated AS (
-      ${deleteFrom(post_comment_like.name)
+      ${deleteFrom("post_comment_like")
         .where([`comment_id=${v(commentId)}`, `user_id=${v(userId)}`])
         .returning(["comment_id"])}
     ), update_comment_stat AS(
-      UPDATE ${post_comment.name} SET
+      UPDATE post_comment SET
         like_count=like_count - 1
       FROM updated
-      WHERE updated.comment_id =  ${post_comment.name}.id
+      WHERE updated.comment_id = post_comment.id
       RETURNING post_id
     )
     SELECT count(*)::INT FROM updated

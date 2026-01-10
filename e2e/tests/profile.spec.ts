@@ -1,6 +1,6 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { AccountInfo, initAlice, loginGetToken } from "@/__mocks__/user.ts";
-import { dclass, pla_user, Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { Page } from "@playwright/test";
 import { deleteFrom, v } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
@@ -15,7 +15,7 @@ beforeEach(async ({ page }) => {
 
   const res = await dbPool.queryRows(
     insertIntoValues(
-      pla_user.name,
+      "pla_user",
       [
         {
           pla_uid: "alice",
@@ -114,11 +114,11 @@ async function addBind(page: Page, sec_id: string) {
 }
 
 async function clearPublicClass() {
-  await dbPool.execute(deleteFrom(dclass.name).where("parent_class_id=" + v(PUBLIC_CLASS_ROOT_ID)));
+  await dbPool.execute(deleteFrom("class").where("parent_class_id=" + v(PUBLIC_CLASS_ROOT_ID)));
 }
 async function initPublicClass() {
   await dbPool.execute(
-    insertIntoValues(dclass.name, [
+    insertIntoValues("class", [
       { class_name: "e2e-8", parent_class_id: PUBLIC_CLASS_ROOT_ID },
       { class_name: "e2e-1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
     ]),

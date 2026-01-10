@@ -1,7 +1,6 @@
 import { dbPool } from "@/db/client.ts";
 import { HttpError } from "@/global/errors.ts";
 import { hashPasswordBackEnd } from "../-services/password.ts";
-import { user, user_blacklist } from "@ijia/data/db";
 import { select, update } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 
@@ -15,7 +14,7 @@ export async function accountLoginByEmail(email: string, password?: string): Pro
 }
 export async function updateLastLoginTime(id: number) {
   await dbPool.queryCount(
-    update(user.name)
+    update("public.user")
       .set({ last_login_time: "now()" })
       .where([`id=${v(id)}`, "last_login_time < now()"]),
   );
@@ -41,9 +40,9 @@ function selectUser(where: string) {
         user_id: "id",
         password: true,
         pwd_salt: true,
-        in_blacklist: `EXISTS ${select("1").from(user_blacklist.name).where("user_id = u.id").toSelect()}`,
+        in_blacklist: `EXISTS ${select("1").from("user_blacklist").where("user_id = u.id").toSelect()}`,
       })
-        .from(user.name, { as: "u" })
+        .from("public.user", { as: "u" })
         .where(["NOT is_deleted", where])
         .limit(1),
     )

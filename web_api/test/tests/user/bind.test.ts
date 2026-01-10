@@ -1,14 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import {
-  dclass,
-  pla_user,
-  Platform,
-  PUBLIC_CLASS_ROOT_ID,
-  user,
-  user_class_bind,
-  user_platform_bind,
-} from "@ijia/data/db";
+import { Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import userRoutes from "@/routers/user/mod.ts";
 import { bindPlatformAccount } from "@/routers/user/mod.ts";
 
@@ -27,7 +19,7 @@ beforeEach<Context>(async ({ hono, ijiaDbPool }) => {
   AliceToken = await signAccessToken(AliceId, { survivalSeconds: 60 * 100 * 60 }).then((res) => res.token);
 
   await ijiaDbPool.queryRows(
-    insertIntoValues(pla_user.name, [
+    insertIntoValues("pla_user", [
       {
         platform: Platform.douYin,
         extra: { sec_uid: "sec_0" },
@@ -72,7 +64,7 @@ test("后一个账号解除绑定需要删除选择的公共班级和评论统�
   await AliceBind(api, { platform: Platform.douYin, pla_uid: "d0" });
   const classes = await dbPool
     .queryRows(
-      insertIntoValues(dclass.name, [
+      insertIntoValues("public.class", [
         { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
         { class_name: "4" },
       ]).returning("*"),
@@ -83,7 +75,7 @@ test("后一个账号解除绑定需要删除选择的公共班级和评论统�
     body: { comment_stat_enabled: true, primary_class_id: classes[0] },
     [JWT_TOKEN_KEY]: AliceToken,
   });
-  await dbPool.queryCount(insertIntoValues(user_class_bind.name, [{ class_id: classes[1], user_id: AliceId }])); // 绑定一个非公共班级
+  await dbPool.queryCount(insertIntoValues("user_class_bind", [{ class_id: classes[1], user_id: AliceId }])); // 绑定一个非公共班级
 
   await api["/user/bind_platform"].delete({
     body: { bindKey: `${Platform.douYin}-d0` },
@@ -103,7 +95,7 @@ test.skip("绑定自己已绑定的", async function ({ api, ijiaDbPool }) {
   }
   function updateSignature(pla_uid: string, signature: string) {
     return dbPool.queryCount(
-      update(pla_user.name)
+      update("pla_user")
         .set({ signature: v(signature) })
         .where(`pla_uid=${v(pla_uid)}`),
     );
@@ -124,7 +116,7 @@ test.skip("绑定自己已绑定的", async function ({ api, ijiaDbPool }) {
 });
 test("同步信息", async function ({ api, ijiaDbPool }) {
   await ijiaDbPool.queryCount(
-    insertIntoValues(pla_user.name, [
+    insertIntoValues("pla_user", [
       { pla_uid: "alice", platform: Platform.douYin, user_name: "Alice" },
       { pla_uid: "bob", platform: Platform.douYin, user_name: "Bob" },
     ]),
@@ -154,7 +146,7 @@ test("同步信息", async function ({ api, ijiaDbPool }) {
     return dbPool
       .queryRows(
         select({ avatar: true, nickname: true })
-          .from(user.name)
+          .from("public.user")
           .where(`id=${v(uid)}`),
       )
       .then((res) => res[0]);
@@ -163,7 +155,7 @@ test("同步信息", async function ({ api, ijiaDbPool }) {
 function getUserBindCount(userId: number) {
   return dbPool.queryCount(
     select("*")
-      .from(user_platform_bind.name)
+      .from("user_platform_bind")
       .where(`user_id=${v(userId)}`),
   );
 }

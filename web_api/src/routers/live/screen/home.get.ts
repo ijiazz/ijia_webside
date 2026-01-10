@@ -1,6 +1,5 @@
 import { HomePageRes, GodPlatformDto } from "@/dto.ts";
 import { optionalPositiveInt, checkValue } from "@/global/check.ts";
-import { pla_user } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { select } from "@asla/yoursql";
 
@@ -24,10 +23,10 @@ export default routeGroup.create({
       stat: "json_build_object('followers_count',follower_count)",
     };
     const dy = select({ ...selectColumns, home_url: "'https://www.douyin.com/user/'||(extra->>'sec_uid')" })
-      .from(pla_user.name)
+      .from("pla_user")
       .where(["platform='douyin' ", " pla_uid='63677127177'"]);
     const wb = select({ ...selectColumns, home_url: "'https://weibo.com/u/'||pla_uid" })
-      .from(pla_user.name)
+      .from("pla_user")
       .where(["platform='weibo' ", " pla_uid='6201382716'"]);
     const [dyData, wbData] = await dbPool
       .query<[QueryRowsResult<GodPlatformDto>, QueryRowsResult<GodPlatformDto>]>([dy, wb])

@@ -1,6 +1,6 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import { post, post_review_info, TextStructure, TextStructureType, TextStructureUser } from "@ijia/data/db";
+import { TextStructure, TextStructureType, TextStructureUser } from "@ijia/data/db";
 
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { createPostGroup, testGetPost } from "./utils/prepare_post.ts";
@@ -76,7 +76,7 @@ test("发布帖子，如果选择了分组，发布后将直接进入审核状�
 
   const info = await publicDbPool.queryFirstRow(
     select({ is_reviewing: true, create_time: true, publish_time: true })
-      .from(post.name)
+      .from("public.post")
       .where(`id = ${v(id)}`),
   );
 
@@ -86,7 +86,7 @@ test("发布帖子，如果选择了分组，发布后将直接进入审核状�
 
   const reviewQueue = await publicDbPool.queryFirstRow(
     select({ target_id: true })
-      .from(post_review_info.name)
+      .from("post_review_info")
       .where(`type='post' AND target_id=${v(id)}`),
   );
   expect(reviewQueue).not.toBeNull();
