@@ -32,7 +32,7 @@ export async function addServeStatic(hono: Hono) {
         if (bucketTest.PLA_POST_MEDIA.test(rel)) {
           c.header("Cache-Control", "private, max-age=86400");
           const userInfo = new UserInfo(getCookie(c, "access_token"));
-          await userInfo.getJwtInfo();
+          await userInfo.getUserId();
           return;
         }
         throw new HTTPException(404, { res: new Response("访问不存在的资源地址") });

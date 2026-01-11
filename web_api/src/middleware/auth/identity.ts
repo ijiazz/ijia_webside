@@ -11,9 +11,9 @@ export async function setUserInfo(ctx: HonoContext, next: () => Promise<void>): 
   const userInfo = new UserInfo(getCookie(ctx, "access_token"));
   ctx.set("userInfo", userInfo);
   await next();
-  const accessToken = await userInfo.getAccessTokenUpdate();
+  const accessToken = await userInfo.checkUpdateToken();
   if (accessToken) {
-    setCookie(ctx, "access_token", accessToken.token, { maxAge: accessToken.maxAge });
+    setCookie(ctx, "access_token", accessToken.token, { maxAge: accessToken.maxAge ?? undefined });
   }
 }
 async function checkRoles(userInfo: UserInfo, requiredAnyRoles: Set<string>) {

@@ -5,8 +5,7 @@ export default routeGroup.create({
   method: "GET",
   routePath: "/user/basic_info",
   async validateInput(ctx) {
-    const jwtInfo = await ctx.get("userInfo").getJwtInfo();
-    return +jwtInfo.userId;
+    return ctx.get("userInfo").getUserId();
   },
   async handler(userId: number) {
     return getUserBasic(userId);
