@@ -13,7 +13,7 @@ export default routeGroup.create({
   method: "POST",
   routePath: "/user/bind_platform",
   async validateInput(ctx) {
-    const { userId } = await ctx.get("userInfo").getJwtInfo();
+    const userId = await ctx.get("userInfo").getUserId();
     const value = await checkValueAsync(ctx.req.json(), {
       account: {
         platform: enumType(Array.from(enumPlatform)),

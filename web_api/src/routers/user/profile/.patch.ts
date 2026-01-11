@@ -11,14 +11,14 @@ export default routeGroup.create({
   method: "PATCH",
   routePath: "/user/profile",
   async validateInput(ctx) {
-    const jwtInfo = await ctx.get("userInfo").getJwtInfo();
+    const userId = await ctx.get("userInfo").getUserId();
     const body = await checkValueAsync(ctx.req.json(), {
       primary_class_id: optional("number", "nullish"),
       notice_setting: optional({ live: optional.boolean }),
       comment_stat_enabled: optional.boolean,
       acquaintance_time: optional(date, "nullish"),
     });
-    return { userId: +jwtInfo.userId, body };
+    return { userId, body };
   },
   async handler({ userId, body }) {
     const { notice_setting, primary_class_id } = body;

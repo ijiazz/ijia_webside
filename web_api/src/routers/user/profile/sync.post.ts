@@ -13,13 +13,13 @@ export default routeGroup.create({
   method: "POST",
   routePath: "/user/profile/sync",
   async validateInput(ctx) {
-    const jwtInfo = await ctx.get("userInfo").getJwtInfo();
+    const userId = await ctx.get("userInfo").getUserId();
     const param = await checkValueAsync(ctx.req.json(), {
       bindKey: "string",
     });
     const [platform, pla_uid] = param.bindKey.split("-");
 
-    return { userId: +jwtInfo.userId, platform: platform as Platform, pla_uid };
+    return { userId, platform: platform as Platform, pla_uid };
   },
   async handler({ userId, platform, pla_uid }) {
     if (ENV.IS_PROD) {

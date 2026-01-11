@@ -65,7 +65,7 @@ export default routeGroup.create({
       token: jwtKey.token,
       maxAge: jwtKey.maxAge,
     };
-    if (value.success) setCookie(ctx, "access_token", value.token, { maxAge: value.maxAge });
+    if (value.success) setCookie(ctx, "access_token", value.token, { maxAge: value.maxAge ?? undefined });
     return ctx.json(value, 200);
   },
 });
