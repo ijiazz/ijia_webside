@@ -4,6 +4,7 @@ import { HoFetch, HoFetchStatusError } from "@asla/hofetch";
 import { HttpError } from "@/global/errors.ts";
 import { toErrorStr } from "evlib";
 import { HTTPException } from "hono/http-exception";
+import { INTERNAL_MESSAGE_TOKEN } from "@/global/jwt.ts";
 
 export async function getUerSecIdFromShareUrl(urlStr: string) {
   const checkUrl = new URL(urlStr);
@@ -95,7 +96,7 @@ export function getCheckerServer() {
   if (!checkServer) {
     if (!ENV.CHECK_SERVER) throw new Error("需要 CHECK_SERVER 环境变量");
     const url = new URL(ENV.CHECK_SERVER);
-    checkServer = new CheckServer(url.username, url.origin);
+    checkServer = new CheckServer(INTERNAL_MESSAGE_TOKEN, url.origin);
   }
   return checkServer;
 }
