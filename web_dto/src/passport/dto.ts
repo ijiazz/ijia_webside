@@ -14,7 +14,7 @@ export type CreateUserProfileResult = {
 export type UserLoginResultDto = {
   success: boolean;
   token: string;
-  maxAge?: number;
+  maxAge: number | null;
   message?: string;
   redirect?: string;
   tip?: {

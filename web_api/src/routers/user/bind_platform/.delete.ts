@@ -10,7 +10,7 @@ export default routeGroup.create({
   method: "DELETE",
   routePath: "/user/bind_platform",
   async validateInput(ctx) {
-    const { userId } = await ctx.get("userInfo").getJwtInfo();
+    const userId = await ctx.get("userInfo").getUserId();
     const param = await checkValueAsync(ctx.req.json(), { bindKey: "string" });
     return { userId, key: param.bindKey };
   },

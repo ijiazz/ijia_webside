@@ -80,7 +80,7 @@ export function getUserInfoFromToken(): null | JwtUserInfo {
   try {
     const info = parseJwt(token);
     const result = verifySignInfo(info, 1);
-    const userId = +info.userId;
+    const userId = info.data.userId;
     if (!Number.isInteger(userId)) return null; // 确保 userId 是整数
     return {
       userId,
@@ -110,8 +110,7 @@ type SignVerifyResult = {
   isExpired: boolean;
   needRefresh: boolean;
 };
-function verifySignInfo(data: SignInfo, requiredVersion: number): SignVerifyResult {
-  if (!data.userId || typeof data.userId !== "string") throw new Error("缺少用户名");
+function verifySignInfo(data: SignInfo<unknown>, requiredVersion: number): SignVerifyResult {
   if (typeof data.issueTime !== "number") throw new Error("缺少签名时间");
   const now = Date.now() / 1000;
   const refresh = data.refresh;
@@ -138,7 +137,7 @@ type AccessTokenData = {
   userId: string;
 };
 
-type SignInfo = AccessTokenData & {
+type SignInfo<T> = {
   /**
    * 令牌存活秒数。
    * 如果不存在，则没有过期时间
@@ -158,4 +157,5 @@ type SignInfo = AccessTokenData & {
     exp?: number;
   };
   version: number;
+  data: T;
 };

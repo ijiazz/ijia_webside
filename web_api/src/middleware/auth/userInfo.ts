@@ -1,74 +1,46 @@
-import { verifyAccessToken, AccessTokenData, refreshAccessToken, SignInfo, SignResult } from "@/global/jwt.ts";
+import { verifyAccessToken, AccessUserData, AccessToken } from "@/global/jwt.ts";
 import { HttpError, RequiredLoginError } from "@/global/errors.ts";
 import { getValidUserSampleInfoByUserId, SampleUserInfo } from "@/sql/user.ts";
 import { setTimeoutUnRef } from "@/global/utils.ts";
-import { v } from "@/sql/utils.ts";
-import { select, SqlStatement } from "@asla/yoursql";
-import { dbPool } from "@/db/client.ts";
+import { getUserRoleNameList, UserWithRole } from "@ijia/data/query";
 
-async function includeRoles(userId: number, roles: string[]): Promise<boolean> {
-  if (!roles.length) return false;
-  const statement1 = select({ role_id: true }).from("user_role_bind");
-
-  let statement2: SqlStatement;
-  if (roles.length === 1) {
-    statement2 = statement1.where(`id=${v(userId)} AND role_id=${v(roles[0])}`).limit(1);
-  } else {
-    statement2 = statement1.where(`id=${v(userId)} AND role_id IN (${roles.map((item) => v(item))})`).limit(1);
-  }
-  const res = await dbPool.queryCount(statement2);
-  return res > 0;
-}
-async function getUserRoleNameList(userId: number): Promise<UserWithRole> {
-  const [userInfo] = await dbPool.queryRows(
-    select<UserWithRole>({
-      user_id: "u.id",
-      email: "u.email",
-      nickname: "u.nickname",
-      role_id_list: select<{ role_id: "string" }>({ role_id: "array_agg(bind.role_id)" })
-        .from("user_role_bind", { as: "bind" })
-        .where(`bind.user_id=${v(userId)}`)
-        .toSelect(),
-    })
-      .from("public.user", { as: "u" })
-      .where("NOT u.is_deleted"),
-  );
-  if (!userInfo) throw new HttpError(400, "账号不存在");
-  if (!userInfo.role_id_list) userInfo.role_id_list = [];
-  return userInfo;
-}
 export class UserInfo {
-  private static verifyCache = new Map<string, VerifyAccessTokenCache>();
+  private static verifyCache = new Map<string, VerifyAccessTokenCache<AccessUserData>>();
   constructor(private readonly accessToken?: string) {}
   #roleNameList?: Promise<UserWithRole>;
   /** 获取有效用户的角色列表 */
   async getRolesFromDb(): Promise<UserWithRole> {
     if (!this.#roleNameList) {
-      this.#roleNameList = this.getJwtInfo().then(({ userId }) => getUserRoleNameList(+userId));
+      this.#roleNameList = this.getUserId().then(async (userId) => {
+        const userInfo = await getUserRoleNameList(+userId);
+        if (!userInfo) throw new HttpError(400, "账号不存在");
+        if (!userInfo.role_id_list) userInfo.role_id_list = [];
+        return userInfo;
+      });
     }
     return this.#roleNameList;
   }
-  async getAccessTokenUpdate(): Promise<{ token: string; maxAge?: number } | undefined> {
+  async checkUpdateToken(): Promise<{ token: string; maxAge: number | null } | undefined> {
     if (this.#needDelete) {
       return { token: "", maxAge: 0 }; // 删除令牌
     }
     if (!this.#needRefresh) return undefined;
     return this.#needRefresh();
   }
-  #jwtInfo?: Promise<SignInfo>;
-  #needRefresh?: () => Promise<SignResult>;
+  #jwtInfo?: Promise<AccessUserData>;
+  #needRefresh?: () => Promise<AccessToken<AccessUserData>>;
   #needDelete = false;
 
-  async getJwtInfo(): Promise<AccessTokenData> {
+  private async getJwtInfo(): Promise<AccessUserData> {
     const accessToken = this.accessToken;
     if (!accessToken) throw new RequiredLoginError();
     if (!this.#jwtInfo) {
       let cache = UserInfo.verifyCache.get(accessToken);
       if (!cache) {
         const promise = this.verifyAccessTokenSetCache(accessToken).then(
-          (res) => {
+          (res): AccessUserData => {
             cache!.resetTimer();
-            return res;
+            return res.data;
           },
           (e) => {
             UserInfo.verifyCache.delete(accessToken);
@@ -86,24 +58,23 @@ export class UserInfo {
     }
     return this.#jwtInfo;
   }
-  private verifyAccessTokenSetCache(accessToken: string): Promise<SignInfo> {
+  private verifyAccessTokenSetCache(accessToken: string): Promise<AccessToken<AccessUserData>> {
     return verifyAccessToken(accessToken).then(
-      async ({ info, result }) => {
-        if (result.isExpired) {
+      async (accessToken) => {
+        if (accessToken.isExpired) {
           this.#needDelete = true;
           throw new RequiredLoginError("身份认证已过期");
         }
-        if (result.needRefresh) {
-          await getValidUserSampleInfoByUserId(+info.userId); //从数据库检测用户信息是否失效
+        if (accessToken.needRefresh) {
+          await getValidUserSampleInfoByUserId(accessToken.data.userId); //从数据库检测用户信息是否失效
 
-          let refreshToken: Promise<SignResult> | undefined;
+          let refreshToken: Promise<AccessToken<AccessUserData>> | undefined;
           this.#needRefresh = () => {
-            if (!refreshToken) refreshToken = refreshAccessToken(info);
-            else console.log("cache refreshToken", accessToken);
+            if (!refreshToken) refreshToken = accessToken.refresh();
             return refreshToken;
           };
         }
-        return info;
+        return accessToken;
       },
       (e) => {
         throw new RequiredLoginError("未登录");
@@ -112,7 +83,7 @@ export class UserInfo {
   }
   async getUserId(): Promise<number> {
     const { userId } = await this.getJwtInfo();
-    return +userId;
+    return userId;
   }
 
   #userInfo?: Promise<SampleUserInfo>;
@@ -124,9 +95,9 @@ export class UserInfo {
   }
 }
 
-class VerifyAccessTokenCache {
+class VerifyAccessTokenCache<T> {
   constructor(
-    readonly promise: Promise<SignInfo>,
+    readonly promise: Promise<T>,
     private onClear: () => void,
   ) {}
   #startTime = Date.now();
@@ -140,11 +111,3 @@ class VerifyAccessTokenCache {
     this.#clear = setTimeoutUnRef(this.onClear, 20 * 1000); // 20秒后清除缓存
   }
 }
-type CookieItem = {
-  value: string;
-  maxAge?: number;
-};
-export type UserWithRole = SampleUserInfo & {
-  user_id: number;
-  role_id_list: string[];
-};

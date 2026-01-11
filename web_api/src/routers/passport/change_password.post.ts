@@ -9,7 +9,7 @@ export default routeGroup.create({
   routePath: "/passport/change_password",
   async validateInput(ctx) {
     const userInfo = ctx.get("userInfo");
-    const userId = await userInfo.getJwtInfo().then((res) => +res.userId);
+    const userId = await userInfo.getUserId();
 
     const param = await checkValueAsync(ctx.req.json(), {
       newPassword: "string",
