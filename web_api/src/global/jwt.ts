@@ -1,32 +1,43 @@
 import * as jwtLib from "hono/jwt";
 import { ENV } from "@/config.ts";
-import { AuthToken, SignInfo, AccessToken, SignAccessTokenOption } from "@ijia/data/auth";
+import {
+  AuthToken,
+  AccessToken,
+  SignAccessTokenOption,
+  checkIjiaTokenData,
+  AccessUserData,
+  AuthTokenType,
+  AccessJwtPayload,
+} from "@ijia/data/auth";
 
-export type { SignInfo, SignAccessTokenOption, AccessToken } from "@ijia/data/auth";
-export type AccessUserData = { userId: number };
-export type SignResult2 = {
-  token: string;
-  maxAge?: number;
-};
+export type { SignInfo, SignAccessTokenOption, AccessToken, AccessUserData, AuthTokenType } from "@ijia/data/auth";
 
-export const authToken = new AuthToken<AccessUserData>({
-  parseSysJWT: async (token) => {
-    const data = (await parseSysJWT(token)) as SignInfo<AccessUserData>;
-    if (!Number.isSafeInteger(data.data.userId)) throw new Error("Invalid userId in token");
-    return data;
-  },
+const authToken = new AuthToken<AccessJwtPayload>({
+  parseSysJWT,
   signSysJWT,
+  checkData: checkIjiaTokenData,
 });
 
 export async function signAccessToken(
   userId: number,
+  option?: SignAccessTokenOption,
+): Promise<AccessToken<AccessUserData>>;
+export async function signAccessToken(
+  data: AccessUserData | number,
   option: SignAccessTokenOption = {},
 ): Promise<AccessToken<AccessUserData>> {
-  return authToken.signAccessToken({ userId: userId }, option);
+  return authToken.signAccessToken(
+    typeof data === "number" ? { userId: data, type: AuthTokenType.User } : data,
+    option,
+  );
 }
 
 export async function verifyAccessToken(accessToken: string): Promise<AccessToken<AccessUserData>> {
-  return authToken.verifyAccessToken(accessToken);
+  const res = await authToken.verifyAccessToken(accessToken);
+  if (res.data.type !== AuthTokenType.User) {
+    throw new Error("不支持的令牌类型");
+  }
+  return res as AccessToken<AccessUserData>;
 }
 
 const JWT_KEY = ENV.JWT_KEY;
@@ -34,6 +45,11 @@ const JWT_KEY = ENV.JWT_KEY;
 export function signSysJWT(data: Record<string, any>) {
   return jwtLib.sign(data, JWT_KEY, "HS256");
 }
-export async function parseSysJWT(accessToken: string): Promise<Record<string, any>> {
+export async function parseSysJWT(accessToken: string): Promise<unknown> {
   return jwtLib.verify(accessToken, JWT_KEY, "HS256");
 }
+export const INTERNAL_MESSAGE_TOKEN = await authToken
+  .signAccessToken({ type: AuthTokenType.InternalMessage })
+  .then((accessToken) => {
+    return accessToken.token;
+  });
