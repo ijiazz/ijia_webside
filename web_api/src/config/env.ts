@@ -3,7 +3,6 @@ import { RunMode } from "./const.ts";
 
 const env = process.env;
 
-
 const MODE: RunMode = Boolean(env.VITEST) ? RunMode.Test : ((env.MODE ?? RunMode.Dev) as RunMode);
 function getJwtKey() {
   if (env.JWT_KEY) return env.JWT_KEY;
