@@ -1,13 +1,8 @@
 import process from "node:process";
+import { RunMode } from "./const.ts";
 
 const env = process.env;
 
-export enum RunMode {
-  Test = "TEST",
-  E2E = "E2E",
-  Dev = "DEV",
-  Prod = "PROD",
-}
 const MODE: RunMode = Boolean(env.VITEST) ? RunMode.Test : ((env.MODE ?? RunMode.Dev) as RunMode);
 function getJwtKey() {
   if (env.JWT_KEY) return env.JWT_KEY;

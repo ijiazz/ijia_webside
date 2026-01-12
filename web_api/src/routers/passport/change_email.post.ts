@@ -31,7 +31,7 @@ async function verifyAccountToken(
   userId: number,
   email: string,
 ): Promise<{ userId: number; email: string }> {
-  const data = await parseSysJWT(token);
+  const data = (await parseSysJWT(token)) as { userId?: number; email?: string; exp?: number };
   if (!data.exp || data.exp < Date.now()) {
     throw new HttpError(401, "身份验证已过期");
   }

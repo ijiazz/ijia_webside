@@ -10,6 +10,7 @@ import { getBucket, createFileStream } from "@ijia/data/oss";
 import fs from "node:fs/promises";
 import { Stats } from "node:fs";
 import { contentType } from "@std/media-types";
+import { REQUEST_AUTH_KEY } from "@/dto.ts";
 
 export async function addServeStatic(hono: Hono) {
   const rooDir = path.resolve(ENV.OSS_ROOT_DIR!);
@@ -31,7 +32,7 @@ export async function addServeStatic(hono: Hono) {
         }
         if (bucketTest.PLA_POST_MEDIA.test(rel)) {
           c.header("Cache-Control", "private, max-age=86400");
-          const userInfo = new UserInfo(getCookie(c, "access_token"));
+          const userInfo = new UserInfo(getCookie(c, REQUEST_AUTH_KEY));
           await userInfo.getUserId();
           return;
         }
