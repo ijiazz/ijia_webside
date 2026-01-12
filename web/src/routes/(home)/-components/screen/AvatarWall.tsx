@@ -1,17 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import styled from "@emotion/styled";
-import { InfiniteWallRender } from "@/lib/Infinite-wall/mod.ts";
-import { InfiniteWall } from "@/lib/Infinite-wall/react.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "../shake_animation.ts";
 import classNames from "classnames";
 import { getUserInfoFromToken } from "@/common/user.ts";
 import { api } from "@/common/http.ts";
 import { ScreenEffects, useScreenEffects, useScreenMin } from "./screenEffects.tsx";
+import { InfiniteWall, InfiniteWallRender } from "@uifx/infinite-wall/react";
 
 function moveWallBlockToCenter(wall: InfiniteWallRender, x: number, y: number) {
-  const offsetY = Math.floor(((wall.yCount - 1 - x) * wall.blockHeight) / 2);
-  const offsetX = Math.floor(((wall.xCount - 1 - y) * wall.blockWidth) / 2);
+  const offsetY = Math.floor(((wall.realXBrickCount - 1 - x) * wall.brickHeight) / 2);
+  const offsetX = Math.floor(((wall.realYBrickCount - 1 - y) * wall.brickWidth) / 2);
 
   wall.scrollLeft = offsetX;
   wall.scrollTop = offsetY;
@@ -58,7 +57,6 @@ type AvatarWallProps = {
 };
 export function AvatarWall(props: AvatarWallProps) {
   const { godAvatarRef } = props;
-  const ref = useRef<HTMLDivElement>(null);
   const wallRef = useRef<InfiniteWallRender>(null);
 
   const effects = useScreenEffects();
@@ -108,41 +106,39 @@ export function AvatarWall(props: AvatarWallProps) {
 
   const blockSize = useScreenMin() ? 54 : 60;
   return (
-    <AvatarScreenCSS
-      ref={ref}
-      onDragStartCapture={(e) => e.preventDefault()}
-      onMouseDown={() => {
-        const wall = wallRef.current!;
-        const meta = areaRef.current;
-        meta.baseX = wall.scrollLeft;
-        meta.baseY = wall.scrollTop;
-
-        if (!disabledShake && animationCtrl.isPlay) {
-          animationCtrl.stop();
-          meta.isPlay = true;
-        }
-      }}
-      onMouseUp={() => {
-        const wall = wallRef.current!;
-        const meta = areaRef.current;
-        meta.baseX = wall.scrollLeft;
-        meta.baseY = wall.scrollTop;
-
-        if (!disabledShake && meta.isPlay) {
-          animationCtrl.play();
-        }
-      }}
-    >
+    <AvatarScreenCSS>
       <InfiniteWall
-        blockHeight={blockSize}
-        blockWidth={blockSize}
+        brickHeight={blockSize}
+        brickWidth={blockSize}
+        onDragStartCapture={(e) => e.preventDefault()}
+        onMoveStart={() => {
+          const wall = wallRef.current!;
+          const meta = areaRef.current;
+          meta.baseX = wall.scrollLeft;
+          meta.baseY = wall.scrollTop;
+
+          if (!disabledShake && animationCtrl.isPlay) {
+            animationCtrl.stop();
+            meta.isPlay = true;
+          }
+        }}
+        onMoveEnd={() => {
+          const wall = wallRef.current!;
+          const meta = areaRef.current;
+          meta.baseX = wall.scrollLeft;
+          meta.baseY = wall.scrollTop;
+
+          if (!disabledShake && meta.isPlay) {
+            animationCtrl.play();
+          }
+        }}
+        draggable
         ref={wallRef}
         deps={[data]}
-        itemClassName="wall-block-item"
         renderItem={(element, wall) => {
           if (!data) return <></>;
-          let px: number = element.wallX;
-          let py: number = element.wallY;
+          let px: number = element.brickX;
+          let py: number = element.brickY;
           let item: AvatarItem | undefined;
           let isActive = false;
 
@@ -168,11 +164,11 @@ export function AvatarWall(props: AvatarWallProps) {
               imgClassName="avatar-item-img"
               active={isActive}
               item={item}
-              id={element.wallX + "-" + element.wallY}
-            ></Image>
+              id={element.brickX + "-" + element.brickY}
+            />
           );
         }}
-      ></InfiniteWall>
+      />
     </AvatarScreenCSS>
   );
 }
