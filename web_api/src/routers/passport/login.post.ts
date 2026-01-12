@@ -1,5 +1,5 @@
 import routeGroup, { signToken } from "./_route.ts";
-import { LoginType, UserLoginResultDto } from "@/dto.ts";
+import { LoginType, REQUEST_AUTH_KEY, UserLoginResultDto } from "@/dto.ts";
 import { optional, integer } from "@asla/wokao";
 import { hashPasswordFrontEnd } from "./-services/password.ts";
 import { setCookie } from "hono/cookie";
@@ -65,7 +65,7 @@ export default routeGroup.create({
       token: jwtKey.token,
       maxAge: jwtKey.maxAge,
     };
-    if (value.success) setCookie(ctx, "access_token", value.token, { maxAge: value.maxAge ?? undefined });
+    if (value.success) setCookie(ctx, REQUEST_AUTH_KEY, value.token, { maxAge: value.maxAge ?? undefined });
     return ctx.json(value, 200);
   },
 });

@@ -2,7 +2,7 @@ import { createHono } from "@/bootstrap/hono_app.ts";
 import { Hono } from "hono";
 import { test as viTest, DbContext } from "./db_connect.ts";
 import { HoFetch, createFetchSuite, InferFetchSuite, HoFetchStatusError } from "@asla/hofetch";
-import { ApiDefined } from "@/dto.ts";
+import { ApiDefined, REQUEST_AUTH_KEY } from "@/dto.ts";
 
 export type Api = InferFetchSuite<ApiDefined>;
 interface HonoContext {
@@ -30,7 +30,7 @@ export const test = viTest.extend<HonoContext>({
     });
     hoFetch.use(async function (ctx, next) {
       if (ctx[JWT_TOKEN_KEY]) {
-        ctx.headers.set("cookie", "access_token=" + ctx[JWT_TOKEN_KEY]);
+        ctx.headers.set("cookie", `${REQUEST_AUTH_KEY}=` + ctx[JWT_TOKEN_KEY]);
       }
       return next();
     });

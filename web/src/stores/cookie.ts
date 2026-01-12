@@ -1,3 +1,4 @@
+import { REQUEST_AUTH_KEY } from "@/api.ts";
 import Cookie from "js-cookie";
 
 class CookieStore {
@@ -12,13 +13,13 @@ class CookieStore {
   }
   set accessToken(value: string | undefined) {
     if (value) {
-      this.set("access_token", value);
+      this.set(REQUEST_AUTH_KEY, value);
     } else {
-      this.remove("access_token");
+      this.remove(REQUEST_AUTH_KEY);
     }
   }
   get accessToken(): string | undefined {
-    return this.get("access_token");
+    return this.get(REQUEST_AUTH_KEY);
   }
 }
 

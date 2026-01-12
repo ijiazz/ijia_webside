@@ -6,6 +6,7 @@ import { toErrorStr } from "evlib";
 import { HTTPException } from "hono/http-exception";
 import { INTERNAL_MESSAGE_TOKEN } from "@/global/jwt.ts";
 
+const REQUEST_AUTH_KEY = "access_token";
 export async function getUerSecIdFromShareUrl(urlStr: string) {
   const checkUrl = new URL(urlStr);
   let url: URL;
@@ -29,7 +30,7 @@ export async function getUerSecIdFromShareUrl(urlStr: string) {
 function createCheckServer(token: string, serverUrl: string) {
   const hoFetch = new HoFetch({ defaultOrigin: new URL(serverUrl).origin });
   hoFetch.use(function (ctx, next) {
-    ctx.headers.set("cookie", "jwt_token=" + token);
+    ctx.headers.set("cookie", `${REQUEST_AUTH_KEY}=` + token);
     return next();
   });
   hoFetch.use(function (ctx, next) {
