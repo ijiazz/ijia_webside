@@ -18,11 +18,6 @@ const authToken = new AuthToken<AccessJwtPayload>({
   checkData: checkIjiaTokenData,
 });
 
-export const INTERNAL_MESSAGE_TOKEN = await authToken
-  .signAccessToken({ type: AuthTokenType.InternalMessage })
-  .then((accessToken) => {
-    return accessToken.token;
-  });
 export async function signAccessToken(
   userId: number,
   option?: SignAccessTokenOption,
@@ -53,3 +48,8 @@ export function signSysJWT(data: Record<string, any>) {
 export async function parseSysJWT(accessToken: string): Promise<unknown> {
   return jwtLib.verify(accessToken, JWT_KEY, "HS256");
 }
+export const INTERNAL_MESSAGE_TOKEN = await authToken
+  .signAccessToken({ type: AuthTokenType.InternalMessage })
+  .then((accessToken) => {
+    return accessToken.token;
+  });
