@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Alert, Button, Checkbox, Form, Input, Space, Tabs } from "antd";
 import React from "react";
@@ -10,7 +10,6 @@ import { IjiaLogo } from "@/common/site-logo.tsx";
 import styled from "@emotion/styled";
 import { useAsync } from "@/hooks/async.ts";
 import { ImageCaptchaModal } from "@/common/capthca/ImageCaptcha.tsx";
-import { useRedirect } from "@/hooks/redirect.ts";
 import { getPathByRoute } from "@/app.ts";
 import { useCurrentUser } from "@/common/user.ts";
 import { api, IGNORE_ERROR_MSG } from "@/common/http.ts";
@@ -33,7 +32,17 @@ export function LoginForm() {
   const [message, setMessage] = useState<Msg | undefined>(defaultMessage);
   const [loginParam, setLoginParam] = useState<UserLoginParamDto | undefined>();
 
-  const go = useRedirect({ defaultPath: () => getPathByRoute("/live") });
+  const { search } = useLocation();
+  const navigate = useNavigate();
+  const go = () => {
+    const redirectPath = search["redirect"] || getPathByRoute("/live");
+    if (redirectPath.startsWith("http:") || redirectPath.startsWith("https:")) {
+      window.location.href = redirectPath;
+    } else {
+      navigate({ to: redirectPath });
+    }
+  };
+
   const [captchaModalOpen, setCaptchaModalOpen] = useState(false);
   const { modal } = useAntdStatic();
   const { refresh } = useCurrentUser({ manual: true });

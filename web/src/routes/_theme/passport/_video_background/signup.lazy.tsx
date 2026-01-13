@@ -1,4 +1,4 @@
-import { createLazyFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
 import styled from "@emotion/styled";
 import { Button, Checkbox, Form, Input, Space } from "antd";
 import React from "react";
@@ -6,7 +6,6 @@ import { tryHashPassword } from "../../../../common/pwd_hash.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { useAntdStatic, useThemeToken } from "@/provider/mod.tsx";
 import { IjiaLogo } from "@/common/site-logo.tsx";
-import { useRedirect } from "@/hooks/redirect.ts";
 import { api, isHttpErrorCode } from "@/common/http.ts";
 import { getPathByRoute } from "@/app.ts";
 import { useCurrentUser } from "@/common/user.ts";
@@ -48,7 +47,16 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
   const { passportConfig: config } = props;
   const [form] = Form.useForm<FormValues>();
   const { refresh } = useCurrentUser({ manual: true });
-  const go = useRedirect({ defaultPath: () => getPathByRoute("/profile/center") });
+  const { search } = useLocation();
+  const navigate = useNavigate();
+  const go = () => {
+    const redirectPath = search["redirect"] || getPathByRoute("/profile/center");
+    if (redirectPath.startsWith("http:") || redirectPath.startsWith("https:")) {
+      window.location.href = redirectPath;
+    } else {
+      navigate({ to: redirectPath });
+    }
+  };
   const { run: sendEmailCaptcha, data: emailCaptcha } = useAsync(
     (email: string, sessionId: string, selected: number[]) =>
       api["/captcha/email/send"].post({
