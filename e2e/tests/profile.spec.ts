@@ -91,7 +91,7 @@ test("修改基础配置", async function ({ page, browser }) {
   const bob = users.find((u) => u.user_name === "Bob")!;
   await addBind(page, bob.sec_uid);
   // 修改基础配置
-  await page.locator(".ant-select-selection-search").click();
+  await page.getByRole("combobox", { name: "班级 question-circle :" }).click();
   await page
     .locator("div")
     .filter({ hasText: /^e2e-8$/ })
