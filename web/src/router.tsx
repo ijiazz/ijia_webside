@@ -13,6 +13,7 @@ export function genRouter() {
     ),
     defaultNotFoundComponent: NotFoundPage,
     defaultViewTransition: true,
+    basepath: getPathByRoute("/"),
   });
 }
 // declare module "@tanstack/react-router" {
@@ -23,7 +24,7 @@ export function genRouter() {
 
 export function SpaRoot(props: {}) {
   const router = useMemo(() => genRouter(), []);
-  return <RouterProvider router={router} basepath={getPathByRoute("/")} />;
+  return <RouterProvider router={router} />;
 }
 
 export function SsrRootWarp(props: React.PropsWithChildren) {

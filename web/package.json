@@ -17,7 +17,7 @@
     "@emotion/styled": "^11.14.0",
     "@ijia/api-types": "workspace:^",
     "@microsoft/clarity": "^1.0.0",
-    "@tanstack/react-router": "^1.132.2",
+    "@tanstack/react-router": "1.153.1",
     "@uifx/infinite-wall": "^0.0.2",
     "animejs": "^4.2.2",
     "antd": "^6.2.1",
@@ -32,7 +32,7 @@
     "react-use": "^17.6.0"
   },
   "devDependencies": {
-    "@tanstack/router-plugin": "^1.132.2",
+    "@tanstack/router-plugin": "1.153.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^19.2.8",
