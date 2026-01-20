@@ -1,7 +1,7 @@
 import { GodPlatformDto } from "@/api.ts";
 import { UserCard3D } from "@/lib/components/card.tsx";
 import React from "react";
-import { THIRD_PART } from "@/common/third_part_account.tsx";
+import { SOCIAL_PLATFORMS } from "@/common/third_part_account.tsx";
 import styled from "@emotion/styled";
 import { VLink } from "@/lib/components/VLink.tsx";
 
@@ -20,7 +20,7 @@ export function GodPlatform(props: GodPlatformProps) {
       </div>
       <h1 className="description">我们的大明星</h1>
       {platforms?.map((item) => {
-        const platform = THIRD_PART[item.platform];
+        const platform = SOCIAL_PLATFORMS[item.platform];
         const icon = platform?.icon;
         const platformName = platform?.name;
 

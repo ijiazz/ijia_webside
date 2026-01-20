@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { getPathByRoute } from "./app.ts";
-import { createRouter, RouterProvider, rewriteBasepath } from "@tanstack/react-router";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen.ts";
 import { ErrorPage } from "./common/page_state/ErrorPage.tsx";
 import { NotFoundPage } from "./common/page_state/NotFound.tsx";
@@ -23,7 +23,7 @@ export function genRouter() {
 
 export function SpaRoot(props: {}) {
   const router = useMemo(() => genRouter(), []);
-  return <RouterProvider router={router} rewrite={rewriteBasepath({ basepath: getPathByRoute("/") })} />;
+  return <RouterProvider router={router} basepath={getPathByRoute("/")} />;
 }
 
 export function SsrRootWarp(props: React.PropsWithChildren) {

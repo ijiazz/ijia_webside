@@ -23,8 +23,7 @@ export function getPnpmNodeModulesDir(mod: string) {
   const viteUrl = import.meta.resolve(mod);
   const pnpmUrl = viteUrl.replace(/(?<=\.pnpm)\/vite.+$/, "");
   if (pnpmUrl === viteUrl) {
-    console.warn("无法获取 pnpm 的目录，将无法手动分包");
-    return;
+    throw new Error("无法解析模块 " + mod + " 的 pnpm 目录");
   }
   return fileURLToPath(pnpmUrl).replaceAll("\\", "/");
 }

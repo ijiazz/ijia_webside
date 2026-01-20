@@ -35,9 +35,7 @@ export function CommentFooter(props: {
           回复
         </Button>
         {node.curr_user?.is_report ? (
-          <Tag color="red" bordered={false}>
-            已举报
-          </Tag>
+          <Tag color="red">已举报</Tag>
         ) : (
           <LikeButton
             className="e2e-post-comment-like-btn"

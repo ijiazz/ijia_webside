@@ -22,10 +22,10 @@ export type ThirdPartSelectProps<T extends Platform | Platform[] = Platform | Pl
 
 export function ThirdPartSelect(props: ThirdPartSelectProps<Platform> & { mode?: undefined }): ReactNode;
 export function ThirdPartSelect(props: ThirdPartSelectProps<Platform[]> & { mode: "multiple" }): ReactNode;
-export function ThirdPartSelect(props: ThirdPartSelectProps & { mode?: "multiple" }) {
+export function ThirdPartSelect(props: ThirdPartSelectProps<any> & { mode?: "multiple" }) {
   return <Select {...props} options={THIRD_PART_OPTION} />;
 }
-export const THIRD_PART: Record<SocialPlatform, { iconOutline?: ReactNode; icon?: ReactNode; name: string }> = {
+export const PLATFORMS: Record<Platform, { iconOutline?: ReactNode; icon?: ReactNode; name: string }> = {
   [SocialPlatform.douYin]: {
     iconOutline: <TikTokOutlined />,
     icon: <Icon src={douyinIco} />,
@@ -53,6 +53,9 @@ export const THIRD_PART: Record<SocialPlatform, { iconOutline?: ReactNode; icon?
     name: "小红书",
     icon: <Icon src={xiaohongshuIco} />,
   },
+};
+export const SOCIAL_PLATFORMS: Record<SocialPlatform, { iconOutline?: ReactNode; icon?: ReactNode; name: string }> = {
+  ...PLATFORMS,
   [SocialPlatform.qqMusic]: {
     name: "QQ 音乐",
     icon: <Icon src={qqmusicIco} />,
@@ -62,7 +65,7 @@ export const THIRD_PART: Record<SocialPlatform, { iconOutline?: ReactNode; icon?
     icon: <Icon src={hongguoIco} style={{ borderRadius: "20%" }} />,
   },
 };
-const THIRD_PART_OPTION = Object.entries(THIRD_PART).map(([key, info]) => ({
+const THIRD_PART_OPTION = Object.entries(PLATFORMS).map(([key, info]) => ({
   label: (
     <Space>
       {info.iconOutline}

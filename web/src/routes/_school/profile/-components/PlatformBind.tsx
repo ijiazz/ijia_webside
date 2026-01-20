@@ -42,7 +42,7 @@ export function PlatformBind(props: { userId?: number; onBindSuccess?(): void })
         {/* <ThirdPartSelect disabled value={platform} onChange={setPlatform}></ThirdPartSelect> */}
         {userId !== undefined && (
           <div>
-            为了证明抖音账号是你的，请将 <Tag bordered={false} color="blue">{`IJIA学号：<${userId}>`}</Tag>
+            为了证明抖音账号是你的，请将 <Tag color="blue">{`IJIA学号：<${userId}>`}</Tag>
             插入简介的任意位置（<span style={{ color: theme.colorError }}>包括前面的“IJIA学号”，无法检测私密账号</span>
             ），在绑定成功后，可以自行删除。 需要注意的是，
             <b>一个抖音账号只能绑定一个学号</b>。 检测通过后，
