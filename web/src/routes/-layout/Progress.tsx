@@ -1,6 +1,5 @@
 import { useRouterState } from "@tanstack/react-router";
-import React from "react";
-
+import styles from "./Progress.module.css";
 function useRouterProgress() {
   const isLoading = useRouterState({
     select(state) {
@@ -13,7 +12,7 @@ function useRouterProgress() {
 export function RouterProgress() {
   const isLoading = useRouterProgress();
   return (
-    <div className={isLoading ? "navigate-loading" : "navigate-loading-hide"}>
+    <div className={isLoading ? styles.navigateLoading : styles.navigateLoadingHide}>
       <div />
     </div>
   );

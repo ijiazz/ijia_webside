@@ -41,11 +41,7 @@ export function CommentHeader(props: PostHeaderProps) {
             <>
               <CaretRightOutlined />
               <span>{node.reply_to.user.user_name}</span>
-              {node.reply_to.is_deleted && (
-                <Tag bordered={false} style={{ marginLeft: 4 }}>
-                  已删除
-                </Tag>
-              )}
+              {node.reply_to.is_deleted && <Tag style={{ marginLeft: 4 }}>已删除2</Tag>}
             </>
           )}
         </PostCommentHeaderTextCSS>

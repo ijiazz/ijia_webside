@@ -23,11 +23,7 @@ export function PostReviewCard(props: PostReviewCardProps) {
     <PinkPostCard
       icon={<Avatar icon={<UserOutlined />} />}
       header={{
-        userName: isAnonymous ? (
-          <Tag bordered={false} color={theme.colorTextSecondary}>
-            匿名
-          </Tag>
-        ) : null,
+        userName: isAnonymous ? <Tag color={theme.colorTextSecondary}>匿名</Tag> : null,
         publishTime: item.publish_time && dateToString(item.publish_time, "day"),
         updateTime: item.update_time && dateToString(item.update_time, "day"),
       }}

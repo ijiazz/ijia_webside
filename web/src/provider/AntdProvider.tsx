@@ -38,7 +38,6 @@ export function AntdThemeProvider(props: PropsWithChildren<{ fixedMode?: ThemeMo
     const algorithm = mode === "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm;
     setScrollColor(mode);
     return {
-      cssVar: true,
       algorithm: algorithm,
       token: {
         colorPrimary: color,

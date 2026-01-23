@@ -22,9 +22,7 @@ export function WallPostCard(props: PCardProps) {
   const isAnonymous = item.config.is_anonymous;
   const author = item.author;
   const userName = isAnonymous ? (
-    <Tag bordered={false} color={theme.colorTextSecondary}>
-      匿名
-    </Tag>
+    <Tag color={theme.colorTextSecondary}>匿名</Tag>
   ) : (
     author?.user_name || author?.user_id
   );
@@ -47,7 +45,7 @@ export function WallPostCard(props: PCardProps) {
         updateTime: item.update_time,
       }}
       extra={
-        <Space size={0}>
+        <Space size={4}>
           {item.group?.group_name ? <Tag color="pink">{item.group.group_name}</Tag> : null}
           {item.config.self_visible && <Tag>仅自己可见</Tag>}
           {item.status.is_reviewing && <Tag color="blue">审核中</Tag>}
@@ -122,9 +120,7 @@ function PostFooter(props: {
       </Button>
       {props.isReported ? (
         <div style={{ fontSize: 16, width: "100%", textAlign: "center" }}>
-          <Tag color="red" bordered={false}>
-            已举报
-          </Tag>
+          <Tag color="red">已举报</Tag>
         </div>
       ) : (
         <LikeButton

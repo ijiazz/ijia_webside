@@ -37,14 +37,21 @@ export default {
     outDir: "dist/client",
     manifest: true,
     minify: true,
-    rollupOptions: {
-      output: {
-        manualChunks: createManualChunks(),
-      },
+    rolldownOptions: {
       input: {
         index: import.meta.dirname + "/index.html",
         // "x/index": import.meta.dirname + "/x/index.html",
         ssr_client: import.meta.dirname + "/ssr.html",
+      },
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              test: /node_modules/,
+              name: (id) => manualChunks(id),
+            },
+          ],
+        },
       },
     },
   },
@@ -53,7 +60,6 @@ export default {
 function createManualChunks() {
   const srcDir = path.resolve(import.meta.dirname, "src");
   const pnpmNodeModulesDir = getPnpmNodeModulesDir("vite");
-  if (!pnpmNodeModulesDir) return;
   const pnpmParser = new PnpmNodeModulesParser(pnpmNodeModulesDir);
   console.log("pnpm dir", pnpmNodeModulesDir);
   console.log("src dir", srcDir);
@@ -65,7 +71,7 @@ function createManualChunks() {
     "@emotion/styled": "emotion",
     "@jsr/asla__hofetch": "@asla/hofetch",
   };
-  const manualChunks = (id: string, meta: ManualChunkMeta) => {
+  const manualChunks = (id: string) => {
     const modInfo = pnpmParser.parserId(id);
     if (modInfo) {
       const chunk = chunkDeps[modInfo.name];
@@ -78,6 +84,7 @@ function createManualChunks() {
   };
   return manualChunks;
 }
+const manualChunks = createManualChunks();
 function ssrRenderProxy(): Plugin {
   return {
     name: "ssr-proxy",

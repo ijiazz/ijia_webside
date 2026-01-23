@@ -1,7 +1,6 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import React from "react";
 import { Outlet } from "@tanstack/react-router";
-import "@ant-design/v5-patch-for-react-19";
 import { HoFetchProvider, AntdThemeProvider } from "@/provider/mod.tsx";
 
 export const Route = createLazyFileRoute("/_theme")({

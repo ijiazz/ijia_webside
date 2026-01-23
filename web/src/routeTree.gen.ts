@@ -8,8 +8,6 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 import { Route as rootRouteImport } from './routes/__root.tsx'
 import { Route as ThemeRouteRouteImport } from './routes/_theme/route.tsx'
 import { Route as SchoolRouteRouteImport } from './routes/_school/route.tsx'
@@ -33,8 +31,6 @@ import { Route as ThemePassportVideo_backgroundLoginRouteImport } from './routes
 import { Route as SchoolWallListChar123GroupIdChar125RouteRouteImport } from './routes/_school/wall/list.{-$groupId}/route.tsx'
 import { Route as SchoolWallListChar123GroupIdChar125IndexRouteImport } from './routes/_school/wall/list.{-$groupId}/index.tsx'
 
-const ThemePassportRouteImport = createFileRoute('/_theme/passport')()
-
 const ThemeRouteRoute = ThemeRouteRouteImport.update({
   id: '/_theme',
   getParentRoute: () => rootRouteImport,
@@ -47,11 +43,6 @@ const SchoolRouteRoute = SchoolRouteRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_school/route.lazy.tsx').then((d) => d.Route),
 )
-const ThemePassportRoute = ThemePassportRouteImport.update({
-  id: '/passport',
-  path: '/passport',
-  getParentRoute: () => ThemeRouteRoute,
-} as any)
 const StoryIndexRoute = StoryIndexRouteImport.update({
   id: '/story/',
   path: '/story/',
@@ -92,9 +83,9 @@ const SchoolLiveIndexRoute = SchoolLiveIndexRouteImport.update({
 )
 const ThemePassportFindAccountRoute =
   ThemePassportFindAccountRouteImport.update({
-    id: '/find-account',
-    path: '/find-account',
-    getParentRoute: () => ThemePassportRoute,
+    id: '/passport/find-account',
+    path: '/passport/find-account',
+    getParentRoute: () => ThemeRouteRoute,
   } as any).lazy(() =>
     import('./routes/_theme/passport/find-account.lazy.tsx').then(
       (d) => d.Route,
@@ -142,8 +133,9 @@ const SchoolExaminationSplatRoute = SchoolExaminationSplatRouteImport.update({
 } as any)
 const ThemePassportVideo_backgroundRouteRoute =
   ThemePassportVideo_backgroundRouteRouteImport.update({
-    id: '/_video_background',
-    getParentRoute: () => ThemePassportRoute,
+    id: '/passport/_video_background',
+    path: '/passport',
+    getParentRoute: () => ThemeRouteRoute,
   } as any)
 const SchoolWallReviewIndexRoute = SchoolWallReviewIndexRouteImport.update({
   id: '/wall/review/',
@@ -195,7 +187,7 @@ const SchoolWallListChar123GroupIdChar125IndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof homeIndexRoute
-  '/story': typeof StoryIndexRoute
+  '/story/': typeof StoryIndexRoute
   '/passport': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/examination/$': typeof SchoolExaminationSplatRoute
   '/profile/center': typeof SchoolProfileCenterRoute
@@ -204,14 +196,14 @@ export interface FileRoutesByFullPath {
   '/about/guide': typeof ThemeAboutGuideRoute
   '/about/introduction': typeof ThemeAboutIntroductionRoute
   '/passport/find-account': typeof ThemePassportFindAccountRoute
-  '/live': typeof SchoolLiveIndexRoute
-  '/wall': typeof SchoolWallIndexRoute
-  '/about': typeof ThemeAboutIndexRoute
-  '/test-page': typeof ThemeTestPageIndexRoute
+  '/live/': typeof SchoolLiveIndexRoute
+  '/wall/': typeof SchoolWallIndexRoute
+  '/about/': typeof ThemeAboutIndexRoute
+  '/test-page/': typeof ThemeTestPageIndexRoute
   '/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125RouteRouteWithChildren
   '/passport/login': typeof ThemePassportVideo_backgroundLoginRoute
   '/passport/signup': typeof ThemePassportVideo_backgroundSignupRoute
-  '/wall/review': typeof SchoolWallReviewIndexRoute
+  '/wall/review/': typeof SchoolWallReviewIndexRoute
   '/wall/list/{-$groupId}/': typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
 export interface FileRoutesByTo {
@@ -240,7 +232,6 @@ export interface FileRoutesById {
   '/_theme': typeof ThemeRouteRouteWithChildren
   '/(home)/': typeof homeIndexRoute
   '/story/': typeof StoryIndexRoute
-  '/_theme/passport': typeof ThemePassportRouteWithChildren
   '/_theme/passport/_video_background': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/_school/examination/$': typeof SchoolExaminationSplatRoute
   '/_school/profile/center': typeof SchoolProfileCenterRoute
@@ -263,7 +254,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/story'
+    | '/story/'
     | '/passport'
     | '/examination/$'
     | '/profile/center'
@@ -272,14 +263,14 @@ export interface FileRouteTypes {
     | '/about/guide'
     | '/about/introduction'
     | '/passport/find-account'
-    | '/live'
-    | '/wall'
-    | '/about'
-    | '/test-page'
+    | '/live/'
+    | '/wall/'
+    | '/about/'
+    | '/test-page/'
     | '/wall/list/{-$groupId}'
     | '/passport/login'
     | '/passport/signup'
-    | '/wall/review'
+    | '/wall/review/'
     | '/wall/list/{-$groupId}/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -307,7 +298,6 @@ export interface FileRouteTypes {
     | '/_theme'
     | '/(home)/'
     | '/story/'
-    | '/_theme/passport'
     | '/_theme/passport/_video_background'
     | '/_school/examination/$'
     | '/_school/profile/center'
@@ -339,28 +329,21 @@ declare module '@tanstack/react-router' {
     '/_theme': {
       id: '/_theme'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof ThemeRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_school': {
       id: '/_school'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof SchoolRouteRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_theme/passport': {
-      id: '/_theme/passport'
-      path: '/passport'
-      fullPath: '/passport'
-      preLoaderRoute: typeof ThemePassportRouteImport
-      parentRoute: typeof ThemeRouteRoute
     }
     '/story/': {
       id: '/story/'
       path: '/story'
-      fullPath: '/story'
+      fullPath: '/story/'
       preLoaderRoute: typeof StoryIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -374,37 +357,37 @@ declare module '@tanstack/react-router' {
     '/_theme/test-page/': {
       id: '/_theme/test-page/'
       path: '/test-page'
-      fullPath: '/test-page'
+      fullPath: '/test-page/'
       preLoaderRoute: typeof ThemeTestPageIndexRouteImport
       parentRoute: typeof ThemeRouteRoute
     }
     '/_theme/about/': {
       id: '/_theme/about/'
       path: '/about'
-      fullPath: '/about'
+      fullPath: '/about/'
       preLoaderRoute: typeof ThemeAboutIndexRouteImport
       parentRoute: typeof ThemeRouteRoute
     }
     '/_school/wall/': {
       id: '/_school/wall/'
       path: '/wall'
-      fullPath: '/wall'
+      fullPath: '/wall/'
       preLoaderRoute: typeof SchoolWallIndexRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
     '/_school/live/': {
       id: '/_school/live/'
       path: '/live'
-      fullPath: '/live'
+      fullPath: '/live/'
       preLoaderRoute: typeof SchoolLiveIndexRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
     '/_theme/passport/find-account': {
       id: '/_theme/passport/find-account'
-      path: '/find-account'
+      path: '/passport/find-account'
       fullPath: '/passport/find-account'
       preLoaderRoute: typeof ThemePassportFindAccountRouteImport
-      parentRoute: typeof ThemePassportRoute
+      parentRoute: typeof ThemeRouteRoute
     }
     '/_theme/about/introduction': {
       id: '/_theme/about/introduction'
@@ -453,12 +436,12 @@ declare module '@tanstack/react-router' {
       path: '/passport'
       fullPath: '/passport'
       preLoaderRoute: typeof ThemePassportVideo_backgroundRouteRouteImport
-      parentRoute: typeof ThemePassportRoute
+      parentRoute: typeof ThemeRouteRoute
     }
     '/_school/wall/review/': {
       id: '/_school/wall/review/'
       path: '/wall/review'
-      fullPath: '/wall/review'
+      fullPath: '/wall/review/'
       preLoaderRoute: typeof SchoolWallReviewIndexRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
@@ -553,33 +536,21 @@ const ThemePassportVideo_backgroundRouteRouteWithChildren =
     ThemePassportVideo_backgroundRouteRouteChildren,
   )
 
-interface ThemePassportRouteChildren {
-  ThemePassportVideo_backgroundRouteRoute: typeof ThemePassportVideo_backgroundRouteRouteWithChildren
-  ThemePassportFindAccountRoute: typeof ThemePassportFindAccountRoute
-}
-
-const ThemePassportRouteChildren: ThemePassportRouteChildren = {
-  ThemePassportVideo_backgroundRouteRoute:
-    ThemePassportVideo_backgroundRouteRouteWithChildren,
-  ThemePassportFindAccountRoute: ThemePassportFindAccountRoute,
-}
-
-const ThemePassportRouteWithChildren = ThemePassportRoute._addFileChildren(
-  ThemePassportRouteChildren,
-)
-
 interface ThemeRouteRouteChildren {
-  ThemePassportRoute: typeof ThemePassportRouteWithChildren
+  ThemePassportVideo_backgroundRouteRoute: typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   ThemeAboutGuideRoute: typeof ThemeAboutGuideRoute
   ThemeAboutIntroductionRoute: typeof ThemeAboutIntroductionRoute
+  ThemePassportFindAccountRoute: typeof ThemePassportFindAccountRoute
   ThemeAboutIndexRoute: typeof ThemeAboutIndexRoute
   ThemeTestPageIndexRoute: typeof ThemeTestPageIndexRoute
 }
 
 const ThemeRouteRouteChildren: ThemeRouteRouteChildren = {
-  ThemePassportRoute: ThemePassportRouteWithChildren,
+  ThemePassportVideo_backgroundRouteRoute:
+    ThemePassportVideo_backgroundRouteRouteWithChildren,
   ThemeAboutGuideRoute: ThemeAboutGuideRoute,
   ThemeAboutIntroductionRoute: ThemeAboutIntroductionRoute,
+  ThemePassportFindAccountRoute: ThemePassportFindAccountRoute,
   ThemeAboutIndexRoute: ThemeAboutIndexRoute,
   ThemeTestPageIndexRoute: ThemeTestPageIndexRoute,
 }

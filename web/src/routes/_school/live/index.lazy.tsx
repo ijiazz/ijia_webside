@@ -1,7 +1,7 @@
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 
 import { PlatformPostItemDto } from "@/api.ts";
-import { THIRD_PART } from "@/common/third_part_account.tsx";
+import { SOCIAL_PLATFORMS } from "@/common/third_part_account.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { Avatar, List, Button } from "antd";
 import styled from "@emotion/styled";
@@ -96,7 +96,7 @@ function RouteComponent() {
                       userName={item.author.user_name}
                       ipLocation={item.ip_location}
                       publishTime={item.publish_time?.toLocaleString()}
-                      platformIcon={THIRD_PART[item.platform]?.iconOutline}
+                      platformIcon={SOCIAL_PLATFORMS[item.platform]?.iconOutline}
                     />
                   }
                   extra={

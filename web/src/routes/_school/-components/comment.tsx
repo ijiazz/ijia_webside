@@ -17,9 +17,8 @@ export function CommentDrawer(props: {
     <Drawer
       open={open}
       onClose={onClose}
-      width={450}
-      height="60%"
       title="评论"
+      size={isHorizontal ? 450 : "60%"}
       placement={isHorizontal ? "right" : "bottom"}
       styles={{
         body: {
