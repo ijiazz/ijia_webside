@@ -30,19 +30,21 @@ test("需要验证码才能登录", async function ({ api, publicDbPool }) {
     method: LoginMethod.password,
     password: userInfo.password,
   };
-  await expect(login(api, param)).rejects.responseStatus(400);
+  await expect(login(api, param)).rejects.responseStatus(418);
 
-  await expect(loginUseCaptcha(api, param)).resolves.toBeTypeOf("object");
+  const result = await loginUseCaptcha(api, param);
+  await expect(result.user.id).toBe(userInfo.id.toString());
 });
 
 test("使用邮箱和密码登录", async function ({ api, publicDbPool }) {
   const userInfo = await prepareUniqueUserWithPwd("alice");
 
-  await loginNoCheckCaptcha(api, {
+  const result = await loginNoCheckCaptcha(api, {
     user: { email: userInfo.email, type: UserIdentifierType.email },
     method: LoginMethod.password,
     password: userInfo.password,
   });
+  await expect(result.user.id).toBe(userInfo.id.toString());
 });
 test("使用邮箱验证码登录", async function ({ api, publicDbPool }) {
   const userInfo = await prepareUniqueUser("alice");
@@ -68,6 +70,7 @@ test("使用邮箱验证码登录", async function ({ api, publicDbPool }) {
     },
   });
   expect(res.success).toBeTruthy();
+  await expect(res.user.id).toBe(userInfo.id.toString());
 });
 test("使用大写域名邮箱加密码登录", async function ({ api, publicDbPool }) {
   const emailName = getUniqueName("alice");

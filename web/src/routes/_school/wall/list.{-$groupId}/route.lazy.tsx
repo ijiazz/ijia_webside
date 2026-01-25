@@ -1,13 +1,13 @@
 import { createLazyFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { PostGroupResponse } from "@/api.ts";
 import { Button, ButtonProps, ConfigProvider, ConfigProviderProps, MenuProps, Result } from "antd";
-import React, { useMemo } from "react";
-import { getUserInfoFromToken } from "@/common/user.ts";
+import { useContext, useMemo } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
 import { AdaptiveMenuLayout } from "@/routes/-layout/AdaptiveMenuLayout.tsx";
 import { AntdStaticProvider, LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
 import { PostQueryFilter, PostQueryFilterContext } from "./-components/PostQueryFilterContext.tsx";
+import { BasicUserContext } from "../../-context/UserContext.tsx";
 
 export const Route = createLazyFileRoute("/_school/wall/list/{-$groupId}")({
   component: PostLayout,
@@ -25,7 +25,9 @@ const THEME: ConfigProviderProps["theme"] = {
   },
 };
 function PostLayout() {
-  const data: PostGroupResponse | undefined = Route.useLoaderData();
+  const { postGroup }: { postGroup: PostGroupResponse | undefined } = Route.useLoaderData();
+
+  const currentUser = useContext(BasicUserContext);
   const matchPathname = Route.useMatch({ select: (m) => m.pathname });
   const { groupId } = Route.useParams();
 
@@ -42,37 +44,35 @@ function PostLayout() {
 
   const menus = useMemo(() => {
     const menus: MenuProps["items"] =
-      data?.items.map((item) => ({
+      postGroup?.items.map((item) => ({
         key: item.group_id.toString(),
         label: item.group_name,
       })) ?? [];
 
-    const info = getUserInfoFromToken();
-
-    if (info?.valid) {
+    if (currentUser) {
       menus.unshift({ key: "self", label: "我的" });
     }
     menus.unshift({ key: "all", label: "全部" });
 
     return menus;
-  }, [data]);
+  }, [postGroup, currentUser]);
 
   const filter = useMemo((): PostQueryFilter => {
-    if (!data || !groupId) return {};
+    if (!postGroup || !groupId) return {};
     const isSelf = groupId === "self";
     if (isSelf) {
       return {
         self: true,
       };
     }
-    const current = data.items.find((item) => item.group_id.toString() === groupId);
+    const current = postGroup.items.find((item) => item.group_id.toString() === groupId);
     if (!current) return {};
     return {
       group: current,
     };
-  }, [data, groupId]);
+  }, [postGroup, groupId]);
   const isVertical = useLayoutDirection() === LayoutDirection.Vertical;
-  if (!data)
+  if (!postGroup)
     return (
       <Result
         status="error"
@@ -100,10 +100,11 @@ function PostLayout() {
           }}
           rightExtra={
             <PublishBtn
+              isLoggedIn={!!currentUser}
               className="e2e-publish-post-btn"
               style={{ marginRight: 12, display: isVertical ? undefined : "none" }}
               type="text"
-            ></PublishBtn>
+            />
           }
         >
           <PostQueryFilterContext.Provider value={filter}>
@@ -115,16 +116,17 @@ function PostLayout() {
   );
 }
 
-function PublishBtn(props: Omit<ButtonProps, "onClick" | "icon">) {
+function PublishBtn(props: Omit<ButtonProps, "onClick" | "icon"> & { isLoggedIn?: boolean }) {
+  const { isLoggedIn, ...rest } = props;
   const navigate = useNavigate();
   const location = useLocation();
   return (
     <Button
-      {...props}
+      {...rest}
       icon={<PlusOutlined />}
       type="text"
       onClick={() => {
-        if (getUserInfoFromToken()?.valid) {
+        if (isLoggedIn) {
           navigate({ to: "/wall/publish", viewTransition: true });
         } else {
           navigate({ href: ROUTES.Login + `?redirect=${location.pathname}`, viewTransition: true });

@@ -80,6 +80,7 @@ const appConfigChecker = {
     signupEnabled: optionalBoolean,
     loginCaptchaDisabled: optionalBoolean,
     loginTip: optionalString,
+    host: optionalString,
   }),
   post: nullishOptional({
     maximumDailyCount: nullishOptional(integer(0), 50), // 每日最大发布数量。如果为 0 则禁止发帖

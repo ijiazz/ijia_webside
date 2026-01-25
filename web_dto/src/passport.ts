@@ -21,6 +21,8 @@ export interface PassportApi {
     response: UserLoginResult;
     body: UserLoginParam;
   };
+  /** 退出登录 */
+  "POST /passport/logout": {};
   /** 注册用户 */
   "POST /passport/signup": {
     response: CreateUserProfileResult;

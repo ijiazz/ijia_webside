@@ -1,19 +1,19 @@
 import { createLazyFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
 import styled from "@emotion/styled";
 import { Button, Checkbox, Form, Input, Space } from "antd";
-import React from "react";
 import { tryHashPassword } from "../../../../common/pwd_hash.ts";
-import { useAsync } from "@/hooks/async.ts";
 import { useAntdStatic, useThemeToken } from "@/provider/mod.tsx";
 import { IjiaLogo } from "@/common/site-logo.tsx";
 import { api, isHttpErrorCode } from "@/common/http.ts";
 import { getPathByRoute } from "@/app.ts";
-import { useCurrentUser } from "@/common/user.ts";
 import { EmailInput } from "../../../../common/EmailInput.tsx";
 import { EmailCaptchaActionType, PassportConfig } from "@/api.ts";
 import { MaskBoard } from "../-components/MaskBoard.tsx";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Route as ParentRoute } from "./route.tsx";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/request/client.ts";
+import { clearUserCache } from "@/common/user.ts";
 
 export const Route = createLazyFileRoute("/_theme/passport/_video_background/signup")({
   component: RouteComponent,
@@ -46,7 +46,6 @@ function RouteComponent() {
 function BasicInfo(props: { passportConfig: PassportConfig }) {
   const { passportConfig: config } = props;
   const [form] = Form.useForm<FormValues>();
-  const { refresh } = useCurrentUser({ manual: true });
   const { search } = useLocation();
   const navigate = useNavigate();
   const go = () => {
@@ -57,29 +56,35 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
       navigate({ to: redirectPath });
     }
   };
-  const { run: sendEmailCaptcha, data: emailCaptcha } = useAsync(
-    (email: string, sessionId: string, selected: number[]) =>
+  const { data: emailCaptcha, mutateAsync: sendEmailCaptcha } = useMutation({
+    mutationFn: (param: { email: string; sessionId: string; selected: number[] }) =>
       api["/captcha/email/send"].post({
         body: {
-          email,
-          captchaReply: { sessionId, selectedIndex: selected },
+          email: param.email,
+          captchaReply: { sessionId: param.sessionId, selectedIndex: param.selected },
           actionType: EmailCaptchaActionType.signup,
         },
       }),
-  );
-  const { loading: signupLoading, run: onSubmit } = useAsync(async function (value: FormValues) {
-    const pwd = await tryHashPassword(value.password);
-    const { userId, jwtKey } = await api["/passport/signup"].post({
-      body: {
-        email: value.email,
-        password: pwd.password,
-        passwordNoHash: pwd.passwordNoHash,
-        emailCaptcha: { code: value.email_code, sessionId: emailCaptcha?.sessionId! },
-      },
-    });
-    refresh(jwtKey);
-    go();
   });
+
+  const { isPending: signupLoading, mutateAsync: onSubmit } = useMutation({
+    mutationFn: async function (value: FormValues) {
+      const pwd = await tryHashPassword(value.password);
+      return api["/passport/signup"].post({
+        body: {
+          email: value.email,
+          password: pwd.password,
+          passwordNoHash: pwd.passwordNoHash,
+          emailCaptcha: { code: value.email_code, sessionId: emailCaptcha?.sessionId! },
+        },
+      });
+    },
+    onSuccess: ({ userId, jwtKey }) => {
+      clearUserCache();
+      go();
+    },
+  });
+
   const { message } = useAntdStatic();
   return (
     <div style={{ padding: 28 }} className="basic-info">
@@ -94,7 +99,7 @@ function BasicInfo(props: { passportConfig: PassportConfig }) {
           <EmailInput
             onCaptchaSubmit={async (email, sessionId, selected) => {
               try {
-                await sendEmailCaptcha(email, sessionId, selected);
+                await sendEmailCaptcha({ email, sessionId, selected });
                 message.success("已发送");
               } catch (error) {
                 if (isHttpErrorCode(error, "CAPTCHA_ERROR")) message.error("验证码错误");

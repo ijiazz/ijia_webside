@@ -21,6 +21,9 @@ export type UserLoginResult = {
     title: string;
     content: string;
   };
+  user: {
+    id: string;
+  };
 };
 export enum UserIdentifierType {
   userId = "userId",

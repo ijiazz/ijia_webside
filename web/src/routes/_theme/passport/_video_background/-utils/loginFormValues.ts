@@ -1,8 +1,9 @@
 import { LoginMethod, UserIdentifierType, UserLoginParam, UserLoginByPasswordParam, UserLoginResult } from "@/api.ts";
 import { tryHashPassword } from "@/common/pwd_hash.ts";
-import { useCurrentUser } from "@/common/user.ts";
+import { clearUserCache } from "@/common/user.ts";
 import { useAntdStatic } from "@/provider/AntdProvider.tsx";
-import { api, IGNORE_ERROR_MSG } from "@/request/client.ts";
+import { api, IGNORE_ERROR_MSG, queryClient } from "@/request/client.ts";
+import { ijiaLocalStorage } from "@/stores/local_store.ts";
 import { useMutation } from "@tanstack/react-query";
 
 export type EmailLoginFormValues = {
@@ -57,7 +58,6 @@ export type UserLoginOption = {
 };
 export function useLogin(options: UserLoginOption) {
   const { onField, onSuccess } = options;
-  const { refresh } = useCurrentUser({ manual: true });
   const { modal } = useAntdStatic();
   const { isPending: loginLoading, mutateAsync } = useMutation({
     mutationFn: async (param: UserLoginParam) => {
@@ -67,6 +67,8 @@ export function useLogin(options: UserLoginOption) {
     async onSuccess(result) {
       if (!result.success) {
         onField(result);
+      } else {
+        clearUserCache();
       }
       if (result.tip) {
         await new Promise<void>((resolve, reject) => {
@@ -79,7 +81,6 @@ export function useLogin(options: UserLoginOption) {
         });
       }
       if (result.success) {
-        refresh();
         onSuccess();
       }
     },

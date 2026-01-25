@@ -3,8 +3,7 @@ import styled from "@emotion/styled";
 import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "../shake_animation.ts";
 import classNames from "classnames";
-import { getUserInfoFromToken } from "@/common/user.ts";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { ScreenEffects, useScreenEffects, useScreenMin } from "./screenEffects.tsx";
 import { InfiniteWall, InfiniteWallRender } from "@uifx/infinite-wall/react";
 
@@ -35,7 +34,6 @@ function useAvatarWallData() {
         userId: item.id,
         name: item.name,
       }));
-      const currentUserId = getUserInfoFromToken()?.userId;
       if (items.length < limit) {
         columns = Math.ceil(Math.sqrt(items.length));
         rows = columns;
@@ -43,7 +41,15 @@ function useAvatarWallData() {
 
       const repeat = items.length >= limit;
 
-      return { userId: currentUserId, list, total, rows, columns, limit, repeat };
+      return {
+        userId: undefined, // 先不处理这个用户 ID
+        list,
+        total,
+        rows,
+        columns,
+        limit,
+        repeat,
+      };
     },
     { autoRunArgs: [] },
   );

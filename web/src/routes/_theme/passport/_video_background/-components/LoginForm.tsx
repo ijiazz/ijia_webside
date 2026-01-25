@@ -50,7 +50,7 @@ export function LoginForm() {
       setMessageText({ title: result.message ?? "登录失败", type: "error" });
     },
     onSuccess: () => {
-      const redirectPath = search["redirect"] || getPathByRoute("/live");
+      const redirectPath = search["redirect"] || getPathByRoute("/wall");
       if (redirectPath.startsWith("http:") || redirectPath.startsWith("https:")) {
         window.location.href = redirectPath;
       } else {

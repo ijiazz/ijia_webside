@@ -5,6 +5,7 @@ import { dbPool } from "@/db/client.ts";
 import { deleteFrom } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import { loginByPassword } from "./_util.ts";
+import { LOGIN_REDIRECT_HOME_MATCH } from "../_utils/login_home.ts";
 const { expect, beforeEach } = test;
 
 test("修改密码", async function ({ page }) {
@@ -29,7 +30,7 @@ test("修改密码", async function ({ page }) {
   await page.getByText("退出登录").click();
 
   await loginByPassword(page, Alice.email, aliceNewPassword);
-  await expect(page, "登录后导航到首页").toHaveURL(/\/live/, {});
+  await expect(page, "登录后导航到首页").toHaveURL(LOGIN_REDIRECT_HOME_MATCH, {});
 });
 
 test("重置密码", async function ({ page }) {
@@ -50,7 +51,7 @@ test("重置密码", async function ({ page }) {
   await page.locator(".e2e-go-to-login").click();
 
   await loginByPassword(page, Alice.email, "new");
-  await expect(page, "使用新密码成功登录").toHaveURL(/\/live/);
+  await expect(page, "使用新密码成功登录").toHaveURL(LOGIN_REDIRECT_HOME_MATCH);
 });
 
 test("修改邮箱", async function ({ page }) {

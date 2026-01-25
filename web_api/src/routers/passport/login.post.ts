@@ -2,13 +2,11 @@ import routeGroup, { signToken } from "./_route.ts";
 import {
   LoginMethod,
   UserLoginResult,
-  REQUEST_AUTH_KEY,
   UserLoginByPasswordParam,
   UserLoginByEmailCaptchaParam,
   EmailCaptchaActionType,
 } from "@/dto.ts";
 import { hashPasswordFrontEnd } from "./-services/password.ts";
-import { setCookie } from "hono/cookie";
 import { emailCaptchaService, imageCaptchaService } from "../captcha/mod.ts";
 import { HttpCaptchaError, HttpError } from "@/global/errors.ts";
 import {
@@ -19,6 +17,7 @@ import {
 } from "./-sql/login.ts";
 import { ENV, RunMode } from "@/config.ts";
 import { checkUserParam } from "./-check/login.ts";
+import { setCookieAuth } from "./-services/cookie.ts";
 
 export default routeGroup.create({
   method: "POST",
@@ -56,14 +55,20 @@ export default routeGroup.create({
 
     const jwtKey = await signToken(account.userId);
     await updateLastLoginTime(account.userId);
+    const keepLoggedIn = !!unsafeParam.keepLoggedIn;
 
     const value: UserLoginResult = {
       success: true,
       message: "登录成功",
       token: jwtKey.token,
-      maxAge: jwtKey.maxAge,
+      maxAge: keepLoggedIn ? jwtKey.maxAge : null,
+      user: {
+        id: account.userId.toString(),
+      },
     };
-    if (value.success) setCookie(ctx, REQUEST_AUTH_KEY, value.token, { maxAge: value.maxAge ?? undefined });
+    if (value.success) {
+      setCookieAuth(ctx, value.token, value.maxAge);
+    }
     return value;
   },
 });
