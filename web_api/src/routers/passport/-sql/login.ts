@@ -12,6 +12,13 @@ export async function accountLoginByEmail(email: string, password?: string): Pro
   const user = await selectUser(`email=${v(email)}`);
   return loginCheck(user, password);
 }
+export async function accountLoginByEmailCaptcha(email: string) {
+  const user = await selectUser(`email=${v(email)}`);
+  if (!user) throw new HttpError(401, { message: "账号或密码错误" });
+  if (user.in_blacklist) throw new HttpError(423, { message: "账号已被冻结" });
+  return user.user_id;
+}
+
 export async function updateLastLoginTime(id: number) {
   await dbPool.queryCount(
     update("public.user")
@@ -21,10 +28,11 @@ export async function updateLastLoginTime(id: number) {
 }
 async function loginCheck(user: LoginUserInfo | undefined, password?: string): Promise<number> {
   if (!user) throw new HttpError(401, { message: "账号或密码错误" });
-  if (user.in_blacklist) throw new HttpError(423, { message: "账号已被冻结" });
 
   const pwdIsEqual = await expectPasswordIsEqual(user, password);
   if (!pwdIsEqual) throw new HttpError(401, { message: "账号或密码错误" });
+
+  if (user.in_blacklist) throw new HttpError(423, { message: "账号已被冻结" });
   return user.user_id;
 }
 async function expectPasswordIsEqual(user: LoginUserInfo, inputPassword?: string): Promise<boolean> {

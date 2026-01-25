@@ -52,7 +52,11 @@ export type SendEmailCaptchaParam = {
   /** 人机判定回答 */
   captchaReply: ImageCaptchaReply;
   email: string;
-  actionType: EmailCaptchaActionType.signup | EmailCaptchaActionType.changeEmail | EmailCaptchaActionType.resetPassword;
+  actionType:
+    | EmailCaptchaActionType.signup
+    | EmailCaptchaActionType.changeEmail
+    | EmailCaptchaActionType.resetPassword
+    | EmailCaptchaActionType.login;
 };
 export type SendSelfEmailCaptchaParam = {
   /** 人机判定回答 */
@@ -61,9 +65,12 @@ export type SendSelfEmailCaptchaParam = {
 };
 
 export enum EmailCaptchaActionType {
+  login = "login",
   signup = "signup",
-  changeEmail = "changeEmail",
   /** 更换邮箱 */
+  changeEmail = "changeEmail",
+  /** 验证本人邮箱，用于修改密码、登录 */
   signAccountToken = "signAccountToken",
+  /** 重置密码 */
   resetPassword = "resetPassword",
 }

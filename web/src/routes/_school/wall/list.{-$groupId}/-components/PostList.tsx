@@ -4,11 +4,10 @@ import { PostItemDto } from "@/api.ts";
 import { List, MenuProps, Modal } from "antd";
 import styled from "@emotion/styled";
 import { useAntdStatic } from "@/provider/mod.tsx";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { DeleteOutlined, EditOutlined, SettingOutlined, WarningOutlined } from "@ant-design/icons";
 import { api } from "@/common/http.ts";
 import { useLayoutDirection, LayoutDirection } from "@/provider/mod.tsx";
-import { getUserInfoFromToken } from "@/common/user.ts";
 import { ROUTES } from "@/app.ts";
 import { InfiniteScrollHandle, InfiniteScrollLoad } from "@/lib/components/InfiniteLoad.tsx";
 import wallCoverSrc from "../../-img/wall_cover.webp";
@@ -19,6 +18,7 @@ import { ReportModal } from "../../../-components/ReportModal.tsx";
 import { PostQueryFilterContext } from "./PostQueryFilterContext.tsx";
 import { PublishPost, UpdatePostParam } from "../../-components/PublishPost.tsx";
 import { useItemData } from "./useItemData.ts";
+import { BasicUserContext } from "@/routes/_school/-context/UserContext.tsx";
 
 export function PostList(props: PostListProps) {
   const { groupOptions, onOpenComment } = props;
@@ -31,11 +31,11 @@ export function PostList(props: PostListProps) {
   const [editItem, setEditItem] = useState<(UpdatePostParam & { id: number; updateContent?: boolean }) | undefined>(
     undefined,
   );
-
+  const currentUser = useContext(BasicUserContext);
   const itemsCtrl = useItemData({ filter });
   const items = itemsCtrl.items;
   const onOpenPublish = () => {
-    if (getUserInfoFromToken()?.valid) {
+    if (currentUser) {
       setModalOpen(true);
     } else {
       navigate({ href: ROUTES.Login + `?redirect=${location.pathname}`, viewTransition: true });

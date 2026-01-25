@@ -14,6 +14,7 @@
 
     "loginCaptchaDisabled": false, //登录关闭验证码
     "loginTip": null, // 登录页面提示语
+    "host": "localhost", //登录设置 cookie 的 domain, 请填写主域名，例如 ijiazz.cn，如果不设置，则m默认为空
   },
   "live_watch": {
     "pollingMinute": 0, // 如果小于等于0则不开启直播监听

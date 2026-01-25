@@ -3,10 +3,10 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import legacy from "@vitejs/plugin-legacy";
-import type { ManualChunkMeta } from "rollup";
+
 import { getPnpmNodeModulesDir, PnpmNodeModulesParser } from "./build/vite-tool.ts";
 import path from "node:path";
-const origin = "http://127.0.0.1:3000";
+const origin = "http://localhost:3000";
 export default {
   root: import.meta.dirname,
   server: {
@@ -67,7 +67,9 @@ function createManualChunks() {
   const chunkDeps: Record<string, string | boolean> = {
     react: true, // 有bug，暂时不要分
     "react-dom": true,
+    "react-hook-form": true,
     "@tanstack/react-router": true,
+    "@tanstack/react-query": true,
     "@emotion/styled": "emotion",
     "@jsr/asla__hofetch": "@asla/hofetch",
   };

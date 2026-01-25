@@ -1,7 +1,7 @@
 import { dbPool } from "@/db/client.ts";
 import { createUser } from "@ijia/data/query";
 import { api } from "@/__mocks__/fetch.ts";
-import { LoginType } from "@/api.ts";
+import { LoginMethod, UserIdentifierType } from "@/api.ts";
 import { v } from "@/sql/utils.ts";
 export const E2E_PASSWORD = {
   saved:
@@ -49,8 +49,8 @@ export async function loginGetToken(email: string, pwd: string) {
   const { sessionId } = await api["/captcha/image"].post();
   const { token } = await api["/passport/login"].post({
     body: {
-      method: LoginType.email,
-      email,
+      method: LoginMethod.password,
+      user: { email: email, type: UserIdentifierType.email },
       password: pwd,
       passwordNoHash: true,
       captcha: { selectedIndex: [0, 1, 2], sessionId },

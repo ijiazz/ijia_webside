@@ -1,4 +1,4 @@
-import { Button, Input, Tooltip } from "antd";
+import { Button, Input, InputProps, Tooltip } from "antd";
 import React, { useRef, useState } from "react";
 import { ImageCaptchaPopover } from "@/common/capthca/ImageCaptcha.tsx";
 function useCooling(coolingTime = 60) {
@@ -22,14 +22,16 @@ function useCooling(coolingTime = 60) {
   };
 }
 
-export function EmailInput(props: {
-  value?: string;
-  disabled?: boolean;
-  disabledInput?: boolean;
-  onChange?(value: string): void;
-  onCaptchaSubmit: (email: string, sessionId: string, selected: number[]) => Promise<void>;
-  sendBtnText?: string;
-}) {
+export function EmailInput(
+  props: Pick<InputProps, "placeholder" | "disabled" | "prefix" | "suffix" | "status"> & {
+    value?: string;
+    disabled?: boolean;
+    disabledInput?: boolean;
+    onChange?(value: string): void;
+    onCaptchaSubmit: (email: string, sessionId: string, selected: number[]) => Promise<void>;
+    sendBtnText?: string;
+  },
+) {
   const { disabled, disabledInput, sendBtnText = "发送验证码", ...reset } = props;
   const cooling = useCooling(30);
   const [email, setValue] = useState<string | undefined>();

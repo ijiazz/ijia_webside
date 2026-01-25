@@ -1,3 +1,4 @@
+import { CheckTypeError } from "@asla/wokao";
 import { HTTPException } from "hono/http-exception";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
@@ -23,6 +24,9 @@ export class HttpCaptchaError extends HttpError {
 }
 export class HttpParamsCheckError extends HttpError {
   constructor(cause: any) {
+    if (cause instanceof CheckTypeError) {
+      cause = cause.cause ?? cause.reason;
+    }
     super(400, { message: "参数校验不通过", code: "PARAMS_CHECK_ERROR", cause });
   }
 }

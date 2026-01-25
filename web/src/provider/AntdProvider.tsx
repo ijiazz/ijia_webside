@@ -1,5 +1,5 @@
 import { ConfigProvider, message, notification, Modal, ThemeConfig } from "antd";
-import React, { PropsWithChildren, createContext, useContext, useMemo, useState } from "react";
+import { PropsWithChildren, createContext, useContext, useMemo, useState } from "react";
 
 import type { MessageInstance } from "antd/es/message/interface.js";
 import type { NotificationInstance } from "antd/es/notification/interface.js";
@@ -39,6 +39,8 @@ export function AntdThemeProvider(props: PropsWithChildren<{ fixedMode?: ThemeMo
     setScrollColor(mode);
     return {
       algorithm: algorithm,
+      hashed: false,
+      zeroRuntime: true,
       token: {
         colorPrimary: color,
         colorInfo: color,

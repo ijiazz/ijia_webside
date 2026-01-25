@@ -1,27 +1,46 @@
-import React from "react";
 import { Avatar, Button, Dropdown } from "antd";
-import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { LoadingOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import styled from "@emotion/styled";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { IS_MOBILE_LAYOUT, useThemeToken } from "@/provider/mod.tsx";
+import { UserBasicDto } from "@/api.ts";
+import { useMutation } from "@tanstack/react-query";
+import { api } from "@/common/http.ts";
+import { clearUserCache } from "@/common/user.ts";
+import { ROUTES } from "@/app.ts";
+import { useMemo } from "react";
 
-export function AvatarMenu(props: { noLogged?: boolean; logout?: () => void; userUrl?: string; userName?: string }) {
-  const { logout, userName, userUrl, noLogged } = props;
+export function AvatarMenu(props: { user: UserBasicDto | null }) {
+  const { user } = props;
+  const { mutate, isPending: isLogoutLoading } = useMutation({
+    mutationFn: () => api["/passport/logout"].post(),
+    onSuccess: () => {
+      clearUserCache();
+      navigate({ to: ROUTES.Login });
+    },
+  });
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const theme = useThemeToken();
-  if (noLogged)
+
+  const nav = useMemo(() => {
+    const url = new URL(ROUTES.Login, window.location.origin);
+    url.searchParams.set("redirect", pathname);
+
+    return url.pathname + url.search;
+  }, [pathname]);
+
+  if (!user)
     return (
-      <VLink to={noLogged ? "/passport/login?redirect=" + pathname : undefined}>
+      <VLink to={nav}>
         <Button type="text" style={{ color: theme.colorTextSecondary }}>
-          {userName}
+          登录
         </Button>
       </VLink>
     );
   return (
     <Dropdown
-      open={noLogged ? false : undefined}
       trigger={["click", "hover"]}
       menu={{
         items: [
@@ -33,18 +52,18 @@ export function AvatarMenu(props: { noLogged?: boolean; logout?: () => void; use
           },
           {
             key: "logout",
-            icon: <LogoutOutlined />,
+            icon: isLogoutLoading ? <LoadingOutlined /> : <LogoutOutlined />,
             label: "退出登录",
-            onClick: logout,
+            onClick: () => mutate(),
           },
         ],
       }}
     >
       <MenuAvatar hoverColor={theme.colorBgTextHover}>
-        <Avatar className="e2e-avatar" size={32} src={userUrl}>
-          {userName}
+        <Avatar className="e2e-avatar" size={32} src={user.avatar_url}>
+          {user.nickname}
         </Avatar>
-        <span style={{ color: theme.colorTextSecondary }}>{userName}</span>
+        <span style={{ color: theme.colorTextSecondary }}>{user.nickname}</span>
       </MenuAvatar>
     </Dropdown>
   );

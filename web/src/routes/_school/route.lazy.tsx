@@ -1,11 +1,11 @@
 import { createLazyFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import React, { PropsWithChildren, useRef } from "react";
+import { PropsWithChildren, useContext, useMemo, useRef } from "react";
 import { IjiaLogo } from "../../common/site-logo.tsx";
 import { Button, Tooltip } from "antd";
 import { Outlet, useLocation } from "@tanstack/react-router";
 import { menus } from "../-layout/menus.tsx";
-import { getUserToken, useCurrentUser } from "@/common/user.ts";
-import { AvatarMenu } from "../-layout/avatar.tsx";
+import { getUserToken } from "@/common/user.ts";
+import { AvatarMenu } from "./-components/AvatarMenu.tsx";
 import {
   AntdThemeProvider,
   HoFetchProvider,
@@ -16,38 +16,45 @@ import {
 import styled from "@emotion/styled";
 import { RootLayout } from "../-layout/RootLayout.tsx";
 import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
+import { BasicUserContext } from "./-context/UserContext.tsx";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { CurrentUserInfoQueryOption } from "@/request/user.ts";
 
 export const Route = createLazyFileRoute("/_school")({
-  component: () => (
-    <AntdThemeProvider>
-      <HoFetchProvider>
-        <UserLayout />
-      </HoFetchProvider>
-    </AntdThemeProvider>
-  ),
+  component: () => {
+    const { data: currentUser } = useSuspenseQuery(CurrentUserInfoQueryOption);
+    return (
+      <AntdThemeProvider>
+        <HoFetchProvider>
+          <BasicUserContext value={currentUser}>
+            <UserLayout />
+          </BasicUserContext>
+        </HoFetchProvider>
+      </AntdThemeProvider>
+    );
+  },
 });
 
 const IS_DEV = import.meta.env?.DEV;
 
 function UserLayout(props: PropsWithChildren<{}>) {
   const { message } = useAntdStatic();
+  const user = useContext(BasicUserContext);
 
-  const copyToken = () => {
+  const userToken = useMemo(() => getUserToken(), [user]);
+  const copyToken = (token: string) => {
     const url = new URL(location.href);
-    const token = getUserToken();
-    if (token) {
-      url.searchParams.set("access_token", token);
-      const tokenUrl = url.toString();
-      navigator.clipboard.writeText(tokenUrl);
-    }
+    url.searchParams.set("access_token", token);
+    const tokenUrl = url.toString();
+    navigator.clipboard.writeText(tokenUrl);
     message.success("已复制个人访问 Token");
   };
   const pathname = useLayoutPathname();
   const match = Route.useMatch();
   const navigate = Route.useNavigate();
 
-  const { logout, value: user } = useCurrentUser();
   const themeCtrl = useThemeController();
+
   return (
     <RootLayout
       leftExtra={
@@ -71,8 +78,8 @@ function UserLayout(props: PropsWithChildren<{}>) {
       }}
       rightExtra={
         <div style={{ display: "flex", gap: 8, marginRight: 8, alignItems: "center" }}>
-          {IS_DEV && user ? (
-            <Button type="dashed" onClick={copyToken}>
+          {IS_DEV && userToken ? (
+            <Button type="dashed" onClick={() => copyToken(userToken)}>
               Dev Mode
             </Button>
           ) : undefined}
@@ -85,12 +92,7 @@ function UserLayout(props: PropsWithChildren<{}>) {
               }}
             />
           </Tooltip>
-          <AvatarMenu
-            noLogged={!user}
-            userName={!user ? "登录" : user?.nickname}
-            userUrl={user?.avatar_url}
-            logout={logout}
-          />
+          <AvatarMenu user={user} />
         </div>
       }
     >

@@ -14,6 +14,7 @@
         padding: 0;
         margin: 0;
         height: 100%;
+        overflow: hidden;
       }
     </style>
     <style id="loadingStyle">
@@ -60,7 +61,7 @@
   <body>
     <script src="./src/index-spa.tsx" type="module"></script>
 
-    <div id="app" style="height: 100%"><!--SSR-ELEMENT--></div>
+    <div id="app" style="height: 100%; overflow: hidden"><!--SSR-ELEMENT--></div>
     <div id="app-loading" class="app-loading" style="position: absolute">
       <div class="app-loading-animation">
         <h1>Loading</h1>

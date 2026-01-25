@@ -7,8 +7,8 @@ import type {
   CreateUserProfileResult,
   PassportConfig,
   ResetPasswordParam,
-  UserLoginParamDto,
-  UserLoginResultDto,
+  UserLoginParam,
+  UserLoginResult,
 } from "./passport/dto.ts";
 
 export interface PassportApi {
@@ -18,9 +18,11 @@ export interface PassportApi {
   };
   /** 登录 */
   "POST /passport/login": {
-    response: UserLoginResultDto;
-    body: UserLoginParamDto;
+    response: UserLoginResult;
+    body: UserLoginParam;
   };
+  /** 退出登录 */
+  "POST /passport/logout": {};
   /** 注册用户 */
   "POST /passport/signup": {
     response: CreateUserProfileResult;

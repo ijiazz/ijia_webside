@@ -9,7 +9,7 @@ import { createUser } from "@/routers/passport/-sql/signup.ts";
 
 import { getUniqueEmail, getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
 import { update } from "@asla/yoursql";
-import { LoginType, EmailCaptchaActionType } from "@/dto.ts";
+import { EmailCaptchaActionType, LoginMethod, UserIdentifierType } from "@/dto.ts";
 import { mockSendEmailCaptcha, mockSendSelfEmailCaptcha } from "./_mocks/captcha.ts";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
@@ -139,7 +139,12 @@ describe("修改密码", function () {
 async function aliceLoin(api: Api, email: string, password: string) {
   const captcha = await createCaptchaSession();
   return api["/passport/login"].post({
-    body: { email: email, method: LoginType.email, password: password, captcha },
+    body: {
+      user: { email: email, type: UserIdentifierType.email },
+      method: LoginMethod.password,
+      password: password,
+      captcha,
+    },
   });
 }
 function mockChangeEmailSendEmailCaptcha(api: Api, email: string) {

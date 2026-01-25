@@ -6,6 +6,7 @@ import { enumType, ExpectType } from "@asla/wokao";
 import {
   checkEmailExists,
   sendChangeEmailCaptcha,
+  sendEmailCaptcha,
   sendResetPassportCaptcha,
   sendSignUpEmailCaptcha,
 } from "../-service/send_email_captcha.ts";
@@ -19,6 +20,7 @@ const inputSchema = {
     EmailCaptchaActionType.changeEmail,
     EmailCaptchaActionType.signup,
     EmailCaptchaActionType.resetPassword,
+    EmailCaptchaActionType.login,
   ] as const), // just for type check
 } satisfies ExpectType;
 
@@ -54,6 +56,12 @@ export default routeGroup.create({
         const account = await checkEmailExists(email);
         if (account !== undefined) throw new HttpError(406, "邮箱已被注册");
         return sendSignUpEmailCaptcha(email);
+      }
+      case EmailCaptchaActionType.login: {
+        const account = await checkEmailExists(email);
+        if (account === undefined) throw new HttpError(400, "账号不存在");
+        const expire = 5 * 60; // 5 分钟有效期
+        return sendEmailCaptcha(email, EmailCaptchaActionType.login, expire);
       }
       default:
         throw new HttpError(400, "不支持的操作类型");

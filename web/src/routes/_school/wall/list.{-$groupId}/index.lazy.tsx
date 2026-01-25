@@ -2,7 +2,7 @@ import { createLazyFileRoute, NavigateOptions, useNavigate } from "@tanstack/rea
 
 import { PostGroupResponse } from "@/api.ts";
 import { MenuProps } from "antd";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Route as ParentRoute } from "./route.tsx";
 import { PostQueryFilterContext } from "./-components/PostQueryFilterContext.tsx";
 import { CommentDrawer } from "../../-components/comment.tsx";
@@ -13,22 +13,22 @@ export const Route = createLazyFileRoute("/_school/wall/list/{-$groupId}/")({
 });
 
 function RouteComponent() {
-  const data: PostGroupResponse | undefined = ParentRoute.useLoaderData();
+  const { postGroup }: { postGroup: PostGroupResponse | undefined } = ParentRoute.useLoaderData();
   const filter = useContext(PostQueryFilterContext);
   const isSelf = filter.self;
   const { option, menus } = useMemo(() => {
-    const option = data?.items.map((item) => ({
+    const option = postGroup?.items.map((item) => ({
       label: item.group_name,
       value: item.group_id,
       desc: item.rule_desc,
     }));
-    const menus: MenuProps["items"] = data?.items.map((item) => ({
+    const menus: MenuProps["items"] = postGroup?.items.map((item) => ({
       key: item.group_id.toString(),
       label: item.group_name,
     }));
 
     return { option, menus };
-  }, [data]);
+  }, [postGroup]);
 
   const drawer = useCommentDrawer();
 

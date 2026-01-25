@@ -9,5 +9,11 @@ class IjiaLocalStorage {
   set themeMode(value: string | null) {
     this.storage.setItem("theme_mode", value);
   }
+  get unverifiedUserId() {
+    return this.storage.getItem("unverified_user_id");
+  }
+  set unverifiedUserId(value: string | null) {
+    this.storage.setItem("unverified_user_id", value);
+  }
 }
 export const ijiaLocalStorage = new IjiaLocalStorage();

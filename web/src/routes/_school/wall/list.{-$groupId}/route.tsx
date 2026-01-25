@@ -1,9 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { api } from "@/common/http.ts";
+import { queryClient } from "@/request/client.ts";
+import { PublicPostGroupOption } from "@/request/post.ts";
 
 export const Route = createFileRoute("/_school/wall/list/{-$groupId}")({
-  loader(ctx) {
-    return api["/post/group/list"].get().catch(() => undefined);
+  async loader(ctx) {
+    const postGroup = await queryClient.ensureQueryData(PublicPostGroupOption);
+
+    return {
+      postGroup,
+    };
   },
   shouldReload: (ctx) => ctx.cause === "enter",
 });
