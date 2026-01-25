@@ -67,7 +67,9 @@ function createManualChunks() {
   const chunkDeps: Record<string, string | boolean> = {
     react: true, // 有bug，暂时不要分
     "react-dom": true,
+    "react-hook-form": true,
     "@tanstack/react-router": true,
+    "@tanstack/react-query": true,
     "@emotion/styled": "emotion",
     "@jsr/asla__hofetch": "@asla/hofetch",
   };

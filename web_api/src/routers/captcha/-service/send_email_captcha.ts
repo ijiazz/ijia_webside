@@ -41,11 +41,11 @@ export async function sendAccountAuthEmailCaptcha(email: string) {
   );
 }
 
-async function sendEmailCaptcha(
+export async function sendEmailCaptcha(
   email: string,
   actionType: EmailCaptchaActionType,
   expire: number,
-  message: string,
+  message: string = `${appConfig.appName}验证码`,
 ): Promise<EmailCaptchaQuestion> {
   const code = emailCaptchaService.genCode();
   const htmlContent = createEmailCodeHtmlContent({

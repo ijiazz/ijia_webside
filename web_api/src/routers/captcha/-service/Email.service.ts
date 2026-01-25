@@ -12,22 +12,19 @@ class EmailCaptchaService {
     return code.toString();
   }
   readonly session = new SessionManager<EmailCaptchaSessionData>("Captcha:code", 5 * 60);
-  async #sendEmailCaptcha(config: CaptchaEmail) {
-    await getEmailSender().sendEmail({
-      targetEmail: config.recipient,
-      title: `${appConfig.appName}验证码`,
-      html: config.html,
-      text: config.text,
-    });
-    return this.createSession(config);
-  }
+
   async sendEmailCaptcha(captchaEmail: CaptchaEmail) {
     if (ENV.IS_PROD) {
-      return this.#sendEmailCaptcha(captchaEmail);
-    } else {
-      if (ENV.MODE === RunMode.Dev) console.log("模拟发送邮件验证码：" + captchaEmail.code, captchaEmail);
-      return this.createSession(captchaEmail);
+      await getEmailSender().sendEmail({
+        targetEmail: captchaEmail.recipient,
+        title: `${appConfig.appName}验证码`,
+        html: captchaEmail.html,
+        text: captchaEmail.text,
+      });
+    } else if (ENV.MODE === RunMode.Dev) {
+      console.log("模拟发送邮件验证码：" + captchaEmail.code, captchaEmail);
     }
+    return this.createSession(captchaEmail);
   }
   async createSession(config: CaptchaEmail): Promise<EmailCaptchaQuestion> {
     const sessionId = await this.session.set(

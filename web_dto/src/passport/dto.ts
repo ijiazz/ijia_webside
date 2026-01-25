@@ -11,7 +11,7 @@ export type CreateUserProfileResult = {
   jwtKey: string;
 };
 
-export type UserLoginResultDto = {
+export type UserLoginResult = {
   success: boolean;
   token: string;
   maxAge: number | null;
@@ -22,27 +22,42 @@ export type UserLoginResultDto = {
     content: string;
   };
 };
-export type UserLoginByIdParam = {
-  method: LoginType.id;
-  captcha?: ImageCaptchaReply;
-
-  id: string;
-  password?: string;
-  passwordNoHash?: boolean;
-};
-export type UserLoginByEmailParam = {
-  method: LoginType.email;
-  captcha?: ImageCaptchaReply;
-
-  email: string;
-  password?: string;
-  passwordNoHash?: boolean;
-};
-export type UserLoginParamDto = UserLoginByIdParam | UserLoginByEmailParam;
-
-export enum LoginType {
-  id = "id",
+export enum UserIdentifierType {
+  userId = "userId",
   email = "email",
+}
+export type LoginUserIdentifier =
+  | {
+      userId: number;
+      type: UserIdentifierType.userId;
+    }
+  | {
+      email: string;
+      type: UserIdentifierType.email;
+    };
+
+export type UserLoginCommonParam = {
+  /** 如果为 true, 则保留用户登录状态，否则关闭窗口后需要重新登录 */
+  keepLoggedIn?: boolean;
+};
+export type UserLoginByPasswordParam = {
+  method: LoginMethod.password;
+  captcha?: ImageCaptchaReply;
+  user: LoginUserIdentifier;
+  password?: string;
+  passwordNoHash?: boolean;
+};
+export type UserLoginByEmailCaptchaParam = {
+  method: LoginMethod.emailCaptcha;
+  email: string;
+  emailCaptcha: EmailCaptchaReply;
+};
+
+export type UserLoginParam = UserLoginCommonParam & (UserLoginByEmailCaptchaParam | UserLoginByPasswordParam);
+
+export enum LoginMethod {
+  password = "password",
+  emailCaptcha = "email_captcha",
 }
 
 export type ChangePasswordParam = {

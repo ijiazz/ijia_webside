@@ -1,6 +1,5 @@
 import {
   checkTypeCopy,
-  getCheckTypeErrorReason,
   ExpectType,
   InferExpect,
   TypeCheckOption,
@@ -8,7 +7,6 @@ import {
   integer,
   TypeCheckFn,
   CheckTypeError,
-  stringMatch,
 } from "@asla/wokao";
 import { HttpParamsCheckError } from "./errors.ts";
 
@@ -20,7 +18,7 @@ export function checkValue<T extends ExpectType>(
   try {
     return checkTypeCopy(input, expectType, { ...option, policy: "pass" });
   } catch (error) {
-    throw new HttpParamsCheckError(getCheckTypeErrorReason(error));
+    throw new HttpParamsCheckError(error);
   }
 }
 export function checkValueAsync<T extends ExpectType>(

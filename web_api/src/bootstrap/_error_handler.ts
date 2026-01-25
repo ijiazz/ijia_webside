@@ -14,31 +14,34 @@ export function errorHandler(error: unknown, ctx: Context): Response | Promise<R
   } else {
     console.error(error);
     let status = 500;
-    const html = createErrorHtmlText(error, { baseDir: baseDir, showStack: !ENV.IS_PROD });
-    return ctx.html(html, status as ContentfulStatusCode);
+    const html = createErrorJson(error, { baseDir: baseDir, showStack: !ENV.IS_PROD });
+    return ctx.json(html, status as ContentfulStatusCode);
   }
 }
 type StackOption = {
   showStack?: boolean;
   baseDir?: string;
 };
-function createErrorHtmlText(error: any, stackOption: StackOption = {}) {
+function createErrorJson(error: any, stackOption: StackOption = {}): ErrorJson {
   if (error instanceof Error) {
-    let text = `<h3>${error.message}</h3>\n`;
-
     let stack = error.stack;
-    let detail: string;
     if (stack && stackOption.showStack) {
       if (stackOption.baseDir) stack = stack.replaceAll(stackOption.baseDir, "");
-      detail = stack;
-    } else detail = `${error.name}: ${error.message}`;
-    text += `<span style="white-space:pre-wrap; font-size:12px">${detail}</span>\n`;
-
-    if (error.cause) {
-      text += "\n" + createErrorHtmlText(error.cause, stackOption);
     }
-    return text;
+
+    return {
+      message: error.message,
+      stack: stack,
+      cause: error.cause ? createErrorJson(error.cause, stackOption) : undefined,
+    };
   } else {
-    return String(error);
+    return {
+      message: String(error),
+    };
   }
 }
+type ErrorJson = {
+  message: string;
+  stack?: string;
+  cause?: ErrorJson;
+};

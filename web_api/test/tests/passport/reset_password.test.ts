@@ -3,13 +3,12 @@ import { test, Context, Api } from "../../fixtures/hono.ts";
 
 import { captchaRoutes, passportRoutes } from "@/routers/mod.ts";
 
-import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
 import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { emailCaptchaService } from "@/routers/captcha/mod.ts";
 import { update } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
-import { LoginType, ResetPasswordParam, EmailCaptchaActionType } from "@/dto.ts";
+import { LoginMethod, ResetPasswordParam, EmailCaptchaActionType, UserIdentifierType } from "@/dto.ts";
 import { mockSendEmailCaptcha } from "./_mocks/captcha.ts";
 
 const AlicePassword = await hashPasswordFrontEnd("123");
@@ -17,7 +16,6 @@ const AlicePassword = await hashPasswordFrontEnd("123");
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   captchaRoutes.apply(hono);
   passportRoutes.apply(hono);
-  await initCaptcha();
 });
 test("重置密码", async function ({ api }) {
   const Alice = await prepareUniqueUser("alice");
@@ -61,10 +59,14 @@ test("已注销账号不能重置密码", async function ({ api }) {
     "已注销账号不能重置密码",
   ).responseStatus(409);
 });
-async function aliceLoin(api: Api, usename: string, password: string) {
-  const captcha = await createCaptchaSession();
+async function aliceLoin(api: Api, email: string, password: string) {
   return api["/passport/login"].post({
-    body: { email: usename, method: LoginType.email, password: password, captcha },
+    body: {
+      user: { email, type: UserIdentifierType.email },
+      method: LoginMethod.password,
+      password: password,
+    },
+    headers: { "X-In-Test": "1" },
   });
 }
 
