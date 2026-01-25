@@ -14,6 +14,8 @@ export const Route = createLazyFileRoute("/_school/wall/list/{-$groupId}")({
 });
 
 const THEME: ConfigProviderProps["theme"] = {
+  hashed: false,
+  zeroRuntime: true,
   token: {
     colorPrimary: "#f1a2a8",
     colorInfo: "#f1a2a8",
