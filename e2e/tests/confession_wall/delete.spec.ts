@@ -1,12 +1,7 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { initAlice, initBob, loginGetToken } from "@/__mocks__/user.ts";
-import { clearPostGroup, clearPosts, createPost } from "./utils/post.ts";
+import { initAlice, initBob, loginGetToken } from "@/utils/user.ts";
+import { createPost } from "@/utils/post.ts";
 const { expect, beforeEach, beforeAll, describe } = test;
-
-beforeAll(async function () {
-  await clearPosts();
-  await clearPostGroup();
-});
 
 test("删除", async function ({ page }) {
   let aliceToken: string;
@@ -21,7 +16,7 @@ test("删除", async function ({ page }) {
 
   await page.goto(getAppUrlFromRoute("/wall/list/self", aliceToken));
 
-  const postItems = page.locator(".ant-list-item");
+  const postItems = page.locator(".e2e-post-item");
 
   await expect(postItems).toHaveCount(4);
 
@@ -49,7 +44,7 @@ test("不能删除别人的内容", async function ({ page }) {
 
   {
     await page.goto(getAppUrlFromRoute("/wall", bobToken));
-    const postItems = page.locator(".ant-list-item");
+    const postItems = page.locator(".e2e-post-item");
     await postItems.nth(0).getByRole("button", { name: "more" }).click();
     await expect(page.getByText("删除"), "看不到Alice作品的删除按钮").toHaveCount(0);
   }

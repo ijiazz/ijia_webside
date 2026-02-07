@@ -25,7 +25,6 @@ test("发布一条帖子", async function ({ api, publicDbPool }) {
     like_total: 0,
   } satisfies Partial<SelfPost["stat"]>);
   expect(item.content_text).toBe("你好");
-  expect(item.create_time, "创建即发布").toEqual(item.publish_time);
 });
 test("文本结构需要正确传递和保存", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");

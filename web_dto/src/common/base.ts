@@ -12,7 +12,8 @@ export type InfiniteListDto<T> = {
   has_more: boolean;
 };
 
-export type CursorListDto<T, C> = InfiniteListDto<T> & {
+export type CursorListDto<T, C> = {
+  items: T[];
   cursor_prev?: C | null;
   cursor_next?: C | null;
 };

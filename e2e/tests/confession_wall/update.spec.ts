@@ -1,18 +1,14 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { initAlice, initBob, loginGetToken } from "@/__mocks__/user.ts";
-import { clearPosts, createPost } from "./utils/post.ts";
+import { initAlice, initBob, loginGetToken } from "@/utils/user.ts";
+import { createPost } from "@/utils/post.ts";
 import { Page } from "@playwright/test";
 
 const { expect, beforeEach } = test;
 
-beforeEach(async function () {
-  await clearPosts();
-});
-
 test("修改内容", async function ({ page }) {
   const alice = await init(page);
   await page.goto(getAppUrlFromRoute("/wall", alice.token));
-  const postItems = page.locator(".ant-list-item");
+  const postItems = page.locator(".e2e-post-item");
 
   const textLocator = postItems.nth(1).locator(".post-content-text").first();
   const text = await textLocator.textContent();
@@ -33,7 +29,7 @@ test("不能修改别人的内容", async function ({ page }) {
   const alice = await init(page);
   await page.goto(getAppUrlFromRoute("/wall", alice.token));
 
-  const postItems = page.locator(".ant-list-item");
+  const postItems = page.locator(".e2e-post-item");
   await postItems.nth(0).getByRole("button", { name: "more" }).click();
 
   await expect(page.getByText("编辑")).toHaveCount(0);
@@ -44,7 +40,7 @@ test("将作品可见状态修改", async function ({ page }) {
   const alice = await init(page);
   await page.goto(getAppUrlFromRoute("/wall", alice.token));
 
-  const postItems = page.locator(".ant-list-item");
+  const postItems = page.locator(".e2e-post-item");
 
   await expect(postItems).toHaveCount(2);
 

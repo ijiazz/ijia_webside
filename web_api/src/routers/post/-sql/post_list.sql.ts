@@ -9,13 +9,35 @@ import {
   ReviewStatus,
 } from "@/dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
-import { HttpError } from "@/global/errors.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
+
+type BaseSelect = {
+  post_id: number;
+  author: {
+    user_name: string | null;
+    user_id: number;
+    avatar_url: string | null;
+  } | null;
+  publish_time: string | null;
+  create_time: string;
+  update_time: string;
+  context_text: string | null;
+  content_text_structure?: string[];
+  ip_location: string | null;
+  media: null;
+  group: number | null;
+  stat: {
+    like_total: number;
+    dislike_total: number;
+    comment_total: number;
+  };
+};
+
 const BASE_SELECT = {
   post_id: "p.id",
   /**
-   * 不是匿名或者是自己的帖子才作者信息
+   * 不是匿名才存在作者信息
    */
   author: `CASE 
       WHEN (get_bit(p.options, 0)='0') 
@@ -27,8 +49,7 @@ const BASE_SELECT = {
         FROM public.user AS u
         WHERE u.id = p.user_id)
       ELSE NULL END`,
-  publish_time: "p.publish_time",
-  create_time: "p.create_time",
+  publish_time: "EXTRACT(EPOCH FROM p.publish_time)",
   update_time: "CASE WHEN p.update_time=p.create_time THEN NULL ELSE p.update_time END",
 
   content_text: "p.content_text",
@@ -102,10 +123,8 @@ export async function getPublicPostList(
    *  因为 publish_time 可能为 null，如果 publish_time 为 null，仅使用 id 作为指针
    */
   const rawList = await dbPool.queryRows(qSql);
-  return {
-    ...initRawList(rawList),
-    has_more: rawList.length >= number,
-  };
+  const { cursor_next, cursor_prev } = getCursor(rawList);
+  return { items: initRawList(rawList), cursor_next, cursor_prev };
 }
 export async function getUserPostList(
   authorId: number,
@@ -165,12 +184,20 @@ export async function getUserPostList(
    *  因为 publish_time 可能为 null，如果 publish_time 为 null，仅使用 id 作为指针
    */
   const rawList = await dbPool.queryRows(qSql);
-  return {
-    ...initRawList(rawList),
-    has_more: rawList.length >= number,
-  };
+  const { cursor_next, cursor_prev } = getCursor(rawList);
+  return { items: initRawList(rawList), cursor_next, cursor_prev };
+}
+function getCursor(rawList: any[]) {
+  const list = rawList;
+  const first = list[0];
+  const last = list[list.length - 1];
+  const cursor_prev = first ? toTimestampCursor(first.publish_time, first.post_id) : null;
+  const cursor_next = last ? toTimestampCursor(last.publish_time, last.post_id) : null;
+  return { cursor_prev, cursor_next };
 }
 function initRawList(rawList: any[]) {
+  const list = rawList;
+
   rawList.forEach((item) => {
     const currUser = item.curr_user;
     if (currUser) {
@@ -185,57 +212,44 @@ function initRawList(rawList: any[]) {
       const curr_user: NonNullable<PublicPost["curr_user"]> = currUser;
       curr_user.can_comment = curr_user.disabled_comment_reason === null;
     }
+
+    if (item.publish_time) {
+      item.publish_time = new Date(Math.floor(+item.publish_time) * 1000).toISOString();
+    }
   });
-  const list = rawList;
-  const firstPublishTime = list.find((item) => item.publish_time);
-  const last = list[list.length - 1];
-  return {
-    items: list,
-    cursor_prev: firstPublishTime
-      ? toTimestampCursor({
-          id: +firstPublishTime.post_id,
-          timestamp: firstPublishTime.publish_time ? new Date(firstPublishTime.publish_time).getTime() : null,
-        })
-      : null,
-    cursor_next: last
-      ? toTimestampCursor({
-          id: +last.post_id,
-          timestamp: last.publish_time ? new Date(last.publish_time).getTime() : null,
-        })
-      : null,
-  };
+  return list;
 }
-function getCursorCondition(cursorStr: string, forward?: boolean) {
+function getCursorCondition(cursorStr: string, forward?: boolean): string {
   const cursor = parserTimestampCursor(cursorStr);
   const ts = cursor.timestamp;
-  if (typeof ts !== "number") {
-    if (forward) throw new HttpError(400, "向前的 cursor 必须存在 publish_time 时间戳");
+  if (!ts) {
+    if (forward) return `(p.publish_time IS NULL AND p.id > ${v(cursor.id)})`;
     else return `(p.publish_time IS NULL AND p.id < ${v(cursor.id)})`;
   } else {
-    const timestamp = v(ts / 1000);
     if (forward) {
-      return `(p.publish_time > to_timestamp(${timestamp}) OR (p.publish_time = to_timestamp(${timestamp}) AND p.id > ${v(cursor.id)}))`;
+      return `(p.publish_time > to_timestamp(${v(ts)}) OR (p.publish_time = to_timestamp(${v(ts)}) AND p.id > ${v(cursor.id)}))`;
     } else {
-      return `(p.publish_time < to_timestamp(${timestamp}) OR (p.publish_time = to_timestamp(${timestamp}) AND p.id < ${v(cursor.id)}))`;
+      return `(p.publish_time < to_timestamp(${v(ts)}) OR (p.publish_time = to_timestamp(${v(ts)}) AND p.id < ${v(cursor.id)}))`;
     }
   }
 }
 
-function parserTimestampCursor(cursorStr: string): PostCursor {
-  const [timestampStr, idStr] = cursorStr.split("-");
+function parserTimestampCursor(cursorStr: string): PublishedPostCursor {
+  const [timestampStr, idStr] = cursorStr.split("/");
   if (!timestampStr || !idStr) throw new Error("cursor 格式错误");
-  const timestamp = timestampStr === "0" ? null : +timestampStr;
-  if (timestampStr !== null && !Number.isInteger(timestamp)) throw new Error("cursor 格式错误");
+  const timestamp = timestampStr === "0" ? null : timestampStr;
 
   const id = +idStr;
   if (!Number.isInteger(id)) throw new Error("cursor 格式错误");
   return { timestamp: timestamp, id: id };
 }
-function toTimestampCursor(cursor: PostCursor): string {
-  return `${cursor.timestamp ?? "0"}-${cursor.id}`;
+function toTimestampCursor(timestamp: string | null, id: number): string {
+  return `${timestamp ?? "0"}/${id}`;
 }
-type PostCursor = {
+type PublishedPostCursor = {
   /** publish_timestamp */
-  timestamp?: number | null;
+  timestamp?: string | null;
   id: number;
 };
+
+type DratPostCursor = number;

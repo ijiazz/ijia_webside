@@ -1,22 +1,17 @@
-import { api, JWT_TOKEN_KEY } from "@/__mocks__/fetch.ts";
-import { CreatePostParam } from "@api/dto.ts";
+import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";
+import { CreatePostParam, GetPostListParam } from "@api/dto.ts";
 import { getAppUrlFromRoute } from "@/fixtures/test.ts";
 import { dbPool } from "@/db/client.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 
-export async function clearPosts() {
-  const res = await dbPool.query("DELETE FROM post");
-  return res;
-}
-export async function clearPostGroup() {
-  await dbPool.query(`DELETE FROM post_group`);
-}
 export async function createPostGroup(name: string, description?: string) {
   await dbPool.execute(
     insertIntoValues("post_group", { description, name: name }).onConflict("id").doUpdate({ name: "'发布分组测试'" }),
   );
 }
-
+export async function getPublicPost(option: GetPostListParam) {
+  return api["/post/list"].get({ query: option });
+}
 export async function createPost(postParam: CreatePostParam, token: string) {
   return api["/post/entity"].put({
     body: postParam,
@@ -39,3 +34,18 @@ export async function createCommentUseApi(config: {
 export function gotoComment(postId: number, token?: string) {
   return getAppUrlFromRoute(`/wall/list?openCommentPostId=${postId}`, token);
 }
+
+export const POST_GROUPS: { id: number; name: string }[] = [
+  {
+    id: -1,
+    name: "分组1",
+  },
+  {
+    id: -2,
+    name: "分组2",
+  },
+];
+export const POST_LONG = {
+  id: -3,
+  name: "较长的分组名字",
+};

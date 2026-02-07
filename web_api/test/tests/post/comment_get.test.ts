@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect } from "vitest";
-import { test, Context } from "../../fixtures/hono.ts";
-import { prepareCommentPost, prepareCommentToDb } from "../../utils/post.ts";
-import { deletePost, updatePostConfigFormApi } from "../../utils/post.ts";
-import { DeepPartial } from "../../utils/common.ts";
-import { prepareUniqueUser } from "../..//fixtures/user.ts";
+import { test, Context } from "#test/fixtures/hono.ts";
+import { prepareCommentPost, prepareCommentToDb, deletePost, updatePostConfigFormApi } from "#test/utils/post.ts";
+import { DeepPartial } from "#test/utils/common.ts";
+import { prepareUniqueUser } from "#test/fixtures/user.ts";
 import commentRoutes from "@/routers/post/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
 import { PostCommentDto } from "@/dto.ts";
@@ -27,21 +26,22 @@ test("分页获取根评论列表", async function ({ api, publicDbPool }) {
   const num = 4;
   const r1 = await action.getCommentList({ number: num });
   expect(r1.items.length).toBe(num);
-  expect(r1.has_more).toBe(true);
   expect(r1.items[0].content_text).toBe("root-0");
   expect(r1.items[3].content_text).toBe("root-3");
 
   const r2 = await action.getCommentList({ number: num, cursor: r1.cursor_next! });
   expect(r2.items.length).toBe(num);
-  expect(r2.has_more).toBe(true);
   expect(r2.items[0].content_text).toBe("root-4");
   expect(r2.items[3].content_text).toBe("root-7");
 
   const r3 = await action.getCommentList({ number: num, cursor: r2.cursor_next! });
   expect(r3.items.length).toBe(2);
-  expect(r3.has_more).toBe(false);
   expect(r3.items[0].content_text).toBe("root-8");
   expect(r3.items[1].content_text).toBe("root-9");
+
+  const r4 = await action.getCommentList({ number: num, cursor: r3.cursor_next! });
+  expect(r4.items.length).toBe(0);
+  expect(r4.cursor_next).toBeNullable();
 });
 test("获取评论回复的平铺列表", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
@@ -76,12 +76,14 @@ test("获取评论回复的平铺列表", async function ({ api, publicDbPool })
     const list0 = await action.getReplyList(g1[1], { number: 3 });
     expect(list0.items.length).toBe(3);
     expect(list0.items.map((c) => c.content_text)).toEqual(["1-0", "1-1", "1-2-0"]);
-    expect(list0.has_more).toBe(true);
 
     const list1 = await action.getReplyList(g1[1], { number: 2, cursor: list0.cursor_next! });
     expect(list1.items.length).toBe(1);
     expect(list1.items.map((c) => c.content_text)).toEqual(["1-2-1"]);
-    expect(list1.has_more).toBe(false);
+
+    const list3 = await action.getReplyList(g1[1], { number: 2, cursor: list1.cursor_next! });
+    expect(list3.items.length).toBe(0);
+    expect(list3.cursor_next).toBeNullable();
   }
 });
 

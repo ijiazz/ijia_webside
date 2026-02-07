@@ -32,6 +32,7 @@ const PostHeaderCSS = styled.div`
   .post-header {
     &-owner-name {
       font-weight: 500;
+      font-size: 14px;
     }
     &-platform {
     }

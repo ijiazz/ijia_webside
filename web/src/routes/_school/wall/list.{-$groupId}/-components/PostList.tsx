@@ -12,15 +12,17 @@ import { ImageFitCover } from "@/lib/components/ImgFitCover.tsx";
 import { PostList, PostListHandle, PublishPost, UpdatePostParam } from "@/routes/_school/-components/WallPost.tsx";
 import { PostQueryFilterContext } from "./PostQueryFilterContext.tsx";
 import { BasicUserContext } from "@/routes/_school/-context/UserContext.tsx";
-import { useInfiniteData } from "@/lib/hook/infiniteData.ts";
+import { useInfiniteLoad } from "@/lib/hook/infiniteLoad.ts";
 import { Modal, Spin } from "antd";
 import { api } from "@/request/client.ts";
 import { dateToString } from "@/common/date.ts";
 import { LoaderIndicator, LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
+import { useScrollLoad } from "@/lib/hook/scrollLoad.ts";
 
 export function PublicPostList(props: PostListProps) {
   const { groupOptions, onOpenComment } = props;
   const filter = useContext(PostQueryFilterContext);
+  const group = filter.group;
   const isSelf = filter.self;
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,13 +33,17 @@ export function PublicPostList(props: PostListProps) {
     undefined,
   );
   const currentUser = useContext(BasicUserContext);
-  const { data, setData, reset, next, previous } = useInfiniteData<PublicPost, string>({
-    onPush: (items) => setData((prev) => prev.concat(items)),
-    onUnshift: (items) => setData((prev) => items.concat(prev)),
+  const { data, setData, reset, next, previous } = useInfiniteLoad<PublicPost, string>({
+    onPush: (items) => {
+      setData((prev) => prev.concat(items));
+    },
+    onUnshift: (items) => {
+      setData((prev) => items.reverse().concat(prev));
+    },
     async load(param, forward) {
       const promise = isSelf
-        ? getSelfPostList({ group_id: filter.group?.group_id, cursor: param, forward })
-        : getPostList({ group_id: filter.group?.group_id, cursor: param, forward });
+        ? getSelfPostList({ group_id: group?.group_id, cursor: param, forward })
+        : getPostList({ group_id: group?.group_id, cursor: param, forward });
       const result = await promise;
       return {
         items: result.items as PublicPost[],
@@ -45,6 +51,10 @@ export function PublicPostList(props: PostListProps) {
         prevParam: result.cursor_prev ? result.cursor_prev : undefined,
       };
     },
+  });
+  const listScroll = useScrollLoad({
+    bottomThreshold: 100,
+    onScrollBottom: () => next.loadMore(),
   });
   const onEditPost = (item: SelfPost, isEdit: boolean) => {
     setEditItem({
@@ -64,16 +74,26 @@ export function PublicPostList(props: PostListProps) {
       navigate({ href: ROUTES.Login + `?redirect=${location.pathname}`, viewTransition: true });
     }
   };
+  const loadItem = async (id: number) => {
+    const item = isSelf ? await getSelfPostItem(id) : await getPostItem(id);
+    setData((prev) => [item, ...prev]);
+  };
 
   useEffect(() => {
     reset();
     next.loadMore();
-  }, [filter.group?.group_id, filter.self]);
+  }, [group?.group_id, isSelf]);
+
+  useEffect(() => {
+    if (listScroll.isInBottom()) {
+      next.loadMore();
+    }
+  }, [data.length]);
 
   const isVertical = useLayoutDirection() === LayoutDirection.Vertical;
   return (
     <HomePageCSS>
-      <div className="post-list">
+      <div className="post-list" ref={listScroll.ref}>
         <PostListCSS>
           <ImageFitCover src={wallCoverSrc}>
             <div style={{ display: isVertical ? "none" : "block", position: "absolute", right: 20, bottom: 20 }}>
@@ -82,7 +102,7 @@ export function PublicPostList(props: PostListProps) {
               </CreatePostBtn>
             </div>
           </ImageFitCover>
-          {filter.group?.group_desc && <StyledTip>{filter.group.group_desc}</StyledTip>}
+          {group?.group_desc && <StyledTip>{group.group_desc}</StyledTip>}
           {previous.loading && (
             <LoaderIndicator>
               <Spin size="small" />
@@ -124,9 +144,8 @@ export function PublicPostList(props: PostListProps) {
           initValues={editItem ? editItem : { group_id: filter.group?.group_id }}
           onCreateOk={(id) => {
             setModalOpen(false);
-            next.loadMore();
             if (isSelf) {
-              previous.loadMore();
+              loadItem(id);
             } else {
               navigate({ href: "/wall/list/self", viewTransition: true });
             }

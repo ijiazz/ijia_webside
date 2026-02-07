@@ -1,5 +1,5 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { initAlice, loginGetToken } from "@/__mocks__/user.ts";
+import { initAlice, loginGetToken } from "@/utils/user.ts";
 import { DbPlaUserCreate, Platform, USER_LEVEL } from "@ijia/data/db";
 import { insertPosts } from "@api-test/__mocks__/posts.ts";
 import { deleteFrom } from "@asla/yoursql";

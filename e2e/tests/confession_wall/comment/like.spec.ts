@@ -1,8 +1,8 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { AccountInfo, initAlice, initBob, loginGetToken } from "@/__mocks__/user.ts";
-import { createPost } from "../utils/post.ts";
+import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
+import { createPost } from "@/utils/post.ts";
 import { Locator } from "@playwright/test";
-import { api, JWT_TOKEN_KEY } from "@/__mocks__/fetch.ts";
+import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";
 
 const { expect, beforeEach } = test;
 

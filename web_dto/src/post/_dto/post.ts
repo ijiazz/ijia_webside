@@ -49,7 +49,6 @@ export type UpdatePostConfigParam = {
   comment_disabled?: boolean;
 };
 export type PublicPost = PostBase & {
-  create_time?: string | null;
   post_id: number;
   /** 作者信息，如果为空则是匿名 */
   author: PostUserInfo | null;

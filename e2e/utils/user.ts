@@ -1,6 +1,6 @@
 import { dbPool } from "@/db/client.ts";
 import { createUser } from "@ijia/data/query";
-import { api } from "@/__mocks__/fetch.ts";
+import { api } from "@/utils/fetch.ts";
 import { LoginMethod, UserIdentifierType } from "@/api.ts";
 import { v } from "@/sql/utils.ts";
 export const E2E_PASSWORD = {

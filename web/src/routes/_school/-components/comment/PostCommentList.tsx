@@ -77,7 +77,7 @@ export function CommentList(props: { postId?: number }) {
         number: 5,
       });
       nodeList = res.items.map((item) => commentDtoToCommentNode(item, parent));
-      parent.hasMore = res.has_more;
+      parent.hasMore = !!res.cursor_next;
       parent.childrenCursor = res.cursor_next;
     } catch (error) {
       parent.loading = false;
@@ -192,8 +192,8 @@ export function CommentList(props: { postId?: number }) {
           data={commentData}
         />
         <div style={{ textAlign: "center" }}>
-          {loadRoot.data?.has_more ? (
-            <Button type="link" onClick={() => loadRoot.run(loadRoot.data?.cursor_next)} loading={loadRoot.loading}>
+          {loadRoot.data?.cursor_next ? (
+            <Button type="link" onClick={() => loadRoot.run(loadRoot.data!.cursor_next)} loading={loadRoot.loading}>
               佳载更多
             </Button>
           ) : (

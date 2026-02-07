@@ -120,7 +120,6 @@ export async function getCommentList(
   const first = list[0];
   const lastItem = list[list.length - 1];
   return {
-    has_more: list.length >= number,
     cursor_prev: first ? toTimestampCursor({ timestamp: first.create_time, id: first.comment_id }) : undefined,
     cursor_next: lastItem ? toTimestampCursor({ timestamp: lastItem.create_time, id: lastItem.comment_id }) : undefined,
     items: list,

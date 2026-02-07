@@ -105,7 +105,7 @@ export function PublishPost(props: {
             <Button type="primary" htmlType="submit" loading={loading}>
               {isEdit ? "确认" : "发布"}
             </Button>
-            {!isEdit && groupId !== undefined && <Alert message="已选择分类，发布后将在审核通过公开" />}
+            {!isEdit && groupId !== undefined && <Alert title="已选择分类，发布后将在审核通过公开" />}
           </Space>
         </Form.Item>
       </Form>
@@ -145,7 +145,7 @@ function GroupSelect(props: SelectProps) {
       ) : (
         <Select {...props}></Select>
       )}
-      {props.value !== undefined && <Alert message={tip} type="warning" />}
+      {props.value !== undefined && <Alert title={tip} type="warning" />}
     </div>
   );
 }

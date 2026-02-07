@@ -1,6 +1,6 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 
-import { initAlice, loginGetToken } from "@/__mocks__/user.ts";
+import { initAlice, loginGetToken } from "@/utils/user.ts";
 import { dbPool } from "@/db/client.ts";
 import { deleteFrom } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";

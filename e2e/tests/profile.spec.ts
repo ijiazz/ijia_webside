@@ -1,5 +1,5 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { AccountInfo, initAlice, loginGetToken } from "@/__mocks__/user.ts";
+import { AccountInfo, initAlice, loginGetToken } from "@/utils/user.ts";
 import { Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { Page } from "@playwright/test";
 import { deleteFrom, v } from "@asla/yoursql";

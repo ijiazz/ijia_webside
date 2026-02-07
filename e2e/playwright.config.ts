@@ -7,7 +7,7 @@ export const env = {
 
 export default defineConfig({
   testDir: ".",
-  workers: 1,
+  workers: 4,
   use: {
     browserName: "chromium",
     actionTimeout: 5000,
@@ -18,5 +18,6 @@ export default defineConfig({
   expect: {
     timeout: 5000, // 设置全局断言超时时间为5秒
   },
+  globalSetup: ["./setup/setup.ts"],
   testIgnore: [/benchmark/],
 });

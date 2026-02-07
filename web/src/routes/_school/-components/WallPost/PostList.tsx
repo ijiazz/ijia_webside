@@ -1,8 +1,7 @@
-import { PublicPost } from "@ijia/api-types";
+import { PublicPost, SelfPost } from "@ijia/api-types";
 import { WallPostCard } from "./PostCard.tsx";
 import { ReportModal } from "../ReportModal.tsx";
 import { useState, Dispatch, useRef, useImperativeHandle } from "react";
-import { useScrollLoad } from "@/lib/hook/scrollLoad.ts";
 import { DeleteOutlined, EditOutlined, SettingOutlined, WarningOutlined } from "@ant-design/icons";
 import { MenuProps } from "antd";
 import { api } from "@/request/client.ts";
@@ -28,11 +27,7 @@ export function PostList<T extends PublicPost>(props: PostListProps<T>) {
   const { data, setData, loadItem, onOpenComment, onSetting, onEdit, canEdit, ref, ...rest } = props;
   const { modal, message } = useAntdStatic();
   const reloadingRef = useRef<Record<number, Promise<any>>>({});
-  const listScroll = useScrollLoad({
-    bottomThreshold: 50,
-    onScrollBottom() {},
-    onScrollTop() {},
-  });
+
   const [reportOpen, setReportOpen] = useState<T | undefined>();
   const reloadItem = (id: number) => {
     const promise = loadItem(id)
@@ -129,8 +124,15 @@ export function PostList<T extends PublicPost>(props: PostListProps<T>) {
           );
         }
         return (
-          <PostListCSS ref={listScroll.ref} key={item.post_id} style={{ borderRadius: 8 }} className="e2e-post-item">
-            <WallPostCard item={item} moreMenus={moreMenus} onLike={onPostLike} onOpenComment={onOpenComment} />
+          <PostListCSS key={item.post_id} style={{ borderRadius: 8 }} className="e2e-post-item">
+            <WallPostCard
+              item={item}
+              config={(item as any as SelfPost).config}
+              review={(item as any as SelfPost).review}
+              moreMenus={moreMenus}
+              onLike={onPostLike}
+              onOpenComment={onOpenComment}
+            />
           </PostListCSS>
         );
       })}

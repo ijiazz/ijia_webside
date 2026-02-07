@@ -1,6 +1,6 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 
-import { initAlice, loginGetToken, initBob } from "@/__mocks__/user.ts";
+import { initAlice, loginGetToken, initBob } from "@/utils/user.ts";
 import { loginByEmail, loginByPassword } from "./_util.ts";
 import { LOGIN_REDIRECT_HOME_MATCH } from "../_utils/login_home.ts";
 const { expect, beforeEach } = test;

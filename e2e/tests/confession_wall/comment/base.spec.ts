@@ -1,6 +1,6 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { AccountInfo, initAlice, initBob, loginGetToken } from "@/__mocks__/user.ts";
-import { clearPosts, createPost, gotoComment, createCommentUseApi } from "../utils/post.ts";
+import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
+import { createPost, gotoComment, createCommentUseApi } from "@/utils/post.ts";
 import { expect, Page } from "@playwright/test";
 import { afterTime } from "evlib";
 const { beforeEach } = test;
@@ -8,7 +8,6 @@ const { beforeEach } = test;
 let alice: AccountInfo & { token: string };
 let postId: number;
 beforeEach(async function () {
-  await clearPosts();
   const aliceInfo = await initAlice();
   const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
   alice = { ...aliceInfo, token: aliceToken };

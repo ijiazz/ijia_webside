@@ -1,6 +1,6 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { AccountInfo, initAlice, initBob, loginGetToken } from "@/__mocks__/user.ts";
-import { clearPosts, clearPostGroup, createPostGroup, createPost } from "./utils/post.ts";
+import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
+import { createPost } from "@/utils/post.ts";
 import { Locator } from "@playwright/test";
 
 const { expect, beforeAll } = test;
@@ -9,8 +9,6 @@ let alice: AccountInfo & { token: string };
 let bob: AccountInfo & { token: string };
 
 beforeAll(async function () {
-  await clearPosts();
-
   const aliceInfo = await initAlice();
   const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
   alice = { ...aliceInfo, token: aliceToken };
@@ -28,7 +26,7 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
 
   {
     //alice 点赞
-    const firstBtn = getLikeBtn(page.locator(".ant-list-item").first());
+    const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
 
     await expect(firstBtn).toHaveText("0");
     await firstBtn.click();
@@ -42,7 +40,7 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
     const page = bobPage;
     await page.goto(getAppUrlFromRoute("/wall", bob.token));
 
-    const firstBtn = getLikeBtn(page.locator(".ant-list-item").first());
+    const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
 
     await expect(firstBtn).toHaveText("1");
     await firstBtn.click();
@@ -52,7 +50,7 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
   {
     //alice 取消点赞
     await page.reload();
-    const firstBtn = getLikeBtn(page.locator(".ant-list-item").first());
+    const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
     await expect(firstBtn).toHaveText("2");
     await firstBtn.click();
     await expect(firstBtn).toHaveText("1");
@@ -63,7 +61,7 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
 
 test("游客禁止点赞", async function ({ page }) {
   await page.goto(getAppUrlFromRoute("/wall"));
-  const firstBtn = getLikeBtn(page.locator(".ant-list-item").first());
+  const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
   await expect(firstBtn).toBeDisabled();
 });
 
