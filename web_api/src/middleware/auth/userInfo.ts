@@ -21,13 +21,17 @@ export class UserInfo {
     }
     return this.#roleNameList;
   }
-  async hasRolePermission(requiredAnyRoles: Set<string>): Promise<boolean> {
+  async hasRolePermission(requiredAnyRoles: Set<string> | string): Promise<boolean> {
     const { role_id_list } = await this.getRolesFromDb();
-    for (const element of role_id_list) {
-      if (element === Role.Root) {
-        return true;
+    if (typeof requiredAnyRoles === "string") {
+      return role_id_list.some((role) => role === requiredAnyRoles || role === Role.Root);
+    } else {
+      for (const element of role_id_list) {
+        if (element === Role.Root) {
+          return true;
+        }
+        if (requiredAnyRoles.has(element)) return true;
       }
-      if (requiredAnyRoles.has(element)) return true;
     }
     return false;
   }
