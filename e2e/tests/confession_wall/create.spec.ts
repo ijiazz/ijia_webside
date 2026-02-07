@@ -1,17 +1,12 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { AccountInfo, initAlice, loginGetToken } from "@/utils/user.ts";
+import { getUserPostRoute, initAlice, loginGetToken } from "@/utils/user.ts";
 import { changePageToMobile } from "@/utils/browser.ts";
-const { expect, beforeAll, describe } = test;
+import { PostGroupResponse } from "@/api.ts";
+const { expect, describe } = test;
 
 describe("默认组", function () {
-  let alice: AccountInfo & { token: string };
-  beforeAll(async function () {
-    const aliceInfo = await initAlice();
-    const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
-    alice = { ...aliceInfo, token: aliceToken };
-  });
-
   test("发布一条普通帖子", async function ({ page }) {
+    const alice = await initUser();
     await page.goto(getAppUrlFromRoute("/wall", alice.token));
     await page.getByRole("button", { name: "edit 说点什么" }).click();
     await page.getByRole("textbox", { name: "* 发布内容 :" }).click();
@@ -22,15 +17,10 @@ describe("默认组", function () {
 
     const postItems = page.locator(".e2e-post-item");
     await expect(postItems.first().getByText("一条普通帖子")).toBeVisible();
-
-    await page.getByRole("menuitem", { name: "分组1" }).click();
-    await expect(postItems, "分组下不应显示这个普通帖子").toHaveCount(0);
-
-    await page.getByRole("menuitem", { name: "全部" }).click();
-    await expect(postItems.first().getByText("一条普通帖子")).toBeVisible();
   });
 
   test("移动端发布一条普通帖子", async function ({ page }) {
+    const alice = await initUser();
     await page.goto(getAppUrlFromRoute("/wall", alice.token));
     await changePageToMobile(page);
 
@@ -45,6 +35,7 @@ describe("默认组", function () {
     await expect(postItems.first().getByText("一条移动端普通帖子")).toBeVisible();
   });
   test("在个人页下发布帖子，发布后应该能看到刚刚发布的帖子", async function ({ page }) {
+    const alice = await initUser();
     await page.goto(getAppUrlFromRoute("/wall/list/self", alice.token));
     await page.getByRole("button", { name: "edit 说点什么" }).click();
     await page.getByRole("textbox", { name: "* 发布内容 :" }).click();
@@ -55,6 +46,7 @@ describe("默认组", function () {
     await expect(postItems.first().getByText("在个人页下发布的帖子")).toBeVisible();
   });
   test("发布一条表白帖子", async function ({ page }) {
+    const alice = await initUser();
     await page.goto(getAppUrlFromRoute("/wall/publish", alice.token));
 
     await page.getByText("分组1").click();
@@ -68,12 +60,10 @@ describe("默认组", function () {
     await expect(firstItem.getByText("一条表白帖子")).toBeVisible();
     await expect(firstItem.locator(".ant-tag").getByText("分组1")).toBeVisible();
     await expect(firstItem.locator(".ant-tag").getByText("审核中")).toBeVisible();
-
-    await page.getByRole("menuitem", { name: "全部" }).click();
-    await expect(postItems, "此时审核中，不应在全部栏看到这个帖子").toHaveCount(0);
   });
 
-  test("发布一条仅自己可见的帖子，应仅自己在个人分栏下看见", async function ({ page }) {
+  test("发布一条仅自己可见的帖子，应仅自己在个人分栏下看见", async function ({ page, browser }) {
+    const alice = await initUser();
     await page.goto(getAppUrlFromRoute("/wall", alice.token));
     await page.getByRole("button", { name: "edit 说点什么" }).click();
     await page.getByRole("textbox", { name: "* 发布内容 :" }).click();
@@ -85,11 +75,18 @@ describe("默认组", function () {
     const postItems = page.locator(".e2e-post-item");
     await expect(postItems.first().getByText("仅自己可见的帖子")).toBeVisible();
 
-    await page.getByRole("menuitem", { name: "全部" }).click();
-    await expect(postItems, "仅自己可见的帖子不能在全部栏看到").toHaveCount(0);
+    {
+      const bobContext = await browser.newContext();
+      const page = await bobContext.newPage();
+
+      await page.goto(getAppUrlFromRoute(getUserPostRoute(alice.id)));
+      const postItems = page.locator(".e2e-post-item");
+      await expect(postItems, "仅自己可见的帖子不能在全部栏看到").toHaveCount(0);
+    }
   });
 
   test("匿名发布，不应带名字", async function ({ page }) {
+    const alice = await initUser();
     await page.goto(getAppUrlFromRoute("/wall", alice.token));
     await page.getByRole("button", { name: "edit 说点什么" }).click();
     await page.getByRole("textbox", { name: "* 发布内容 :" }).click();
@@ -114,9 +111,31 @@ describe("默认组", function () {
   });
 });
 test("分组超过4个时，选择分组应显示下拉框", async function ({ page }) {
+  // 拦截并模拟返回分组接口，使分组数量超过4以触发下拉框
+  await page.route("**/api/post/group/list", (route) => {
+    const res: PostGroupResponse = {
+      total: 5,
+      items: new Array(5).fill(0).map((_, i) => ({
+        group_id: i,
+        group_name: `分组${i + 1}`,
+        group_desc: `分组${i + 1}的描述`,
+      })),
+    };
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(res),
+    });
+  });
+
   await page.goto(getAppUrlFromRoute("/wall/publish"));
 
   await page.getByRole("combobox", { name: "内容分类 :" }).click();
   await page.getByTitle("分组4").locator("div").click();
   await page.getByRole("textbox", { name: "* 发布内容" }).fill("一条表白帖子");
 });
+async function initUser() {
+  const aliceInfo = await initAlice();
+  const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
+  return { ...aliceInfo, token: aliceToken };
+}

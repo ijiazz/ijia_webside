@@ -14,6 +14,7 @@ export const Route = createLazyFileRoute("/_school/wall/list/{-$groupId}/")({
 
 function RouteComponent() {
   const { postGroup }: { postGroup: PostGroupResponse | undefined } = ParentRoute.useLoaderData();
+  const search = Route.useSearch();
   const filter = useContext(PostQueryFilterContext);
   const isSelf = filter.self;
   const { option, menus } = useMemo(() => {
@@ -34,7 +35,7 @@ function RouteComponent() {
 
   return (
     <>
-      <PublicPostList groupOptions={option} onOpenComment={drawer.onOpenComment} />
+      <PublicPostList groupOptions={option} userId={search.userId} onOpenComment={drawer.onOpenComment} />
       <CommentDrawer postId={drawer.commentId} isSelf={isSelf} open={drawer.open} onClose={drawer.closeCommentDrawer} />
     </>
   );

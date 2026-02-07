@@ -18,9 +18,13 @@ import { api } from "@/request/client.ts";
 import { dateToString } from "@/common/date.ts";
 import { LoaderIndicator, LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
 import { useScrollLoad } from "@/lib/hook/scrollLoad.ts";
-
+type PostListProps = {
+  groupOptions?: PostGroupOption[];
+  userId?: number;
+  onOpenComment?: (postId: number) => void;
+};
 export function PublicPostList(props: PostListProps) {
-  const { groupOptions, onOpenComment } = props;
+  const { groupOptions, userId, onOpenComment } = props;
   const filter = useContext(PostQueryFilterContext);
   const group = filter.group;
   const isSelf = filter.self;
@@ -43,7 +47,7 @@ export function PublicPostList(props: PostListProps) {
     async load(param, forward) {
       const promise = isSelf
         ? getSelfPostList({ group_id: group?.group_id, cursor: param, forward })
-        : getPostList({ group_id: group?.group_id, cursor: param, forward });
+        : getPostList({ group_id: group?.group_id, cursor: param, forward, userId: userId });
       const result = await promise;
       return {
         items: result.items as PublicPost[],
@@ -82,7 +86,7 @@ export function PublicPostList(props: PostListProps) {
   useEffect(() => {
     reset();
     next.loadMore();
-  }, [group?.group_id, isSelf]);
+  }, [group?.group_id, isSelf, userId]);
 
   useEffect(() => {
     if (listScroll.isInBottom()) {
@@ -202,11 +206,6 @@ function replaceTime<T extends { publish_time?: string | null; update_time?: str
 type PostGroupOption = {
   label: string;
   value: number;
-};
-
-type PostListProps = {
-  groupOptions?: PostGroupOption[];
-  onOpenComment?: (postId: number) => void;
 };
 
 const StyledTip = styled.div`

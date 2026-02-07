@@ -70,22 +70,16 @@ test("创建回复评论", async function ({ page }) {
 });
 
 test("删除评论", async function ({ page }) {
-  const [r1, r2] = await Promise.all([
-    createCommentUseApi({ postId, text: "@1@", token: alice.token }),
-    createCommentUseApi({ postId, text: "@2@", token: alice.token }), // delete
-  ]);
+  const r1 = await createCommentUseApi({ postId, text: "@1@", token: alice.token });
+  const r2 = await createCommentUseApi({ postId, text: "@2@", token: alice.token }); // delete
 
-  const [r1_1, r1_2, r2_1] = await Promise.all([
-    createCommentUseApi({ postId, text: "@1-1@", replyCommentId: r1.id, token: alice.token }), // delete
-    createCommentUseApi({ postId, text: "@1-2@", replyCommentId: r1.id, token: alice.token }),
-    createCommentUseApi({ postId, text: "@2-1@", replyCommentId: r2.id, token: alice.token }),
-  ]);
+  const r1_1 = await createCommentUseApi({ postId, text: "@1-1@", replyCommentId: r1.id, token: alice.token }); // delete
+  const r1_2 = await createCommentUseApi({ postId, text: "@1-2@", replyCommentId: r1.id, token: alice.token });
+  const r2_1 = await createCommentUseApi({ postId, text: "@2-1@", replyCommentId: r2.id, token: alice.token });
 
-  const [r1_1_1, r1_2_1, r2_1_1] = await Promise.all([
-    createCommentUseApi({ postId, text: "@1-1-1@", replyCommentId: r1_1.id, token: alice.token }),
-    createCommentUseApi({ postId, text: "@1-2-1@", replyCommentId: r1_2.id, token: alice.token }),
-    createCommentUseApi({ postId, text: "@2-1-1@", replyCommentId: r2_1.id, token: alice.token }),
-  ]);
+  const r1_1_1 = await createCommentUseApi({ postId, text: "@1-1-1@", replyCommentId: r1_1.id, token: alice.token });
+  const r1_2_1 = await createCommentUseApi({ postId, text: "@1-2-1@", replyCommentId: r1_2.id, token: alice.token });
+  const r2_1_1 = await createCommentUseApi({ postId, text: "@2-1-1@", replyCommentId: r2_1.id, token: alice.token }); // delete
 
   const r1_2_1_1 = await createCommentUseApi({
     postId,

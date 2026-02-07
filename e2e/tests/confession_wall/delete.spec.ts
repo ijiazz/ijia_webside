@@ -42,10 +42,8 @@ test("不能删除别人的内容", async function ({ page }) {
   const bobInfo = await initBob();
   const bobToken = await loginGetToken(bobInfo.email, bobInfo.password);
 
-  {
-    await page.goto(getAppUrlFromRoute("/wall", bobToken));
-    const postItems = page.locator(".e2e-post-item");
-    await postItems.nth(0).getByRole("button", { name: "more" }).click();
-    await expect(page.getByText("删除"), "看不到Alice作品的删除按钮").toHaveCount(0);
-  }
+  await page.goto(getAppUrlFromRoute("/wall/list?userId=" + aliceInfo.id, bobToken));
+  const postItems = page.locator(".e2e-post-item");
+  await postItems.nth(0).getByRole("button", { name: "more" }).click();
+  await expect(page.getByText("删除"), "看不到Alice作品的删除按钮").toHaveCount(0);
 });

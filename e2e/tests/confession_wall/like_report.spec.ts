@@ -22,7 +22,8 @@ beforeAll(async function () {
 });
 
 test("点赞自己和别人的帖子", async function ({ page, context, browser }) {
-  await page.goto(getAppUrlFromRoute("/wall", alice.token));
+  const url = "/wall/list?userId=" + bob.id;
+  await page.goto(getAppUrlFromRoute(url, alice.token));
 
   {
     //alice 点赞
@@ -38,7 +39,7 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
   {
     //bob 点赞
     const page = bobPage;
-    await page.goto(getAppUrlFromRoute("/wall", bob.token));
+    await page.goto(getAppUrlFromRoute(url, bob.token));
 
     const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
 
@@ -60,13 +61,13 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
 });
 
 test("游客禁止点赞", async function ({ page }) {
-  await page.goto(getAppUrlFromRoute("/wall"));
+  await page.goto(getAppUrlFromRoute("/wall/list?userId=" + bob.id));
   const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
   await expect(firstBtn).toBeDisabled();
 });
 
 test("举报帖子", async function ({ page }) {
-  await page.goto(getAppUrlFromRoute("/wall", alice.token));
+  await page.goto(getAppUrlFromRoute("/wall/list?userId=" + bob.id, alice.token));
   await page.getByRole("button", { name: "more" }).first().click();
   await page.getByText("举报", { exact: true }).click();
   await page.getByRole("combobox", { name: "* 举报理由 :" }).click();
