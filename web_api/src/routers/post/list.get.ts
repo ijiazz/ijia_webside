@@ -1,29 +1,22 @@
 import { PostResponse } from "@/dto.ts";
 import { checkValue } from "@/global/check.ts";
-import { integer, optional } from "@asla/wokao";
-import { getPostList } from "./-sql/post_list.sql.ts";
+import { ListParamSchema } from "./-schema/listParam.ts";
+import { getPublicPostList } from "./-sql/post_list.sql.ts";
 import routeGroup from "./_route.ts";
 
 export default routeGroup.create({
   method: "GET",
   routePath: "/post/list",
   async validateInput(ctx) {
+    const { req } = ctx;
+    const queries = req.query();
     const userInfo = ctx.get("userInfo");
-    const userId = await userInfo.getUserId().catch(() => undefined);
-    const queries = ctx.req.query();
-    const params = checkValue(queries, {
-      cursor: optional.string,
-      self: optional((value) => value === "true"),
-      number: optional(integer({ acceptString: true, min: 1, max: 100 })),
-      userId: optional(integer.positive),
-      post_id: optional(integer.positive),
+    const currentUserId = await userInfo.getUserId().catch(() => undefined);
 
-      group_id: optional(integer({ acceptString: true })),
-    });
-    return { params, userId };
+    const params = checkValue(queries, ListParamSchema);
+    return { params, currentUserId };
   },
-  async handler({ params, userId: currentUserId }): Promise<PostResponse> {
-    if (params.self && typeof currentUserId !== "number") return { needLogin: true, has_more: false, items: [] };
-    return getPostList(params, { currentUserId });
+  async handler({ params, currentUserId }): Promise<PostResponse> {
+    return getPublicPostList(params, { currentUserId });
   },
 });

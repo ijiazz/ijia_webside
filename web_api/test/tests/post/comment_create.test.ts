@@ -1,16 +1,23 @@
 import { beforeEach, describe, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import { testGetPost, deletePost, updatePostConfigFormApi } from "./utils/prepare_post.ts";
+import {
+  getPublicPost,
+  deletePost,
+  updatePostConfigFormApi,
+  PostComment,
+  getCommentDbRow,
+  prepareCommentPost,
+  getPostCommentTotal,
+} from "#test/utils/post.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
-import { PostComment, getCommentDbRow, prepareCommentPost, getPostCommentTotal } from "./utils/prepare_comment.ts";
 import { DbPostComment } from "@ijia/data/db";
-import { DeepPartial } from "./utils/comment.ts";
+import { DeepPartial } from "../../utils/common.ts";
 import { getUserCanCreateCommentLimit } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 import { afterTime } from "evlib";
-import { update } from "@asla/yoursql";
 import commentRoutes from "@/routers/post/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
 import { PostCommentDto } from "@/dto.ts";
+import { commitPostReview, setPostToReviewing } from "@/routers/review/mod.ts";
 /* 
   本测试文件使用了公共数据库 publicDbPool
 */
@@ -42,13 +49,13 @@ describe("根评论创建", function () {
   test("创建根评论，作品评论计数应该加1", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     {
-      const post = await testGetPost(api, postInfo.id);
+      const post = await getPublicPost(api, postInfo.id);
       expect(post.stat.comment_total).toBe(0);
     }
 
     await action.createComment("1", { token: alice.token });
     {
-      const post = await testGetPost(api, postInfo.id);
+      const post = await getPublicPost(api, postInfo.id);
       expect(post.stat.comment_total).toBe(1);
     }
   });
@@ -93,14 +100,14 @@ describe("创建回复评论", function () {
     const { id: rootId2 } = await action.createComment("2", { token: alice.token });
 
     {
-      const post = await testGetPost(api, postInfo.id);
+      const post = await getPublicPost(api, postInfo.id);
       expect(post.stat.comment_total, "作品评论为1").toBe(2);
     }
 
     await action.createComment("1-1", { token: alice.token, replyCommentId: rootId1 });
 
     {
-      const post = await testGetPost(api, postInfo.id);
+      const post = await getPublicPost(api, postInfo.id);
       expect(post.stat.comment_total, "作品评论为1").toBe(3);
       await expect(getCommentDbRow(rootId1)).resolves.toMatchObject({
         is_root_reply_count: 1,
@@ -111,7 +118,7 @@ describe("创建回复评论", function () {
     await action.createComment("1-2", { token: alice.token, replyCommentId: rootId1 });
 
     {
-      const post = await testGetPost(api, postInfo.id);
+      const post = await getPublicPost(api, postInfo.id);
       expect(post.stat.comment_total, "作品评论为3").toBe(4);
       await expect(getCommentDbRow(rootId1)).resolves.toMatchObject({
         is_root_reply_count: 2,
@@ -134,7 +141,7 @@ describe("创建回复评论", function () {
     const lv1_2 = await action.createComment("1-2", { token: alice.token, replyCommentId: rootId2 });
 
     {
-      const post = await testGetPost(api, postInfo.id);
+      const post = await getPublicPost(api, postInfo.id);
       expect(post.stat.comment_total, "作品评论为4").toBe(4);
 
       await expect(getCommentDbRow(rootId1)).resolves.toMatchObject({
@@ -154,7 +161,7 @@ describe("创建回复评论", function () {
 
     {
       await action.createComment("1-1-1", { token: alice.token, replyCommentId: lv1_1.id });
-      const post = await testGetPost(api, postInfo.id);
+      const post = await getPublicPost(api, postInfo.id);
       expect(post.stat.comment_total, "作品评论+1").toBe(5);
 
       await expect(getCommentDbRow(rootId1)).resolves.toMatchObject({
@@ -205,7 +212,7 @@ describe("创建回复评论", function () {
       reply_to: { comment_id: lv1_1.id },
     } satisfies DeepPartial<PostCommentDto>);
 
-    const post = await testGetPost(api, postInfo.id);
+    const post = await getPublicPost(api, postInfo.id);
     expect(post.stat.comment_total).toBe(7);
   });
 });
@@ -239,7 +246,7 @@ test("对不存在的评论回复", async function ({ api, publicDbPool }) {
 test("审核中的作品不能新增评论和回复评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token });
-  await publicDbPool.execute(update("public.post").set({ is_reviewing: "true" }).where(`id=${postInfo.id}`));
+  await setPostToReviewing(postInfo.id);
   await expect(getPostCommentTotal(postInfo.id)).resolves.toBe(1);
 
   await expect(action.createComment("2", { token: alice.token })).responseStatus(404);
@@ -252,7 +259,9 @@ test("审核中的作品不能新增评论和回复评论", async function ({ ap
 test("审核不通过的作品不能新增评论和回复评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
   const root = await action.createComment("1", { token: alice.token });
-  await publicDbPool.execute(update("public.post").set({ is_review_pass: "false" }).where(`id=${postInfo.id}`));
+  const reviewId = await setPostToReviewing(postInfo.id);
+  await commitPostReview({ reviewId, isPass: false });
+
   await expect(getPostCommentTotal(postInfo.id)).resolves.toBe(1);
 
   await expect(action.createComment("2", { token: alice.token })).responseStatus(404);

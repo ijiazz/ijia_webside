@@ -1,6 +1,6 @@
 import { useAsync } from "@/hooks/async.ts";
 import { Avatar, Button, Divider, Input, Typography } from "antd";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PostCommentDto } from "@/api.ts";
 import { CommentTree, useCommentData, findNodeRoot } from "./CommentItem.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
@@ -26,8 +26,8 @@ const { Text } = Typography;
 export type CreateData = {
   text: string;
 };
-export function CommentList(props: { postId?: number; isSelf?: boolean }) {
-  const { postId, isSelf } = props;
+export function CommentList(props: { postId?: number }) {
+  const { postId } = props;
   const {
     commentData,
     addItem,
@@ -41,8 +41,8 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
   const { loading: postInfoLoading, data: postInfo, run: loadPostInfo } = useAsync(getPostData);
 
   useEffect(() => {
-    if (postId !== undefined) loadPostInfo(postId, isSelf);
-  }, [postId, isSelf]);
+    if (postId !== undefined) loadPostInfo(postId);
+  }, [postId]);
   const config = useMemo(() => {
     let reason: null | undefined | string = "";
     if (postInfoLoading) reason = "加载中...";
@@ -78,7 +78,7 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
       });
       nodeList = res.items.map((item) => commentDtoToCommentNode(item, parent));
       parent.hasMore = res.has_more;
-      parent.childrenCursor = res.next_cursor;
+      parent.childrenCursor = res.cursor_next;
     } catch (error) {
       parent.loading = false;
       forceRender();
@@ -193,7 +193,7 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
         />
         <div style={{ textAlign: "center" }}>
           {loadRoot.data?.has_more ? (
-            <Button type="link" onClick={() => loadRoot.run(loadRoot.data?.next_cursor)} loading={loadRoot.loading}>
+            <Button type="link" onClick={() => loadRoot.run(loadRoot.data?.cursor_next)} loading={loadRoot.loading}>
               佳载更多
             </Button>
           ) : (

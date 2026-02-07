@@ -2,7 +2,7 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 import React from "react";
 import styled from "@emotion/styled";
 import classNames from "classnames";
-import { useWindowResize } from "@/hooks/window.ts";
+import { useWindowResize } from "@/lib/hook/window.ts";
 import { LoginForm } from "./-components/LoginForm.tsx";
 
 export const Route = createLazyFileRoute("/_theme/passport/_video_background/login")({

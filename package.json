@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "init-deps": "pnpm run init-ijia-data && pnpm run init-api-types",
+    "init-deps": "pnpm run init-ijia-data & pnpm run init-api-types",
     "init-api-types": "pnpm run --filter @ijia/api-types build",
     "init-ijia-data": "tsc -p deps/ijia-data/tsconfig.json",
     "check-type": "pnpm run -r check-type",

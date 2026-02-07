@@ -70,11 +70,7 @@ export async function getCommentList(
       const where = [`NOT c.is_delete`];
 
       where.push(
-        `(p.user_id = ${v(currentUserId)} OR (${[
-          "NOT p.is_reviewing",
-          "NOT p.is_hide",
-          "(p.is_review_pass OR p.is_review_pass IS NULL)",
-        ].join(" AND ")}))`,
+        `(p.user_id = ${v(currentUserId)} OR (${["NOT p.reviewing_id IS NOT NULL", "NOT p.is_hide"].join(" AND ")}))`,
       );
 
       if (commentId) {
@@ -125,8 +121,8 @@ export async function getCommentList(
   const lastItem = list[list.length - 1];
   return {
     has_more: list.length >= number,
-    before_cursor: first ? toTimestampCursor({ timestamp: first.create_time, id: first.comment_id }) : undefined,
-    next_cursor: lastItem ? toTimestampCursor({ timestamp: lastItem.create_time, id: lastItem.comment_id }) : undefined,
+    cursor_prev: first ? toTimestampCursor({ timestamp: first.create_time, id: first.comment_id }) : undefined,
+    cursor_next: lastItem ? toTimestampCursor({ timestamp: lastItem.create_time, id: lastItem.comment_id }) : undefined,
     items: list,
   };
 }

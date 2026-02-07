@@ -1,103 +1,11 @@
-import {
-  AssetImage,
-  AssetMediaDto,
-  AssetVideo,
-  TextStructure,
-  TextStructureExternalLink,
-  TextStructureType,
-} from "@/api.ts";
+import { AssetImage, AssetMediaDto, AssetVideo, TextStructure } from "@/api.ts";
 import { useThemeToken } from "@/provider/mod.tsx";
 import styled from "@emotion/styled";
-import React, { CSSProperties, useMemo, useState } from "react";
+import { CSSProperties, useMemo } from "react";
 import { ReactNode } from "react";
 import { MediaType } from "@/api.ts";
-import { DownOutlined, FileImageOutlined, UpOutlined } from "@ant-design/icons";
-import { Typography } from "antd";
-import { Link } from "@tanstack/react-router";
-const { Paragraph } = Typography;
-
-function PostText(props: { text?: string | null; structure?: TextStructure[] | null }) {
-  const { structure, text } = props;
-  const theme = useThemeToken();
-  const split = useMemo(() => {
-    if (!structure?.length || !text) return text;
-    const list: ReactNode[] = [];
-    let offset = 0;
-    for (let i = 0; i < structure.length; i++) {
-      const item = structure[i];
-      if (item.index > offset) {
-        list.push(text.slice(offset, item.index));
-      }
-      offset = item.index + item.length;
-      const xText = text.slice(item.index, offset);
-      const node = createTextNode(item, xText, i.toString());
-      list.push(node);
-    }
-    if (offset < text.length) list.push(text.slice(offset));
-    return list;
-  }, [structure, text]);
-
-  const [expanded, setExpanded] = useState(false);
-
-  return (
-    <PostTextCSS className="post-content-text" color={theme.colorWarning}>
-      <Paragraph
-        ellipsis={{
-          rows: 10,
-          expandable: "collapsible",
-          expanded,
-          onExpand: () => setExpanded(!expanded),
-          symbol(expanded) {
-            return (
-              <div style={{ color: theme.colorPrimaryText }}>
-                {expanded ? (
-                  <>
-                    <UpOutlined />
-                    收起
-                  </>
-                ) : (
-                  <>
-                    <DownOutlined /> 展开
-                  </>
-                )}
-              </div>
-            );
-          },
-        }}
-      >
-        {split}
-      </Paragraph>
-    </PostTextCSS>
-  );
-}
-
-function createTextNode(struct: TextStructure, text: string, key: string): ReactNode {
-  if (!struct || !text) return text;
-  switch (struct.type) {
-    case TextStructureType.link: {
-      const node = struct as TextStructureExternalLink;
-      return (
-        <Link to={node.link} target="_blank" rel="noopener noreferrer">
-          {text}
-        </Link>
-      );
-    }
-    case TextStructureType.user:
-      return <span style={{ color: "blue" }}>{text}</span>;
-    case TextStructureType.topic:
-      return <span style={{ color: "green" }}>{text}</span>;
-    default:
-      return <span key={key}>{text}</span>;
-  }
-}
-
-const PostTextCSS = styled.div`
-  white-space: pre-wrap;
-  > span {
-    color: ${(props) => props.color};
-  }
-  margin-bottom: 12px;
-`;
+import { FileImageOutlined } from "@ant-design/icons";
+import { TextStruct } from "@/components/TextStructure.tsx";
 
 export type PostContentProps = {
   text: string | null;
@@ -115,7 +23,12 @@ export function PostContent(props: PostContentProps) {
   }, [props.media]);
   return (
     <PostContentCSS>
-      <PostText text={props.text} structure={props.textStruct} />
+      <TextStruct
+        text={props.text}
+        structure={props.textStruct}
+        className="post-content-text"
+        style={{ marginBottom: 12 }}
+      />
       {mediaList.length > 1 ? (
         <PostMediaMultipleCSS>
           {mediaList.map((item, index) => {

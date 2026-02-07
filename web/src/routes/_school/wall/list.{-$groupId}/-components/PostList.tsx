@@ -1,47 +1,52 @@
 import { useLocation, useNavigate } from "@tanstack/react-router";
 
-import { PostItemDto } from "@/api.ts";
-import { List, MenuProps, Modal } from "antd";
+import { GetPostListParam, GetSelfPostListParam, PublicPost, SelfPost } from "@/api.ts";
 import styled from "@emotion/styled";
-import { useAntdStatic } from "@/provider/mod.tsx";
 import { useContext, useEffect, useRef, useState } from "react";
-import { DeleteOutlined, EditOutlined, SettingOutlined, WarningOutlined } from "@ant-design/icons";
-import { api } from "@/common/http.ts";
+import { EditOutlined } from "@ant-design/icons";
 import { useLayoutDirection, LayoutDirection } from "@/provider/mod.tsx";
 import { ROUTES } from "@/app.ts";
-import { InfiniteScrollHandle, InfiniteScrollLoad } from "@/lib/components/InfiniteLoad.tsx";
 import wallCoverSrc from "../../-img/wall_cover.webp";
 import { CreatePostBtn } from "../../-components/PublishBtn.tsx";
 import { ImageFitCover } from "@/lib/components/ImgFitCover.tsx";
-import { WallPostCard } from "./PostCard.tsx";
-import { ReportModal } from "../../../-components/ReportModal.tsx";
+import { PostList, PostListHandle, PublishPost, UpdatePostParam } from "@/routes/_school/-components/WallPost.tsx";
 import { PostQueryFilterContext } from "./PostQueryFilterContext.tsx";
-import { PublishPost, UpdatePostParam } from "../../-components/PublishPost.tsx";
-import { useItemData } from "./useItemData.ts";
 import { BasicUserContext } from "@/routes/_school/-context/UserContext.tsx";
+import { useInfiniteData } from "@/lib/hook/infiniteData.ts";
+import { Modal, Spin } from "antd";
+import { api } from "@/request/client.ts";
+import { dateToString } from "@/common/date.ts";
+import { LoaderIndicator, LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
 
-export function PostList(props: PostListProps) {
+export function PublicPostList(props: PostListProps) {
   const { groupOptions, onOpenComment } = props;
   const filter = useContext(PostQueryFilterContext);
   const isSelf = filter.self;
-  const { modal, message } = useAntdStatic();
   const navigate = useNavigate();
   const location = useLocation();
   const [modalOpen, setModalOpen] = useState(false);
+
+  const itemsCtrl = useRef<PostListHandle>(null);
   const [editItem, setEditItem] = useState<(UpdatePostParam & { id: number; updateContent?: boolean }) | undefined>(
     undefined,
   );
   const currentUser = useContext(BasicUserContext);
-  const itemsCtrl = useItemData({ filter });
-  const items = itemsCtrl.items;
-  const onOpenPublish = () => {
-    if (currentUser) {
-      setModalOpen(true);
-    } else {
-      navigate({ href: ROUTES.Login + `?redirect=${location.pathname}`, viewTransition: true });
-    }
-  };
-  const onEditPost = (item: PostItemDto, isEdit: boolean) => {
+  const { data, setData, reset, next, previous } = useInfiniteData<PublicPost, string>({
+    onPush: (items) => setData((prev) => prev.concat(items)),
+    onUnshift: (items) => setData((prev) => items.concat(prev)),
+    async load(param, forward) {
+      const promise = isSelf
+        ? getSelfPostList({ group_id: filter.group?.group_id, cursor: param, forward })
+        : getPostList({ group_id: filter.group?.group_id, cursor: param, forward });
+      const result = await promise;
+      return {
+        items: result.items as PublicPost[],
+        nextParam: result.cursor_next ? result.cursor_next : undefined,
+        prevParam: result.cursor_prev ? result.cursor_prev : undefined,
+      };
+    },
+  });
+  const onEditPost = (item: SelfPost, isEdit: boolean) => {
     setEditItem({
       id: item.post_id,
       content_text: item.content_text,
@@ -52,46 +57,23 @@ export function PostList(props: PostListProps) {
     });
     setModalOpen(true);
   };
-  const onDeletePost = (item: PostItemDto) => {
-    modal.confirm({
-      title: "删除确认",
-      onOk: () => {
-        return api["/post/entity/:postId"].delete({ params: { postId: item.post_id } }).then(() => {
-          itemsCtrl.deleteItem(item.post_id);
-          message.success("删除成功");
-        });
-      },
-    });
+  const onOpenPublish = () => {
+    if (currentUser) {
+      setModalOpen(true);
+    } else {
+      navigate({ href: ROUTES.Login + `?redirect=${location.pathname}`, viewTransition: true });
+    }
   };
 
-  const pageRef = useRef<HTMLDivElement>(null);
-  const scrollLoadRef = useRef<InfiniteScrollHandle>(null);
-
-  const isFirstRender = useRef(true);
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    scrollLoadRef.current?.reset();
-    itemsCtrl.setItems([]);
-  }, [filter]);
-
-  const [reportOpen, setReportOpen] = useState<PostItemDto | undefined>();
+    reset();
+    next.loadMore();
+  }, [filter.group?.group_id, filter.self]);
 
   const isVertical = useLayoutDirection() === LayoutDirection.Vertical;
   return (
     <HomePageCSS>
-      <InfiniteScrollLoad
-        ref={scrollLoadRef}
-        noMoreRender="可恶，到底了"
-        className="post-list"
-        loadMore={itemsCtrl.loadOldMore}
-        onPush={(items) => {
-          itemsCtrl.setItems((prev) => prev.concat(items));
-        }}
-        bottomThreshold={50}
-      >
+      <div className="post-list">
         <PostListCSS>
           <ImageFitCover src={wallCoverSrc}>
             <div style={{ display: isVertical ? "none" : "block", position: "absolute", right: 20, bottom: 20 }}>
@@ -101,68 +83,31 @@ export function PostList(props: PostListProps) {
             </div>
           </ImageFitCover>
           {filter.group?.group_desc && <StyledTip>{filter.group.group_desc}</StyledTip>}
-          <List
-            locale={{ emptyText: "-- 暂无数据 --" }}
-            dataSource={items}
-            itemLayout="vertical"
-            renderItem={(item, index) => {
-              const moreMenus: MenuProps["items"] = [];
-              if (item.curr_user) {
-                moreMenus.push({
-                  icon: <WarningOutlined />,
-                  label: item.curr_user.is_report ? "已举报" : "举报",
-                  key: "report",
-                  disabled: item.curr_user.is_report,
-                  onClick: () => setReportOpen(item),
-                });
-
-                if (item.curr_user.can_update) {
-                  moreMenus.unshift(
-                    { icon: <EditOutlined />, label: "编辑", key: "edit", onClick: () => onEditPost(item, true) },
-                    {
-                      icon: <SettingOutlined />,
-                      label: "设置",
-                      key: "setting",
-                      onClick: () => onEditPost(item, false),
-                    },
-                    { icon: <DeleteOutlined />, label: "删除", key: "delete", onClick: () => onDeletePost(item) },
-                  );
-                }
-              }
-              return (
-                <List.Item ref={index === 0 ? pageRef : undefined} key={item.post_id} className="e2e-post-item">
-                  <WallPostCard
-                    item={item}
-                    moreMenus={moreMenus}
-                    onLike={itemsCtrl.onPostLike}
-                    onOpenComment={onOpenComment}
-                  />
-                </List.Item>
-              );
-            }}
+          {previous.loading && (
+            <LoaderIndicator>
+              <Spin size="small" />
+            </LoaderIndicator>
+          )}
+          <PostList
+            ref={itemsCtrl}
+            data={data}
+            setData={setData}
+            loadItem={(id) => (isSelf ? getSelfPostItem(id) : getPostItem(id))}
+            onEdit={(item) => onEditPost(item as SelfPost, true)}
+            onSetting={(item) => onEditPost(item as SelfPost, false)}
+            onOpenComment={onOpenComment}
+            canEdit={isSelf}
+          />
+          <LoadMoreIndicator
+            error={!!next.error}
+            hasMore={next.hasMore}
+            loading={next.loading}
+            isEmpty={data.length === 0}
+            onLoad={() => next.loadMore()}
           />
         </PostListCSS>
-      </InfiniteScrollLoad>
-      <ReportModal
-        open={!!reportOpen}
-        onClose={() => setReportOpen(undefined)}
-        onSubmit={async (reason) => {
-          if (!reportOpen) return;
-          const { success } = await api["/post/entity/:postId/report"].post({
-            body: { reason },
-            params: { postId: reportOpen.post_id },
-          });
-          message.success("举报成功");
-          setReportOpen(undefined);
-          if (success) {
-            itemsCtrl.replaceItem(reportOpen.post_id, (old) => {
-              if (!old.curr_user) return old;
-              old.curr_user.is_report = true;
-              return old;
-            });
-          }
-        }}
-      />
+      </div>
+
       <Modal
         title={editItem ? "编辑" : "发布"}
         open={modalOpen}
@@ -173,20 +118,21 @@ export function PostList(props: PostListProps) {
         destroyOnHidden
         width={600}
       >
-        <Publish
+        <PublishPost
           editType={editItem && editItem.updateContent ? "content" : "config"}
           editId={editItem?.id}
           initValues={editItem ? editItem : { group_id: filter.group?.group_id }}
           onCreateOk={(id) => {
             setModalOpen(false);
+            next.loadMore();
             if (isSelf) {
-              itemsCtrl.loadNewest(id);
+              previous.loadMore();
             } else {
               navigate({ href: "/wall/list/self", viewTransition: true });
             }
           }}
           onEditOk={(id) => {
-            itemsCtrl.reloadItem(id);
+            itemsCtrl.current?.reloadItem(id);
             setModalOpen(false);
           }}
           groupOptions={groupOptions}
@@ -195,8 +141,45 @@ export function PostList(props: PostListProps) {
     </HomePageCSS>
   );
 }
+async function getPostItem(id: number) {
+  const { items } = await getPostList({ post_id: id });
+  const item = items[0];
+  if (!item) throw new Error("帖子不存在");
+  return item;
+}
+async function getSelfPostItem(id: number) {
+  const { items } = await getSelfPostList({ post_id: id });
+  const item = items[0];
+  if (!item) throw new Error("帖子不存在");
+  return item;
+}
 
-const Publish = PublishPost;
+async function getPostList(param?: GetPostListParam) {
+  return api["/post/list"].get({ query: param }).then((res) => {
+    for (const item of res.items) {
+      replaceTime(item);
+    }
+    return res;
+  });
+}
+async function getSelfPostList(param?: GetSelfPostListParam) {
+  return api["/post/self/list"].get({ query: param }).then((res) => {
+    for (const item of res.items) {
+      replaceTime(item);
+    }
+    return res;
+  });
+}
+function replaceTime<T extends { publish_time?: string | null; update_time?: string | null }>(item: T): T {
+  if (item.publish_time) {
+    item.publish_time = dateToString(item.publish_time, "minute");
+  }
+  if (item.update_time) {
+    item.update_time = dateToString(item.update_time, "minute");
+  }
+  return item;
+}
+
 type PostGroupOption = {
   label: string;
   value: number;
@@ -236,13 +219,4 @@ const PostListCSS = styled.div`
   max-width: 650px;
   min-width: 300px;
   margin: 0 auto;
-  .ant-list-items {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    > .ant-list-item {
-      border-radius: 8px;
-      padding: 0;
-    }
-  }
 `;

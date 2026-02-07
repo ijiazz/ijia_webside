@@ -1,14 +1,14 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import styled from "@emotion/styled";
 import { Screen, ScreenEffectsProvider } from "./-components/screen/mod.tsx";
 import { GodPlatform } from "./-components/Platforms.tsx";
 import { Footer } from "@/common/Footer.tsx";
-import { useWindowResize } from "@/hooks/window.ts";
+import { useWindowResize } from "@/lib/hook/window.ts";
 import { CaretDownOutlined } from "@ant-design/icons";
 import { HomeLinks } from "./-components/HomeLlink.tsx";
-import { useElementOverScreen } from "@/hooks/dom/observer.ts";
+import { useElementOverScreen } from "@/lib/hook/observer.ts";
 import { HomePageRes } from "@/api.ts";
 
 export const Route = createLazyFileRoute("/(home)/")({
@@ -18,15 +18,12 @@ export const Route = createLazyFileRoute("/(home)/")({
 export function RouteComponent() {
   const data: HomePageRes | undefined = Route.useLoaderData();
 
-  const avatarScreenRef = useRef<HTMLDivElement>(null);
   const [blackMode, setBlackMode] = useState(true);
   const avatarUrl = data?.god_user.avatar_url;
   const size = useWindowResize();
 
   const platformRef = useRef<HTMLDivElement>(null);
-  useElementOverScreen((hide) => {
-    setBlackMode(hide);
-  }, avatarScreenRef);
+  const avatarScreenRef = useElementOverScreen({ onChange: setBlackMode });
   return (
     <HomePageCSS>
       <div className="header-link">

@@ -1,27 +1,28 @@
-import type { CursorListDto, TextStructure, AssetMediaUploadFile } from "../../common.ts";
+import type { CursorListDto, TextStructure, AssetMediaUploadFile, ReviewStatus } from "../../common.ts";
 import type { PostGroupInfo } from "./post_group.ts";
-import type { PostItemBase, PostUserInfo } from "./common.ts";
+import type { PostBase, PostUserInfo } from "./common.ts";
 
-export type PostResponse = CursorListDto<PostItemDto, string> & { needLogin?: boolean };
+export type PostResponse = CursorListDto<PublicPost, string> & { needLogin?: boolean };
+export type PostSelfResponse = CursorListDto<SelfPost, string>;
 
-export type GetPostListParam = {
+type GetPostListBaseParam = {
   number?: number;
   /** timestamp-id */
   cursor?: string;
   /** 指针向前获取。 forward 只能获取 publish_time 不为空的数据 */
   forward?: boolean;
-
-  /** 是否仅获取当前用户的帖子。如果为 true，则包含自己隐藏的、审核中、审核不通过的帖子 */
-  self?: boolean;
-
   post_id?: number;
-  userId?: string | number;
+  group_id?: number;
+
   s_content?: string;
   s_author?: string;
-  group_id?: number;
+};
+export type GetPostListParam = GetPostListBaseParam & {
+  userId?: string | number;
 
   // sort?: Record<"digg_total" | "forward_total" | "collection_num", "ASC" | "DESC">;
 };
+export type GetSelfPostListParam = GetPostListBaseParam;
 
 export type CreatePostParam = {
   content_text?: string | null;
@@ -47,14 +48,14 @@ export type UpdatePostConfigParam = {
   /** 是否开启评论 */
   comment_disabled?: boolean;
 };
-
-export type PostItemDto = PostItemBase & {
+export type PublicPost = PostBase & {
+  create_time?: string | null;
   post_id: number;
-  /** 作者信息 */
+  /** 作者信息，如果为空则是匿名 */
   author: PostUserInfo | null;
   /** 当前请求用户的相关数据 */
   curr_user?: {
-    can_update?: boolean; // 是否可以删除或删除
+    can_update?: boolean; // 是否可以更新或删除
     can_comment?: boolean; // 是否可以评论
     disabled_comment_reason?: string; // 如果不能评论，原因是什么
 
@@ -68,11 +69,8 @@ export type PostItemDto = PostItemBase & {
     dislike_total: number;
     comment_total: number;
   };
-  status: {
-    review_pass: null | boolean; // 是否审核通过 null: 未审核，true: 审核中，false: 生活不通过
-    is_reviewing: boolean; // 是否正在审核
-    reason?: string; // 审核不通过的原因
-  };
+};
+export type SelfPost = PublicPost & {
   config: {
     /** 是否匿名 */
     is_anonymous?: boolean;
@@ -80,5 +78,9 @@ export type PostItemDto = PostItemBase & {
     self_visible?: boolean;
     /** 是否关闭评论 */
     comment_disabled?: boolean;
+  };
+  review?: {
+    status: ReviewStatus;
+    remark?: string; // 审核结果评论
   };
 };

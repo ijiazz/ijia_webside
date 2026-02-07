@@ -72,13 +72,19 @@ export function AvatarWall(props: AvatarWallProps) {
   /** 镜头抖动 */
   const animationCtrl = useShakeAnimation({
     autoPlay: !disabledShake,
-    targetRef: godAvatarRef,
     onFrameUpdate: (offsetX: number, offsetY: number) => {
       const wall = wallRef.current!;
       wall.scrollLeft = areaRef.current.baseX + offsetX;
       wall.scrollTop = areaRef.current.baseY + offsetY;
     },
   });
+
+  useEffect(() => {
+    const element = godAvatarRef.current;
+    if (!element) return;
+    animationCtrl.targetRef(element);
+  }, [godAvatarRef]);
+
   const areaRef = useRef<{ baseX: number; baseY: number; isPlay: boolean }>({
     baseX: 0,
     baseY: 0,

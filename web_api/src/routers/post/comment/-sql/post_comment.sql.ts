@@ -38,8 +38,7 @@ export async function createComment(
       on: [
         `p.id=${v(postId)}`,
         `NOT p.is_delete`, // 帖子未被删除
-        `(p.is_review_pass OR p.is_review_pass IS NULL)`, // 审核通过的或未审核的 帖子
-        `NOT p.is_reviewing`, // 帖子不能在审核中
+        `p.reviewing_id IS NULL`, // 审核通过的或未审核的帖子 (排除审核中和审核不通过的帖子)
         `NOT p.is_hide`, // 帖子未设置仅作者可见
       ],
     })

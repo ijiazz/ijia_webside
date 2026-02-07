@@ -13,11 +13,16 @@ export type InfiniteListDto<T> = {
 };
 
 export type CursorListDto<T, C> = InfiniteListDto<T> & {
-  before_cursor?: C | null;
-  next_cursor?: C | null;
+  cursor_prev?: C | null;
+  cursor_next?: C | null;
 };
 
 export interface GetListOption {
   number?: number;
   offset?: number;
+}
+export enum ReviewStatus {
+  pending = "pending",
+  passed = "passed",
+  rejected = "rejected",
 }

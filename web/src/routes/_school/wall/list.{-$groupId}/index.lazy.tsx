@@ -6,7 +6,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Route as ParentRoute } from "./route.tsx";
 import { PostQueryFilterContext } from "./-components/PostQueryFilterContext.tsx";
 import { CommentDrawer } from "../../-components/comment.tsx";
-import { PostList } from "./-components/PostList.tsx";
+import { PublicPostList } from "./-components/PostList.tsx";
 
 export const Route = createLazyFileRoute("/_school/wall/list/{-$groupId}/")({
   component: RouteComponent,
@@ -34,7 +34,7 @@ function RouteComponent() {
 
   return (
     <>
-      <PostList groupOptions={option} onOpenComment={drawer.onOpenComment} />
+      <PublicPostList groupOptions={option} onOpenComment={drawer.onOpenComment} />
       <CommentDrawer postId={drawer.commentId} isSelf={isSelf} open={drawer.open} onClose={drawer.closeCommentDrawer} />
     </>
   );
