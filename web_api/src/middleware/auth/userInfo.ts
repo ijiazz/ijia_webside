@@ -3,6 +3,7 @@ import { HttpError, RequiredLoginError } from "@/global/errors.ts";
 import { getValidUserSampleInfoByUserId, SampleUserInfo } from "@/sql/user.ts";
 import { setTimeoutUnRef } from "@/global/utils.ts";
 import { getUserRoleNameList, UserWithRole } from "@ijia/data/query";
+import { Role } from "./roles.ts";
 
 export class UserInfo {
   private static verifyCache = new Map<string, VerifyAccessTokenCache<AccessUserData>>();
@@ -19,6 +20,16 @@ export class UserInfo {
       });
     }
     return this.#roleNameList;
+  }
+  async hasRolePermission(requiredAnyRoles: Set<string>): Promise<boolean> {
+    const { role_id_list } = await this.getRolesFromDb();
+    for (const element of role_id_list) {
+      if (element === Role.Root) {
+        return true;
+      }
+      if (requiredAnyRoles.has(element)) return true;
+    }
+    return false;
   }
   async checkUpdateToken(): Promise<{ token: string; maxAge: number | null } | undefined> {
     if (this.#needDelete) {

@@ -5,7 +5,7 @@ export * from "@/common/http.ts";
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
+      retry: 0,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       networkMode: "always",

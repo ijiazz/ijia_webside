@@ -7,8 +7,8 @@ const MODE: RunMode = Boolean(env.VITEST) ? RunMode.Test : ((env.MODE ?? RunMode
 function getJwtKey() {
   if (env.JWT_KEY) return env.JWT_KEY;
 
-  if (MODE === RunMode.Dev) {
-    console.warn("DEV 模式下未设置 JWT_KEY, 将使用固定值");
+  if (MODE === RunMode.Dev || MODE === RunMode.E2E) {
+    console.warn(`${MODE} 模式下未设置 JWT_KEY, 将使用固定值`);
     return "123";
   }
   return crypto.randomUUID();

@@ -8,10 +8,10 @@ import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { getReviewNextQueryOption } from "@/request/review.ts";
 import { FormErrorMessage, getAntdErrorStatus } from "@/components/FormItem.tsx";
-import { ReviewItem } from "./-components/ReviewItem.tsx";
-import type { RouteParam } from "./$type.tsx";
+import { ReviewItem } from "../-components/ReviewItem.tsx";
+import type { RouteParam } from "./index.tsx";
 
-export const Route = createLazyFileRoute("/_school/review/$type")({
+export const Route = createLazyFileRoute("/_school/review/$type/")({
   component: RouteComponent,
 });
 
@@ -24,14 +24,7 @@ function RouteComponent() {
   const { type: reviewType } = Route.useParams() as RouteParam;
   const form = useForm<FormValues>();
   const { isSubmitting } = form.formState;
-  const {
-    data: initData,
-    isFetching,
-    refetch,
-  } = useSuspenseQuery({
-    ...getReviewNextQueryOption({ type: reviewType }),
-    refetchOnMount: false,
-  });
+  const { data: initData, isFetching, refetch } = useSuspenseQuery(getReviewNextQueryOption({ type: reviewType }));
 
   const { data, mutateAsync } = useMutation({
     async mutationFn(param: CommitReviewParam) {
@@ -107,7 +100,7 @@ function RouteComponent() {
           <div style={{ display: "flex", justifyContent: "end" }}>
             <Controller
               name="isPass"
-              rules={{ required: "请选择" }}
+              rules={{ validate: (value) => (typeof value === "boolean" ? undefined : "请选择") }}
               render={({ field, fieldState }) => {
                 return (
                   <>

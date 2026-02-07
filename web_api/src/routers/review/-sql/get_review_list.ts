@@ -16,7 +16,6 @@ export function reviewSelect() {
     id: true,
     create_time: true,
     resolved_time: true,
-    review_display: true,
     is_passed: true,
     is_reviewing: true,
     pass_count: true,
@@ -34,8 +33,42 @@ export function reviewSelect() {
       .toSelect(),
     target_type: true,
     info: true,
+    review_display:  getInfo(),
   }).from("review", { as: "r" });
 }
+function getInfo() {
+  return `CASE r.target_type 
+    WHEN 'post' THEN (
+      SELECT 
+        jsonb_build_array(
+          jsonb_build_object(
+            'label', '内容',
+            'type', 'text',
+            'new', jsonb_build_object(
+              'text', p.content_text,
+              'testStructure', p.content_text_struct
+            )
+          )
+        ) FROM post AS p
+        WHERE id=(r.info->>'target_id')::INT
+
+    ) WHEN 'post_comment' THEN (
+      SELECT 
+        jsonb_build_array(
+          jsonb_build_object(
+            'label', '评论内容',
+            'type', 'text',
+            'new', jsonb_build_object(
+              'text', c.content_text,
+              'testStructure', c.content_text_struct
+            )
+          )
+        ) FROM post_comment AS c
+        WHERE id=(r.info->>'target_id')::INT
+    )ELSE NULL END
+  `;
+}
+
 async function getReviewList(option: GetReviewListOption): Promise<ReviewItem<unknown>[]> {
   const { size, offset, type, status } = option;
   const sql = reviewSelect()

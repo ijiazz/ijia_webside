@@ -3,7 +3,7 @@ import { ReviewTargetType } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
 
 export function checkPermission(type: string, roles: Set<Role>): boolean {
-  if (roles.has(Role.Admin)) {
+  if (roles.has(Role.Root) || roles.has(Role.Admin)) {
     return true;
   }
   switch (type) {

@@ -88,7 +88,7 @@ export function PublishPost(props: {
         >
           <Input.TextArea placeholder="请输入内容" autoSize={{ minRows: 4, maxRows: 10 }} style={{ width: "100%" }} />
         </Form.Item>
-        <Form.Item hidden={isEdit} label="内容分类" name="group_id">
+        <Form.Item hidden={isEdit || groupOptions?.length === 0} label="内容分类" name="group_id">
           <GroupSelect disabled={isEdit} options={groupOptions} loading={groupLoading} allowClear></GroupSelect>
         </Form.Item>
         <Form.Item hidden={disableSetting} label="仅自己可见" name="is_hide">

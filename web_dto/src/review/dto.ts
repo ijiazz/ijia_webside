@@ -4,7 +4,7 @@ type ReviewItemBase = {
   id: number;
   create_time: number;
   resolved_time?: number;
-  review_display: ReviewDisplayItem[];
+  review_display?: ReviewDisplayItem[];
   is_passed?: boolean;
   is_reviewing: boolean;
   pass_count: number;

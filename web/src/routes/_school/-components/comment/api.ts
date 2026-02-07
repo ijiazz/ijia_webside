@@ -44,14 +44,7 @@ export function commentDtoToCommentNode(item: PostCommentDto, parent: PostCommen
   node.hasMore = !!(node.is_root_reply_count && (!node.children || node.children.size < node.is_root_reply_count));
   return node;
 }
-export function getPostData(postId: number) {
-  return api["/post/list"].get({ query: { post_id: postId } }).then((res) => {
-    const item = res.items[0];
-    if (item.post_id !== postId) return;
 
-    return item;
-  });
-}
 export function loadCommentList(query: GetPostCommentListParam) {
   return api["/post/comment/list"].get({
     query: query,

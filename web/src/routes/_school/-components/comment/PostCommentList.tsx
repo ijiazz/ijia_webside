@@ -11,7 +11,6 @@ import { ReportModal } from "../ReportModal.tsx";
 import {
   commentDtoToCommentNode,
   createComment,
-  getPostData,
   loadCommentItem,
   loadCommentList,
   PostCommentNode,
@@ -20,14 +19,16 @@ import {
 } from "./api.ts";
 import { CommentHeader } from "./CommentHeader.tsx";
 import { CommentFooter } from "./CommentFooter.tsx";
+import { useQuery } from "@tanstack/react-query";
+import { getPostListQueryOption } from "@/request/post.ts";
 
 const { Text } = Typography;
 
 export type CreateData = {
   text: string;
 };
-export function CommentList(props: { postId?: number }) {
-  const { postId } = props;
+export function CommentList(props: { postId?: number; allowAll?: boolean }) {
+  const { postId, allowAll } = props;
   const {
     commentData,
     addItem,
@@ -38,24 +39,25 @@ export function CommentList(props: { postId?: number }) {
     replaceItem,
   } = useCommentData<PostCommentNode>();
   const { message, modal } = useAntdStatic();
-  const { loading: postInfoLoading, data: postInfo, run: loadPostInfo } = useAsync(getPostData);
+  const { isFetching: postInfoLoading, data } = useQuery({
+    ...getPostListQueryOption({ post_id: postId! }),
+    enabled: typeof postId === "number",
+  });
+  const postInfo = postInfoLoading ? null : data?.items[0];
 
-  useEffect(() => {
-    if (postId !== undefined) loadPostInfo(postId);
-  }, [postId]);
   const config = useMemo(() => {
-    let reason: null | undefined | string = "";
-    if (postInfoLoading) reason = "加载中...";
-    else if (postInfo) {
-      reason = postInfo.curr_user ? postInfo.curr_user.disabled_comment_reason : "登录后可以评论";
-    } else reason = "无法获取帖子数据";
+    if (allowAll) return { createDisabled: undefined };
+
+    let createDisabled: string | undefined = "";
+    if (postInfo) {
+      createDisabled = postInfo.curr_user ? postInfo.curr_user.disabled_comment_reason : "登录后可以评论";
+    } else if (postInfoLoading) {
+      createDisabled = "加载中...";
+    } else createDisabled = "暂时无法评论";
     return {
-      create: {
-        reason: reason,
-        can: postInfo?.curr_user?.can_comment === true,
-      },
+      createDisabled,
     };
-  }, [postInfo, postInfoLoading]);
+  }, [postInfo, postInfoLoading, allowAll]);
 
   const loadRoot = useAsync(async (nextCursor?: string | null) => {
     if (typeof postId !== "number") return undefined;
@@ -213,13 +215,13 @@ export function CommentList(props: { postId?: number }) {
           </div>
         )}
         <Input.TextArea
-          disabled={!config.create.can}
-          placeholder={config.create.reason}
+          disabled={!!config.createDisabled}
+          placeholder={config.createDisabled}
           value={text}
           onChange={(text) => setText(text.currentTarget.value)}
         />
         <div style={{ textAlign: "right" }}>
-          {config.create.can && (
+          {!config.createDisabled && (
             <Button type="primary" loading={commentLoading} onClick={() => onCreateComment()}>
               发送
             </Button>

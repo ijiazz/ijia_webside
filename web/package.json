@@ -14,7 +14,7 @@
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
     "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
-    "@emotion/react": "^11.14.0",
+    "@emotion/css": "^11.13.5",
     "@emotion/styled": "^11.14.0",
     "@ijia/api-types": "workspace:^",
     "@microsoft/clarity": "^1.0.0",

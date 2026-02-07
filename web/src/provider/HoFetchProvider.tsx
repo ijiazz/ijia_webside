@@ -6,9 +6,9 @@ import {
   ApiEvent,
   ApiErrorEvent,
   IGNORE_UNAUTHORIZED_REDIRECT,
-} from "@/common/http.ts";
+} from "@/request/client.ts";
 import { useNavigate } from "@tanstack/react-router";
-import { getUrlByRoute, ROUTES } from "../app.ts";
+import { goRedirectLoginPath } from "../app.ts";
 import { useAntdStatic } from "./AntdProvider.tsx";
 
 export function HoFetchProvider(props: PropsWithChildren<{}>) {
@@ -25,13 +25,10 @@ export function HoFetchProvider(props: PropsWithChildren<{}>) {
       }
 
       if (res.status === 401 && err?.code === "REQUIRED_LOGIN" && !ctx[IGNORE_UNAUTHORIZED_REDIRECT]) {
-        const url = new URL(location.href);
-        const target = url.pathname + url.search + url.hash;
-        const isLoginPage = location.href.startsWith(getUrlByRoute(ROUTES.Login));
-        if (!isLoginPage) {
-          const s = new URLSearchParams();
-          s.set("redirect", target);
-          navigate({ href: ROUTES.Login + "?" + s.toString(), viewTransition: true });
+        event.preventDefault();
+        const redirect = goRedirectLoginPath();
+        if (redirect) {
+          navigate({ href: redirect, viewTransition: true });
         }
       }
     };

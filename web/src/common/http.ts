@@ -1,5 +1,6 @@
 import { HoFetch, createFetchSuite, InferFetchSuite, FetchSuiteBase, HoContext, HoResponse } from "@asla/hofetch";
 import { ApiDefined } from "@/api.ts";
+import { goRedirectLoginPath } from "@/app.ts";
 
 export type Api = {
   [x: string]: FetchSuiteBase;
@@ -35,7 +36,11 @@ http.use(async function (ctx, next) {
   if (ctx.allowFailed instanceof Array && ctx.allowFailed.includes(res.status)) return res;
 
   const body = await res.parseBody();
-  apiEvent.dispatchEvent(new ApiErrorEvent(ctx, res, body));
+  const isUnhandled = apiEvent.dispatchEvent(new ApiErrorEvent(ctx, res, body));
+  if (isUnhandled && res.status === 401) {
+    const redirect = goRedirectLoginPath();
+    if (redirect) window.location.assign(redirect);
+  }
 
   return res;
 });

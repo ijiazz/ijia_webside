@@ -71,7 +71,7 @@ function createManualChunks() {
     "@tanstack/react-router": true,
     "@tanstack/react-query": true,
     "@emotion/styled": true,
-    "@emotion/react": true,
+    "@emotion/css": true,
     "@jsr/asla__hofetch": "@asla/hofetch",
   };
   const manualChunks = (id: string) => {

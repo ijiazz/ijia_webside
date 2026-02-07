@@ -1,6 +1,6 @@
-import { QueryOptions, UseInfiniteQueryOptions, InfiniteData } from "@tanstack/react-query";
+import { QueryOptions } from "@tanstack/react-query";
 import { api } from "./client.ts";
-import { GetPostListParam, GetSelfPostListParam, PostResponse, PostSelfResponse } from "@/api.ts";
+import { GetPostListParam, GetSelfPostListParam } from "@/api.ts";
 
 export const POST_QUERY_KEY_PREFIX = "post";
 
@@ -9,49 +9,16 @@ export const PublicPostGroupOption = {
   queryFn: () => api["/post/group/list"].get(),
 } satisfies QueryOptions;
 
-export function getPostListInfiniteQueryOption(param: Omit<GetPostListParam, "cursor" | "forward">) {
+export function getPostListQueryOption(param: Omit<GetPostListParam, "cursor" | "forward">) {
   return {
-    queryKey: [POST_QUERY_KEY_PREFIX, "/post/group/list"],
-    queryFn: (ctx) => {
-      ctx.pageParam;
-      return api["/post/list"].get({ query: param });
-    },
-    initialPageParam: undefined,
-    getNextPageParam: (lastPage) => getCursorParam(lastPage.cursor_next),
-    getPreviousPageParam: (firstPage) => getCursorParam(firstPage.cursor_prev, true),
-    gcTime: 0,
-  } satisfies UseInfiniteQueryOptions<
-    PostResponse,
-    unknown,
-    InfiniteData<PostResponse>,
-    unknown[],
-    { cursor: string; forward?: boolean } | undefined
-  >;
+    queryKey: [POST_QUERY_KEY_PREFIX, "/post/list"],
+    queryFn: () => api["/post/list"].get({ query: param }),
+  } satisfies QueryOptions;
 }
 
-function getCursorParam(cursor?: string | null, forward?: boolean) {
-  if (!cursor) return undefined;
-  return { cursor, forward };
-}
-export function getShelfPostListQueryOption(param: GetSelfPostListParam) {
+export function getShelfPostListQueryOption(param: Omit<GetSelfPostListParam, "cursor" | "forward">) {
   return {
-    queryKey: [POST_QUERY_KEY_PREFIX, "/post/group/list"],
-    queryFn: () => {
-      return api["/post/self/list"].get({ query: param });
-    },
-    initialPageParam: undefined,
-    getNextPageParam: (lastPage) => getCursorParam(lastPage.cursor_next),
-    getPreviousPageParam: (firstPage) => getCursorParam(firstPage.cursor_prev, true),
-    gcTime: 0,
-  } satisfies UseInfiniteQueryOptions<PostSelfResponse, unknown, InfiniteData<PostSelfResponse>>;
-}
-
-export function replaceInfiniteData<T>(
-  data: InfiniteData<T>,
-  replacer: (item: T, index: number) => T,
-): InfiniteData<T> {
-  return {
-    ...data,
-    pages: data.pages.map(replacer),
-  };
+    queryKey: [POST_QUERY_KEY_PREFIX, "/post/self/list"],
+    queryFn: () => api["/post/self/list"].get({ query: param }),
+  } satisfies QueryOptions;
 }

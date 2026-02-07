@@ -5,8 +5,8 @@ import { LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
 export function CommentDrawer(props: {
   open?: boolean;
   onClose?: () => void;
+  /** 需要根据 postId 获取评论权限。 如果不传 postId ，则关闭评论区 */
   postId?: string | number | null;
-  isSelf?: boolean;
 }) {
   const { onClose, postId: postId, open } = props;
 
