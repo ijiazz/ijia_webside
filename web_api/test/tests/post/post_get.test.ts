@@ -60,7 +60,9 @@ test("审核失败的帖子只有自己能查看", async function ({ api, public
     remark: "123",
   } satisfies Partial<SelfPost["review"]>);
 
-  await expect(getPublicPost(api, id, alice.token), "审核失败的帖子，自己不能在公共查询中获取").resolves.toBe(undefined);
+  await expect(getPublicPost(api, id, alice.token), "审核失败的帖子，自己不能在公共查询中获取").resolves.toBe(
+    undefined,
+  );
   await expect(getPublicPost(api, id, bob.token), "审核失败的帖子，其他人无法查看").resolves.toBe(undefined);
   await expect(getPublicPost(api, id), "审核失败的帖子，游客无法查看").resolves.toBe(undefined);
 });

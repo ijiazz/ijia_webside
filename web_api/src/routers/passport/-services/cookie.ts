@@ -13,7 +13,6 @@ export function setCookieAuth(ctx: Context, value: string, maxAge: number | null
   setCookie(ctx, REQUEST_AUTH_KEY, value, {
     domain: domain,
     maxAge: maxAge ?? undefined,
-    sameSite: "Lax",
     secure: false,
     httpOnly: true,
     path: "/",

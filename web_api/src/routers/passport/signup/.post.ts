@@ -8,6 +8,7 @@ import { HttpCaptchaError, HttpError, HttpParamsCheckError } from "@/global/erro
 import { createUser } from "../-sql/signup.ts";
 
 import routeGroup, { signToken } from "../_route.ts";
+import { setCookieAuth } from "../-services/cookie.ts";
 
 export default routeGroup.create({
   method: "POST",
@@ -25,7 +26,7 @@ export default routeGroup.create({
 
     return param;
   },
-  async handler(body: CreateUserProfileParam): Promise<CreateUserProfileResult> {
+  async handler(body: CreateUserProfileParam, ctx): Promise<CreateUserProfileResult> {
     const verifyEmail = !appConfig.passport?.emailVerifyDisabled;
     if (verifyEmail) {
       const pass = body.emailCaptcha
@@ -42,6 +43,8 @@ export default routeGroup.create({
 
     const userId = await createUser(body.email, { password: body.password });
     const { token } = await signToken(userId);
+
+    await setCookieAuth(ctx, token, null);
     return { userId, jwtKey: token };
   },
 });
