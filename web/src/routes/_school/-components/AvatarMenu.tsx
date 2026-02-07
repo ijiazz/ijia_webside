@@ -41,7 +41,7 @@ export function AvatarMenu(props: { user: UserBasicDto | null }) {
     );
   return (
     <Dropdown
-      trigger={["click", "hover"]}
+      trigger={["hover"]}
       menu={{
         items: [
           {
