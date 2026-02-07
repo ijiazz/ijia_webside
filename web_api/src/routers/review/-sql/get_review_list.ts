@@ -33,7 +33,7 @@ export function reviewSelect() {
       .toSelect(),
     target_type: true,
     info: true,
-    review_display:  getInfo(),
+    review_display: getInfo(),
   }).from("review", { as: "r" });
 }
 function getInfo() {
