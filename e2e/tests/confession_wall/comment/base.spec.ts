@@ -170,8 +170,7 @@ const commentContentClassName = ".e2e-post-comment-content";
 const commentHeaderClassName = ".e2e-post-comment-header";
 
 function getCommentBtn(page: Page) {
-  const post = page.locator(".e2e-post-item", { hasText: "comment-test" });
-  return post.getByRole("button").nth(2);
+  return page.locator(".e2e-post-item", { hasText: "comment-test" }).getByRole("button", { name: "打开评论" });
 }
 async function replyComment(page: Page, replyText: string, filterText: string) {
   await expect(page.getByRole("textbox"), "等待发送完成").toHaveValue("");

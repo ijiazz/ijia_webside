@@ -211,10 +211,16 @@ export function CommentList(props: { postId?: number; allowAll?: boolean }) {
               <Text type="secondary">{replyingComment.user.user_name}</Text>
               <div>{replyingComment.content_text}</div>
             </div>
-            <Button icon={<CloseOutlined />} type="text" onClick={() => setReplyingComment(null)} />
+            <Button
+              icon={<CloseOutlined />}
+              type="text"
+              onClick={() => setReplyingComment(null)}
+              aria-label="取消回复"
+            />
           </div>
         )}
         <Input.TextArea
+          aria-label="评论内容输入框"
           disabled={!!config.createDisabled}
           placeholder={config.createDisabled}
           value={text}

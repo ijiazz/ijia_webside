@@ -95,10 +95,9 @@ function PostFooter(props: {
         alignItems: "center",
       }}
     >
-      <VLink style={{ color: "inherit" }} target="_blank">
+      <VLink style={{ color: "inherit" }} target="_blank" aria-label="打开详情页">
         <Tooltip title="详情页开发中，敬请期待">
           <Button
-            className="e2e-post-item-detail-open"
             type="text"
             icon={<ExportOutlined />}
             disabled // TODO
@@ -107,7 +106,7 @@ function PostFooter(props: {
         </Tooltip>
       </VLink>
       <Button
-        className="e2e-post-item-comment-open"
+        aria-label="打开评论"
         style={{ fontSize: 16, width: "100%" }}
         icon={<MessageOutlined />}
         type="text"
@@ -121,6 +120,7 @@ function PostFooter(props: {
         </div>
       ) : (
         <LikeButton
+          aria-label="点赞或取消点击"
           className="e2e-post-item-like-btn"
           disabled={props.likeDisabled}
           isLike={props.isLike}

@@ -7,6 +7,7 @@ export function changePageToMobile(page: Page) {
 }
 
 export async function setContextLogin(context: BrowserContext, accessToken: string) {
-  const domain = new URL(env.WEB_URL).host;
-  await context.addCookies([{ name: REQUEST_AUTH_KEY, value: accessToken, domain: domain, path: "/" }]);
+  const url = new URL(env.WEB_URL).origin;
+  const expires = Math.floor(Date.now() / 1000) + 3600; // expires must be unix timestamp (seconds)
+  await context.addCookies([{ name: REQUEST_AUTH_KEY, value: accessToken, url, expires }]);
 }

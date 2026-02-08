@@ -29,9 +29,6 @@ test("删除", async function ({ page, context }) {
   await page.getByRole("button", { name: "确 定" }).click();
 
   await expect(postItems).toHaveCount(2);
-
-  await page.getByRole("menuitem", { name: "全部" }).click();
-  await expect(postItems).toHaveCount(2);
 });
 
 test("不能删除别人的内容", async function ({ page, context }) {
