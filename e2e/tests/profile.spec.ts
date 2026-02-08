@@ -49,8 +49,6 @@ beforeEach(async ({ page }) => {
   await page.goto(getAppUrlFromRoute("/profile/center", aliceToken));
 });
 test("账号绑定与解除关联", async function ({ page, browser }) {
-  await clearPublicClass();
-  await initPublicClass();
   const bob = users.find((u) => u.user_name === "Bob")!;
   const alice = users.find((u) => u.user_name === "Alice")!;
   await addBind(page, bob.sec_uid);
@@ -86,8 +84,6 @@ test("账号绑定与解除关联", async function ({ page, browser }) {
 });
 
 test("修改基础配置", async function ({ page, browser }) {
-  await clearPublicClass();
-  await initPublicClass();
   const bob = users.find((u) => u.user_name === "Bob")!;
   await addBind(page, bob.sec_uid);
   // 修改基础配置
@@ -111,16 +107,4 @@ async function addBind(page: Page, sec_id: string) {
   await page.getByRole("textbox", { name: "输入抖音个人首页连接" }).fill("https://www.douyin.com/user/" + sec_id);
   await page.getByRole("button", { name: "检 测" }).click();
   await page.getByRole("button", { name: "绑 定" }).click();
-}
-
-async function clearPublicClass() {
-  await dbPool.execute(deleteFrom("class").where("parent_class_id=" + v(PUBLIC_CLASS_ROOT_ID)));
-}
-async function initPublicClass() {
-  await dbPool.execute(
-    insertIntoValues("class", [
-      { class_name: "e2e-8", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-      { class_name: "e2e-1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-    ]),
-  );
 }
