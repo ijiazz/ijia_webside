@@ -5,7 +5,7 @@ import { PostCommentDto } from "@/api.ts";
 import { CommentTree, useCommentData, findNodeRoot } from "./CommentItem.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { CloseOutlined, UserOutlined } from "@ant-design/icons";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { useAntdStatic } from "@/provider/mod.tsx";
 import { ReportModal } from "../ReportModal.tsx";
 import {

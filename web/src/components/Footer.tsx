@@ -3,7 +3,7 @@ import React, { ReactNode } from "react";
 
 import { GithubOutlined } from "@ant-design/icons";
 import { Link } from "@tanstack/react-router";
-import { RECORD_SITE } from "./host.ts";
+import { RECORD_SITE } from "../common/host.ts";
 
 const footerLinks: {
   icon?: ReactNode;

@@ -1,4 +1,3 @@
-import React from "react";
 import { CSSProperties } from "react";
 import ijia_logo_256 from "@/assets/ijia-logo-256.png";
 

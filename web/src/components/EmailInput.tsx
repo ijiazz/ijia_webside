@@ -1,6 +1,6 @@
 import { Button, Input, InputProps, Tooltip } from "antd";
 import React, { useRef, useState } from "react";
-import { ImageCaptchaPopover } from "@/common/capthca/ImageCaptcha.tsx";
+import { ImageCaptchaPopover } from "@/components/captcha.ts";
 function useCooling(coolingTime = 60) {
   const [time, settime] = useState<number>(0);
   const ref = useRef<null | number>(null);

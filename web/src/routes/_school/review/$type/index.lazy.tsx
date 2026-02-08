@@ -1,13 +1,13 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { CommitReviewParam } from "@/api.ts";
 import { Button, Empty, Input, Radio, Typography } from "antd";
 import { useAntdStatic } from "@/provider/mod.tsx";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { getReviewNextQueryOption } from "@/request/review.ts";
-import { FormErrorMessage, getAntdErrorStatus } from "@/components/FormItem.tsx";
+import { FormErrorMessage, getAntdErrorStatus } from "@/components/form.tsx";
 import { ReviewItem } from "../-components/ReviewItem.tsx";
 import type { RouteParam } from "./index.tsx";
 

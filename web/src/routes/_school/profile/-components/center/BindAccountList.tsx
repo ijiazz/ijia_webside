@@ -5,7 +5,7 @@ import { PlatformBind } from "../PlatformBind.tsx";
 import styled from "@emotion/styled";
 import { Meta } from "@/lib/components/Meta.tsx";
 import { BindAccountDto, UserInfoDto } from "@/api.ts";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { useMutation } from "@tanstack/react-query";
 
 export function BindAccountList(props: {

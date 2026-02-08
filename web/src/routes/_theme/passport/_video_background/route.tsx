@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { lazyComponent } from "@/lib/lazy_component.tsx";
 
 const Page = lazyComponent(() => import("../-components/VideoBg.tsx").then((mod) => mod.VideoBg));

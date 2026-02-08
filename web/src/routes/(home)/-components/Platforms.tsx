@@ -1,7 +1,7 @@
 import { GodPlatformDto } from "@/api.ts";
 import { UserCard3D } from "@/lib/components/card.tsx";
 import React from "react";
-import { SOCIAL_PLATFORMS } from "@/common/third_part_account.tsx";
+import { SOCIAL_PLATFORMS } from "@/components/ThirdPartSelect.tsx";
 import styled from "@emotion/styled";
 import { VLink } from "@/lib/components/VLink.tsx";
 

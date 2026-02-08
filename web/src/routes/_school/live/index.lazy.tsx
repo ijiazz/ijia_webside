@@ -1,7 +1,7 @@
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 
 import { PlatformPostItemDto } from "@/api.ts";
-import { SOCIAL_PLATFORMS } from "@/common/third_part_account.tsx";
+import { SOCIAL_PLATFORMS } from "@/components/ThirdPartSelect.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { Avatar, List, Button } from "antd";
 import styled from "@emotion/styled";
@@ -11,7 +11,7 @@ import { PostContent, PostHeader } from "../-components/post.tsx";
 import React, { useEffect, useRef } from "react";
 import { ExportOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { CardLayout } from "@/lib/components/card/card.tsx";
 
 export const Route = createLazyFileRoute("/_school/live/")({

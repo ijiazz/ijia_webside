@@ -1,4 +1,4 @@
-import { FormErrorMessage } from "@/components/FormItem.tsx";
+import { FormErrorMessage } from "@/components/form.tsx";
 import styled from "@emotion/styled";
 import { Checkbox } from "antd";
 import { Controller } from "react-hook-form";

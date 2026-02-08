@@ -1,5 +1,5 @@
 import { BulletChat } from "@/api.ts";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { BulletChatBox } from "@/lib/BulletChat/BulletChatBox.tsx";
 import React from "react";
 

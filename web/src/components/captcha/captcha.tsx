@@ -1,9 +1,9 @@
 import { Result } from "antd";
-import React, { useMemo } from "react";
-import styled from "@emotion/styled";
+import { useMemo } from "react";
 import { CheckCircleTwoTone } from "@ant-design/icons";
 import classnames from "classnames";
 import { useThemeToken } from "@/provider/mod.tsx";
+import { css } from "@emotion/css";
 
 export type CaptchaPanelProps = {
   title?: string;
@@ -26,16 +26,16 @@ export function CaptchaPanel(props: CaptchaPanelProps) {
     onChange(Array.from(selected));
   };
   return (
-    <StyledCaptchaPanel>
+    <div>
       <h4>{title}</h4>
       {isError ? (
         <Result status="error" title={errorMessage} style={{ minHeight: 316 }} />
       ) : (
-        <div className="grid">
+        <div className={WrapperCSS}>
           {imageList.map((src, index) => {
             const checked = selected.has(index);
             return (
-              <div key={src + index} className={classnames("captcha-item", { checked })}>
+              <div key={src + index} className={classnames(CaptchaItem, { checked })}>
                 <img className="captcha-img" src={src} onClick={() => onCheck(index)} />
                 {checked ? (
                   <CheckCircleTwoTone className="checked-icon" twoToneColor={theme.colorSuccess} />
@@ -45,38 +45,37 @@ export function CaptchaPanel(props: CaptchaPanelProps) {
           })}
         </div>
       )}
-    </StyledCaptchaPanel>
+    </div>
   );
 }
-const StyledCaptchaPanel = styled.div`
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
-    grid-gap: 8px;
+const WrapperCSS = css`
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  grid-gap: 8px;
+`;
 
-    .captcha-item {
-      position: relative;
-      border: 1px solid #d6d6d6;
-      .checked-icon {
-        position: absolute;
-        font-size: large;
-        left: calc(50% - 7px);
-        top: calc(50% - 7px);
-      }
-      .captcha-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        font: 14px;
-        cursor: pointer;
-      }
-    }
-    .captcha-item.checked {
-      background-color: #000;
-      .captcha-img {
-        opacity: 0.7;
-      }
+const CaptchaItem = css`
+  position: relative;
+  border: 1px solid #d6d6d6;
+  .checked-icon {
+    position: absolute;
+    font-size: large;
+    left: calc(50% - 7px);
+    top: calc(50% - 7px);
+  }
+  .captcha-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    font: 14px;
+    cursor: pointer;
+  }
+  &.checked {
+    transition: all 500ms;
+    background-color: #000;
+    .captcha-img {
+      opacity: 0.7;
     }
   }
 `;

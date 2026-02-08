@@ -1,4 +1,4 @@
-import { FormErrorMessage, getAntdErrorStatus } from "@/components/FormItem.tsx";
+import { FormErrorMessage, getAntdErrorStatus } from "@/components/form.tsx";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Input } from "antd";
 import { Controller } from "react-hook-form";

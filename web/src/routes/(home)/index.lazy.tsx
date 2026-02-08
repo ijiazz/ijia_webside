@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import styled from "@emotion/styled";
 import { Screen, ScreenEffectsProvider } from "./-components/screen/mod.tsx";
 import { GodPlatform } from "./-components/Platforms.tsx";
-import { Footer } from "@/common/Footer.tsx";
+import { Footer } from "@/components/Footer.tsx";
 import { useWindowResize } from "@/lib/hook/window.ts";
 import { CaretDownOutlined } from "@ant-design/icons";
 import { HomeLinks } from "./-components/HomeLlink.tsx";

@@ -3,16 +3,15 @@ import styled from "@emotion/styled";
 import { Button, Checkbox, Form, Input, Space } from "antd";
 import { tryHashPassword } from "../../../../common/pwd_hash.ts";
 import { useAntdStatic, useThemeToken } from "@/provider/mod.tsx";
-import { IjiaLogo } from "@/common/site-logo.tsx";
-import { api, isHttpErrorCode } from "@/common/http.ts";
+import { IjiaLogo } from "@/components/IjiaLogo.tsx";
+import { api, isHttpErrorCode } from "@/request/client.ts";
 import { getPathByRoute } from "@/app.ts";
-import { EmailInput } from "../../../../common/EmailInput.tsx";
+import { EmailInput } from "../../../../components/EmailInput.tsx";
 import { EmailCaptchaActionType, PassportConfig } from "@/api.ts";
 import { MaskBoard } from "../-components/MaskBoard.tsx";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Route as ParentRoute } from "./route.tsx";
 import { useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/request/client.ts";
 import { clearUserCache } from "@/common/user.ts";
 
 export const Route = createLazyFileRoute("/_theme/passport/_video_background/signup")({

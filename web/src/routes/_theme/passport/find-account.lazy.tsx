@@ -1,12 +1,11 @@
 import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button, Form, Input, Steps, Result } from "antd";
-import React from "react";
 import { useState } from "react";
 import styled from "@emotion/styled";
-import { EmailInput } from "../../../common/EmailInput.tsx";
+import { EmailInput } from "../../../components/EmailInput.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useAntdStatic } from "@/provider/mod.tsx";
-import { api, isHttpErrorCode } from "@/common/http.ts";
+import { api, isHttpErrorCode } from "@/request/client.ts";
 import { ROUTES } from "@/app.ts";
 import { useTimeoutJump } from "@/hooks/timeout_jump.ts";
 import { tryHashPassword } from "../../../common/pwd_hash.ts";

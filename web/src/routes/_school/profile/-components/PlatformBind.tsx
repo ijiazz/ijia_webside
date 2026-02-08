@@ -9,7 +9,7 @@ import step2Path from "./PlatformBind/douyin-step-2.jpg";
 import step3Path from "./PlatformBind/douyin-step-3.webp";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Meta } from "@/lib/components/Meta.tsx";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 
 export function PlatformBind(props: { userId?: number; onBindSuccess?(): void }) {
   const { onBindSuccess, userId } = props;

@@ -6,7 +6,7 @@ import { VLink } from "@/lib/components/VLink.tsx";
 import { IS_MOBILE_LAYOUT, useThemeToken } from "@/provider/mod.tsx";
 import { UserBasicDto } from "@/api.ts";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { clearUserCache } from "@/common/user.ts";
 import { ROUTES } from "@/app.ts";
 import { useMemo } from "react";

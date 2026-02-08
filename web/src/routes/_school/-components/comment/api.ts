@@ -1,5 +1,5 @@
 import { GetPostCommentListParam, PostCommentDto } from "@/api.ts";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { CommentNode } from "./CommentItem.tsx";
 import { dateToString } from "@/common/date.ts";
 

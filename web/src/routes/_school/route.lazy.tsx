@@ -1,6 +1,6 @@
 import { createLazyFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import { PropsWithChildren, useContext, useMemo, useRef } from "react";
-import { IjiaLogo } from "../../common/site-logo.tsx";
+import { IjiaLogo } from "../../components/IjiaLogo.tsx";
 import { Button, Tooltip } from "antd";
 import { Outlet, useLocation } from "@tanstack/react-router";
 import { menus } from "../-layout/menus.tsx";

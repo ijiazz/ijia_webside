@@ -1,10 +1,10 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 
-import { StudentIdCard, StudentIdCardBack } from "@/common/StudentIdCard.tsx";
+import { StudentIdCard, StudentIdCardBack } from "@/components/school/StudentIdCard.tsx";
 import { ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import { useMemo, useState } from "react";
-import { toFileUrl } from "@/common/http.ts";
+import { toFileUrl } from "@/request/client.ts";
 import { PagePadding } from "@/lib/components/Page.tsx";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { CurrentUserProfileQueryOption } from "@/request/user.ts";

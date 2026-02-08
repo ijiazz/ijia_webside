@@ -1,6 +1,6 @@
 import { EmailCaptchaActionType } from "@/api.ts";
-import { EmailInput } from "@/common/EmailInput.tsx";
-import { FormErrorMessage, getAntdErrorStatus } from "@/components/FormItem.tsx";
+import { EmailInput } from "@/components/EmailInput.tsx";
+import { FormErrorMessage, getAntdErrorStatus } from "@/components/form.tsx";
 import { useAntdStatic } from "@/provider/mod.tsx";
 import { api, isHttpErrorCode } from "@/request/client.ts";
 import { UserOutlined } from "@ant-design/icons";

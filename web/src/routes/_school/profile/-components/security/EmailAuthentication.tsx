@@ -1,7 +1,7 @@
 import { Form, Input, Button } from "antd";
 import { useAntdStatic } from "@/provider/mod.tsx";
-import { api, isHttpErrorCode } from "@/common/http.ts";
-import { EmailInput } from "@/common/EmailInput.tsx";
+import { api, isHttpErrorCode } from "@/request/client.ts";
+import { EmailInput } from "@/components/EmailInput.tsx";
 import { EmailCaptchaActionType, EmailCaptchaReply, ImageCaptchaReply } from "@/api.ts";
 import { useMutation } from "@tanstack/react-query";
 

@@ -1,6 +1,6 @@
 import { lazyComponent } from "@/lib/lazy_component.tsx";
 import React, { ComponentType, FunctionComponent, Suspense } from "react";
-import { PageLoading } from "./page_state/Loading.tsx";
+import { PageLoading } from "./page_state.tsx";
 
 export function lazyPage<T extends ComponentType<any>>(load: () => Promise<T>): T;
 export function lazyPage<T extends ComponentType<any>, Mod extends {}>(

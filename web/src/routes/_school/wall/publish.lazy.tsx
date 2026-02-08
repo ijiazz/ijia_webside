@@ -1,5 +1,5 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Button } from "antd";
