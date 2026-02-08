@@ -58,10 +58,3 @@ export async function loginGetToken(email: string, pwd: string) {
   });
   return token;
 }
-
-export function getSelfPostRoute(userId: number) {
-  return `/wall/list/self`;
-}
-export function getUserPostRoute(userId: number) {
-  return `/wall/list?userId=${userId}`;
-}

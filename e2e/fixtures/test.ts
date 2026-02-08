@@ -23,7 +23,7 @@ export const vioServerTest = test.extend<Context>({
     return use(env);
   },
 });
-
+/** @deprecated 改用 getAppURFromRoute */
 export function getAppUrlFromRoute(route: string, token?: string): string {
   if (!route.startsWith("/")) throw new Error("router must start with /");
   const base = new URL(env.WEB_URL + route);
@@ -31,6 +31,21 @@ export function getAppUrlFromRoute(route: string, token?: string): string {
     base.searchParams.append("access_token", token);
   }
   return base.toString();
+}
+export function getAppURLFromRoute(
+  route: string,
+  search?: { [key: string]: string | number | boolean | undefined },
+): string {
+  if (!route.startsWith("/")) throw new Error("router must start with /");
+  const url = new URL(env.WEB_URL + route);
+  if (search) {
+    for (const [key, value] of Object.entries(search)) {
+      if (value !== undefined) {
+        url.searchParams.append(key, String(value));
+      }
+    }
+  }
+  return url.toString();
 }
 function getFreePort() {
   const processIndex = parseInt(process.env.TEST_PARALLEL_INDEX!);

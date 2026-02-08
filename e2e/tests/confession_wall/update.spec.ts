@@ -1,13 +1,15 @@
-import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { getSelfPostRoute, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
-import { createPost } from "@/utils/post.ts";
+import { vioServerTest as test } from "@/fixtures/test.ts";
+import { initAlice, initBob, loginGetToken } from "@/utils/user.ts";
+import { createPost, getSelfPostURL } from "@/utils/post.ts";
 import { Page } from "@playwright/test";
+import { setContextLogin } from "@/utils/browser.ts";
 
 const { expect, beforeEach } = test;
 
-test("修改内容", async function ({ page }) {
+test("修改内容", async function ({ page, context }) {
   const alice = await init(page);
-  await page.goto(getAppUrlFromRoute(getSelfPostRoute(alice.id), alice.token));
+  await setContextLogin(context, alice.token);
+  await page.goto(getSelfPostURL());
   const postItems = page.locator(".e2e-post-item");
   const post0 = postItems.nth(0);
 
@@ -26,9 +28,10 @@ test("修改内容", async function ({ page }) {
   await expect(textLocator).toHaveText("编辑后的内容");
 });
 
-test("将作品可见状态修改", async function ({ page }) {
+test("将作品可见状态修改", async function ({ page, context }) {
   const alice = await init(page);
-  await page.goto(getAppUrlFromRoute(getSelfPostRoute(alice.id), alice.token));
+  await setContextLogin(context, alice.token);
+  await page.goto(getSelfPostURL());
 
   const post = page.locator(".e2e-post-item").nth(0);
 

@@ -1,20 +1,20 @@
-import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
+import { vioServerTest as test } from "@/fixtures/test.ts";
 import { initAlice, initBob, loginGetToken } from "@/utils/user.ts";
-import { createPost } from "@/utils/post.ts";
-const { expect, beforeEach, beforeAll, describe } = test;
+import { createPost, getPostURL, getSelfPostURL } from "@/utils/post.ts";
+import { setContextLogin } from "@/utils/browser.ts";
+const { expect } = test;
 
-test("删除", async function ({ page }) {
-  let aliceToken: string;
+test("删除", async function ({ page, context }) {
   {
     const aliceInfo = await initAlice();
-    aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
+    const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
     await createPost({ content_text: "content4" }, aliceToken);
     await createPost({ content_text: "content3" }, aliceToken);
     await createPost({ content_text: "content2" }, aliceToken);
     await createPost({ content_text: "content1" }, aliceToken);
+    await setContextLogin(context, aliceToken);
+    await page.goto(getSelfPostURL());
   }
-
-  await page.goto(getAppUrlFromRoute("/wall/list/self", aliceToken));
 
   const postItems = page.locator(".e2e-post-item");
 
@@ -34,7 +34,7 @@ test("删除", async function ({ page }) {
   await expect(postItems).toHaveCount(2);
 });
 
-test("不能删除别人的内容", async function ({ page }) {
+test("不能删除别人的内容", async function ({ page, context }) {
   const aliceInfo = await initAlice();
   const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
   await createPost({ content_text: "alice" }, aliceToken);
@@ -42,7 +42,9 @@ test("不能删除别人的内容", async function ({ page }) {
   const bobInfo = await initBob();
   const bobToken = await loginGetToken(bobInfo.email, bobInfo.password);
 
-  await page.goto(getAppUrlFromRoute("/wall/list?userId=" + aliceInfo.id, bobToken));
+  await setContextLogin(context, bobToken);
+
+  await page.goto(getPostURL({ userId: aliceInfo.id }));
   const postItems = page.locator(".e2e-post-item");
   await postItems.nth(0).getByRole("button", { name: "more" }).click();
   await expect(page.getByText("删除"), "看不到Alice作品的删除按钮").toHaveCount(0);

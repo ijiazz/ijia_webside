@@ -1,6 +1,6 @@
 import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";
 import { CreatePostParam, GetPostListParam } from "@api/dto.ts";
-import { getAppUrlFromRoute } from "@/fixtures/test.ts";
+import { getAppURLFromRoute } from "@/fixtures/test.ts";
 import { dbPool } from "@/db/client.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 
@@ -31,10 +31,20 @@ export async function createCommentUseApi(config: {
   });
 }
 
-export function gotoComment(postId: number, token?: string) {
-  return getAppUrlFromRoute(`/wall/list?openCommentPostId=${postId}`, token);
+export function getPostURL(option: { userId?: number } = {}) {
+  return getAppURLFromRoute("/wall/list", { userId: option.userId });
+}
+export function getSelfPostURL() {
+  return getAppURLFromRoute("/wall/list/self");
 }
 
+export function getPostCommentURL(postId: number, option: { userId?: number } = {}) {
+  const { userId } = option;
+  return getAppURLFromRoute("/wall/list", {
+    openCommentPostId: postId,
+    userId,
+  });
+}
 export const POST_GROUPS: { id: number; name: string }[] = [
   {
     id: -1,
