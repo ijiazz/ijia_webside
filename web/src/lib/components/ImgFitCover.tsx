@@ -1,6 +1,5 @@
-import styled from "@emotion/styled";
-import classNames from "classnames";
-import React, { CSSProperties } from "react";
+import { css, cx } from "@emotion/css";
+import { CSSProperties } from "react";
 import { ReactNode } from "react";
 
 export function ImageFitCover(props: {
@@ -11,16 +10,16 @@ export function ImageFitCover(props: {
 }) {
   const { src, className, ...rest } = props;
   return (
-    <ImageFitCoverCSS>
+    <div className={ImageFitCoverCSS}>
       <img className="bg-cover" src={props.src} />
-      <div className={classNames("bg-cover-content", className)} {...rest}>
+      <div className={cx("bg-cover-content", className)} {...rest}>
         {props.children}
       </div>
-    </ImageFitCoverCSS>
+    </div>
   );
 }
 
-const ImageFitCoverCSS = styled.div`
+const ImageFitCoverCSS = css`
   margin-bottom: 8px;
   position: relative;
   .bg-cover {

@@ -1,5 +1,5 @@
 import { createLazyFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
-import styled from "@emotion/styled";
+import { css } from "@emotion/css";
 import { Button, Checkbox, Form, Input, Space } from "antd";
 import { tryHashPassword } from "../../../../common/pwd_hash.ts";
 import { useAntdStatic, useThemeToken } from "@/provider/mod.tsx";
@@ -22,7 +22,7 @@ function RouteComponent() {
   const config: PassportConfig = ParentRoute.useLoaderData() ?? {};
   const theme = useThemeToken();
   return (
-    <StyledPage>
+    <div className={StyledPage}>
       <MaskBoard>
         <Link to="/passport/login" viewTransition>
           <Button type="text" icon={<ArrowLeftOutlined />}>
@@ -38,7 +38,7 @@ function RouteComponent() {
         </div>
         <BasicInfo passportConfig={config} />
       </MaskBoard>
-    </StyledPage>
+    </div>
   );
 }
 
@@ -175,7 +175,7 @@ type FormValues = {
   email_code: string;
   password: string;
 };
-const StyledPage = styled.div`
+const StyledPage = css`
   height: 100%;
   display: flex;
   align-items: center;

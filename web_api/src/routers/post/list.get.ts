@@ -19,7 +19,12 @@ export default routeGroup.create({
   },
   async handler({ params, currentUserId }, ctx): Promise<PostResponse> {
     if (typeof params.userId === "number") {
-      const hasPermission = params.userId === currentUserId || (await ctx.get("userInfo").hasRolePermission(Role.Root));
+      const hasPermission =
+        params.userId === currentUserId ||
+        (await ctx
+          .get("userInfo")
+          .hasRolePermission(Role.Root)
+          .catch(() => false));
       if (hasPermission) {
         return getUserPostList(params.userId, params);
       }

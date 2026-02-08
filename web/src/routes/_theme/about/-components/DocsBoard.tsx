@@ -1,18 +1,18 @@
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import coverSrc from "../-img/cover.webp";
-import styled from "@emotion/styled";
+import { css } from "@emotion/css";
 
 export function DocsBoard(props: { children: ReactNode }) {
   return (
-    <CoverBoardCSS>
+    <div className={CoverBoardCSS}>
       <div className="cover">
         <img src={coverSrc} />
       </div>
       <main>{props.children}</main>
-    </CoverBoardCSS>
+    </div>
   );
 }
-const CoverBoardCSS = styled.div`
+const CoverBoardCSS = css`
   max-width: 800px;
   margin: 0 auto;
   main {

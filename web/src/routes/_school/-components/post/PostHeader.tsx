@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import { css } from "@emotion/css";
 import { Space, Typography } from "antd";
 import React, { CSSProperties } from "react";
 
@@ -15,7 +15,7 @@ export type PostHeaderProps = {
 
 export function PostHeader(props: PostHeaderProps) {
   return (
-    <PostHeaderCSS style={props.style}>
+    <div className={PostHeaderCSS} style={props.style}>
       <Space>
         <span className="post-header-owner-name">{props.userName}</span>
         <span className="post-header-platform">{props.platformIcon}</span>
@@ -25,10 +25,10 @@ export function PostHeader(props: PostHeaderProps) {
         <span className="post-header-time">{props.updateTime ? `更新于 ${props.updateTime}` : undefined}</span>
         <span> {props.ipLocation ? "IP: " + props.ipLocation : undefined}</span>
       </Text>
-    </PostHeaderCSS>
+    </div>
   );
 }
-const PostHeaderCSS = styled.div`
+const PostHeaderCSS = css`
   .post-header {
     &-owner-name {
       font-weight: 500;

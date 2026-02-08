@@ -6,7 +6,7 @@ import { DeleteOutlined, EditOutlined, SettingOutlined, WarningOutlined } from "
 import { MenuProps } from "antd";
 import { api } from "@/request/client.ts";
 import { useAntdStatic } from "@/provider/mod.tsx";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 
 export type PostListHandle = {
   reloadItem: (id: number) => Promise<void>;
@@ -124,16 +124,16 @@ export function PostList<T extends PublicPost>(props: PostListProps<T>) {
           );
         }
         return (
-          <PostListCSS key={item.post_id} style={{ borderRadius: 8 }} className="e2e-post-item">
-            <WallPostCard
-              item={item}
-              config={(item as any as SelfPost).config}
-              review={(item as any as SelfPost).review}
-              moreMenus={moreMenus}
-              onLike={onPostLike}
-              onOpenComment={onOpenComment}
-            />
-          </PostListCSS>
+          <WallPostCard
+            className={cx(PostListCSS, "e2e-post-item")}
+            key={item.post_id}
+            item={item}
+            config={(item as any as SelfPost).config}
+            review={(item as any as SelfPost).review}
+            moreMenus={moreMenus}
+            onLike={onPostLike}
+            onOpenComment={onOpenComment}
+          />
         );
       })}
       <ReportModal
@@ -159,7 +159,7 @@ export function PostList<T extends PublicPost>(props: PostListProps<T>) {
     </div>
   );
 }
-const PostListCSS = styled.div`
+const PostListCSS = css`
   margin-bottom: 12px;
   border-radius: 8px;
 `;

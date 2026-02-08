@@ -2,7 +2,6 @@ import { CaptchaPanel } from "@/components/captcha/captcha.tsx";
 import { Modal, Popover, Spin, Button } from "antd";
 import { useAsync } from "@/hooks/async.ts";
 import { PropsWithChildren, useEffect, useState } from "react";
-import styled from "@emotion/styled";
 import { api, API_PREFIX } from "@/request/client.ts";
 
 function useImageCaptcha(config: { onSubmit?: (sessionId: string, selected: number[]) => void | Promise<void> }) {
@@ -73,7 +72,7 @@ export function ImageCaptchaPopover(props: ImageCaptchaPopoverProps) {
         if (open === false) props.onCancel?.();
       }}
       content={
-        <CssImageCaptchaPopover>
+        <div>
           <Spin spinning={captchaLoading}>
             <CaptchaPanel
               value={selected}
@@ -82,7 +81,7 @@ export function ImageCaptchaPopover(props: ImageCaptchaPopoverProps) {
               onChange={setSelected}
               isError={isError}
             />
-            <div className="footer" style={{ display: "flex", gap: 12, justifyContent: "end" }}>
+            <div style={{ display: "flex", gap: 12, justifyContent: "end", marginTop: 12 }}>
               <Button
                 disabled={disabled || submitLoading}
                 onClick={() => {
@@ -107,7 +106,7 @@ export function ImageCaptchaPopover(props: ImageCaptchaPopoverProps) {
               </Button>
             </div>
           </Spin>
-        </CssImageCaptchaPopover>
+        </div>
       }
     >
       {props.children}
@@ -115,11 +114,6 @@ export function ImageCaptchaPopover(props: ImageCaptchaPopoverProps) {
   );
 }
 
-const CssImageCaptchaPopover = styled.div`
-  .footer {
-    margin-top: 12px;
-  }
-`;
 type ImageCaptchaModal = {
   open?: boolean;
   onCancel?: () => void;

@@ -70,7 +70,7 @@ export async function getCommentList(
       const where = [`NOT c.is_delete`];
 
       where.push(
-        `(p.user_id = ${v(currentUserId)} OR (${["NOT p.reviewing_id IS NOT NULL", "NOT p.is_hide"].join(" AND ")}))`,
+        `(p.user_id = ${v(currentUserId)} OR (${["NOT review_status_is_progress(p.review_status)", "NOT p.is_hide"].join(" AND ")}))`,
       );
 
       if (commentId) {

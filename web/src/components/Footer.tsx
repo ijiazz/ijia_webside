@@ -1,5 +1,5 @@
-import styled from "@emotion/styled";
-import React, { ReactNode } from "react";
+import { css } from "@emotion/css";
+import { ReactNode } from "react";
 
 import { GithubOutlined } from "@ant-design/icons";
 import { Link } from "@tanstack/react-router";
@@ -30,7 +30,7 @@ const footerLinks: {
 ];
 export function Footer() {
   return (
-    <FooterCSS>
+    <div className={FooterCSS}>
       {footerLinks.map((item, index) => {
         return (
           <Link key={index + item.link} className="link-item" to={item.link} target={"_blank"} viewTransition>
@@ -39,11 +39,11 @@ export function Footer() {
           </Link>
         );
       })}
-    </FooterCSS>
+    </div>
   );
 }
 
-const FooterCSS = styled.div`
+const FooterCSS = css`
   padding: 12px;
   background-color: #909090;
   .link-item {

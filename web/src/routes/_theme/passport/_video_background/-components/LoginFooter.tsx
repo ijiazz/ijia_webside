@@ -1,11 +1,11 @@
 import { FormErrorMessage } from "@/components/form.tsx";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { Checkbox } from "antd";
 import { Controller } from "react-hook-form";
 
 export function LoginFooter() {
   return (
-    <LoginFormFooterCSS>
+    <div className={LoginFormFooterCSS}>
       <Controller
         name="keepLoggedIn"
         render={({ field, fieldState }) => (
@@ -46,10 +46,10 @@ export function LoginFooter() {
           </div>
         )}
       />
-    </LoginFormFooterCSS>
+    </div>
   );
 }
-const LoginFormFooterCSS = styled.div`
+const LoginFormFooterCSS = css`
   .ant-checkbox-label {
     color: #fff;
   }

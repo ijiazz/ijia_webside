@@ -1,9 +1,8 @@
 import { Result } from "antd";
 import { useMemo } from "react";
 import { CheckCircleTwoTone } from "@ant-design/icons";
-import classnames from "classnames";
 import { useThemeToken } from "@/provider/mod.tsx";
-import { css } from "@emotion/css";
+import { css, cx } from "@emotion/css";
 
 export type CaptchaPanelProps = {
   title?: string;
@@ -35,7 +34,7 @@ export function CaptchaPanel(props: CaptchaPanelProps) {
           {imageList.map((src, index) => {
             const checked = selected.has(index);
             return (
-              <div key={src + index} className={classnames(CaptchaItem, { checked })}>
+              <div key={src + index} className={cx(CaptchaItem, { checked })}>
                 <img className="captcha-img" src={src} onClick={() => onCheck(index)} />
                 {checked ? (
                   <CheckCircleTwoTone className="checked-icon" twoToneColor={theme.colorSuccess} />

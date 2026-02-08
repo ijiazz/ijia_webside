@@ -1,6 +1,6 @@
 import { AssetImage, AssetMediaDto, AssetVideo, TextStructure } from "@/api.ts";
 import { useThemeToken } from "@/provider/mod.tsx";
-import styled from "@emotion/styled";
+import { css } from "@emotion/css";
 import { CSSProperties, useMemo } from "react";
 import { ReactNode } from "react";
 import { MediaType } from "@/api.ts";
@@ -22,7 +22,7 @@ export function PostContent(props: PostContentProps) {
     return list;
   }, [props.media]);
   return (
-    <PostContentCSS>
+    <div className={PostContentCSS}>
       <TextStruct
         text={props.text}
         structure={props.textStruct}
@@ -30,7 +30,7 @@ export function PostContent(props: PostContentProps) {
         style={{ marginBottom: 12 }}
       />
       {mediaList.length > 1 ? (
-        <PostMediaMultipleCSS>
+        <div className={PostMediaMultipleCSS}>
           {mediaList.map((item, index) => {
             if (!item) return <InvalidAsset />;
 
@@ -66,11 +66,11 @@ export function PostContent(props: PostContentProps) {
               element
             );
           })}
-        </PostMediaMultipleCSS>
+        </div>
       ) : mediaList.length ? (
         <div className="post-single">{getSingleMedia(mediaList[0])}</div>
       ) : undefined}
-    </PostContentCSS>
+    </div>
   );
 }
 function getSingleMedia(item?: AssetMediaDto) {
@@ -87,7 +87,7 @@ function getSingleMedia(item?: AssetMediaDto) {
       break;
   }
 }
-const PostMediaMultipleCSS = styled.div`
+const PostMediaMultipleCSS = css`
   overflow: auto;
   max-width: 100%;
   display: grid;
@@ -119,7 +119,7 @@ const PostMediaMultipleCSS = styled.div`
     }
   }
 `;
-const PostContentCSS = styled.div`
+const PostContentCSS = css`
   overflow: hidden;
   .post-single {
     overflow: hidden;

@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 import { Link } from "@tanstack/react-router";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 const { Paragraph } = Typography;
 export type TextStructProps = Pick<React.HTMLAttributes<HTMLDivElement>, "className" | "style"> & {
   text?: string | null;
@@ -35,7 +35,7 @@ export function TextStruct(props: TextStructProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <StyledTextStruct {...rest}>
+    <div {...rest} className={cx(StyledTextStruct, rest.className)} style={{ ...style }}>
       <Paragraph
         ellipsis={{
           rows: 10,
@@ -63,10 +63,10 @@ export function TextStruct(props: TextStructProps) {
       >
         {split}
       </Paragraph>
-    </StyledTextStruct>
+    </div>
   );
 }
-const StyledTextStruct = styled.div`
+const StyledTextStruct = css`
   white-space: pre-wrap;
   color: red;
 `;

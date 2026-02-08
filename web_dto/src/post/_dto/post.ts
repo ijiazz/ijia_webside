@@ -78,8 +78,8 @@ export type SelfPost = PublicPost & {
     /** 是否关闭评论 */
     comment_disabled?: boolean;
   };
-  review?: {
-    status: ReviewStatus;
+  review: {
+    status?: ReviewStatus;
     remark?: string; // 审核结果评论
   };
 };

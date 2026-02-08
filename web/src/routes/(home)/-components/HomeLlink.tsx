@@ -1,8 +1,9 @@
-import React, { CSSProperties, PropsWithChildren, ReactNode, useMemo } from "react";
-import styled from "@emotion/styled";
+import { CSSProperties, PropsWithChildren, ReactNode, useMemo } from "react";
+import { cx } from "@emotion/css";
 import { ExportOutlined } from "@ant-design/icons";
 import { Dropdown } from "antd";
 import { Link } from "@tanstack/react-router";
+import * as styles from "./HomeLink.css.ts";
 
 export type HomeLinkProps = {
   blackMode?: boolean;
@@ -20,7 +21,7 @@ export function HomeLinks(props: HomeLinkProps) {
         return (
           <Hover color={color} key={key}>
             <Dropdown
-              popupRender={(menu) => <StyledDropdown>{menu}</StyledDropdown>}
+              open
               menu={{
                 items: item.children.map((child) => ({
                   key: child.href,
@@ -32,8 +33,11 @@ export function HomeLinks(props: HomeLinkProps) {
                   ),
                 })),
               }}
+              classNames={{
+                root: styles.Dropdown,
+              }}
             >
-              <span className="link-item">
+              <span className={styles.LinkItem} style={{ color: blackMode ? "#fff" : "#000" }}>
                 {item.icon} {item.title}
               </span>
             </Dropdown>
@@ -42,7 +46,7 @@ export function HomeLinks(props: HomeLinkProps) {
       }
       return (
         <Link to={item.href} key={key} viewTransition target={item.open ? "_blank" : undefined}>
-          <Hover color={color} className="link-item">
+          <Hover color={color} className={styles.LinkItem} style={{ color: blackMode ? "#fff" : "#000" }}>
             {item.icon}
             {item.title}
           </Hover>
@@ -51,26 +55,21 @@ export function HomeLinks(props: HomeLinkProps) {
     });
   }, [links, blackMode]);
   return (
-    <HomeLinksCSS {...props} style={{ backdropFilter: background ? "blur(3px)" : undefined }}>
-      {/* <div className="home-link home-link-left"></div> */}
-      <div className="home-link home-link-right">{items}</div>
-    </HomeLinksCSS>
+    <div
+      {...props}
+      className={cx(styles.HomeLinks, props.className)}
+      style={{
+        backdropFilter: background ? "blur(3px)" : undefined,
+        backgroundColor: background || "transparent",
+        ...props.style,
+      }}
+    >
+      {/* <div className={cx(styles.HomeLink, "home-link-left")}></div> */}
+      <div className={cx(styles.HomeLink, "home-link-right")}>{items}</div>
+    </div>
   );
 }
-const StyledDropdown = styled.div`
-  .ant-dropdown-menu {
-    background-color: #0004;
-    padding: 0;
-    .ant-dropdown-menu-item {
-      :hover {
-        background-color: #0000005e;
-      }
-    }
-  }
-  .ant-dropdown-menu-title-content {
-    color: #fff;
-  }
-`;
+
 type LinkItem = {
   href: string;
   title: string;
@@ -99,98 +98,18 @@ const links: ChildrenLink[] = [
   },
 ];
 
-const HomeLinksCSS = styled.div<{ blackMode?: boolean; background?: string }>`
-  display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  align-items: center;
-  pointer-events: all;
-  background-color: ${({ background }) => background || "transparent"};
-  a {
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-  .home-link {
-    padding: 8px 12px;
-    display: flex;
-    > * {
-      padding-left: 4%;
-      padding-right: 4%;
-    }
-
-    .link-item {
-      color: ${({ blackMode }) => (blackMode ? "#fff" : "#000")};
-      font-weight: 500;
-      font-size: 14px;
-    }
-  }
-  @media screen and (max-width: 550px) {
-    .home-link > * {
-      padding-left: 4px;
-      padding-right: 4px;
-    }
-  }
-  @media screen and (max-width: 400px) {
-    .home-link > * {
-      padding-left: 2px;
-      padding-right: 2px;
-    }
-  }
-  .home-link-left {
-  }
-  .home-link-right {
-    flex: 1;
-    justify-content: flex-end;
-  }
-`;
-
 const Hover = (props: PropsWithChildren<{ style?: CSSProperties; color?: string; className?: string }>) => {
   return (
-    <StyledWrapper style={props.style} color={props.color} className={props.className}>
+    <div
+      style={{
+        "--color": props.color || "#fff",
+        ...props.style,
+      }}
+      className={cx(styles.Hover, props.className)}
+    >
       <button className="cta">
         <span className="hover-underline-animation"> {props.children} </span>
       </button>
-    </StyledWrapper>
+    </div>
   );
 };
-
-const StyledWrapper = styled.div<{ color?: string }>`
-  --color: ${(props) => props.color || "#fff"};
-  .cta {
-    border: none;
-    background: none;
-    cursor: pointer;
-  }
-
-  .cta span {
-    padding-bottom: 7px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--color);
-    text-shadow: 0 0 10px #fff;
-  }
-
-  .hover-underline-animation {
-    position: relative;
-    padding-bottom: 20px;
-  }
-
-  .hover-underline-animation:after {
-    content: "";
-    position: absolute;
-    width: 100%;
-    transform: scaleX(0);
-    height: 2px;
-    bottom: 0;
-    left: 0;
-    background-color: var(--color);
-    transform-origin: bottom right;
-    transition: transform 0.25s ease-out;
-  }
-
-  .cta:hover .hover-underline-animation:after {
-    transform: scaleX(1);
-    transform-origin: bottom left;
-  }
-`;

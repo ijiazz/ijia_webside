@@ -60,7 +60,7 @@ test("点赞自己和别人的评论", async function ({ page, context, browser 
 
 test("游客禁止点赞", async function ({ page }) {
   await createRootComment(postId, "comment", alice.token);
-  await page.goto(getAppUrlFromRoute(`/wall/list/self?openCommentPostId=${postId}`));
+  await page.goto(getAppUrlFromRoute(`/wall/list?openCommentPostId=${postId}`));
   const firstBtn = page.getByRole("dialog").getByRole("button", { name: "heart" });
   await expect(firstBtn).toBeDisabled();
 });

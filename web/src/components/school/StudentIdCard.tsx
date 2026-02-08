@@ -1,6 +1,5 @@
 import { Avatar } from "antd";
-import styled from "@emotion/styled";
-import React from "react";
+import { css } from "@emotion/css";
 import school_card_front from "@/assets/school-card-front.webp";
 import school_card_back from "@/assets/school-card-back.webp";
 import logo from "@/assets/ijia-logo.png";
@@ -23,7 +22,8 @@ export function StudentIdCard(props: StudentIdCardInfo & { scale?: number }) {
   const scale = props.scale ?? 1;
 
   return (
-    <StudentIdCardCSS
+    <div
+      className={StudentIdCardCSS}
       style={{
         height: HEIGHT * scale,
         width: WIDTH * scale,
@@ -57,11 +57,11 @@ export function StudentIdCard(props: StudentIdCardInfo & { scale?: number }) {
         </i>
       )}
       {studentInfo.isOfficial && <img className="student-card-logo" src={logo}></img>}
-    </StudentIdCardCSS>
+    </div>
   );
 }
 
-const StudentIdCardCSS = styled.div`
+const StudentIdCardCSS = css`
   box-sizing: border-box;
   position: relative;
   background-image: url(${school_card_front});
@@ -118,7 +118,8 @@ const StudentIdCardCSS = styled.div`
 export function StudentIdCardBack(props: { scale?: number }) {
   const scale = props.scale ?? 1;
   return (
-    <StudentIdCardBackCSS
+    <div
+      className={StudentIdCardBackCSS}
       style={{
         height: HEIGHT * scale,
         width: WIDTH * scale,
@@ -141,11 +142,11 @@ export function StudentIdCardBack(props: { scale?: number }) {
           <li>要一直坚定的做佳佳的小粉丝，不，是佳佳的宝宝</li>
         </ol>
       </div>
-    </StudentIdCardBackCSS>
+    </div>
   );
 }
 
-const StudentIdCardBackCSS = styled.div`
+const StudentIdCardBackCSS = css`
   position: relative;
   background-image: url(${school_card_back});
   background-size: cover;

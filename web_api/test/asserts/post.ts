@@ -1,46 +1,69 @@
 import { expect } from "vitest";
 import { ReviewStatus } from "@ijia/data/db";
-import { getPostReviewStatus } from "#test/utils/post.ts";
-import { select, v } from "@asla/yoursql";
-import { dbPool } from "@/db/client.ts";
+import { getCommentReviewStatus, getPostReviewStatus } from "#test/utils/post.ts";
 
 expect.extend({
   async postReviewStatusIs(postId: number, status: ReviewStatus | null) {
     const info = await getPostReviewStatus(postId);
-
-    if (status === null) {
+    if (info === null) {
       return {
-        pass: info === null,
-        message: () => `预期帖子 "${postId}" 不存在审核任务， 实际存在`,
-        actual: info,
-        expected: "不存在审核任务",
+        pass: false,
+        message: () => `帖子 "${postId}" 不存在`,
+      };
+    }
+    if (info.status === status) {
+      const expectPass = REVIEW_PASSED[status!];
+      return {
+        pass: expectPass === info.is_review_pass,
+        message: () => `预期 is_review_pass 为${expectPass}，但实际为 ${info.is_review_pass}`,
+        actual: info.is_review_pass,
+        expected: expectPass,
       };
     }
 
     const expectMsg = `预期帖子 "${postId}" 的审核状态为 ${status}`;
-    if (!info) {
-      const [post] = await dbPool.queryRows(
-        select([`review_id`, "reviewing_id"])
-          .from("post")
-          .where(`id=${v(postId)}`),
-      );
+
+    return {
+      pass: false,
+      message: () => `${expectMsg}，但实际为 ${info.status}`,
+      actual: info.status,
+      expected: status,
+    };
+  },
+  async postCommentReviewStatusIs(commentId: number, status: ReviewStatus | null) {
+    const info = await getCommentReviewStatus(commentId);
+    if (info === null) {
       return {
         pass: false,
-        expected: status,
-        message: () => `${expectMsg}，实际不存在审核任务`,
-        actual: {
-          ...post,
-        },
+        message: () => `评论 "${commentId}" 不存在`,
       };
     }
+
+    if (info.status === status) {
+      const expectPass = REVIEW_PASSED[status!];
+      return {
+        pass: expectPass === info.is_review_pass,
+        message: () => `预期 is_review_pass 为${expectPass}，但实际为 ${info.is_review_pass}`,
+        actual: info.is_review_pass,
+        expected: expectPass,
+      };
+    }
+
+    const expectMsg = `预期评论 "${commentId}" 的审核状态为 ${status}`;
     return {
-      pass: info?.status === status,
+      pass: false,
       message: () => `${expectMsg}，但实际为 ${info.status}`,
-      actual: info?.status,
+      actual: info.status,
       expected: status,
     };
   },
 });
+const REVIEW_PASSED = {
+  [ReviewStatus.passed]: true,
+  [ReviewStatus.rejected]: false,
+  [ReviewStatus.pending]: null,
+  null: null,
+} as const;
 
 interface PostMatchers<R = unknown> {
   postReviewStatusIs: (status: ReviewStatus | null) => Promise<Awaited<R>>;

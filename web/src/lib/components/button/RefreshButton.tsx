@@ -1,12 +1,16 @@
-import React, { CSSProperties, ReactNode } from "react";
-import styled from "@emotion/styled";
+import { CSSProperties, ReactNode } from "react";
+import { css, cx } from "@emotion/css";
 
 export function RefreshButton(props: { children?: ReactNode; className?: string; style?: CSSProperties }) {
-  const { children, ...reset } = props;
-  return <StyledWrapper {...reset}>{children}</StyledWrapper>;
+  const { children, className, style, ...reset } = props;
+  return (
+    <div {...reset} style={style} className={cx(RefreshButtonCSS, className)}>
+      {children}
+    </div>
+  );
 }
 
-const StyledWrapper = styled.button`
+const RefreshButtonCSS = css`
   cursor: pointer;
   display: flex;
   align-items: center;

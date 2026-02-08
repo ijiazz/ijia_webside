@@ -1,13 +1,12 @@
 import { ReactNode } from "react";
 import { useThemeToken } from "@/provider/mod.tsx";
-import styled from "@emotion/styled";
-import React from "react";
+import { css } from "@emotion/css";
 
 export function Meta(props: { icon?: ReactNode; title?: ReactNode; description?: ReactNode }) {
   const { icon, description, title } = props;
   const token = useThemeToken();
   return (
-    <MetaCSS>
+    <div className={MetaCSS}>
       {icon}
       <div className="text">
         <div className="title" style={{ fontWeight: token.fontWeightStrong, flexShrink: 0 }}>
@@ -17,10 +16,10 @@ export function Meta(props: { icon?: ReactNode; title?: ReactNode; description?:
           {description}
         </div>
       </div>
-    </MetaCSS>
+    </div>
   );
 }
-const MetaCSS = styled.div`
+const MetaCSS = css`
   margin: 8px 12px;
   display: flex;
   gap: 8px;

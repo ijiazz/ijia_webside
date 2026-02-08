@@ -108,6 +108,7 @@ describe("更新已审核通过的帖子", async function () {
 });
 
 test("审核中的帖子，更新内容后仍为审核中，审核数据重置", async function ({ api, publicDbPool }) {
+  // 不一定需要选择分组。可能是因为举报触发的审核
   const { post: freePost, alice } = await preparePost(api, { content_text: "1" });
 
   await setPostToReviewing(freePost.id); // 设置为审核中
@@ -140,7 +141,7 @@ test("更新审核不通过的帖子，审核数据重置", async function ({ ap
     const info = await getPostReviewStatus(p1.id);
     expect(info, "未审核，审核计数为0").toMatchObject({ is_review_pass: null } satisfies DeepPartial<PostReviewInfo>);
   }
-  await expect(p2.id, "选择了分组，则审核状态变为审核中").postReviewStatusIs(ReviewStatus.pending); // TODO: 需要确认是否要改为审核中
+  await expect(p2.id, "未选择选择了分组，则审核状态清除").postReviewStatusIs(ReviewStatus.pending);
 });
 
 test("更新帖子的评论关闭状态", async function ({ api, publicDbPool }) {

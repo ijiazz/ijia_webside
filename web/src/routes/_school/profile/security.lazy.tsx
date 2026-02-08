@@ -2,7 +2,7 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 
 import { Form, Input, Button, Steps, Modal, Space } from "antd";
 import { useAntdStatic } from "@/provider/mod.tsx";
-import { PagePadding } from "@/lib/components/Page.tsx";
+import * as styles from "@/lib/components/Page.tsx";
 import { useEffect, useMemo, useState } from "react";
 import { api, isHttpErrorCode } from "@/request/client.ts";
 import { MailOutlined } from "@ant-design/icons";
@@ -21,10 +21,10 @@ export const Route = createLazyFileRoute("/_school/profile/security")({
 
 function RouteComponent() {
   return (
-    <PagePadding>
+    <div className={styles.PagePadding}>
       <ChangePassport />
       <ChangeEmail />
-    </PagePadding>
+    </div>
   );
 }
 function ChangePassport() {

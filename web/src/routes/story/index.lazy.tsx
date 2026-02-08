@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import React, { useEffect, useRef, useState } from "react";
 import { CaptionType, Question, CaptionTip, CaptionFlow, Dialogue } from "@/lib/components/talk.tsx";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { RefreshButton } from "@/lib/components/button.tsx";
 import { be1Card, be2Card, comeAcross, finishSchool, verifyCard } from "./-components/data.tsx";
 import bg_audio from "./-img/bg-audio.aac";
@@ -45,25 +45,25 @@ function Card(props: { captionTip?: CaptionTip; src?: string }) {
       break;
   }
   return (
-    <CardCSS style={{ backgroundImage: `url(${props.src})` }}>
+    <div className={CardCSS} style={{ backgroundImage: `url(${props.src})` }}>
       <div></div>
       <div></div>
       <div style={{ width: "100%" }}>
         <h2 className="caption">
           <CaptionFlow text={captionTip?.text} />
         </h2>
-        <SelectCSS>
+        <div className={SelectCSS}>
           {question?.answers.map((item) => (
             <RefreshButton key={item.value} className="select-btn">
               {item.text}
             </RefreshButton>
           ))}
-        </SelectCSS>
+        </div>
       </div>
-    </CardCSS>
+    </div>
   );
 }
-const SelectCSS = styled.div`
+const SelectCSS = css`
   display: flex;
   justify-content: space-around;
   flex-wrap: wrap;
@@ -74,7 +74,7 @@ const SelectCSS = styled.div`
     padding: 8px 16px;
   }
 `;
-const CardCSS = styled.div`
+const CardCSS = css`
   height: 100%;
   background-size: cover;
   background-position: center;

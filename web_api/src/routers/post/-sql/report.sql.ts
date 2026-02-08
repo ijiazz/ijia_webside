@@ -4,6 +4,7 @@ import { HttpError } from "@/global/errors.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { select, update } from "@asla/yoursql";
 import { setPostCommentToReviewing, setPostToReviewing } from "@/routers/review/mod.ts";
+import { ReviewStatus } from "@ijia/data/db";
 
 export async function reportPost(postId: number, userId: number, reason?: string): Promise<number> {
   const oldWeight = select(["weight"])
@@ -74,7 +75,7 @@ export async function reportComment(commentId: number, userId: number, reason?: 
     .set({ dislike_count: `dislike_count - insert_report.weight` })
     .from("insert_report")
     .where(`id=insert_report.comment_id AND NOT is_delete`)
-    .returning(["id", "reviewing_id", "dislike_count"])
+    .returning(["id", "review_status", "dislike_count"])
     .toString()}
   `;
 
@@ -83,12 +84,11 @@ export async function reportComment(commentId: number, userId: number, reason?: 
   if (insertRecordRes.rows?.length) {
     const row = insertRecordRes.rows[0] as {
       id: number;
-      reviewing_id: number | null;
+      review_status: ReviewStatus | null;
       dislike_count: number;
     };
-    if (row.reviewing_id === null && row.dislike_count >= REPORT_THRESHOLD) {
-      const res = await t.queryCount(setPostCommentToReviewing(row.id));
-      console.log("reportComment setPostCommentToReviewing", res);
+    if (row.review_status === null && row.dislike_count >= REPORT_THRESHOLD) {
+      await t.execute(setPostCommentToReviewing(row.id));
     }
   } else {
     if (o1.rows?.[0]) {

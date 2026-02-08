@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { IS_MOBILE_LAYOUT, LayoutDirection, useLayoutDirection, useThemeToken } from "@/provider/mod.tsx";
 import { Menu } from "antd";
 type AntdMenuProps = Omit<Parameters<typeof Menu>[0], "children">;
@@ -24,20 +24,23 @@ export function AdaptiveMenuLayout(props: AdaptiveMenuLayoutProps) {
 
   const theme = useThemeToken();
   return (
-    <AdaptiveMenuLayoutCSS className={className} style={style}>
-      <NavigationTabCSS className="adaptive-menu" style={{ borderColor: theme.colorBorderSecondary, ...styles?.menu }}>
+    <div className={cx(AdaptiveMenuLayoutCSS, className)} style={style}>
+      <div
+        className={cx(NavigationTabCSS, "adaptive-menu")}
+        style={{ borderColor: theme.colorBorderSecondary, ...styles?.menu }}
+      >
         <div className="adaptive-menu-left">{leftExtra}</div>
 
         <Menu {...menuProps} mode={isVertical ? "horizontal" : "vertical"} className="adaptive-menu-center" />
         <div className="adaptive-menu-right"> {rightExtra}</div>
-      </NavigationTabCSS>
+      </div>
       <div className="adaptive-content" style={styles?.content}>
         {children}
       </div>
-    </AdaptiveMenuLayoutCSS>
+    </div>
   );
 }
-const NavigationTabCSS = styled.div`
+const NavigationTabCSS = css`
   overflow: auto;
   display: flex;
   border: 0px solid;
@@ -70,7 +73,7 @@ const NavigationTabCSS = styled.div`
   }
 `;
 
-const AdaptiveMenuLayoutCSS = styled.div`
+const AdaptiveMenuLayoutCSS = css`
   display: flex;
   overflow: auto;
   > .adaptive-content {

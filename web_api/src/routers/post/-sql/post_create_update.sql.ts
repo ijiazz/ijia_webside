@@ -1,4 +1,4 @@
-import { TextStructure } from "@ijia/data/db";
+import { ReviewStatus, TextStructure } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
 import { textStructChecker } from "../-utils/text_struct.ts";
@@ -76,29 +76,42 @@ export async function updatePostContent(
       update_time: update_content_text === undefined ? undefined : "now()",
     })
     .where(`id = ${v(postId)} AND user_id = ${v(userId)} AND (NOT is_delete)`)
-    .returning(["id", "group_id", "reviewing_id", "review_id"]);
+    .returning(["id", "group_id", "review_status", "review_id"]);
   const [row] = await dbPool.queryRows<{
     id: number;
     group_id: number | null;
-    reviewing_id: number | null;
+    review_status: ReviewStatus | null;
     review_id: number | null;
   }>(sql);
   if (!row) return 0;
-  if (row.group_id !== null || row.reviewing_id !== null) {
+
+  if (
+    row.group_id !== null ||
+    row.review_status === ReviewStatus.pending ||
+    row.review_status === ReviewStatus.rejected
+  ) {
     await t.queryCount(setPostToReviewing(postId));
-  } else if (row.review_id !== null) {
-    await t.execute([
-      update("public.post")
-        .set({ review_id: "null" })
-        .where(`id=${v(postId)}`),
-      deleteFrom("review").where(`id=${v(row.review_id)}`),
-    ]);
+  } else {
+    const sql = [];
+    if (row.review_status !== null) {
+      sql.push(
+        update("public.post")
+          .set({ review_status: "null" })
+          .where(`id=${v(postId)}`),
+      );
+    }
+    if (row.review_id !== null) {
+      sql.push(deleteFrom("review").where(`id=${v(row.review_id)}`));
+    }
+    if (sql.length > 0) {
+      await t.execute(sql);
+    }
   }
 
+  //TODO: 判断是否需要清除 dislike 数据
   await t.commit();
   return 1;
 }
-
 export async function updatePostConfig(postId: number, userId: number, param: UpdatePostConfigParam): Promise<number> {
   const { comment_disabled, is_hide } = param;
   const updateContentSql = await dbPool.queryCount(

@@ -1,19 +1,13 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import {
-  getCommentStat,
-  prepareCommentPost,
-  setCommentLike,
-  CommentInfo,
-  reportComment,
-  getCommentReviewStatus,
-  CommentReviewStatus,
-} from "../../utils/post.ts";
+import { getCommentStat, prepareCommentPost, setCommentLike, CommentInfo, reportComment } from "../../utils/post.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import { dbPool } from "@/db/client.ts";
-import { select, v } from "@asla/yoursql";
-import { postRoutes, reviewRoutes, commentRoutes } from "@/routers/mod.ts";
+import { select } from "@asla/yoursql";
+import { postRoutes, commentRoutes } from "@/routers/mod.ts";
 import { commitPostCommentReview, setPostCommentToReviewing } from "@/routers/review/mod.ts";
+import { ReviewStatus } from "@ijia/data/db";
+import "#test/asserts/post.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);
@@ -40,18 +34,15 @@ test("有效举报人数达到3人时，评论将进入审核状态", async func
   }
   await expect(getCommentReviewWeight(comment.id)).resolves.toBe(200);
 
-  await expect(getCommentReviewStatus(comment.id), "评论未在审核状态").resolves.toBeUndefined();
+  await expect(comment.id, "评论未在审核状态").postCommentReviewStatusIs(null);
 
   const bob3 = await prepareUniqueUser("bob3");
   await reportComment(api, p.id, "测试举报", bob3.token);
   await expect(getCommentReviewWeight(comment.id)).resolves.toBe(300);
-  await expect(getCommentReviewStatus(comment.id)).resolves.toMatchObject({
-    is_review_pass: null,
-    reviewed_time: null,
-  } satisfies Partial<CommentReviewStatus>);
+  await expect(comment.id).postCommentReviewStatusIs(ReviewStatus.pending);
 });
 
-test("审核通过后，举报人数达到3人后，评论审核状态不变", async function ({ api }) {
+test("审核通过后，举报人数达到3人后，评论审核状态不变", async function ({ api, publicDbPool }) {
   const { post: p, alice, action } = await prepareCommentPost(api);
 
   const bob = await prepareUniqueUser("bob");
@@ -66,9 +57,7 @@ test("审核通过后，举报人数达到3人后，评论审核状态不变", a
   await reportComment(api, comment1.id, "测试举报", bob.token);
   await reportComment(api, comment1.id, "测试举报", bob2.token);
 
-  await expect(getCommentReviewStatus(comment1.id)).resolves.toMatchObject({
-    is_review_pass: true,
-  } satisfies Partial<CommentReviewStatus>);
+  await expect(comment1.id).postCommentReviewStatusIs(ReviewStatus.passed);
 });
 
 test("已举报的评论，不能再点赞", async function ({ api, publicDbPool }) {

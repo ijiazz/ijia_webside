@@ -70,7 +70,7 @@ function getCurrUserField(currentUserId: number | null) {
       can_update: `u.id=${v(currentUserId)}`,
       disabled_comment_reason: `
       CASE 
-        WHEN p.reviewing_id IS NOT NULL THEN '审核中或审核不通过的帖子不能评论' 
+        WHEN review_status_is_progress(p.review_status) THEN '审核中或审核不通过的帖子不能评论' 
         WHEN get_bit(p.options, 1)='1' AND p.user_id != ${v(currentUserId)} THEN '作者评论已关闭功能' 
         ELSE NULL END`,
 
@@ -102,7 +102,7 @@ export async function getPublicPostList(
     .where(() => {
       const where: string[] = [`NOT p.is_delete`];
 
-      const exclude = `(p.publish_time IS NULL OR p.reviewing_id IS NOT NULL OR p.is_hide)`; // 审核中和审核不通过和已隐藏
+      const exclude = `(p.publish_time IS NULL OR review_status_is_progress(p.review_status) OR p.is_hide)`; // 审核中和审核不通过和已隐藏
       where.push(`(NOT ${exclude})`);
       if (typeof userId === "number") where.push(`p.user_id =${v(userId)}`);
 
@@ -140,25 +140,10 @@ export async function getUserPostList(
       comment_disabled: "get_bit(p.options, 1)::BOOL",
       self_visible: "p.is_hide",
     }),
-    review: `(CASE WHEN p.reviewing_id IS NOT NULL THEN
-      ${select(
-        jsonb_build_object({
-          status: `(CASE r.is_passed 
-            WHEN TRUE THEN ${v(ReviewStatus.passed)}
-            WHEN FALSE THEN ${v(ReviewStatus.rejected)}
-            ELSE ${v(ReviewStatus.pending)}
-            END)`,
-          remark: "r.comment",
-        }),
-      )
-        .from("review", { as: "r" })
-        .where(`r.id=p.reviewing_id`)
-        .toSelect()}
-        WHEN p.review_id IS NOT NULL THEN
-          ${jsonb_build_object({
-            status: v(ReviewStatus.passed),
-          })}
-        ELSE NULL END)`,
+    review: jsonb_build_object({
+      status: "p.review_status",
+      remark: "(SELECT r.comment FROM review AS r WHERE r.id=p.review_id)",
+    }),
   })
     .from("public.post", { as: "p" })
     .leftJoin("post_group", { as: "g", on: "g.id=p.group_id" })

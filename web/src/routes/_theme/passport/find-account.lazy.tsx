@@ -1,7 +1,7 @@
 import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button, Form, Input, Steps, Result } from "antd";
 import { useState } from "react";
-import styled from "@emotion/styled";
+import { css } from "@emotion/css";
 import { EmailInput } from "../../../components/EmailInput.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { useAntdStatic } from "@/provider/mod.tsx";
@@ -27,7 +27,7 @@ export function RouteComponent(props: FindAccountProps) {
     callback: () => navigate({ to: ROUTES.Login, viewTransition: true }),
   });
   return (
-    <PageCSS>
+    <div className={PageCSS}>
       <MaskBoard>
         <Link to="/passport/login" viewTransition>
           <Button type="text" icon={<ArrowLeftOutlined />}>
@@ -68,11 +68,11 @@ export function RouteComponent(props: FindAccountProps) {
           </main>
         </div>
       </MaskBoard>
-    </PageCSS>
+    </div>
   );
 }
 
-const PageCSS = styled.div`
+const PageCSS = css`
   background: url("/main/bg-login.webp");
   background-repeat: no-repeat;
   background-size: cover;

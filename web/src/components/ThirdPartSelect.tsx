@@ -2,14 +2,14 @@ import { Select, SelectProps, Space } from "antd";
 import { TikTokOutlined, BilibiliOutlined, WeiboOutlined } from "@ant-design/icons";
 import { ReactNode } from "react";
 import React from "react";
-import douyinIco from "./third_part_platforms/douyin.png";
-import v5singIco from "./third_part_platforms/5sing.png";
-import wangyimusicIco from "./third_part_platforms/wangyimusic.png";
-import bilibiliIco from "./third_part_platforms/bilibili.png";
-import weiboIco from "./third_part_platforms/weibo.png";
-import xiaohongshuIco from "./third_part_platforms/xiaohongshu.png";
-import qqmusicIco from "./third_part_platforms/qqmusic.png";
-import hongguoIco from "./third_part_platforms/hongguo.png";
+import douyinIco from "./ThirdPartSelect/douyin.png";
+import v5singIco from "./ThirdPartSelect/5sing.png";
+import wangyimusicIco from "./ThirdPartSelect/wangyimusic.png";
+import bilibiliIco from "./ThirdPartSelect/bilibili.png";
+import weiboIco from "./ThirdPartSelect/weibo.png";
+import xiaohongshuIco from "./ThirdPartSelect/xiaohongshu.png";
+import qqmusicIco from "./ThirdPartSelect/qqmusic.png";
+import hongguoIco from "./ThirdPartSelect/hongguo.png";
 import { Platform, SocialPlatform } from "@/api.ts";
 
 export type ThirdPartSelectProps<T extends Platform | Platform[] = Platform | Platform[]> = Omit<

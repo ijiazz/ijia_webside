@@ -8,7 +8,7 @@ import { IjiaLogo } from "@/components/IjiaLogo.tsx";
 import { ImageCaptchaModal } from "@/components/captcha.ts";
 import { getPathByRoute } from "@/app.ts";
 import { Route as ParentRoute } from "../route.tsx";
-import { LoginFormCSS } from "./LoginForm.css.tsx";
+import * as styles from "./LoginForm.css.tsx";
 import {
   EmailLoginFormValues,
   getPasswordLoginParam,
@@ -86,7 +86,7 @@ export function LoginForm() {
 
   const theme = useThemeToken();
   return (
-    <LoginFormCSS>
+    <div className={styles.LoginFormCSS}>
       <div className="logo">
         <Link to="/" title="首页" viewTransition>
           <IjiaLogo size={44} />
@@ -149,6 +149,6 @@ export function LoginForm() {
           onCancel={() => setCaptchaModalOpen(false)}
         />
       </FormProvider>
-    </LoginFormCSS>
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 export type RadioOption<V extends string | number = string | number> = {
   label?: ReactNode;
   value?: V;
@@ -17,10 +17,10 @@ export function PRadio<V extends string | number = string | number, T extends Ra
 ) {
   const { options, value, onChange, className, style } = props;
   return (
-    <StyledWrapper>
+    <label className={cx(StyledWrapper, className)} style={style}>
       {options?.map((item) => {
         return (
-          <StyledRadio key={item.value}>
+          <div className={StyledRadio} key={item.value}>
             <input
               type="radio"
               checked={item.value === value}
@@ -39,13 +39,13 @@ export function PRadio<V extends string | number = string | number, T extends Ra
               }
             />
             <span className="name">{item.label}</span>
-          </StyledRadio>
+          </div>
         );
       })}
-    </StyledWrapper>
+    </label>
   );
 }
-const StyledRadio = styled.label`
+const StyledRadio = css`
   flex: 1 1 auto;
   text-align: center;
 
@@ -128,7 +128,7 @@ const StyledRadio = styled.label`
     --direction: 10px;
   }
 `;
-const StyledWrapper = styled.div`
+const StyledWrapper = css`
   position: relative;
   display: flex;
   flex-wrap: wrap;

@@ -75,7 +75,7 @@ test("已隐藏的帖子只有自己能查看", async function ({ api, publicDbP
 
   const aliceView = await getSelfPost(api, id, alice.token);
   expect(aliceView.post_id).toBe(id);
-  expect(aliceView.review).toBe(null);
+  expect(aliceView.review).toMatchObject({ status: null });
 
   await expect(getPublicPost(api, id, alice.token), "已隐藏的帖子，自己不能在公共查询中获取").resolves.toBe(undefined);
   await expect(getPublicPost(api, id, bob.token), "已隐藏的帖子，其他人无法查看").resolves.toBe(undefined);

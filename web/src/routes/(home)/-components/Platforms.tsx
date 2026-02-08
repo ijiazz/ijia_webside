@@ -2,7 +2,7 @@ import { GodPlatformDto } from "@/api.ts";
 import { UserCard3D } from "@/lib/components/card.tsx";
 import React from "react";
 import { SOCIAL_PLATFORMS } from "@/components/ThirdPartSelect.tsx";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { VLink } from "@/lib/components/VLink.tsx";
 
 type GodPlatformProps = {
@@ -13,7 +13,7 @@ type GodPlatformProps = {
 export function GodPlatform(props: GodPlatformProps) {
   const { platforms, followerNumDetail = false, ref } = props;
   return (
-    <StyledWrapper ref={ref}>
+    <div className={StyledWrapper} ref={ref}>
       <div className="background">
         <div className="shape-rectangle"></div>
         <div className="shape-round"></div>
@@ -33,23 +33,23 @@ export function GodPlatform(props: GodPlatformProps) {
                 title={item.user_name}
                 footer={
                   <div style={{ display: "flex", gap: "1em" }}>
-                    <UserCardTitleCSS>
+                    <div className={UserCardTitleCSS}>
                       {icon}
                       {platformName}
-                    </UserCardTitleCSS>
+                    </div>
                     <div> {"粉丝：" + num}</div>
                   </div>
                 }
-                avatar={item.avatar_url ? <AvatarCSS src={item.avatar_url} /> : undefined}
+                avatar={item.avatar_url ? <img className={AvatarCSS} src={item.avatar_url} /> : undefined}
               ></UserCard3D>
             </VLink>
           </div>
         );
       })}
-    </StyledWrapper>
+    </div>
   );
 }
-const UserCardTitleCSS = styled.div`
+const UserCardTitleCSS = css`
   position: relative;
   display: flex;
   align-items: center;
@@ -60,7 +60,7 @@ const UserCardTitleCSS = styled.div`
     overflow: hidden;
   }
 `;
-const StyledWrapper = styled.div`
+const StyledWrapper = css`
   position: relative;
   margin: 48px auto;
   padding: 12px;
@@ -120,7 +120,7 @@ const StyledWrapper = styled.div`
     color: #000;
   }
 `;
-const AvatarCSS = styled.img`
+const AvatarCSS = css`
   object-fit: cover;
   width: 100%;
   height: 100%;

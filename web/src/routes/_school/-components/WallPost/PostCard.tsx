@@ -15,10 +15,12 @@ export type PCardProps = {
   moreMenus?: MenuProps["items"];
   onLike?: (postId: number, isCancel: boolean) => void;
   onOpenComment?: (postId: number) => void;
+  className?: string;
+  style?: React.CSSProperties;
 };
 
 export function WallPostCard(props: PCardProps) {
-  const { config, review, item, moreMenus, onLike, onOpenComment } = props;
+  const { config, review, item, moreMenus, onLike, onOpenComment, className, style } = props;
   const theme = useThemeToken();
   const author = item.author;
   const isAnonymous = !author;
@@ -65,6 +67,8 @@ export function WallPostCard(props: PCardProps) {
           onOpenComment={() => onOpenComment?.(item.post_id)}
         />
       }
+      className={className}
+      style={style}
     >
       <div>
         <PostContent text={item.content_text} textStruct={item.content_text_structure} media={item.media} />

@@ -43,43 +43,18 @@ export type PostReviewInfo = {
   review_id: number;
 };
 export async function getPostReviewStatus(postId: number): Promise<PostReviewInfo | null> {
-  const commonSelect = {
-    reviewed_time: "r.resolved_time",
-    reviewer_id: "r.reviewer_id",
-    is_review_pass: "r.is_passed",
-    review_id: "r.id",
-    remark: "r.comment",
-  };
-  const { review } = await dbPool.queryFirstRow<{ review: PostReviewInfo | null }>(
+  const review = await dbPool.queryFirstRow<PostReviewInfo>(
     select({
-      review: `(CASE WHEN p.reviewing_id IS NOT NULL THEN
-            ${select(
-              jsonb_build_object({
-                status: `(CASE r.is_passed 
-                  WHEN TRUE THEN ${v(ReviewStatus.passed)}
-                  WHEN FALSE THEN ${v(ReviewStatus.rejected)}
-                  ELSE ${v(ReviewStatus.pending)}
-                  END)`,
-                ...commonSelect,
-              }),
-            )
-              .from("review", { as: "r" })
-              .where(`r.id=p.reviewing_id`)
-              .toSelect()}
-              WHEN p.review_id IS NOT NULL THEN
-                ${select(
-                  jsonb_build_object({
-                    status: v(ReviewStatus.passed),
-                    ...commonSelect,
-                  }),
-                )
-                  .from("review", { as: "r" })
-                  .where(`r.id=p.review_id`)
-                  .toSelect()}
-              ELSE NULL END)`,
+      status: "p.review_status",
+      reviewed_time: "r.resolved_time",
+      reviewer_id: "r.reviewer_id",
+      is_review_pass: "r.is_passed",
+      review_id: "r.id",
+      remark: "r.comment",
     })
       .from("public.post", { as: "p" })
-      .where(`id=${postId}`),
+      .leftJoin("review", { as: "r", on: "r.id=p.review_id" })
+      .where(`p.id=${postId}`),
   );
   return review;
 }

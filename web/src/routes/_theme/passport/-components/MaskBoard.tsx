@@ -1,11 +1,11 @@
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import React from "react";
 
 export function MaskBoard(props: { children?: React.ReactNode }) {
   const { children } = props;
-  return <MaskBoardCSS>{children}</MaskBoardCSS>;
+  return <div className={MaskBoardCSS}>{children}</div>;
 }
-const MaskBoardCSS = styled.div`
+const MaskBoardCSS = css`
   margin: 12px;
   max-width: 600px;
   border-radius: 6px;

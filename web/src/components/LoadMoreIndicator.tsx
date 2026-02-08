@@ -1,5 +1,5 @@
 import { Button, Spin } from "antd";
-import styled from "@emotion/styled";
+import { css } from "@emotion/css";
 import { useThemeToken } from "@/provider/AntdProvider.tsx";
 
 export type LoadMoreIndicatorProps = {
@@ -48,12 +48,12 @@ export interface LoaderIndicatorProps {
 export function LoaderIndicator(props: LoaderIndicatorProps) {
   const theme = useThemeToken();
   return (
-    <StyledIndicator style={{ color: theme.colorTextTertiary, fontSize: theme.fontSize }}>
+    <div className={StyledIndicator} style={{ color: theme.colorTextTertiary, fontSize: theme.fontSize }}>
       {props.children}
-    </StyledIndicator>
+    </div>
   );
 }
-const StyledIndicator = styled.div`
+const StyledIndicator = css`
   font-size: 12px;
   display: flex;
   justify-content: center;

@@ -1,4 +1,4 @@
-import { CreateCommentItemData, GetPostCommentListOption } from "@/dto.ts";
+import { CreateCommentItemData, GetPostCommentListOption, ReviewStatus } from "@/dto.ts";
 import { DbPostComment } from "@ijia/data/db";
 import { Api, JWT_TOKEN_KEY } from "test/fixtures/hono.ts";
 import { preparePost } from "./prepare_post.ts";
@@ -104,21 +104,23 @@ export async function getCommentStat(commentId: number): Promise<CommentInfo> {
 }
 
 export type CommentReviewStatus = {
+  status: ReviewStatus | null;
   is_review_pass: boolean | null;
   reviewed_time: Date | null;
   reviewer_id: number | null;
 };
-export async function getCommentReviewStatus(commentId: number): Promise<CommentReviewStatus | undefined> {
+export async function getCommentReviewStatus(commentId: number): Promise<CommentReviewStatus | null> {
   const t = await dbPool.queryRows(
     select({
+      status: "c.review_status",
       is_review_pass: `r.is_passed`,
       reviewed_time: "r.resolved_time",
       reviewer_id: "r.reviewer_id",
     })
       .from("post_comment", { as: "c" })
-      .innerJoin("review", { as: "r", on: "r.id=c.reviewing_id" })
+      .leftJoin("review", { as: "r", on: "r.id=c.review_id" })
       .where([`c.id=${v(commentId)}`]),
   );
 
-  return t[0] as CommentReviewStatus | undefined;
+  return (t[0] ?? null) as CommentReviewStatus | null;
 }

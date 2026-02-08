@@ -1,7 +1,7 @@
 import { Avatar, Button, Dropdown } from "antd";
 import { LoadingOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { IS_MOBILE_LAYOUT, useThemeToken } from "@/provider/mod.tsx";
 import { UserBasicDto } from "@/api.ts";
@@ -59,17 +59,26 @@ export function AvatarMenu(props: { user: UserBasicDto | null }) {
         ],
       }}
     >
-      <MenuAvatar hoverColor={theme.colorBgTextHover}>
+      <div
+        className={cx(
+          MenuAvatar,
+          css`
+            :hover {
+              background-color: ${theme.colorBgTextHover};
+            }
+          `,
+        )}
+      >
         <Avatar className="e2e-avatar" size={32} src={user.avatar_url}>
           {user.nickname}
         </Avatar>
         <span style={{ color: theme.colorTextSecondary }}>{user.nickname}</span>
-      </MenuAvatar>
+      </div>
     </Dropdown>
   );
 }
 
-const MenuAvatar = styled.div<{ hoverColor: string }>`
+const MenuAvatar = css`
   padding: 4px;
   display: flex;
   align-items: center;
@@ -77,9 +86,7 @@ const MenuAvatar = styled.div<{ hoverColor: string }>`
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  :hover {
-    background-color: ${(props) => props.hoverColor};
-  }
+
   > span:last-of-type {
     @media screen and (${IS_MOBILE_LAYOUT}) {
       display: none;

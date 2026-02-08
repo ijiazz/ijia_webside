@@ -125,12 +125,12 @@ async function commitPostReviewNext(api: Api, option: CommitReviewParam, token?:
 }
 
 async function getPostReviewId(pid: number): Promise<number | null> {
-  const r = await dbPool.queryFirstRow<{ reviewing_id: number }>(
-    select("reviewing_id")
+  const r = await dbPool.queryFirstRow<{ review_id: number }>(
+    select("review_id")
       .from("post")
       .where(`id=${v(pid)}`),
   );
-  return r.reviewing_id;
+  return r.review_id;
 }
 async function getUserReportStat(uid: number[]) {
   return dbPool

@@ -1,5 +1,4 @@
-import styled from "@emotion/styled";
-import React from "react";
+import { css } from "@emotion/css";
 import a1028 from "../../-img/1028.png";
 import { MEDIA_CHECK, useScreenEffects } from "./screenEffects.tsx";
 
@@ -7,15 +6,15 @@ export function ScreenAvatar(props: { src?: string; onTrigger?: () => void }) {
   const { src, onTrigger } = props;
   const effects = useScreenEffects();
   return (
-    <AvatarCSS onDoubleClick={onTrigger} onTouchEnd={onTrigger}>
+    <div className={AvatarCSS} onDoubleClick={onTrigger} onTouchEnd={onTrigger}>
       <div className="avatar">
         <img src={src} />
       </div>
       {effects?.birthday && <img className="avatar-font" src={a1028} />}
-    </AvatarCSS>
+    </div>
   );
 }
-const AvatarCSS = styled.div`
+const AvatarCSS = css`
   position: relative;
   .avatar {
     cursor: pointer;

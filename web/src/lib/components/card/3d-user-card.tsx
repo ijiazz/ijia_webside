@@ -1,5 +1,5 @@
-import React, { ReactNode } from "react";
-import styled from "@emotion/styled";
+import { ReactNode } from "react";
+import { css } from "@emotion/css";
 
 export type UserCard3DProps = {
   avatar?: ReactNode;
@@ -10,7 +10,7 @@ export type UserCard3DProps = {
 export function UserCard3D(props: UserCard3DProps) {
   const { avatar, title, footer: more, children } = props;
   return (
-    <StyledWrapper id="platforms">
+    <div className={StyledWrapper}>
       <div className="card">
         <div className="content-box">
           <span className="card-title">{title}</span>
@@ -19,11 +19,11 @@ export function UserCard3D(props: UserCard3DProps) {
         </div>
         <div className="date-box">{avatar}</div>
       </div>
-    </StyledWrapper>
+    </div>
   );
 }
 
-const StyledWrapper = styled.div`
+const StyledWrapper = css`
   width: 300px;
   padding: 20px;
   perspective: 1000px;

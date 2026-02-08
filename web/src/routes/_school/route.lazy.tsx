@@ -13,7 +13,7 @@ import {
   useAntdStatic,
   useThemeController,
 } from "@/provider/mod.tsx";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { RootLayout } from "../-layout/RootLayout.tsx";
 import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
 import { BasicUserContext } from "./-context/UserContext.tsx";
@@ -58,12 +58,12 @@ function UserLayout(props: PropsWithChildren<{}>) {
   return (
     <RootLayout
       leftExtra={
-        <StyledIcon>
+        <div className={StyledIcon}>
           <Link to="/">
             <IjiaLogo className="site-logo" />
           </Link>
           <b className="site-name">IJIA 学院</b>
-        </StyledIcon>
+        </div>
       }
       renderLink={(item) => (
         <Link style={{ color: "inherit" }} from={match.pathname} to={item.path}>
@@ -116,7 +116,7 @@ function useLayoutPathname() {
   return pendingMatch ? prevPathname.current : pathname;
 }
 
-const StyledIcon = styled.div`
+const StyledIcon = css`
   display: flex;
   align-items: center;
   gap: 12px;

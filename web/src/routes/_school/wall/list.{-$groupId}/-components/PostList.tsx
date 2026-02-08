@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "@tanstack/react-router";
 
 import { GetPostListParam, GetSelfPostListParam, PublicPost, SelfPost } from "@/api.ts";
-import styled from "@emotion/styled";
+import { css } from "@emotion/css";
 import { useContext, useEffect, useRef, useState } from "react";
 import { EditOutlined } from "@ant-design/icons";
 import { useLayoutDirection, LayoutDirection } from "@/provider/mod.tsx";
@@ -96,9 +96,9 @@ export function PublicPostList(props: PostListProps) {
 
   const isVertical = useLayoutDirection() === LayoutDirection.Vertical;
   return (
-    <HomePageCSS>
+    <div className={HomePageCSS}>
       <div className="post-list" ref={listScroll.ref}>
-        <PostListCSS>
+        <div className={PostListCSS}>
           <ImageFitCover src={wallCoverSrc}>
             <div style={{ display: isVertical ? "none" : "block", position: "absolute", right: 20, bottom: 20 }}>
               <CreatePostBtn icon={<EditOutlined />} onClick={onOpenPublish}>
@@ -106,7 +106,7 @@ export function PublicPostList(props: PostListProps) {
               </CreatePostBtn>
             </div>
           </ImageFitCover>
-          {group?.group_desc && <StyledTip>{group.group_desc}</StyledTip>}
+          {group?.group_desc && <div className={StyledTip}>{group.group_desc}</div>}
           {previous.loading && (
             <LoaderIndicator>
               <Spin size="small" />
@@ -129,7 +129,7 @@ export function PublicPostList(props: PostListProps) {
             isEmpty={data.length === 0}
             onLoad={() => next.loadMore()}
           />
-        </PostListCSS>
+        </div>
       </div>
 
       <Modal
@@ -161,7 +161,7 @@ export function PublicPostList(props: PostListProps) {
           groupOptions={groupOptions}
         />
       </Modal>
-    </HomePageCSS>
+    </div>
   );
 }
 async function getPostItem(id: number) {
@@ -208,7 +208,7 @@ type PostGroupOption = {
   value: number;
 };
 
-const StyledTip = styled.div`
+const StyledTip = css`
   color: #ff9090;
   background-color: #fff;
   font-weight: 500;
@@ -218,7 +218,7 @@ const StyledTip = styled.div`
   font-size: 14px;
 `;
 
-const HomePageCSS = styled.div`
+const HomePageCSS = css`
   height: 100%;
   .post-list {
     box-sizing: border-box;
@@ -232,7 +232,7 @@ const HomePageCSS = styled.div`
     }
   }
 `;
-const PostListCSS = styled.div`
+const PostListCSS = css`
   position: relative;
   max-width: 650px;
   min-width: 300px;

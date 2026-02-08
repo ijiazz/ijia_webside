@@ -147,12 +147,12 @@ async function getCommitList(api: Api, postId: number) {
   return api["/post/comment/list"].get({ query: { postId: postId } });
 }
 async function getCommentReviewId(cid: number): Promise<number | null> {
-  const r = await dbPool.queryFirstRow<{ reviewing_id: number }>(
-    select("reviewing_id")
+  const r = await dbPool.queryFirstRow<{ review_id: number }>(
+    select("review_id")
       .from("post_comment")
       .where(`id=${v(cid)}`),
   );
-  return r.reviewing_id;
+  return r.review_id;
 }
 async function getUserReportStat(uid: number[]) {
   return dbPool
