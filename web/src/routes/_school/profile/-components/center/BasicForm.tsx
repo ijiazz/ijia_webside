@@ -154,8 +154,8 @@ function PublicClassSelect(props: { value?: number; onChange?(value: number): vo
       return items.map((item) => ({
         ...item,
         label: (
-          <Space>
-            <span>{item.class_name}</span>
+          <Space className="e2e-class-option">
+            <label>{item.class_name}</label>
             {item.description ? (
               <span style={{ fontSize: token.fontSizeSM, color: token.colorTextDescription }}>{item.description}</span>
             ) : undefined}

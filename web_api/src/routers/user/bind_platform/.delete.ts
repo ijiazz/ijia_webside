@@ -5,6 +5,7 @@ import { HttpError } from "@/global/errors.ts";
 import { deleteFrom, select, update } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import routeGroup from "../_route.ts";
+import { parserBinKey } from "../-util/parseBindKey.ts";
 
 export default routeGroup.create({
   method: "DELETE",
@@ -12,14 +13,10 @@ export default routeGroup.create({
   async validateInput(ctx) {
     const userId = await ctx.get("userInfo").getUserId();
     const param = await checkValueAsync(ctx.req.json(), { bindKey: "string" });
-    return { userId, key: param.bindKey };
+    const bind = parserBinKey(param.bindKey);
+    return { userId, bind };
   },
-  async handler({ userId, key }) {
-    const [platform, pla_uid] = key.split("-");
-    const bind = {
-      platform,
-      pla_uid,
-    };
+  async handler({ userId, bind }) {
     await using db = dbPool.begin("REPEATABLE READ");
     const deleteBind = deleteFrom("user_platform_bind").where([
       `platform=${v(bind.platform)}`,

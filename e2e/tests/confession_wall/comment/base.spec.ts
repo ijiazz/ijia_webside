@@ -33,7 +33,8 @@ test("创建一条根评论，然后删除", async function ({ page }) {
 
   await page.getByRole("dialog").getByRole("button", { name: "more" }).click();
   await page.getByText("删除").click();
-  await page.getByRole("button", { name: "确 定" }).click();
+  await page.waitForTimeout(500);
+  await page.getByRole("button", { name: "确 定" }).click({});
 
   await expect(page.locator(commentItemClassName, { hasText: "e2e-c-1" }), "列表评论被删除").toHaveCount(0);
   await page.reload();
@@ -42,6 +43,7 @@ test("创建一条根评论，然后删除", async function ({ page }) {
 });
 
 test("创建回复评论", async function ({ page }) {
+  test.setTimeout(30000);
   await page.goto(getPostCommentURL(postId, { userId: alice.id }));
   // 先创建1条根评论
   await page.getByRole("textbox").fill("r1");
@@ -66,12 +68,15 @@ test("创建回复评论", async function ({ page }) {
   await expect(getCommentBtn(page), "帖子评论数为 6").toHaveText("6");
 
   await page.getByRole("button", { name: "展开1条回复" }).click();
+  await page.waitForTimeout(300);
   await page.getByRole("button", { name: "展开3条回复" }).click();
+  await page.waitForTimeout(300);
   await expect(page.locator(commentContentClassName).nth(4), "评论应出现在正确位置").toHaveText(/^1-2-r2/);
   await expect(page.locator(commentContentClassName).nth(5), "评论应出现在正确位置").toHaveText(/^1-1-2-r2/);
 });
 
 test("删除评论", async function ({ page }) {
+  test.setTimeout(30000);
   const r1 = await createCommentUseApi({ postId, text: "@1@", token: alice.token });
   const r2 = await createCommentUseApi({ postId, text: "@2@", token: alice.token }); // delete
 

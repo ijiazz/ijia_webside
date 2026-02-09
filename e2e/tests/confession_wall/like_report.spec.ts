@@ -72,6 +72,7 @@ test("举报帖子", async function ({ page }) {
   await page.getByText("举报", { exact: true }).click();
   await page.getByRole("combobox", { name: "* 举报理由 :" }).click();
   await page.getByTitle("辱骂").locator("div").click();
+  await page.waitForTimeout(100);
   await page.getByRole("button", { name: "确 定" }).click();
   await expect(page.getByText("已举报", { exact: true })).toHaveCount(1);
 

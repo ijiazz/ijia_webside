@@ -7,7 +7,7 @@ export const env = {
 
 export default defineConfig({
   testDir: ".",
-  workers: 4,
+  workers: 3,
   use: {
     browserName: "chromium",
     actionTimeout: 5000,

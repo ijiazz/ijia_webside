@@ -92,7 +92,6 @@ const links: ChildrenLink[] = [
       {
         href: "https://jiajiazi.love",
         title: "佳时光",
-        open: true,
       },
     ],
   },

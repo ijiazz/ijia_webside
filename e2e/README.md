@@ -7,3 +7,29 @@ E2E 直接依赖 PostgreSQL 服务和 Web 服。在 playwright.config.ts 中配�
 如果你要在 e2e 测试是调试后端服务。你可以配置访问地址以使用 vite 开发服务和 debug api。
 
 需要注意，在测试过程中会清除数据库。
+
+### 在前端插入定位器
+
+**使用自定义属性**
+
+```tsx
+function Component() {
+  return <div e2e-loader="xxx" />;
+}
+```
+
+```ts
+await page.locator(`[e2e-loader="xxx"]`).click();
+```
+
+**使用无障碍**
+
+```tsx
+function Component() {
+  return <button aria-label="xxx"></button>;
+}
+```
+
+```ts
+await page.getByRole("button", { name: "xxx" }).click();
+```
