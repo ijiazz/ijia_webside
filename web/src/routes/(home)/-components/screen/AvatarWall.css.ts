@@ -15,7 +15,7 @@ export const AvatarItem = css`
   /* opacity: 0.6; */
   /* padding: 1.2px; */
 
-  &-img {
+  .avatar-item-img {
     --glow-color: #12639a;
     box-sizing: border-box;
     border: 1.2px solid;
