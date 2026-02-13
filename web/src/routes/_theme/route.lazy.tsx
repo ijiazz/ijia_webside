@@ -11,7 +11,7 @@ function RouteComponent() {
   return (
     <AntdThemeProvider fixedMode="light">
       <HoFetchProvider>
-        <GlobalAlert> 
+        <GlobalAlert>
           <Outlet />
         </GlobalAlert>
       </HoFetchProvider>
