@@ -1,8 +1,8 @@
 import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { AccountInfo, initAlice, initBob, loginGetToken } from "@/__mocks__/user.ts";
-import { createPost } from "../utils/post.ts";
+import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
+import { createPost } from "@/utils/post.ts";
 import { Locator } from "@playwright/test";
-import { api, JWT_TOKEN_KEY } from "@/__mocks__/fetch.ts";
+import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";
 
 const { expect, beforeEach } = test;
 
@@ -60,7 +60,7 @@ test("点赞自己和别人的评论", async function ({ page, context, browser 
 
 test("游客禁止点赞", async function ({ page }) {
   await createRootComment(postId, "comment", alice.token);
-  await page.goto(getAppUrlFromRoute(`/wall/list/self?openCommentPostId=${postId}`));
+  await page.goto(getAppUrlFromRoute(`/wall/list?openCommentPostId=${postId}`));
   const firstBtn = page.getByRole("dialog").getByRole("button", { name: "heart" });
   await expect(firstBtn).toBeDisabled();
 });
@@ -72,6 +72,7 @@ test("举报评论", async function ({ page }) {
   await page.getByText("举报", { exact: true }).click();
   await page.getByRole("combobox", { name: "* 举报理由 :" }).click();
   await page.getByTitle("辱骂").locator("div").click();
+  await page.waitForTimeout(100);
   await page.getByRole("button", { name: "确 定" }).click();
   await expect(page.getByText("已举报", { exact: true })).toHaveCount(1);
 

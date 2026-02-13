@@ -1,29 +1,34 @@
 import { PostResponse } from "@/dto.ts";
 import { checkValue } from "@/global/check.ts";
-import { integer, optional } from "@asla/wokao";
-import { getPostList } from "./-sql/post_list.sql.ts";
+import { ListParamSchema } from "./-schema/listParam.ts";
+import { getPublicPostList, getUserPostList } from "./-sql/post_list.sql.ts";
 import routeGroup from "./_route.ts";
+import { Role } from "@/middleware/auth.ts";
 
 export default routeGroup.create({
   method: "GET",
   routePath: "/post/list",
   async validateInput(ctx) {
+    const { req } = ctx;
+    const queries = req.query();
     const userInfo = ctx.get("userInfo");
-    const userId = await userInfo.getUserId().catch(() => undefined);
-    const queries = ctx.req.query();
-    const params = checkValue(queries, {
-      cursor: optional.string,
-      self: optional((value) => value === "true"),
-      number: optional(integer({ acceptString: true, min: 1, max: 100 })),
-      userId: optional(integer.positive),
-      post_id: optional(integer.positive),
+    const currentUserId = await userInfo.getUserId().catch(() => undefined);
 
-      group_id: optional(integer({ acceptString: true })),
-    });
-    return { params, userId };
+    const params = checkValue(queries, ListParamSchema);
+    return { params, currentUserId };
   },
-  async handler({ params, userId: currentUserId }): Promise<PostResponse> {
-    if (params.self && typeof currentUserId !== "number") return { needLogin: true, has_more: false, items: [] };
-    return getPostList(params, { currentUserId });
+  async handler({ params, currentUserId }, ctx): Promise<PostResponse> {
+    if (typeof params.userId === "number") {
+      const hasPermission =
+        params.userId === currentUserId ||
+        (await ctx
+          .get("userInfo")
+          .hasRolePermission(Role.Root)
+          .catch(() => false));
+      if (hasPermission) {
+        return getUserPostList(params.userId, params);
+      }
+    }
+    return getPublicPostList(params, { currentUserId });
   },
 });

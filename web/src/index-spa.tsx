@@ -1,7 +1,6 @@
 /// <reference types="vite/client" />
 import "./styles/global.css";
-import "./clarity.ts";
-import React from "react";
+import "@/common/clarity.ts";
 import { loginByAccessToken } from "@/common/user.ts";
 import { createRoot } from "react-dom/client";
 import { SpaRoot } from "./router.tsx";

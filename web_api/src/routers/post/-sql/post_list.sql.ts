@@ -1,37 +1,76 @@
 import { dbPool } from "@/db/client.ts";
-import { GetPostListParam, PostItemDto, PostUserInfo, CursorListDto } from "@/dto.ts";
+import {
+  GetPostListParam,
+  SelfPost,
+  PublicPost,
+  PostUserInfo,
+  CursorListDto,
+  GetSelfPostListParam,
+  ReviewStatus,
+} from "@/dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
-import { getPostContentType } from "./sql_tool.ts";
-import { HttpError } from "@/global/errors.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 
-export async function getPostList(
-  params: GetPostListParam = {},
-  option: { currentUserId?: number } = {},
-): Promise<CursorListDto<PostItemDto, string>> {
-  const {
-    number = 10,
-    cursor: cursorStr,
-    userId,
-    group_id,
-    post_id,
-    forward,
-    self: isSelf,
-    s_content,
-    s_author,
-  } = params;
-  const { currentUserId = null } = option;
-  const cursor = cursorStr ? parserTimestampCursor(cursorStr) : null;
+type BaseSelect = {
+  post_id: number;
+  author: {
+    user_name: string | null;
+    user_id: number;
+    avatar_url: string | null;
+  } | null;
+  publish_time: string | null;
+  create_time: string;
+  update_time: string;
+  context_text: string | null;
+  content_text_structure?: string[];
+  ip_location: string | null;
+  media: null;
+  group: number | null;
+  stat: {
+    like_total: number;
+    dislike_total: number;
+    comment_total: number;
+  };
+};
 
+const BASE_SELECT = {
+  post_id: "p.id",
+  /**
+   * 不是匿名才存在作者信息
+   */
+  author: `CASE 
+      WHEN (get_bit(p.options, 0)='0') 
+      THEN (SELECT ${jsonb_build_object({
+        user_name: "u.nickname",
+        user_id: "u.id ::TEXT",
+        avatar_url: "'/file/avatar/'||u.avatar",
+      } satisfies { [key in keyof PostUserInfo]: string })}
+        FROM public.user AS u
+        WHERE u.id = p.user_id)
+      ELSE NULL END`,
+  publish_time: "EXTRACT(EPOCH FROM p.publish_time)",
+  update_time: "CASE WHEN p.update_time=p.create_time THEN NULL ELSE p.update_time END",
+
+  content_text: "p.content_text",
+  content_text_structure: "p.content_text_struct",
+  ip_location: "null", //TODO
+  media: "null", //TODO
+  group: jsonb_build_object({ group_id: "g.id", group_name: "g.name" }),
+  stat: jsonb_build_object({
+    like_total: "p.like_count",
+    dislike_total: "ROUND(p.dislike_count::NUMERIC /100, 2)",
+    comment_total: "comment_num",
+  }),
+} satisfies { [key in keyof PublicPost]: string };
+function getCurrUserField(currentUserId: number | null) {
   let curr_user: string | undefined;
   if (currentUserId !== null) {
-    curr_user = jsonb_build_object({
+    curr_user = `(SELECT ${jsonb_build_object({
       can_update: `u.id=${v(currentUserId)}`,
       disabled_comment_reason: `
       CASE 
-        WHEN p.is_reviewing THEN '审核中的帖子不能评论' 
-        WHEN p.is_review_pass = FALSE THEN '审核不通过的帖子不能评论'
+        WHEN review_status_is_progress(p.review_status) THEN '审核中或审核不通过的帖子不能评论' 
         WHEN get_bit(p.options, 1)='1' AND p.user_id != ${v(currentUserId)} THEN '作者评论已关闭功能' 
         ELSE NULL END`,
 
@@ -40,157 +79,162 @@ export async function getPostList(
         .from("post_like")
         .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
         .toSelect()}`,
-    });
+    })} FROM public.user AS u WHERE u.id = p.user_id)`;
   } else {
     curr_user = "null";
   }
+  return curr_user;
+}
+
+export async function getPublicPostList(
+  params: GetPostListParam = {},
+  option: { currentUserId?: number } = {},
+): Promise<CursorListDto<PublicPost, string>> {
+  const { number = 10, cursor: cursorStr, userId, group_id, post_id, forward, s_content, s_author } = params;
+  const { currentUserId = null } = option;
 
   const qSql = select({
-    post_id: "p.id",
-
-    /**
-     * 不是匿名或者是自己的帖子才作者信息
-     */
-    author: `CASE 
-        WHEN (get_bit(p.options, 0)='0' OR u.id=${v(currentUserId)}) 
-        THEN ${jsonb_build_object({
-          user_name: "u.nickname",
-          user_id: "u.id ::TEXT",
-          avatar_url: "'/file/avatar/'||u.avatar",
-        } satisfies { [key in keyof PostUserInfo]: string })}
-        ELSE NULL END`,
-    publish_time: "p.publish_time",
-    create_time: "p.create_time",
-    update_time: "CASE WHEN p.update_time=p.create_time THEN NULL ELSE p.update_time END",
-    like_weight: `${select("weight")
-      .from("post_like")
-      .where(["post_id=p.id", `user_id=${v(currentUserId)}`])
-      .toSelect()}`,
-    type: getPostContentType("p.content_type"),
-    content_text: "p.content_text",
-    content_text_structure: "p.content_text_struct",
-    ip_location: "null", //TODO
-    media: "null", //TODO
-    curr_user: curr_user,
-    group: jsonb_build_object({ group_id: "g.id", group_name: "g.name" }),
-    stat: jsonb_build_object({
-      like_total: "p.like_count",
-      dislike_total: "ROUND(p.dislike_count::NUMERIC /100, 2)",
-      comment_total: "comment_num",
-    }),
-    config: jsonb_build_object({
-      is_anonymous: "get_bit(p.options, 0)::BOOL",
-      comment_disabled: "get_bit(p.options, 1)::BOOL",
-      self_visible: "p.is_hide",
-    }),
-    status: jsonb_build_object({ review_pass: "p.is_review_pass", is_reviewing: "p.is_reviewing" }),
+    ...BASE_SELECT,
+    curr_user: getCurrUserField(currentUserId),
   })
     .from("public.post", { as: "p" })
-    .innerJoin("public.user", { as: "u", on: "u.id=p.user_id" })
     .leftJoin("post_group", { as: "g", on: "g.id=p.group_id" })
     .where(() => {
       const where: string[] = [`NOT p.is_delete`];
 
-      if (currentUserId !== null && isSelf) {
-        where.push(`p.user_id=${v(currentUserId)}`);
-      } else {
-        const exclude = `(p.publish_time IS NULL OR p.is_reviewing OR p.is_review_pass IS FALSE OR p.is_hide)`; // 审核中和审核不通过和已隐藏
-        where.push(`(NOT ${exclude})`);
-        if (typeof userId === "number") where.push(`p.user_id =${v(userId)}`);
-      }
+      const exclude = `(p.publish_time IS NULL OR review_status_is_progress(p.review_status) OR p.is_hide)`; // 审核中和审核不通过和已隐藏
+      where.push(`(NOT ${exclude})`);
+      if (typeof userId === "number") where.push(`p.user_id =${v(userId)}`);
+
       if (group_id !== undefined) where.push(`p.group_id =${v(group_id)}`);
       if (post_id !== undefined) where.push(`p.id = ${v(post_id)}`);
-      if (cursor) {
-        const ts = cursor.timestamp;
-        if (typeof ts !== "number") {
-          if (forward) throw new HttpError(400, "向前的 cursor 必须存在 publish_time 时间戳");
-          else where.push(`(p.publish_time IS NULL AND p.id < ${v(cursor.id)})`);
-        } else {
-          const timestamp = v(ts / 1000);
-          if (forward) {
-            where.push(
-              `(p.publish_time > to_timestamp(${timestamp}) OR (p.publish_time = to_timestamp(${timestamp}) AND p.id > ${v(cursor.id)}))`,
-            );
-          } else {
-            where.push(
-              `(p.publish_time < to_timestamp(${timestamp}) OR (p.publish_time = to_timestamp(${timestamp}) AND p.id < ${v(cursor.id)}))`,
-            );
-          }
-        }
+      if (cursorStr) {
+        where.push(getCursorCondition(cursorStr, forward));
       }
 
       return where;
     })
     .orderBy(forward ? ["p.publish_time ASC NULLS LAST", "p.id ASC"] : ["p.publish_time DESC NULLS FIRST", "p.id DESC"])
     .limit(number);
+
   /**
    *  使用指针分页
    *  使用 publish_time 和 id 作为指针
    *  因为 publish_time 可能为 null，如果 publish_time 为 null，仅使用 id 作为指针
    */
-
   const rawList = await dbPool.queryRows(qSql);
-  rawList.forEach((target) => {
-    const item: { [key in keyof typeof target]: any } = target;
+  const { cursor_next, cursor_prev } = getCursor(rawList);
+  return { items: initRawList(rawList), cursor_next, cursor_prev };
+}
+export async function getUserPostList(
+  authorId: number,
+  params: GetSelfPostListParam = {},
+): Promise<CursorListDto<SelfPost, string>> {
+  const { number = 10, cursor: cursorStr, group_id, post_id, forward } = params;
+
+  const qSql = select({
+    ...BASE_SELECT,
+    curr_user: getCurrUserField(authorId),
+    config: jsonb_build_object({
+      is_anonymous: "get_bit(p.options, 0)::BOOL",
+      comment_disabled: "get_bit(p.options, 1)::BOOL",
+      self_visible: "p.is_hide",
+    }),
+    review: jsonb_build_object({
+      status: "p.review_status",
+      remark: "(SELECT r.comment FROM review AS r WHERE r.id=p.review_id)",
+    }),
+  })
+    .from("public.post", { as: "p" })
+    .leftJoin("post_group", { as: "g", on: "g.id=p.group_id" })
+    .where(() => {
+      const where: string[] = [`NOT p.is_delete`];
+
+      where.push(`p.user_id=${v(authorId)}`);
+
+      if (group_id !== undefined) where.push(`p.group_id =${v(group_id)}`);
+      if (post_id !== undefined) where.push(`p.id = ${v(post_id)}`);
+      if (cursorStr) {
+        where.push(getCursorCondition(cursorStr, forward));
+      }
+
+      return where;
+    })
+    .orderBy(forward ? ["p.publish_time ASC NULLS LAST", "p.id ASC"] : ["p.publish_time DESC NULLS FIRST", "p.id DESC"])
+    .limit(number);
+
+  /**
+   *  使用指针分页
+   *  使用 publish_time 和 id 作为指针
+   *  因为 publish_time 可能为 null，如果 publish_time 为 null，仅使用 id 作为指针
+   */
+  const rawList = await dbPool.queryRows(qSql);
+  const { cursor_next, cursor_prev } = getCursor(rawList);
+  return { items: initRawList(rawList), cursor_next, cursor_prev };
+}
+function getCursor(rawList: any[]) {
+  const list = rawList;
+  const first = list[0];
+  const last = list[list.length - 1];
+  const cursor_prev = first ? toTimestampCursor(first.publish_time, first.post_id) : null;
+  const cursor_next = last ? toTimestampCursor(last.publish_time, last.post_id) : null;
+  return { cursor_prev, cursor_next };
+}
+function initRawList(rawList: any[]) {
+  const list = rawList;
+
+  rawList.forEach((item) => {
     const currUser = item.curr_user;
     if (currUser) {
       const weight = currUser.like_weight;
       delete currUser.like_weight; // 删除不需要的字段
-      const postItem = currUser as NonNullable<PostItemDto["curr_user"]>;
+      const postItem = currUser as NonNullable<PublicPost["curr_user"]>;
       if (weight) {
         postItem.is_like = weight > 0; // 是否点赞
         postItem.is_report = weight < 0; // 是否举报
       }
 
-      const curr_user: NonNullable<PostItemDto["curr_user"]> = currUser;
+      const curr_user: NonNullable<PublicPost["curr_user"]> = currUser;
       curr_user.can_comment = curr_user.disabled_comment_reason === null;
     }
+
+    if (item.publish_time) {
+      item.publish_time = new Date(Math.floor(+item.publish_time) * 1000).toISOString();
+    }
   });
-  const list = rawList as PostItemDto[];
-  const firstPublishTime = list.find((item) => item.publish_time);
-  const last = list[list.length - 1];
-  return {
-    items: list,
-    has_more: list.length >= number,
-    before_cursor: firstPublishTime
-      ? toTimestampCursor({
-          id: +firstPublishTime.post_id,
-          timestamp: firstPublishTime.publish_time ? new Date(firstPublishTime.publish_time).getTime() : null,
-        })
-      : null,
-    next_cursor: last
-      ? toTimestampCursor({
-          id: +last.post_id,
-          timestamp: last.publish_time ? new Date(last.publish_time).getTime() : null,
-        })
-      : null,
-  };
+  return list;
+}
+function getCursorCondition(cursorStr: string, forward?: boolean): string {
+  const cursor = parserTimestampCursor(cursorStr);
+  const ts = cursor.timestamp;
+  if (!ts) {
+    if (forward) return `(p.publish_time IS NULL AND p.id > ${v(cursor.id)})`;
+    else return `(p.publish_time IS NULL AND p.id < ${v(cursor.id)})`;
+  } else {
+    if (forward) {
+      return `(p.publish_time > to_timestamp(${v(ts)}) OR (p.publish_time = to_timestamp(${v(ts)}) AND p.id > ${v(cursor.id)}))`;
+    } else {
+      return `(p.publish_time < to_timestamp(${v(ts)}) OR (p.publish_time = to_timestamp(${v(ts)}) AND p.id < ${v(cursor.id)}))`;
+    }
+  }
 }
 
-export async function getUserDateCount(userId: number) {
-  const { count } = await dbPool.queryFirstRow(
-    select<{ count: number }>({ count: "count(*)::INT" })
-      .from("public.post", { as: "p" })
-      .where([`user_id=${v(userId)}`, `DATE(p.create_time) = CURRENT_DATE`]),
-  );
-  return count;
-}
-
-function parserTimestampCursor(cursorStr: string): PostCursor {
-  const [timestampStr, idStr] = cursorStr.split("-");
+function parserTimestampCursor(cursorStr: string): PublishedPostCursor {
+  const [timestampStr, idStr] = cursorStr.split("/");
   if (!timestampStr || !idStr) throw new Error("cursor 格式错误");
-  const timestamp = timestampStr === "0" ? null : +timestampStr;
-  if (timestampStr !== null && !Number.isInteger(timestamp)) throw new Error("cursor 格式错误");
+  const timestamp = timestampStr === "0" ? null : timestampStr;
 
   const id = +idStr;
   if (!Number.isInteger(id)) throw new Error("cursor 格式错误");
   return { timestamp: timestamp, id: id };
 }
-function toTimestampCursor(cursor: PostCursor): string {
-  return `${cursor.timestamp ?? "0"}-${cursor.id}`;
+function toTimestampCursor(timestamp: string | null, id: number): string {
+  return `${timestamp ?? "0"}/${id}`;
 }
-type PostCursor = {
+type PublishedPostCursor = {
   /** publish_timestamp */
-  timestamp?: number | null;
+  timestamp?: string | null;
   id: number;
 };
+
+type DratPostCursor = number;

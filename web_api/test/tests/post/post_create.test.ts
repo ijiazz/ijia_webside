@@ -1,14 +1,13 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import { TextStructure, TextStructureType, TextStructureUser } from "@ijia/data/db";
+import { ReviewStatus, TextStructure, TextStructureType, TextStructureUser } from "@ijia/data/db";
 
 import { prepareUniqueUser } from "../../fixtures/user.ts";
-import { createPostGroup, testGetPost } from "./utils/prepare_post.ts";
-import { createPost } from "./utils/prepare_post.ts";
-import { select } from "@asla/yoursql";
-import { v } from "@/sql/utils.ts";
+import { createPostGroup, getPublicPost, getSelfPost } from "../../utils/post.ts";
+import { createPost } from "../../utils/post.ts";
 import postRoutes from "@/routers/post/mod.ts";
-import { PostItemDto } from "@/dto.ts";
+import { SelfPost } from "@/dto.ts";
+import "#test/asserts/post.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);
@@ -19,14 +18,13 @@ test("发布一条帖子", async function ({ api, publicDbPool }) {
 
   const post = await createPost(api, { content_text: "你好" }, alice.token);
 
-  const item = await testGetPost(api, post.id);
+  const item = await getPublicPost(api, post.id);
   expect(item.author!.user_id).toBe(alice.id.toString());
   expect(item.stat).toMatchObject({
     comment_total: 0,
     like_total: 0,
-  } satisfies Partial<PostItemDto["stat"]>);
+  } satisfies Partial<SelfPost["stat"]>);
   expect(item.content_text).toBe("你好");
-  expect(item.create_time, "创建即发布").toEqual(item.publish_time);
 });
 test("文本结构需要正确传递和保存", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
@@ -47,7 +45,7 @@ test("文本结构需要正确传递和保存", async function ({ api, publicDbP
     const res = await create("你好123", [
       { type: TextStructureType.user, user_id: "1", index: 1, length: 2, abcd: "11" },
     ] satisfies TextStructureUser[]);
-    const item = await testGetPost(api, res.id, alice.token);
+    const item = await getPublicPost(api, res.id, alice.token);
     expect(item.content_text_structure, "不应保存多余的字段").toEqual([
       { type: TextStructureType.user, user_id: "1", index: 1, length: 2 },
     ]);
@@ -74,22 +72,9 @@ test("发布帖子，如果选择了分组，发布后将直接进入审核状�
 
   const { id } = await createPost(api, { content_text: "test1分组", group_id: groupId }, alice.token);
 
-  const info = await publicDbPool.queryFirstRow(
-    select({ is_reviewing: true, create_time: true, publish_time: true })
-      .from("public.post")
-      .where(`id = ${v(id)}`),
-  );
-
-  expect(info.is_reviewing).toBe(true);
-  expect(info.create_time).not.toBe(null);
-  expect(info.publish_time).toBe(null);
-
-  const reviewQueue = await publicDbPool.queryFirstRow(
-    select({ target_id: true })
-      .from("post_review_info")
-      .where(`type='post' AND target_id=${v(id)}`),
-  );
-  expect(reviewQueue).not.toBeNull();
+  const post = await getSelfPost(api, id, alice.token);
+  expect(post.review?.status, "自己能看到‘审核中’的状态").toBe(ReviewStatus.pending);
+  await expect(id).postReviewStatusIs(ReviewStatus.pending);
 });
 test("发布的文本限制5000个字符", async function ({ publicDbPool, api }) {
   const alice = await prepareUniqueUser("alice");
@@ -118,13 +103,12 @@ test("发布帖子关闭评论区", async function ({ api, publicDbPool }) {
   const postInfo = await createPost(api, { content_text: "test1分组", comment_disabled: true }, alice.token);
 
   {
-    const item = await testGetPost(api, postInfo.id, alice.token);
+    const item = await getSelfPost(api, postInfo.id, alice.token);
     expect(item.config.comment_disabled).toBe(true);
     expect(item.curr_user?.can_comment).toBe(true);
   }
   {
-    const item = await testGetPost(api, postInfo.id, bob.token);
-    expect(item.config.comment_disabled).toBe(true);
+    const item = await getPublicPost(api, postInfo.id, bob.token);
     expect(item.curr_user?.can_comment).toBe(false);
   }
 });

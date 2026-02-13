@@ -8,6 +8,7 @@ import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import routeGroup from "../_route.ts";
 import { syncPlatformAccountFromDb } from "../-sql/syncPlatformAccount.sql.ts";
+import { parserBinKey } from "../-util/parseBindKey.ts";
 
 export default routeGroup.create({
   method: "POST",
@@ -17,7 +18,7 @@ export default routeGroup.create({
     const param = await checkValueAsync(ctx.req.json(), {
       bindKey: "string",
     });
-    const [platform, pla_uid] = param.bindKey.split("-");
+    const { platform, pla_uid } = parserBinKey(param.bindKey);
 
     return { userId, platform: platform as Platform, pla_uid };
   },

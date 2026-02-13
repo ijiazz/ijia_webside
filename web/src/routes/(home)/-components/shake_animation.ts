@@ -1,14 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { animate, JSAnimation } from "animejs";
-import { useElementOverScreen } from "@/hooks/dom/observer.ts";
+import { useElementOverScreen } from "@/lib/hook/observer.ts";
 
 export function useShakeAnimation(config: {
-  /** 传入一个元素的ref,当这个元素离开屏幕后停止播放动画 */
-  targetRef?: React.RefObject<HTMLDivElement | null>;
   autoPlay?: boolean;
   onFrameUpdate: (offsetX: number, offsetY: number) => void;
 }) {
-  const { targetRef, onFrameUpdate, autoPlay = true } = config;
+  const { onFrameUpdate, autoPlay = true } = config;
   /** X轴抖动范围 */
   const widthRange: number = 100;
   const heightRange: number = -10000;
@@ -44,15 +42,19 @@ export function useShakeAnimation(config: {
     };
   }, [widthRange, heightRange, xSpeed, ySpeed]);
 
-  useElementOverScreen((isIntersecting) => {
-    if (isIntersecting) {
-      animationCtrlRef.current?.play();
-    } else {
-      animationCtrlRef.current?.pause();
-    }
-  }, targetRef);
+  const targetRef = useElementOverScreen({
+    onChange: (isIntersecting) => {
+      if (isIntersecting) {
+        animationCtrlRef.current?.play();
+      } else {
+        animationCtrlRef.current?.pause();
+      }
+    },
+    defaultVisible: true,
+  });
 
   return {
+    targetRef,
     isPlay,
     pause: () => {
       setIsPlay(false);

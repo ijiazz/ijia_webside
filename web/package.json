@@ -14,6 +14,7 @@
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
     "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.1",
+    "@emotion/css": "^11.13.5",
     "@emotion/styled": "^11.14.0",
     "@ijia/api-types": "workspace:^",
     "@microsoft/clarity": "^1.0.0",
@@ -23,7 +24,6 @@
     "animejs": "^4.2.2",
     "antd": "^6.2.1",
     "canvas-confetti": "^1.9.3",
-    "classnames": "^2.5.1",
     "dayjs": "^1.11.13",
     "evlib": "^3.1.3",
     "fireworks-js": "^2.10.8",

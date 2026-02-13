@@ -1,7 +1,6 @@
 import { Button, Dropdown, MenuProps, Tag, Typography } from "antd";
-import React from "react";
 import { CaretRightOutlined, DeleteOutlined, MoreOutlined, WarningOutlined } from "@ant-design/icons";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { PostCommentNode } from "./api.ts";
 
 const { Text } = Typography;
@@ -33,19 +32,17 @@ export function CommentHeader(props: PostHeaderProps) {
     });
   }
   return (
-    <PostCommentHeaderCSS className={className}>
-      <div>
-        <PostCommentHeaderTextCSS type="secondary">
-          <span>{node.user?.user_name}</span>
-          {node.reply_to && (
-            <>
-              <CaretRightOutlined />
-              <span>{node.reply_to.user.user_name}</span>
-              {node.reply_to.is_deleted && <Tag style={{ marginLeft: 4 }}>已删除2</Tag>}
-            </>
-          )}
-        </PostCommentHeaderTextCSS>
-      </div>
+    <div className={cx(PostCommentHeaderCSS, className)}>
+      <Text className={PostCommentHeaderTextCSS} type="secondary">
+        <span>{node.user?.user_name}</span>
+        {node.reply_to && (
+          <>
+            <CaretRightOutlined />
+            <span>{node.reply_to.user.user_name}</span>
+            {node.reply_to.is_deleted && <Tag style={{ marginLeft: 4 }}>已删除2</Tag>}
+          </>
+        )}
+      </Text>
       <div>
         {menus.length ? (
           <Dropdown rootClassName="e2e-comment-more-operation" menu={{ items: menus }}>
@@ -53,16 +50,16 @@ export function CommentHeader(props: PostHeaderProps) {
           </Dropdown>
         ) : undefined}
       </div>
-    </PostCommentHeaderCSS>
+    </div>
   );
 }
-const PostCommentHeaderTextCSS = styled(Text)`
+const PostCommentHeaderTextCSS = css`
   margin-top: 2px;
   > span {
     vertical-align: middle;
   }
 `;
-const PostCommentHeaderCSS = styled.div`
+const PostCommentHeaderCSS = css`
   display: flex;
   justify-content: space-between;
 `;

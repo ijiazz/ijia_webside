@@ -70,7 +70,8 @@ function createManualChunks() {
     "react-hook-form": true,
     "@tanstack/react-router": true,
     "@tanstack/react-query": true,
-    "@emotion/styled": "emotion",
+    "@emotion/styled": true,
+    "@emotion/css": true,
     "@jsr/asla__hofetch": "@asla/hofetch",
   };
   const manualChunks = (id: string) => {

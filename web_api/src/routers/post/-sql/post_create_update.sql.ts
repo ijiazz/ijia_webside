@@ -1,12 +1,13 @@
-import { TextStructure } from "@ijia/data/db";
+import { ReviewStatus, TextStructure } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
 import { textStructChecker } from "../-utils/text_struct.ts";
 import { HttpError } from "@/global/errors.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
-import { update } from "@asla/yoursql";
-import { PostReviewType, CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "@/dto.ts";
+import { deleteFrom, update } from "@asla/yoursql";
+import { CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "@/dto.ts";
 import { QueryRowsResult } from "@asla/pg";
+import { setPostToReviewing } from "@/routers/review/mod.ts";
 
 export async function createPost(userId: number, param: CreatePostParam): Promise<{ id: number }> {
   param.content_text_structure = checkTypeCopy(param.content_text_structure, optional(textStructChecker));
@@ -27,10 +28,8 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
       content_text_struct: content_text_structure ? new String(v(JSON.stringify(content_text_structure))) : null,
       group_id,
       publish_time: group_id === undefined ? "now()" : undefined,
-      content_type: toBit(8, 0b0000_0001), //TODO 判断是否有其他类型
       is_hide,
       options: toBit(8, optionBit),
-      is_reviewing: group_id === undefined ? false : true,
     }).returning(["id", "group_id"]),
     update("user_profile")
       .set({ post_count: "post_count + 1" })
@@ -38,7 +37,7 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
   ]);
   const row = insert.rows[0];
   if (row.group_id !== null) {
-    await t.queryCount(getAddReviewRecord(PostReviewType.post, row.id));
+    await t.queryCount(setPostToReviewing(row.id));
   }
   await t.commit();
   return { id: row.id };
@@ -68,36 +67,51 @@ export async function updatePostContent(
       update_content_text_struct = struct?.length ? v(JSON.stringify(struct)) : "NULL";
     }
   }
+  await using t = dbPool.begin("REPEATABLE READ");
+
   const sql = update("public.post")
     .set({
       content_text: update_content_text,
       content_text_struct: update_content_text_struct,
       update_time: update_content_text === undefined ? undefined : "now()",
-      is_review_pass: "NULL",
-      is_reviewing: `
-        CASE WHEN group_id IS NULL THEN
-          is_reviewing
-        ELSE TRUE END`, // 如果在分组内，则更新为审核中
     })
     .where(`id = ${v(postId)} AND user_id = ${v(userId)} AND (NOT is_delete)`)
-    .returning(["is_reviewing", "is_review_pass", "group_id"]);
-  type Update = {
-    is_reviewing: boolean;
-    is_review_pass: boolean;
+    .returning(["id", "group_id", "review_status", "review_id"]);
+  const [row] = await dbPool.queryRows<{
+    id: number;
     group_id: number | null;
-  };
-  await using t = dbPool.begin();
-  const [row] = await t.queryRows<Update>(sql);
+    review_status: ReviewStatus | null;
+    review_id: number | null;
+  }>(sql);
   if (!row) return 0;
-  if (row.group_id !== null) {
-    await t.queryCount(getAddReviewRecord(PostReviewType.post, postId));
-  } else if (!row.is_reviewing) {
-    await t.queryCount(`DELETE  FROM post_review_info WHERE type='post' AND target_id=${v(postId)}`);
+
+  if (
+    row.group_id !== null ||
+    row.review_status === ReviewStatus.pending ||
+    row.review_status === ReviewStatus.rejected
+  ) {
+    await t.queryCount(setPostToReviewing(postId));
+  } else {
+    const sql = [];
+    if (row.review_status !== null) {
+      sql.push(
+        update("public.post")
+          .set({ review_status: "null" })
+          .where(`id=${v(postId)}`),
+      );
+    }
+    if (row.review_id !== null) {
+      sql.push(deleteFrom("review").where(`id=${v(row.review_id)}`));
+    }
+    if (sql.length > 0) {
+      await t.execute(sql);
+    }
   }
+
+  //TODO: 判断是否需要清除 dislike 数据
   await t.commit();
   return 1;
 }
-
 export async function updatePostConfig(postId: number, userId: number, param: UpdatePostConfigParam): Promise<number> {
   const { comment_disabled, is_hide } = param;
   const updateContentSql = await dbPool.queryCount(
@@ -168,14 +182,4 @@ function checkContent(contentText: string, struct?: TextStructure[] | null) {
   if (lastStruct && lastStruct.index + lastStruct.length > textLength) {
     throw new CheckTypeError("文本结构的索引和长度不正确");
   }
-}
-
-function getAddReviewRecord(type: PostReviewType, target_id: number) {
-  return insertIntoValues("post_review_info", { type, target_id }).onConflict(["type", "target_id"]).doUpdate({
-    create_time: "now()",
-    is_review_pass: "NULL",
-    remark: "NULL",
-    reviewed_time: "NULL",
-    reviewer_id: "NULL",
-  });
 }

@@ -1,158 +1,103 @@
-import { PostReviewType } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { DEFAULT_REPORT_WEIGHT, REPORT_THRESHOLD } from "../-utils/const.ts";
 import { HttpError } from "@/global/errors.ts";
-import { v } from "@/sql/utils.ts";
-import { insertInto, select, update } from "@asla/yoursql";
-export async function setPostToReviewing(postId: number): Promise<string> {
-  const sqlText = `WITH need_add_review AS (${update("public.post")
-    .set({ is_reviewing: v(true) })
-    .where([`id=${v(postId)}`, "NOT is_delete", `NOT is_reviewing`])
-    .returning("id AS post_id")
-    .toString()}
-  )
-  INSERT INTO post_review_info (type, target_id)
-  SELECT ${v(PostReviewType.post)}, post_id FROM need_add_review
-  ON CONFLICT (type, target_id) DO
-  UPDATE SET is_review_pass = NULL
-  `;
-  await dbPool.queryCount(sqlText);
+import { insertIntoValues, v } from "@/sql/utils.ts";
+import { select, update } from "@asla/yoursql";
+import { setPostCommentToReviewing, setPostToReviewing } from "@/routers/review/mod.ts";
+import { ReviewStatus } from "@ijia/data/db";
 
-  return `${PostReviewType.post}-${postId}`;
-}
-export async function setPostCommentToReviewing(commentId: number): Promise<string> {
-  await dbPool.execute(
-    insertInto("post_review_info", ["type", "target_id"])
-      .select(
-        select([v(PostReviewType.postComment), "id"])
-          .from("post_comment")
-          .where([`id=${v(commentId)}`, "NOT is_delete"])
-          .genSql(),
-      )
-      .onConflict("type, target_id")
-      .doNotThing(),
-  );
-  return `${PostReviewType.postComment}-${commentId}`;
-}
 export async function reportPost(postId: number, userId: number, reason?: string): Promise<number> {
-  const sql = `WITH old AS(
-    ${select(["weight"])
-      .from("post_like")
-      .where([`post_id=${v(postId)}`, `user_id=${v(userId)}`])
-      .genSql()}
-  ), insert_report AS (
-  ${insertInto("post_like", ["weight", "post_id", "user_id", "reason"])
-    .select(
-      select([
-        `${v(DEFAULT_REPORT_WEIGHT)} AS weight`,
-        "p.id AS post_id",
-        `${v(userId)} AS user_id`,
-        `${reason ? v(reason) : "NULL"} AS reason`,
-      ])
-        .from("public.post", { as: "p" })
-        .where([`id=${v(postId)}`, `(NOT is_delete)`])
-        .toString(),
-    )
-    .onConflict(["post_id", "user_id"])
-    .doNotThing()
-    .returning(["post_id", "user_id", "weight"])
-    .toString()}
-  ), count_data AS (
-    SELECT insert_report.post_id, (${getReportWeight("insert_report.user_id", REPORT_THRESHOLD)}) AS weight FROM insert_report
-  ), update_post_count AS (
-    UPDATE public.post SET 
-      dislike_count = dislike_count + count_data.weight,
-      is_reviewing = (CASE WHEN (is_review_pass IS NULL AND (dislike_count + count_data.weight) >=${v(REPORT_THRESHOLD)}) 
-        THEN TRUE ELSE is_reviewing
-        END
-      )
-    FROM count_data
-    WHERE public.post.id = count_data.post_id
-    RETURNING post_id, is_reviewing, dislike_count
-  ), insert_reviewing AS (
-    INSERT INTO post_review_info (type, target_id)
-    SELECT ${v(PostReviewType.post)}, post_id FROM update_post_count
-    WHERE is_reviewing
-    RETURNING target_id
-  )
-  SELECT COUNT(*)::INT,
-    (SELECT weight FROM old) AS old_weight,
-    (SELECT weight FROM insert_report) AS report_weight,
-    (SELECT COUNT(*)::INT FROM insert_reviewing) AS new_reviewing_count
-  FROM insert_report
-  `;
+  const oldWeight = select(["weight"])
+    .from("post_like")
+    .where([`post_id=${v(postId)}`, `user_id=${v(userId)}`]);
 
-  const r2 = await dbPool.queryFirstRow<{ count: number; old_weight: number; new_reviewing_count: number }>(sql);
-  if (r2.old_weight !== null) {
-    if (r2.old_weight > 0) throw new HttpError(400, "请取消点赞后再举报");
+  const sql = `WITH insert_report AS (
+    ${insertIntoValues("post_like", {
+      post_id: postId,
+      user_id: userId,
+      weight: DEFAULT_REPORT_WEIGHT,
+      reason: reason || null,
+    })
+      .onConflict(["post_id", "user_id"])
+      .doNotThing()
+      .returning(["post_id", "user_id", "weight"])
+      .toString()}
+  )
+  ${update("public.post")
+    .set({ dislike_count: `dislike_count - insert_report.weight` })
+    .from("insert_report")
+    .where(`id=insert_report.post_id AND NOT is_delete`)
+    .returning(["id ", "review_id", "dislike_count"])
+    .toString()}
+  `;
+  await using t = dbPool.begin();
+  const [o1, insertRecordRes] = await t.query([oldWeight, sql]);
+  if (insertRecordRes.rows?.length) {
+    const row = insertRecordRes.rows[0] as {
+      id: number;
+      review_id: number | null;
+      dislike_count: number;
+    };
+    const isReviewPass = row.review_id !== null;
+    if (!isReviewPass && row.dislike_count >= REPORT_THRESHOLD) {
+      await t.queryCount(setPostToReviewing(row.id));
+    }
+  } else {
+    if (o1.rows?.[0]) {
+      throw new HttpError(400, "请取消点赞后再举报");
+    } else {
+      throw new HttpError(400, "帖子不存在");
+    }
   }
-  return r2.count;
+
+  await t.commit();
+  return 1;
 }
 
 export async function reportComment(commentId: number, userId: number, reason?: string): Promise<number> {
-  const sql = `WITH old AS(
-    ${select(["weight"])
-      .from("post_comment_like")
-      .where([`comment_id=${v(commentId)}`, `user_id=${v(userId)}`])
-      .toString()}
-  ), insert_report AS (
-  ${insertInto("post_comment_like", ["weight", "comment_id", "user_id", "reason"])
-    .select(
-      select([
-        `${v(DEFAULT_REPORT_WEIGHT)} AS weight`,
-        "p.id AS comment_id",
-        `${v(userId)} AS user_id`,
-        `${reason ? v(reason) : "NULL"} AS reason`,
-      ])
-        .from("post_comment", { as: "p" })
-        .where([`id=${v(commentId)}`, `(NOT is_delete)`])
-        .toString(),
-    )
+  const oldWeight = select(["weight"])
+    .from("post_comment_like")
+    .where([`comment_id=${v(commentId)}`, `user_id=${v(userId)}`]);
+
+  const sql = `WITH insert_report AS (
+  ${insertIntoValues("post_comment_like", {
+    weight: DEFAULT_REPORT_WEIGHT,
+    comment_id: commentId,
+    user_id: userId,
+    reason: reason,
+  })
     .onConflict(["comment_id", "user_id"])
     .doNotThing()
-    .returning(["comment_id", "user_id"])
+    .returning(["comment_id", "user_id", "weight"])
     .toString()}
-  ), count_data AS (
-    SELECT insert_report.comment_id, (${getReportWeight("insert_report.user_id", REPORT_THRESHOLD)}) AS weight FROM insert_report
-  ), update_count AS (
-    UPDATE post_comment SET 
-      dislike_count = dislike_count + count_data.weight
-    FROM count_data
-    WHERE post_comment.id = count_data.comment_id
-    RETURNING comment_id, dislike_count
-  ), add_reviewing AS (
-  ${insertInto("post_review_info", ["type", "target_id"])
-    .select(
-      select([v(PostReviewType.postComment), "comment_id"])
-        .from("update_count")
-        .where(`update_count.dislike_count >=${v(REPORT_THRESHOLD)}`)
-        .genSql(),
-    )
-    .onConflict("type, target_id")
-    .doNotThing()
-    .genSql()}
   )
-  SELECT COUNT(*)::INT, (SELECT weight FROM old) AS old_weight FROM insert_report
+  ${update("post_comment")
+    .set({ dislike_count: `dislike_count - insert_report.weight` })
+    .from("insert_report")
+    .where(`id=insert_report.comment_id AND NOT is_delete`)
+    .returning(["id", "review_status", "dislike_count"])
+    .toString()}
   `;
 
-  const r2 = await dbPool.queryFirstRow<{ count: number; old_weight: number }>(sql);
-  if (r2.old_weight !== null) {
-    if (r2.old_weight > 0) throw new HttpError(400, "请取消点赞后再举报");
+  await using t = dbPool.begin();
+  const [o1, insertRecordRes] = await t.query([oldWeight, sql]);
+  if (insertRecordRes.rows?.length) {
+    const row = insertRecordRes.rows[0] as {
+      id: number;
+      review_status: ReviewStatus | null;
+      dislike_count: number;
+    };
+    if (row.review_status === null && row.dislike_count >= REPORT_THRESHOLD) {
+      await t.execute(setPostCommentToReviewing(row.id));
+    }
+  } else {
+    if (o1.rows?.[0]) {
+      throw new HttpError(400, "请取消点赞后再举报");
+    } else {
+      throw new HttpError(400, "评论不存在");
+    }
   }
-  return r2.count;
-}
-function getReportWeight(userId: string, threshold: number) {
-  const defaultWeight = Math.ceil(threshold / 3);
-  return select(
-    `CASE 
-        WHEN report_correct_count + report_error_count = 0
-          THEN ${defaultWeight} 
-        WHEN report_correct_count = 0
-          THEN ${defaultWeight} / (report_error_count + 1)
-        ELSE (report_correct_count * 100) / (report_correct_count + report_error_count)
-      END`,
-  )
-    .from("user_profile")
-    .where(`user_id=${userId}`)
-    .genSql();
+
+  await t.commit();
+  return 1;
 }

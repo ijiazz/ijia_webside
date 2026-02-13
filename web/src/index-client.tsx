@@ -1,7 +1,6 @@
 /// <reference types="vite/client" />
 import "./styles/global.css";
-import "./clarity.ts";
-import React from "react";
+import "@/common/clarity.ts";
 
 import { hydrateRoot } from "react-dom/client";
 import { RouterClient } from "@tanstack/react-router/ssr/client";

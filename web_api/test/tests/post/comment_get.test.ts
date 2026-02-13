@@ -1,13 +1,12 @@
 import { beforeEach, describe, expect } from "vitest";
-import { test, Context } from "../../fixtures/hono.ts";
-import { prepareCommentPost, prepareCommentToDb } from "./utils/prepare_comment.ts";
-import { deletePost, updatePostConfigFormApi } from "./utils/prepare_post.ts";
-import { DeepPartial } from "./utils/comment.ts";
-import { prepareUniqueUser } from "../..//fixtures/user.ts";
-import { update } from "@asla/yoursql";
+import { test, Context } from "#test/fixtures/hono.ts";
+import { prepareCommentPost, prepareCommentToDb, deletePost, updatePostConfigFormApi } from "#test/utils/post.ts";
+import { DeepPartial } from "#test/utils/common.ts";
+import { prepareUniqueUser } from "#test/fixtures/user.ts";
 import commentRoutes from "@/routers/post/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
 import { PostCommentDto } from "@/dto.ts";
+import { commitPostReview, setPostToReviewing } from "@/routers/review/-sql/post.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);
@@ -27,21 +26,22 @@ test("分页获取根评论列表", async function ({ api, publicDbPool }) {
   const num = 4;
   const r1 = await action.getCommentList({ number: num });
   expect(r1.items.length).toBe(num);
-  expect(r1.has_more).toBe(true);
   expect(r1.items[0].content_text).toBe("root-0");
   expect(r1.items[3].content_text).toBe("root-3");
 
-  const r2 = await action.getCommentList({ number: num, cursor: r1.next_cursor! });
+  const r2 = await action.getCommentList({ number: num, cursor: r1.cursor_next! });
   expect(r2.items.length).toBe(num);
-  expect(r2.has_more).toBe(true);
   expect(r2.items[0].content_text).toBe("root-4");
   expect(r2.items[3].content_text).toBe("root-7");
 
-  const r3 = await action.getCommentList({ number: num, cursor: r2.next_cursor! });
+  const r3 = await action.getCommentList({ number: num, cursor: r2.cursor_next! });
   expect(r3.items.length).toBe(2);
-  expect(r3.has_more).toBe(false);
   expect(r3.items[0].content_text).toBe("root-8");
   expect(r3.items[1].content_text).toBe("root-9");
+
+  const r4 = await action.getCommentList({ number: num, cursor: r3.cursor_next! });
+  expect(r4.items.length).toBe(0);
+  expect(r4.cursor_next).toBeNullable();
 });
 test("获取评论回复的平铺列表", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
@@ -76,12 +76,14 @@ test("获取评论回复的平铺列表", async function ({ api, publicDbPool })
     const list0 = await action.getReplyList(g1[1], { number: 3 });
     expect(list0.items.length).toBe(3);
     expect(list0.items.map((c) => c.content_text)).toEqual(["1-0", "1-1", "1-2-0"]);
-    expect(list0.has_more).toBe(true);
 
-    const list1 = await action.getReplyList(g1[1], { number: 2, cursor: list0.next_cursor! });
+    const list1 = await action.getReplyList(g1[1], { number: 2, cursor: list0.cursor_next! });
     expect(list1.items.length).toBe(1);
     expect(list1.items.map((c) => c.content_text)).toEqual(["1-2-1"]);
-    expect(list1.has_more).toBe(false);
+
+    const list3 = await action.getReplyList(g1[1], { number: 2, cursor: list1.cursor_next! });
+    expect(list3.items.length).toBe(0);
+    expect(list3.cursor_next).toBeNullable();
   }
 });
 
@@ -163,7 +165,7 @@ describe("部分帖子状态下不能获取评论", () => {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
 
-    await publicDbPool.execute(update("public.post").set({ is_reviewing: "true" }).where(`id=${action.postId}`)); // 设置作品为审核中
+    await setPostToReviewing(postInfo.id); // 设置作品为审核中
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
@@ -173,7 +175,8 @@ describe("部分帖子状态下不能获取评论", () => {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
 
-    await publicDbPool.execute(update("public.post").set({ is_review_pass: "false" }).where(`id=${postInfo.id}`)); // 设置作品为审核不通过
+    const reviewId = await setPostToReviewing(postInfo.id); // 设置作品为审核中
+    await commitPostReview({ reviewId, isPass: false }); // 设置作品审核不通过
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);

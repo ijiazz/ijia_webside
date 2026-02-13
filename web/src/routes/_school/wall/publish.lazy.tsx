@@ -1,10 +1,10 @@
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import React from "react";
-import { PublishPost } from "./-components/PublishPost.tsx";
+import { PublishPost } from "../-components/WallPost/PublishPost.tsx";
 
 export const Route = createLazyFileRoute("/_school/wall/publish")({
   component: RouteComponent,

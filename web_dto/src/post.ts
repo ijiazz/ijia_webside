@@ -2,15 +2,13 @@ export * from "./post/_dto/mod.ts";
 
 import type { GetPlatformPostListParam, PlatformPostResponse } from "./post/_dto/platform_post.dto.ts";
 import type {
-  CommitReviewParam,
-  CommitReviewResultDto,
   CreatePostParam,
   GetPostListParam,
   PostResponse,
-  PostReviewItemDto,
   UpdatePostConfigParam,
   UpdatePostContentParam,
   PostGroupResponse,
+  PostSelfResponse,
 } from "./post/_dto/mod.ts";
 import type { PostCommentApi } from "./post_comment.ts";
 
@@ -29,9 +27,14 @@ export interface PostApi {
 }
 
 export interface PostApi {
-  /** 获取作品列表 */
+  /** 获取公开作品列表 */
   "GET /post/list": {
     response: PostResponse;
+    query?: GetPostListParam;
+  };
+  /** 获取自己的作品列表 */
+  "GET /post/self/list": {
+    response: PostSelfResponse;
     query?: GetPostListParam;
   };
   /** 创建作品 */
@@ -67,17 +70,5 @@ export interface PostApi {
     response: {
       success: boolean;
     };
-  };
-}
-export interface PostApi {
-  /** 获取帖子审核列表 */
-  "GET /post/review/next": {
-    response: PostReviewItemDto;
-  };
-  /** 获取帖子审核列表 */
-  "POST /post/review/entity/:reviewId/commit": {
-    response: CommitReviewResultDto;
-    params: { reviewId: string | number };
-    body: CommitReviewParam;
   };
 }

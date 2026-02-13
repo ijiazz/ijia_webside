@@ -2,13 +2,13 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 
 import { Form, Input, Button, Steps, Modal, Space } from "antd";
 import { useAntdStatic } from "@/provider/mod.tsx";
-import { PagePadding } from "@/lib/components/Page.tsx";
+import * as styles from "@/lib/components/Page.tsx";
 import { useEffect, useMemo, useState } from "react";
-import { api, isHttpErrorCode } from "@/common/http.ts";
+import { api, isHttpErrorCode } from "@/request/client.ts";
 import { MailOutlined } from "@ant-design/icons";
 import { HoFetchStatusError } from "@asla/hofetch";
 import { CAN_HASH_PASSWORD, hashPassword } from "@/common/pwd_hash.ts";
-import { EmailInput } from "@/common/EmailInput.tsx";
+import { EmailInput } from "@/components/EmailInput.tsx";
 import { EmailCaptchaActionType } from "@/api.ts";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { EmailAuthentication } from "./-components/security/EmailAuthentication.tsx";
@@ -21,10 +21,10 @@ export const Route = createLazyFileRoute("/_school/profile/security")({
 
 function RouteComponent() {
   return (
-    <PagePadding>
+    <div className={styles.PagePadding}>
       <ChangePassport />
       <ChangeEmail />
-    </PagePadding>
+    </div>
   );
 }
 function ChangePassport() {

@@ -6,6 +6,7 @@ export { default as userRoutes } from "./user/mod.ts";
 export { default as passportRoutes } from "./passport/mod.ts";
 export { default as captchaRoutes } from "./captcha/mod.ts";
 export { default as appRoutes } from "./app/mod.ts";
+export { default as reviewRoutes } from "./review/mod.ts";
 /* 
 export default routeGroup.create({
   method: "",

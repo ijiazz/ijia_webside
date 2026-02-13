@@ -1,5 +1,5 @@
 import { type ListDto, Platform } from "../../common.ts";
-import type { PostItemBase, PostUserInfo } from "./common.ts";
+import type { PostBase, PostUserInfo } from "./common.ts";
 
 export type PlatformPostResponse = ListDto<PlatformPostItemDto> & { needLogin?: boolean };
 
@@ -18,8 +18,9 @@ export type GetPlatformPostListParam = {
   platform?: Platform;
 };
 
-export interface PlatformPostItemDto extends PostItemBase {
+export interface PlatformPostItemDto extends PostBase {
   /** 作者信息 */
+  create_time?: string | null;
   author: PostUserInfo;
   post_id: string;
   platform: Platform;

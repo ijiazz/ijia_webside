@@ -2,10 +2,10 @@ import { PlusOutlined } from "@ant-design/icons";
 import { Avatar, Button, message, Modal, Popover, Space, Spin, Typography } from "antd";
 import { useState } from "react";
 import { PlatformBind } from "../PlatformBind.tsx";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { Meta } from "@/lib/components/Meta.tsx";
 import { BindAccountDto, UserInfoDto } from "@/api.ts";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { useMutation } from "@tanstack/react-query";
 
 export function BindAccountList(props: {
@@ -38,7 +38,7 @@ export function BindAccountList(props: {
   const [confirmOpen, setConfirmOpen] = useState<{ title: string; item: BindAccountDto } | undefined>();
   const [isAddBind, setIsAddBind] = useState(false);
   return (
-    <BindAccountListCSS>
+    <div className={cx(BindAccountListCSS)}>
       <Typography.Title level={5}>账号绑定</Typography.Title>
       <Spin spinning={profileLoading}>
         <div className="bind-list">
@@ -102,11 +102,11 @@ export function BindAccountList(props: {
           }}
         />
       </Modal>
-    </BindAccountListCSS>
+    </div>
   );
 }
 
-const BindAccountListCSS = styled.div`
+const BindAccountListCSS = css`
   .bind-list {
     gap: 12px;
     display: flex;

@@ -1,17 +1,16 @@
 import { useAsync } from "@/hooks/async.ts";
 import { Avatar, Button, Divider, Input, Typography } from "antd";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PostCommentDto } from "@/api.ts";
 import { CommentTree, useCommentData, findNodeRoot } from "./CommentItem.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { CloseOutlined, UserOutlined } from "@ant-design/icons";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { useAntdStatic } from "@/provider/mod.tsx";
 import { ReportModal } from "../ReportModal.tsx";
 import {
   commentDtoToCommentNode,
   createComment,
-  getPostData,
   loadCommentItem,
   loadCommentList,
   PostCommentNode,
@@ -20,14 +19,16 @@ import {
 } from "./api.ts";
 import { CommentHeader } from "./CommentHeader.tsx";
 import { CommentFooter } from "./CommentFooter.tsx";
+import { useQuery } from "@tanstack/react-query";
+import { getPostListQueryOption } from "@/request/post.ts";
 
 const { Text } = Typography;
 
 export type CreateData = {
   text: string;
 };
-export function CommentList(props: { postId?: number; isSelf?: boolean }) {
-  const { postId, isSelf } = props;
+export function CommentList(props: { postId?: number; allowAll?: boolean }) {
+  const { postId, allowAll } = props;
   const {
     commentData,
     addItem,
@@ -38,24 +39,25 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
     replaceItem,
   } = useCommentData<PostCommentNode>();
   const { message, modal } = useAntdStatic();
-  const { loading: postInfoLoading, data: postInfo, run: loadPostInfo } = useAsync(getPostData);
+  const { isFetching: postInfoLoading, data } = useQuery({
+    ...getPostListQueryOption({ post_id: postId! }),
+    enabled: typeof postId === "number",
+  });
+  const postInfo = postInfoLoading ? null : data?.items[0];
 
-  useEffect(() => {
-    if (postId !== undefined) loadPostInfo(postId, isSelf);
-  }, [postId, isSelf]);
   const config = useMemo(() => {
-    let reason: null | undefined | string = "";
-    if (postInfoLoading) reason = "加载中...";
-    else if (postInfo) {
-      reason = postInfo.curr_user ? postInfo.curr_user.disabled_comment_reason : "登录后可以评论";
-    } else reason = "无法获取帖子数据";
+    if (allowAll) return { createDisabled: undefined };
+
+    let createDisabled: string | undefined = "";
+    if (postInfo) {
+      createDisabled = postInfo.curr_user ? postInfo.curr_user.disabled_comment_reason : "登录后可以评论";
+    } else if (postInfoLoading) {
+      createDisabled = "加载中...";
+    } else createDisabled = "暂时无法评论";
     return {
-      create: {
-        reason: reason,
-        can: postInfo?.curr_user?.can_comment === true,
-      },
+      createDisabled,
     };
-  }, [postInfo, postInfoLoading]);
+  }, [postInfo, postInfoLoading, allowAll]);
 
   const loadRoot = useAsync(async (nextCursor?: string | null) => {
     if (typeof postId !== "number") return undefined;
@@ -77,8 +79,8 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
         number: 5,
       });
       nodeList = res.items.map((item) => commentDtoToCommentNode(item, parent));
-      parent.hasMore = res.has_more;
-      parent.childrenCursor = res.next_cursor;
+      parent.hasMore = !!res.cursor_next;
+      parent.childrenCursor = res.cursor_next;
     } catch (error) {
       parent.loading = false;
       forceRender();
@@ -192,8 +194,8 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
           data={commentData}
         />
         <div style={{ textAlign: "center" }}>
-          {loadRoot.data?.has_more ? (
-            <Button type="link" onClick={() => loadRoot.run(loadRoot.data?.next_cursor)} loading={loadRoot.loading}>
+          {loadRoot.data?.cursor_next ? (
+            <Button type="link" onClick={() => loadRoot.run(loadRoot.data!.cursor_next)} loading={loadRoot.loading}>
               佳载更多
             </Button>
           ) : (
@@ -209,17 +211,23 @@ export function CommentList(props: { postId?: number; isSelf?: boolean }) {
               <Text type="secondary">{replyingComment.user.user_name}</Text>
               <div>{replyingComment.content_text}</div>
             </div>
-            <Button icon={<CloseOutlined />} type="text" onClick={() => setReplyingComment(null)} />
+            <Button
+              icon={<CloseOutlined />}
+              type="text"
+              onClick={() => setReplyingComment(null)}
+              aria-label="取消回复"
+            />
           </div>
         )}
         <Input.TextArea
-          disabled={!config.create.can}
-          placeholder={config.create.reason}
+          aria-label="评论内容输入框"
+          disabled={!!config.createDisabled}
+          placeholder={config.createDisabled}
           value={text}
           onChange={(text) => setText(text.currentTarget.value)}
         />
         <div style={{ textAlign: "right" }}>
-          {config.create.can && (
+          {!config.createDisabled && (
             <Button type="primary" loading={commentLoading} onClick={() => onCreateComment()}>
               发送
             </Button>

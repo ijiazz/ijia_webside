@@ -35,8 +35,11 @@ test("注册账号", async function ({ page }) {
 
   await page.getByRole("textbox", { name: "* 邮件验证码 :" }).click();
   await page.getByRole("textbox", { name: "* 邮件验证码 :" }).fill("1234"); // 测试模式邮件验证码一定是 1234
+  await page.waitForTimeout(300);
   await page.getByRole("button", { name: "提 交" }).click();
 
+  await expect(page, "注册成功后导航到个人配置页").toHaveURL(/\/profile\/center/, {});
+  await page.waitForTimeout(500);
   await expect(page, "注册成功后导航到个人配置页").toHaveURL(/\/profile\/center/, {});
 
   await expect(

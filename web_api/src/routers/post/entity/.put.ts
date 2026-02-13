@@ -1,6 +1,6 @@
 import { createPost } from "../-sql/post_create_update.sql.ts";
 import { CheckTypeError, getBasicType, integer, optional } from "@asla/wokao";
-import { getUserDateCount } from "../-sql/post_list.sql.ts";
+import { getUserDateCount } from "../-sql/post_create.sql.ts";
 
 import routeGroup from "../_route.ts";
 import { checkValueAsync } from "@/global/check.ts";

@@ -1,5 +1,5 @@
-import styled from "@emotion/styled";
-import React, { CSSProperties, useEffect, useMemo, useRef } from "react";
+import { css, cx } from "@emotion/css";
+import { CSSProperties, useEffect, useMemo, useRef } from "react";
 import { Caption, CaptionSegment } from "./type.ts";
 
 type CaptionFlowProps = {
@@ -27,7 +27,7 @@ export function CaptionFlow(props: CaptionFlowProps) {
     playFlashText(initSegments, container);
   }, [initSegments]);
 
-  return <CaptionFlowCSS className="flash-text" style={style} ref={ref}></CaptionFlowCSS>;
+  return <span className={cx(CaptionFlowCSS, "flash-text")} style={style} ref={ref}></span>;
 }
 type Char = {
   className?: string;
@@ -36,7 +36,7 @@ type Char = {
 };
 
 const defaultClassname = "flash-text-char";
-const CaptionFlowCSS = styled.span`
+const CaptionFlowCSS = css`
   display: inline-block;
   min-height: 1em;
   min-width: 1em;

@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import React, { ReactNode, useState } from "react";
 
 export type CommentTreeProps<T extends CommentNode = CommentNode> = {
@@ -11,14 +11,14 @@ export type CommentTreeProps<T extends CommentNode = CommentNode> = {
   style?: React.CSSProperties;
 };
 export function CommentTree<T extends CommentNode>(props: CommentTreeProps<T>) {
-  const { data, avatarRender, headerRender, contentRender, testLevel = 0, ...reset } = props;
+  const { data, avatarRender, headerRender, contentRender, testLevel = 0, className, ...reset } = props;
 
   if (!data || data.size === 0) {
     return null;
   }
 
   return (
-    <CommentTreeCSS className={`post-comment-level-${testLevel} ${props.className || ""}`} {...reset}>
+    <div {...reset} className={cx(CommentTreeCSS, `post-comment-level-${testLevel}`, className)}>
       {renderMap(data, (item, key) => {
         return (
           <div key={key}>
@@ -36,7 +36,7 @@ export function CommentTree<T extends CommentNode>(props: CommentTreeProps<T>) {
           </div>
         );
       })}
-    </CommentTreeCSS>
+    </div>
   );
 }
 function renderMap<T>(items: Map<string | number, T>, render: (item: T, key: string | number) => ReactNode) {
@@ -48,7 +48,7 @@ function renderMap<T>(items: Map<string | number, T>, render: (item: T, key: str
   }
   return list;
 }
-const CommentTreeCSS = styled.div`
+const CommentTreeCSS = css`
   display: flex;
   flex-direction: column;
   gap: 8px;

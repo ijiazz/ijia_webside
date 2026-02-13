@@ -2,7 +2,7 @@ import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Button, Checkbox, DatePicker, Form, message, Select, Space, Spin, Tooltip, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { UserInfoDto } from "@/api.ts";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import dayjs, { Dayjs } from "dayjs";
 import { useThemeToken } from "@/provider/mod.tsx";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -154,8 +154,8 @@ function PublicClassSelect(props: { value?: number; onChange?(value: number): vo
       return items.map((item) => ({
         ...item,
         label: (
-          <Space>
-            <span>{item.class_name}</span>
+          <Space className="e2e-class-option">
+            <label>{item.class_name}</label>
             {item.description ? (
               <span style={{ fontSize: token.fontSizeSM, color: token.colorTextDescription }}>{item.description}</span>
             ) : undefined}

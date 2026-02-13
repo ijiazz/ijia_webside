@@ -8,6 +8,7 @@
     "verbatimModuleSyntax": true,
     "rewriteRelativeImportExtensions": true,
     "declaration": true,
+    "declarationMap": true,
     "baseUrl": ".",
     "rootDir": "./src",
     "outDir": "./dist",

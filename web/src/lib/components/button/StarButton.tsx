@@ -1,5 +1,5 @@
-import React, { CSSProperties, ReactNode } from "react";
-import styled from "@emotion/styled";
+import { CSSProperties, ReactNode } from "react";
+import { css, cx } from "@emotion/css";
 
 export function StarHover(props: {
   style?: CSSProperties;
@@ -9,7 +9,7 @@ export function StarHover(props: {
 }) {
   const { children, className, style } = props;
   return (
-    <StyledWrapper style={style} className={className}>
+    <div style={style} className={cx(StarHoverCSS, className)}>
       {children}
       <div className="hover-star star-1">
         <svg
@@ -161,11 +161,11 @@ export function StarHover(props: {
           </g>
         </svg>
       </div>
-    </StyledWrapper>
+    </div>
   );
 }
 
-const StyledWrapper = styled.div`
+const StarHoverCSS = css`
   position: relative;
   .hover-star {
     transition: all 0.3s ease-in-out;

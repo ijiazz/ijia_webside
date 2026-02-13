@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useBulletChat } from "./useBulletChat.tsx";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import React from "react";
 
 export function BulletChatBox(
@@ -9,9 +9,11 @@ export function BulletChatBox(
   const { genData, ...rest } = props;
   const scRef = useRef<HTMLDivElement>(null);
   useBulletChat({ containerRef: scRef, genData: genData });
-  return <StyledDiv {...rest} style={{ height: "100%", ...props.style }} ref={scRef} />;
+  return (
+    <div {...rest} className={cx(StyledDiv, rest.className)} style={{ height: "100%", ...props.style }} ref={scRef} />
+  );
 }
-const StyledDiv = styled.div`
+const StyledDiv = css`
   position: relative;
   overflow: hidden;
   pointer-events: none;

@@ -4,7 +4,7 @@ import { Tabs, TabsProps } from "antd";
 import { AboutSite } from "./-components/about-site.tsx";
 import { Contribute } from "./-components/contribute.tsx";
 import { AboutAuthor } from "./-components/author.tsx";
-import { Footer } from "@/common/Footer.tsx";
+import { Footer } from "@/components/Footer.tsx";
 
 export const Route = createLazyFileRoute("/_theme/about/")({
   component: RouteComponent,

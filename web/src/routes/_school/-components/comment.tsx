@@ -1,4 +1,3 @@
-import React from "react";
 import { CommentList } from "./comment/PostCommentList.tsx";
 import { Drawer } from "antd";
 import { LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
@@ -6,10 +5,10 @@ import { LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
 export function CommentDrawer(props: {
   open?: boolean;
   onClose?: () => void;
+  /** 需要根据 postId 获取评论权限。 如果不传 postId ，则关闭评论区 */
   postId?: string | number | null;
-  isSelf?: boolean;
 }) {
-  const { onClose, postId: postId, open, isSelf } = props;
+  const { onClose, postId: postId, open } = props;
 
   const isHorizontal = useLayoutDirection() === LayoutDirection.Horizontal;
   const postIdNum = typeof postId === "string" ? +postId : typeof postId === "number" ? postId : undefined;
@@ -29,7 +28,7 @@ export function CommentDrawer(props: {
         },
       }}
     >
-      <CommentList postId={postIdNum} isSelf={isSelf} />
+      <CommentList postId={postIdNum} />
     </Drawer>
   );
 }

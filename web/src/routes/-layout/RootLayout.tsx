@@ -1,10 +1,9 @@
 import React, { ReactNode, useMemo } from "react";
-import styled from "@emotion/styled";
 import { Tabs, TabsProps } from "antd";
 import { AdaptiveMenuLayout } from "./AdaptiveMenuLayout.tsx";
 import { ItemType, MenuItemType } from "antd/es/menu/interface.js";
 import { useThemeToken } from "@/provider/AntdProvider.tsx";
-import { IS_MOBILE_LAYOUT } from "@/provider/LayoutDirectionProvider.tsx";
+import * as styles from "./RootLayout.css.ts";
 
 type TabPane = NonNullable<TabsProps["items"]>[number];
 type MenuItemCommon = {
@@ -99,23 +98,26 @@ export function RootLayout(props: RootLayoutProps) {
   const submenu = selectedKey.root ? submenus[selectedKey.root] : undefined;
   const theme = useThemeToken();
   return (
-    <RootLayoutCSS style={{ background: `linear-gradient(${theme.colorBgContainer}, ${theme.colorBgLayout} 28%)` }}>
-      <StyledNavTab className="root-layout-nav" borderColor={theme.colorBorderSecondary}>
-        <Tabs
-          indicator={{}}
-          tabBarExtraContent={{
-            left: leftExtra,
-            right: rightExtra,
-          }}
-          animated
-          defaultActiveKey={defaultSelectedKey.root}
-          activeKey={selectedKey.root}
-          onChange={(key) => {
-            onSelectedKeysChange?.({ keys: [key], path: map[key]?.internal.path || "" });
-          }}
-          items={tabItems}
-        />
-      </StyledNavTab>
+    <div
+      className={styles.Root}
+      style={{ background: `linear-gradient(${theme.colorBgContainer}, ${theme.colorBgLayout} 28%)` }}
+    >
+      <Tabs
+        indicator={{}}
+        tabBarExtraContent={{
+          left: leftExtra,
+          right: rightExtra,
+        }}
+        className={styles.NavTab}
+        style={{ "--border-color": theme.colorBorderSecondary }}
+        animated
+        defaultActiveKey={defaultSelectedKey.root}
+        activeKey={selectedKey.root}
+        onChange={(key) => {
+          onSelectedKeysChange?.({ keys: [key], path: map[key]?.internal.path || "" });
+        }}
+        items={tabItems}
+      />
       <AdaptiveMenuLayout
         className="root-layout-body"
         items={submenu}
@@ -133,7 +135,7 @@ export function RootLayout(props: RootLayoutProps) {
       >
         {children}
       </AdaptiveMenuLayout>
-    </RootLayoutCSS>
+    </div>
   );
 }
 
@@ -208,66 +210,3 @@ function menuItemToAntd(items: InternalMenuItem[]): ItemType<MenuItemType>[] {
     children: item.children ? menuItemToAntd(items) : undefined,
   }));
 }
-
-const StyledNavTab = styled.div<{ borderColor: string }>`
-  --border-color: ${(props) => props.borderColor};
-  > .ant-tabs {
-    backdrop-filter: blur(8px);
-    border-block-end: 1px solid var(--border-color);
-
-    .ant-tabs-nav {
-      margin: 0;
-
-      .ant-tabs-nav-wrap {
-        .ant-tabs-tab {
-          margin: 0 16px;
-          padding: 16px 0;
-        }
-        /* .ant-tabs-tab {
-          border-radius: 3px;
-          margin: 0;
-          padding: 16px;
-          :hover {
-            background: rgba(0, 0, 0, 0.03);
-            color: inherit;
-          }
-        } */
-        .ant-tabs-tab.ant-tabs-tab-active {
-        }
-        .ant-tabs-ink-bar.ant-tabs-ink-bar-animated {
-        }
-
-        margin-left: 12px;
-        .ant-tabs-tab:first-of-type {
-          margin-left: 4px;
-        }
-      }
-    }
-  }
-`;
-
-const RootLayoutCSS = styled.div`
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  > .root-layout-body {
-    flex: 1;
-    overflow: auto;
-  }
-
-  @media screen and (${IS_MOBILE_LAYOUT}) {
-    flex-direction: column-reverse;
-
-    > .root-layout-nav {
-      .ant-tabs {
-        border-block-end: 0 !important;
-        border-block-start: 1px solid var(--border-color);
-
-        .ant-tabs-tab {
-          padding: 14 px 0 !important;
-        }
-      }
-    }
-  }
-`;

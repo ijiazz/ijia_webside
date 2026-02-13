@@ -1,14 +1,14 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 
-import React, { useRef, useState } from "react";
-import styled from "@emotion/styled";
+import { useRef, useState } from "react";
+import { css, cx } from "@emotion/css";
 import { Screen, ScreenEffectsProvider } from "./-components/screen/mod.tsx";
 import { GodPlatform } from "./-components/Platforms.tsx";
-import { Footer } from "@/common/Footer.tsx";
-import { useWindowResize } from "@/hooks/window.ts";
+import { Footer } from "@/components/Footer.tsx";
+import { useWindowResize } from "@/lib/hook/window.ts";
 import { CaretDownOutlined } from "@ant-design/icons";
 import { HomeLinks } from "./-components/HomeLlink.tsx";
-import { useElementOverScreen } from "@/hooks/dom/observer.ts";
+import { useElementOverScreen } from "@/lib/hook/observer.ts";
 import { HomePageRes } from "@/api.ts";
 
 export const Route = createLazyFileRoute("/(home)/")({
@@ -18,24 +18,21 @@ export const Route = createLazyFileRoute("/(home)/")({
 export function RouteComponent() {
   const data: HomePageRes | undefined = Route.useLoaderData();
 
-  const avatarScreenRef = useRef<HTMLDivElement>(null);
   const [blackMode, setBlackMode] = useState(true);
   const avatarUrl = data?.god_user.avatar_url;
   const size = useWindowResize();
 
   const platformRef = useRef<HTMLDivElement>(null);
-  useElementOverScreen((hide) => {
-    setBlackMode(hide);
-  }, avatarScreenRef);
+  const avatarScreenRef = useElementOverScreen({ onChange: setBlackMode });
   return (
-    <HomePageCSS>
+    <div className={HomePageCSS}>
       <div className="header-link">
         <HomeLinks blackMode background={blackMode ? undefined : "#00112971"} />
       </div>
       <div ref={avatarScreenRef}>
         <ScreenEffectsProvider>
           <Screen avatarUrl={avatarUrl}>
-            <HeaderCSS style={{ flexDirection: size.width > 500 ? "row" : "column" }}>
+            <div className={HeaderCSS} style={{ flexDirection: size.width > 500 ? "row" : "column" }}>
               <div
                 className="link-item"
                 onClick={() => platformRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
@@ -44,17 +41,17 @@ export function RouteComponent() {
                 <br />
                 <CaretDownOutlined />
               </div>
-            </HeaderCSS>
+            </div>
           </Screen>
         </ScreenEffectsProvider>
       </div>
       <GodPlatform platforms={data?.god_user_platforms} ref={platformRef}></GodPlatform>
       <Footer />
-    </HomePageCSS>
+    </div>
   );
 }
 
-const HomePageCSS = styled.div`
+const HomePageCSS = css`
   width: 100%;
   overflow: hidden;
   .header-link {
@@ -67,7 +64,7 @@ const HomePageCSS = styled.div`
   }
 `;
 
-const HeaderCSS = styled.div`
+const HeaderCSS = css`
   width: 100%;
   margin-bottom: 24px;
   justify-items: start;

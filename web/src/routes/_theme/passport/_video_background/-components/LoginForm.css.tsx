@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 
-export const LoginFormCSS = styled.div`
+export const LoginFormCSS = css`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -31,20 +31,5 @@ export const LoginFormCSS = styled.div`
       color: #fff;
       text-shadow: #707070 0px 0px 2px;
     }
-  }
-`;
-export const LoginFormFooterCSS = styled.div`
-  .login-operation {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    a {
-      color: #fff;
-      text-shadow: #707070 0px 0px 2px;
-    }
-  }
-  .ant-checkbox-label {
-    color: #fff;
   }
 `;

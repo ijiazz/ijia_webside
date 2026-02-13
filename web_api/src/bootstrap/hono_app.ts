@@ -12,6 +12,7 @@ import {
   userRoutes,
   passportRoutes,
   liveRoutes,
+  reviewRoutes,
 } from "@/routers/mod.ts";
 
 import { setUserInfo } from "@/middleware/auth.ts";
@@ -28,6 +29,7 @@ export function createHonoApp() {
   userRoutes.apply(hono, options);
   liveRoutes.apply(hono, options);
   passportRoutes.apply(hono, options);
+  reviewRoutes.apply(hono, options);
   return hono;
 }
 

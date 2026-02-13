@@ -1,17 +1,17 @@
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 
 import { PlatformPostItemDto } from "@/api.ts";
-import { SOCIAL_PLATFORMS } from "@/common/third_part_account.tsx";
+import { SOCIAL_PLATFORMS } from "@/components/ThirdPartSelect.tsx";
 import { useAsync } from "@/hooks/async.ts";
 import { Avatar, List, Button } from "antd";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { useThemeToken } from "@/provider/mod.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { PostContent, PostHeader } from "../-components/post.tsx";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ExportOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { CardLayout } from "@/lib/components/card/card.tsx";
 
 export const Route = createLazyFileRoute("/_school/live/")({
@@ -50,8 +50,8 @@ function RouteComponent() {
   const items: PlatformPostItemDto[] = data.items;
   const theme = useThemeToken();
   return (
-    <HomePageCSS>
-      <PostListCSS style={{ backgroundColor: theme.colorBgLayout }}>
+    <div style={{ padding: 12 }}>
+      <div style={{ backgroundColor: theme.colorBgLayout }} className={cx(PostListCSS)}>
         {data?.needLogin && (
           <div style={{ display: "flex", justifyContent: "center", paddingTop: 48 }}>
             <Link to={ROUTES.Login} viewTransition>
@@ -113,14 +113,12 @@ function RouteComponent() {
             );
           }}
         />
-      </PostListCSS>
-    </HomePageCSS>
+      </div>
+    </div>
   );
 }
-const HomePageCSS = styled.div`
-  padding: 12px 12px;
-`;
-const PostListCSS = styled.div`
+
+const PostListCSS = css`
   max-width: 650px;
   min-width: 300px;
   margin: 0 auto;

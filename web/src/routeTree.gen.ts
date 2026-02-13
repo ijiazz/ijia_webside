@@ -16,6 +16,7 @@ import { Route as homeIndexRouteImport } from './routes/(home)/index.tsx'
 import { Route as ThemeTestPageIndexRouteImport } from './routes/_theme/test-page/index.tsx'
 import { Route as ThemeAboutIndexRouteImport } from './routes/_theme/about/index.tsx'
 import { Route as SchoolWallIndexRouteImport } from './routes/_school/wall/index.tsx'
+import { Route as SchoolReviewIndexRouteImport } from './routes/_school/review/index.tsx'
 import { Route as SchoolLiveIndexRouteImport } from './routes/_school/live/index.tsx'
 import { Route as ThemePassportFindAccountRouteImport } from './routes/_theme/passport/find-account.tsx'
 import { Route as ThemeAboutIntroductionRouteImport } from './routes/_theme/about/introduction.tsx'
@@ -25,7 +26,8 @@ import { Route as SchoolProfileSecurityRouteImport } from './routes/_school/prof
 import { Route as SchoolProfileCenterRouteImport } from './routes/_school/profile/center.tsx'
 import { Route as SchoolExaminationSplatRouteImport } from './routes/_school/examination/$.tsx'
 import { Route as ThemePassportVideo_backgroundRouteRouteImport } from './routes/_theme/passport/_video_background/route.tsx'
-import { Route as SchoolWallReviewIndexRouteImport } from './routes/_school/wall/review/index.tsx'
+import { Route as SchoolReviewTypeRouteRouteImport } from './routes/_school/review/$type/route.tsx'
+import { Route as SchoolReviewTypeIndexRouteImport } from './routes/_school/review/$type/index.tsx'
 import { Route as ThemePassportVideo_backgroundSignupRouteImport } from './routes/_theme/passport/_video_background/signup.tsx'
 import { Route as ThemePassportVideo_backgroundLoginRouteImport } from './routes/_theme/passport/_video_background/login.tsx'
 import { Route as SchoolWallListChar123GroupIdChar125RouteRouteImport } from './routes/_school/wall/list.{-$groupId}/route.tsx'
@@ -72,6 +74,11 @@ const ThemeAboutIndexRoute = ThemeAboutIndexRouteImport.update({
 const SchoolWallIndexRoute = SchoolWallIndexRouteImport.update({
   id: '/wall/',
   path: '/wall/',
+  getParentRoute: () => SchoolRouteRoute,
+} as any)
+const SchoolReviewIndexRoute = SchoolReviewIndexRouteImport.update({
+  id: '/review/',
+  path: '/review/',
   getParentRoute: () => SchoolRouteRoute,
 } as any)
 const SchoolLiveIndexRoute = SchoolLiveIndexRouteImport.update({
@@ -137,12 +144,17 @@ const ThemePassportVideo_backgroundRouteRoute =
     path: '/passport',
     getParentRoute: () => ThemeRouteRoute,
   } as any)
-const SchoolWallReviewIndexRoute = SchoolWallReviewIndexRouteImport.update({
-  id: '/wall/review/',
-  path: '/wall/review/',
+const SchoolReviewTypeRouteRoute = SchoolReviewTypeRouteRouteImport.update({
+  id: '/review/$type',
+  path: '/review/$type',
   getParentRoute: () => SchoolRouteRoute,
+} as any)
+const SchoolReviewTypeIndexRoute = SchoolReviewTypeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SchoolReviewTypeRouteRoute,
 } as any).lazy(() =>
-  import('./routes/_school/wall/review/index.lazy.tsx').then((d) => d.Route),
+  import('./routes/_school/review/$type/index.lazy.tsx').then((d) => d.Route),
 )
 const ThemePassportVideo_backgroundSignupRoute =
   ThemePassportVideo_backgroundSignupRouteImport.update({
@@ -188,6 +200,7 @@ const SchoolWallListChar123GroupIdChar125IndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof homeIndexRoute
   '/story/': typeof StoryIndexRoute
+  '/review/$type': typeof SchoolReviewTypeRouteRouteWithChildren
   '/passport': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/examination/$': typeof SchoolExaminationSplatRoute
   '/profile/center': typeof SchoolProfileCenterRoute
@@ -197,13 +210,14 @@ export interface FileRoutesByFullPath {
   '/about/introduction': typeof ThemeAboutIntroductionRoute
   '/passport/find-account': typeof ThemePassportFindAccountRoute
   '/live/': typeof SchoolLiveIndexRoute
+  '/review/': typeof SchoolReviewIndexRoute
   '/wall/': typeof SchoolWallIndexRoute
   '/about/': typeof ThemeAboutIndexRoute
   '/test-page/': typeof ThemeTestPageIndexRoute
   '/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125RouteRouteWithChildren
   '/passport/login': typeof ThemePassportVideo_backgroundLoginRoute
   '/passport/signup': typeof ThemePassportVideo_backgroundSignupRoute
-  '/wall/review/': typeof SchoolWallReviewIndexRoute
+  '/review/$type/': typeof SchoolReviewTypeIndexRoute
   '/wall/list/{-$groupId}/': typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
 export interface FileRoutesByTo {
@@ -218,12 +232,13 @@ export interface FileRoutesByTo {
   '/about/introduction': typeof ThemeAboutIntroductionRoute
   '/passport/find-account': typeof ThemePassportFindAccountRoute
   '/live': typeof SchoolLiveIndexRoute
+  '/review': typeof SchoolReviewIndexRoute
   '/wall': typeof SchoolWallIndexRoute
   '/about': typeof ThemeAboutIndexRoute
   '/test-page': typeof ThemeTestPageIndexRoute
   '/passport/login': typeof ThemePassportVideo_backgroundLoginRoute
   '/passport/signup': typeof ThemePassportVideo_backgroundSignupRoute
-  '/wall/review': typeof SchoolWallReviewIndexRoute
+  '/review/$type': typeof SchoolReviewTypeIndexRoute
   '/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
 export interface FileRoutesById {
@@ -232,6 +247,7 @@ export interface FileRoutesById {
   '/_theme': typeof ThemeRouteRouteWithChildren
   '/(home)/': typeof homeIndexRoute
   '/story/': typeof StoryIndexRoute
+  '/_school/review/$type': typeof SchoolReviewTypeRouteRouteWithChildren
   '/_theme/passport/_video_background': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/_school/examination/$': typeof SchoolExaminationSplatRoute
   '/_school/profile/center': typeof SchoolProfileCenterRoute
@@ -241,13 +257,14 @@ export interface FileRoutesById {
   '/_theme/about/introduction': typeof ThemeAboutIntroductionRoute
   '/_theme/passport/find-account': typeof ThemePassportFindAccountRoute
   '/_school/live/': typeof SchoolLiveIndexRoute
+  '/_school/review/': typeof SchoolReviewIndexRoute
   '/_school/wall/': typeof SchoolWallIndexRoute
   '/_theme/about/': typeof ThemeAboutIndexRoute
   '/_theme/test-page/': typeof ThemeTestPageIndexRoute
   '/_school/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125RouteRouteWithChildren
   '/_theme/passport/_video_background/login': typeof ThemePassportVideo_backgroundLoginRoute
   '/_theme/passport/_video_background/signup': typeof ThemePassportVideo_backgroundSignupRoute
-  '/_school/wall/review/': typeof SchoolWallReviewIndexRoute
+  '/_school/review/$type/': typeof SchoolReviewTypeIndexRoute
   '/_school/wall/list/{-$groupId}/': typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
 export interface FileRouteTypes {
@@ -255,6 +272,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/story/'
+    | '/review/$type'
     | '/passport'
     | '/examination/$'
     | '/profile/center'
@@ -264,13 +282,14 @@ export interface FileRouteTypes {
     | '/about/introduction'
     | '/passport/find-account'
     | '/live/'
+    | '/review/'
     | '/wall/'
     | '/about/'
     | '/test-page/'
     | '/wall/list/{-$groupId}'
     | '/passport/login'
     | '/passport/signup'
-    | '/wall/review/'
+    | '/review/$type/'
     | '/wall/list/{-$groupId}/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -285,12 +304,13 @@ export interface FileRouteTypes {
     | '/about/introduction'
     | '/passport/find-account'
     | '/live'
+    | '/review'
     | '/wall'
     | '/about'
     | '/test-page'
     | '/passport/login'
     | '/passport/signup'
-    | '/wall/review'
+    | '/review/$type'
     | '/wall/list/{-$groupId}'
   id:
     | '__root__'
@@ -298,6 +318,7 @@ export interface FileRouteTypes {
     | '/_theme'
     | '/(home)/'
     | '/story/'
+    | '/_school/review/$type'
     | '/_theme/passport/_video_background'
     | '/_school/examination/$'
     | '/_school/profile/center'
@@ -307,13 +328,14 @@ export interface FileRouteTypes {
     | '/_theme/about/introduction'
     | '/_theme/passport/find-account'
     | '/_school/live/'
+    | '/_school/review/'
     | '/_school/wall/'
     | '/_theme/about/'
     | '/_theme/test-page/'
     | '/_school/wall/list/{-$groupId}'
     | '/_theme/passport/_video_background/login'
     | '/_theme/passport/_video_background/signup'
-    | '/_school/wall/review/'
+    | '/_school/review/$type/'
     | '/_school/wall/list/{-$groupId}/'
   fileRoutesById: FileRoutesById
 }
@@ -373,6 +395,13 @@ declare module '@tanstack/react-router' {
       path: '/wall'
       fullPath: '/wall/'
       preLoaderRoute: typeof SchoolWallIndexRouteImport
+      parentRoute: typeof SchoolRouteRoute
+    }
+    '/_school/review/': {
+      id: '/_school/review/'
+      path: '/review'
+      fullPath: '/review/'
+      preLoaderRoute: typeof SchoolReviewIndexRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
     '/_school/live/': {
@@ -438,12 +467,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ThemePassportVideo_backgroundRouteRouteImport
       parentRoute: typeof ThemeRouteRoute
     }
-    '/_school/wall/review/': {
-      id: '/_school/wall/review/'
-      path: '/wall/review'
-      fullPath: '/wall/review/'
-      preLoaderRoute: typeof SchoolWallReviewIndexRouteImport
+    '/_school/review/$type': {
+      id: '/_school/review/$type'
+      path: '/review/$type'
+      fullPath: '/review/$type'
+      preLoaderRoute: typeof SchoolReviewTypeRouteRouteImport
       parentRoute: typeof SchoolRouteRoute
+    }
+    '/_school/review/$type/': {
+      id: '/_school/review/$type/'
+      path: '/'
+      fullPath: '/review/$type/'
+      preLoaderRoute: typeof SchoolReviewTypeIndexRouteImport
+      parentRoute: typeof SchoolReviewTypeRouteRoute
     }
     '/_theme/passport/_video_background/signup': {
       id: '/_theme/passport/_video_background/signup'
@@ -476,6 +512,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SchoolReviewTypeRouteRouteChildren {
+  SchoolReviewTypeIndexRoute: typeof SchoolReviewTypeIndexRoute
+}
+
+const SchoolReviewTypeRouteRouteChildren: SchoolReviewTypeRouteRouteChildren = {
+  SchoolReviewTypeIndexRoute: SchoolReviewTypeIndexRoute,
+}
+
+const SchoolReviewTypeRouteRouteWithChildren =
+  SchoolReviewTypeRouteRoute._addFileChildren(
+    SchoolReviewTypeRouteRouteChildren,
+  )
+
 interface SchoolWallListChar123GroupIdChar125RouteRouteChildren {
   SchoolWallListChar123GroupIdChar125IndexRoute: typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
@@ -492,26 +541,28 @@ const SchoolWallListChar123GroupIdChar125RouteRouteWithChildren =
   )
 
 interface SchoolRouteRouteChildren {
+  SchoolReviewTypeRouteRoute: typeof SchoolReviewTypeRouteRouteWithChildren
   SchoolExaminationSplatRoute: typeof SchoolExaminationSplatRoute
   SchoolProfileCenterRoute: typeof SchoolProfileCenterRoute
   SchoolProfileSecurityRoute: typeof SchoolProfileSecurityRoute
   SchoolWallPublishRoute: typeof SchoolWallPublishRoute
   SchoolLiveIndexRoute: typeof SchoolLiveIndexRoute
+  SchoolReviewIndexRoute: typeof SchoolReviewIndexRoute
   SchoolWallIndexRoute: typeof SchoolWallIndexRoute
   SchoolWallListChar123GroupIdChar125RouteRoute: typeof SchoolWallListChar123GroupIdChar125RouteRouteWithChildren
-  SchoolWallReviewIndexRoute: typeof SchoolWallReviewIndexRoute
 }
 
 const SchoolRouteRouteChildren: SchoolRouteRouteChildren = {
+  SchoolReviewTypeRouteRoute: SchoolReviewTypeRouteRouteWithChildren,
   SchoolExaminationSplatRoute: SchoolExaminationSplatRoute,
   SchoolProfileCenterRoute: SchoolProfileCenterRoute,
   SchoolProfileSecurityRoute: SchoolProfileSecurityRoute,
   SchoolWallPublishRoute: SchoolWallPublishRoute,
   SchoolLiveIndexRoute: SchoolLiveIndexRoute,
+  SchoolReviewIndexRoute: SchoolReviewIndexRoute,
   SchoolWallIndexRoute: SchoolWallIndexRoute,
   SchoolWallListChar123GroupIdChar125RouteRoute:
     SchoolWallListChar123GroupIdChar125RouteRouteWithChildren,
-  SchoolWallReviewIndexRoute: SchoolWallReviewIndexRoute,
 }
 
 const SchoolRouteRouteWithChildren = SchoolRouteRoute._addFileChildren(

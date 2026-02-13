@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import React, { CSSProperties } from "react";
 import { ReactNode } from "react";
 
@@ -15,7 +15,7 @@ export type CardLayoutProps = {
 export function CardLayout(props: CardLayoutProps) {
   const { children, extra, header, footer, icon, style, className } = props;
   return (
-    <CardLayoutCSS className={className} style={style}>
+    <div className={cx(CardLayoutCSS, className)} style={style}>
       <div className="card-layout-header">
         <div className="card-layout-icon">{icon}</div>
         <div className="card-layout-header-info">{header}</div>
@@ -23,10 +23,10 @@ export function CardLayout(props: CardLayoutProps) {
       </div>
       <div className="card-layout-content">{children}</div>
       <div className="card-layout-footer">{footer}</div>
-    </CardLayoutCSS>
+    </div>
   );
 }
-const CardLayoutCSS = styled.div`
+const CardLayoutCSS = css`
   padding: 6px 0px;
   .card-layout {
     &-header {

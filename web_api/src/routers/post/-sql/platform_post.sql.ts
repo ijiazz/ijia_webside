@@ -1,22 +1,12 @@
 import { dbPool } from "@/db/client.ts";
 import { Platform, DbPlaAssetMedia, MediaLevel, TextStructure, USER_LEVEL, MediaType } from "@ijia/data/db";
 import { createSearch, jsonb_build_object } from "@/global/sql_util.ts";
-import {
-  GetListOption,
-  PostAssetType,
-  PostUserInfo,
-  PlatformPostItemDto,
-  AssetMediaDto,
-  MulFormat,
-  AssetImage,
-} from "@/dto.ts";
+import { GetListOption, PostUserInfo, PlatformPostItemDto, AssetMediaDto, MulFormat, AssetImage } from "@/dto.ts";
 import { assetMediaToDto } from "../-utils/media.ts";
-import { getPostContentType } from "./sql_tool.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import { QueryRowsResult } from "@asla/pg";
-import { getBucket } from "@ijia/data/oss";
-const BUCKETS = getBucket();
+
 export type GetAssetListOption = GetListOption & {
   platform?: Platform;
   userId?: string;
@@ -43,7 +33,6 @@ type SelectAssetList = {
   post_id: string;
   platform: Platform;
   publish_time: Date | null;
-  type: PostAssetType;
   ip_location: string | null;
   content_text: string | null;
   content_text_structure: TextStructure[] | null;
@@ -78,7 +67,6 @@ async function selectAssetList(option: GetAssetListOption = {}): Promise<{ total
       post_id: "p.asset_id",
       platform: "p.platform",
       publish_time: "p.publish_time",
-      type: getPostContentType("p.content_type"),
       ip_location: "p.ip_location",
       content_text: "p.content_text",
       content_text_structure: "p.content_text_struct",
@@ -198,7 +186,6 @@ function toPostListDto(list: SelectAssetList[]) {
       publish_time: item.publish_time?.toISOString(),
       ip_location: item.ip_location,
       platform: item.platform,
-      type: item.type,
       url,
     };
   });

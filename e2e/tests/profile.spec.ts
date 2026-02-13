@@ -1,58 +1,21 @@
-import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { AccountInfo, initAlice, loginGetToken } from "@/__mocks__/user.ts";
-import { Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { vioServerTest as test } from "@/fixtures/test.ts";
+import { createDouyinUser, initContextLogged, ProfileCenterURL } from "@/utils/user.ts";
 import { Page } from "@playwright/test";
-import { deleteFrom, v } from "@asla/yoursql";
-import { dbPool } from "@/db/client.ts";
-import { insertIntoValues } from "@/sql/utils.ts";
-const { expect, beforeEach, beforeAll, describe } = test;
+const { expect } = test;
+const classOptionClassName = ".e2e-class-option";
+test("账号绑定与解除关联", async function ({ page, context }) {
+  const Alice = await initContextLogged(context);
+  const bob = await createDouyinUser({
+    user_name: "Bob",
+    signature: `IJIA学号：<${Alice.id}>`,
+  });
+  const alice = await createDouyinUser({
+    user_name: "Alice",
+    signature: `IJIA学号：<${Alice.id}>`,
+  });
 
-let Alice!: AccountInfo;
-let users: { user_name: string; sec_uid: string }[];
-beforeEach(async ({ page }) => {
-  Alice = await initAlice();
-  const aliceToken = await loginGetToken(Alice.email, Alice.password);
+  await page.goto(ProfileCenterURL);
 
-  const res = await dbPool.queryRows(
-    insertIntoValues(
-      "pla_user",
-      [
-        {
-          pla_uid: "alice",
-          platform: Platform.douYin,
-          user_name: "Alice",
-          extra: { sec_uid: "sec_alice" },
-          signature: `IJIA学号：<${Alice.id}>`,
-        },
-        {
-          pla_uid: "bob",
-          platform: Platform.douYin,
-          user_name: "Bob",
-          extra: { sec_uid: "sec_bob" },
-          signature: `IJIA学号：<${Alice.id}>`,
-        },
-      ].map((item) => {
-        const uuid = crypto.randomUUID().replaceAll("-", "");
-        return {
-          ...item,
-          pla_uid: item.pla_uid + ":" + uuid,
-          extra: { ...item.extra, sec_uid: item.extra.sec_uid + ":" + uuid },
-        };
-      }),
-    ).returning(["pla_uid", "platform", "user_name", "extra"]),
-  );
-
-  users = res.map((u) => ({ user_name: u.user_name, sec_uid: u.extra.sec_uid }));
-
-  // 账号绑定
-
-  await page.goto(getAppUrlFromRoute("/profile/center", aliceToken));
-});
-test("账号绑定与解除关联", async function ({ page, browser }) {
-  await clearPublicClass();
-  await initPublicClass();
-  const bob = users.find((u) => u.user_name === "Bob")!;
-  const alice = users.find((u) => u.user_name === "Alice")!;
   await addBind(page, bob.sec_uid);
   await expect(page.locator(".student-card-body .student-card-name")).toHaveText("姓名：Bob");
 
@@ -69,7 +32,7 @@ test("账号绑定与解除关联", async function ({ page, browser }) {
 
   await page.getByRole("checkbox", { name: "年度评论统计 question-circle" }).check();
   await page.getByRole("combobox", { name: "班级 question-circle :" }).click();
-  await page.getByText("e2e-8").click();
+  await page.locator(classOptionClassName).getByText("e2e-8").click();
 
   await page.getByRole("button", { name: "保 存" }).click();
   await expect(page.locator(".student-card-body").first()).toHaveText(/e2e-8/);
@@ -85,18 +48,18 @@ test("账号绑定与解除关联", async function ({ page, browser }) {
   ).not.toBeChecked();
 });
 
-test("修改基础配置", async function ({ page, browser }) {
-  await clearPublicClass();
-  await initPublicClass();
-  const bob = users.find((u) => u.user_name === "Bob")!;
+test("修改基础配置", async function ({ page, context }) {
+  const Alice = await initContextLogged(context);
+  await page.goto(ProfileCenterURL);
+
+  const bob = await createDouyinUser({
+    user_name: "Bob",
+    signature: `IJIA学号：<${Alice.id}>`,
+  });
   await addBind(page, bob.sec_uid);
   // 修改基础配置
   await page.getByRole("combobox", { name: "班级 question-circle :" }).click();
-  await page
-    .locator("div")
-    .filter({ hasText: /^e2e-8$/ })
-    .nth(1)
-    .click();
+  await page.locator(classOptionClassName).getByText("e2e-8").click();
   await page.getByRole("checkbox", { name: "年度评论统计 question-circle" }).check();
   await page.getByRole("button", { name: "保 存" }).click();
   await page.reload();
@@ -111,16 +74,4 @@ async function addBind(page: Page, sec_id: string) {
   await page.getByRole("textbox", { name: "输入抖音个人首页连接" }).fill("https://www.douyin.com/user/" + sec_id);
   await page.getByRole("button", { name: "检 测" }).click();
   await page.getByRole("button", { name: "绑 定" }).click();
-}
-
-async function clearPublicClass() {
-  await dbPool.execute(deleteFrom("class").where("parent_class_id=" + v(PUBLIC_CLASS_ROOT_ID)));
-}
-async function initPublicClass() {
-  await dbPool.execute(
-    insertIntoValues("class", [
-      { class_name: "e2e-8", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-      { class_name: "e2e-1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
-    ]),
-  );
 }

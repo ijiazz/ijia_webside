@@ -24,14 +24,7 @@ export function CommentFooter(props: {
         <Text type="secondary" style={{ fontSize: "inherit" }}>
           {node.create_time_str}
         </Text>
-        <Button
-          size="small"
-          className="e2e-post-item-comment-open"
-          style={{ fontSize: "inherit" }}
-          type="text"
-          onClick={onReply}
-          disabled={!currUser}
-        >
+        <Button size="small" style={{ fontSize: "inherit" }} type="text" onClick={onReply} disabled={!currUser}>
           回复
         </Button>
         {node.curr_user?.is_report ? (

@@ -5,6 +5,7 @@ import { UserInfo } from "./userInfo.ts";
 import { RequiredLoginError } from "@/global/errors.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { REQUEST_AUTH_KEY } from "@/dto.ts";
+import { Role } from "./roles.ts";
 /**
  * 装饰后，会根据添加 userInfo 到 HonoContext 上
  */
@@ -20,11 +21,12 @@ export async function setUserInfo(ctx: HonoContext, next: () => Promise<void>): 
 async function checkRoles(userInfo: UserInfo, requiredAnyRoles: Set<string>) {
   if (!userInfo) throw new RequiredLoginError();
   if (requiredAnyRoles.size === 0) {
+    // 只需要是有效用户
     const userId = await userInfo.getUserId();
     await getValidUserSampleInfoByUserId(userId);
   } else {
-    const { role_id_list } = await userInfo.getRolesFromDb();
-    if (!role_id_list.some((role) => requiredAnyRoles.has(role))) {
+    const hasPermission = await userInfo.hasRolePermission(requiredAnyRoles);
+    if (!hasPermission) {
       throw new HTTPException(403);
     }
   }

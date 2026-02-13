@@ -1,5 +1,5 @@
 import { GetPostCommentListParam, PostCommentDto } from "@/api.ts";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { CommentNode } from "./CommentItem.tsx";
 import { dateToString } from "@/common/date.ts";
 
@@ -44,14 +44,7 @@ export function commentDtoToCommentNode(item: PostCommentDto, parent: PostCommen
   node.hasMore = !!(node.is_root_reply_count && (!node.children || node.children.size < node.is_root_reply_count));
   return node;
 }
-export function getPostData(postId: number, isSelf?: boolean) {
-  return api["/post/list"].get({ query: { post_id: postId, self: isSelf } }).then((res) => {
-    const item = res.items[0];
-    if (item.post_id !== postId) return;
 
-    return item;
-  });
-}
 export function loadCommentList(query: GetPostCommentListParam) {
   return api["/post/comment/list"].get({
     query: query,

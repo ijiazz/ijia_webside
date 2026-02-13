@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import styled from "@emotion/styled";
+import * as styles from "./AvatarWall.css.ts";
 import { useAsync } from "@/hooks/async.ts";
 import { useShakeAnimation } from "../shake_animation.ts";
-import classNames from "classnames";
+import { cx } from "@emotion/css";
 import { api } from "@/request/client.ts";
 import { ScreenEffects, useScreenEffects, useScreenMin } from "./screenEffects.tsx";
 import { InfiniteWall, InfiniteWallRender } from "@uifx/infinite-wall/react";
@@ -72,13 +72,19 @@ export function AvatarWall(props: AvatarWallProps) {
   /** 镜头抖动 */
   const animationCtrl = useShakeAnimation({
     autoPlay: !disabledShake,
-    targetRef: godAvatarRef,
     onFrameUpdate: (offsetX: number, offsetY: number) => {
       const wall = wallRef.current!;
       wall.scrollLeft = areaRef.current.baseX + offsetX;
       wall.scrollTop = areaRef.current.baseY + offsetY;
     },
   });
+
+  useEffect(() => {
+    const element = godAvatarRef.current;
+    if (!element) return;
+    animationCtrl.targetRef(element);
+  }, [godAvatarRef]);
+
   const areaRef = useRef<{ baseX: number; baseY: number; isPlay: boolean }>({
     baseX: 0,
     baseY: 0,
@@ -112,7 +118,7 @@ export function AvatarWall(props: AvatarWallProps) {
 
   const blockSize = useScreenMin() ? 54 : 60;
   return (
-    <AvatarScreenCSS>
+    <div className={styles.AvatarScreen}>
       <InfiniteWall
         brickHeight={blockSize}
         brickWidth={blockSize}
@@ -166,7 +172,7 @@ export function AvatarWall(props: AvatarWallProps) {
 
           return (
             <Image
-              className="avatar-item"
+              className={styles.AvatarItem}
               imgClassName="avatar-item-img"
               active={isActive}
               item={item}
@@ -175,101 +181,16 @@ export function AvatarWall(props: AvatarWallProps) {
           );
         }}
       />
-    </AvatarScreenCSS>
+    </div>
   );
 }
 
-const AvatarScreenCSS = styled.div`
-  height: 100%;
-  user-select: none;
-
-  cursor: move;
-
-  .avatar-item {
-    position: relative;
-    overflow: hidden;
-    height: 100%;
-    box-sizing: border-box;
-    /* opacity: 0.6; */
-    /* padding: 1.2px; */
-
-    &-img {
-      --glow-color: #12639a;
-      box-sizing: border-box;
-      border: 1.2px solid;
-      border-color: var(--glow-color);
-      background: var(--glow-color);
-      img {
-        width: 100%;
-        height: 100%;
-        opacity: 0.75;
-        object-fit: cover;
-        border-radius: 10%;
-        overflow: hidden;
-      }
-      display: none;
-    }
-    .user-name {
-      padding: 2px;
-      text-align: center;
-      font-size: 10px;
-      transition: background-color 100ms linear;
-    }
-
-    :hover {
-      .user-name {
-        height: 100%;
-        width: 100%;
-        background-color: #0009;
-        color: #fff;
-        position: absolute;
-        top: 0;
-        left: 0;
-      }
-    }
-
-    @keyframes img-display {
-      0% {
-        width: 0%;
-        height: 0%;
-      }
-      100% {
-        width: 100%;
-        height: 100%;
-      }
-    }
-    @keyframes img-empty-display {
-      0% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-  }
-  .avatar-item.highlight {
-    .avatar-item-img {
-      background-color: #00fbff;
-      border-color: #00fbff;
-      border-width: 3px;
-    }
-  }
-  .avatar-item.loaded {
-    .avatar-item-img {
-      height: 100%;
-      width: 100%;
-      animation: img-display 1s ease forwards;
-      margin: auto;
-      display: block;
-    }
-  }
-`;
 function Image(props: { active?: boolean; item?: AvatarItem; className?: string; imgClassName?: string; id?: string }) {
   const { item, className, imgClassName, active, id } = props;
   const [loading, setLoading] = useState(true);
   useMemo(() => setLoading(true), [item?.url]);
   return (
-    <div className={classNames(className, { loaded: !loading, highlight: active })}>
+    <div className={cx(className, { loaded: !loading, highlight: active })}>
       <div className={imgClassName}>
         <img
           src={item?.url}

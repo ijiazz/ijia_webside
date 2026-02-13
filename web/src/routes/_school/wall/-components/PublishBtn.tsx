@@ -1,14 +1,14 @@
 import React, { ReactNode } from "react";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 
 export const CreatePostBtn = (
   props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
     icon?: ReactNode;
   },
 ) => {
-  const { icon, ...rest } = props;
+  const { icon, className, ...rest } = props;
   return (
-    <StyledWrapper {...rest}>
+    <button className={cx(StyledWrapper, className)} {...rest}>
       <div className="points_wrapper">
         <i className="point" />
         <i className="point" />
@@ -25,11 +25,11 @@ export const CreatePostBtn = (
         <span className="icon">{props.icon}</span>
         {props.children}
       </span>
-    </StyledWrapper>
+    </button>
   );
 };
 
-const StyledWrapper = styled.button`
+const StyledWrapper = css`
   --color1: #f1cdcd;
   --color2: #f08c94;
   --h-button: 48px;

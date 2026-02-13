@@ -2,11 +2,10 @@ import { createLazyFileRoute, NavigateOptions, useNavigate } from "@tanstack/rea
 
 import { PostGroupResponse } from "@/api.ts";
 import { MenuProps } from "antd";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Route as ParentRoute } from "./route.tsx";
-import { PostQueryFilterContext } from "./-components/PostQueryFilterContext.tsx";
 import { CommentDrawer } from "../../-components/comment.tsx";
-import { PostList } from "./-components/PostList.tsx";
+import { PublicPostList } from "./-components/PostList.tsx";
 
 export const Route = createLazyFileRoute("/_school/wall/list/{-$groupId}/")({
   component: RouteComponent,
@@ -14,8 +13,8 @@ export const Route = createLazyFileRoute("/_school/wall/list/{-$groupId}/")({
 
 function RouteComponent() {
   const { postGroup }: { postGroup: PostGroupResponse | undefined } = ParentRoute.useLoaderData();
-  const filter = useContext(PostQueryFilterContext);
-  const isSelf = filter.self;
+  const search = Route.useSearch();
+
   const { option, menus } = useMemo(() => {
     const option = postGroup?.items.map((item) => ({
       label: item.group_name,
@@ -34,8 +33,8 @@ function RouteComponent() {
 
   return (
     <>
-      <PostList groupOptions={option} onOpenComment={drawer.onOpenComment} />
-      <CommentDrawer postId={drawer.commentId} isSelf={isSelf} open={drawer.open} onClose={drawer.closeCommentDrawer} />
+      <PublicPostList groupOptions={option} userId={search.userId} onOpenComment={drawer.onOpenComment} />
+      <CommentDrawer postId={drawer.commentId} open={drawer.open} onClose={drawer.closeCommentDrawer} />
     </>
   );
 }

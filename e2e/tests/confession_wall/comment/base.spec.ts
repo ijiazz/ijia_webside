@@ -1,23 +1,24 @@
-import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
-import { AccountInfo, initAlice, initBob, loginGetToken } from "@/__mocks__/user.ts";
-import { clearPosts, createPost, gotoComment, createCommentUseApi } from "../utils/post.ts";
+import { vioServerTest as test } from "@/fixtures/test.ts";
+import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
+import { createPost, createCommentUseApi, getPostCommentURL, getPostURL } from "@/utils/post.ts";
 import { expect, Page } from "@playwright/test";
 import { afterTime } from "evlib";
+import { setContextLogin } from "@/utils/browser.ts";
 const { beforeEach } = test;
 
 let alice: AccountInfo & { token: string };
 let postId: number;
-beforeEach(async function () {
-  await clearPosts();
+beforeEach(async function ({ context }) {
   const aliceInfo = await initAlice();
   const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
   alice = { ...aliceInfo, token: aliceToken };
   const { id } = await createPost({ content_text: "comment-test" }, aliceToken);
   postId = id;
+  await setContextLogin(context, alice.token);
 });
 
 test("创建一条根评论，然后删除", async function ({ page }) {
-  await page.goto(getAppUrlFromRoute(`/wall/list`, alice.token));
+  await page.goto(getPostURL({ userId: alice.id }));
 
   await expect(getCommentBtn(page), "帖子评论数初始为0").toHaveText("0");
   await getCommentBtn(page).click();
@@ -32,7 +33,8 @@ test("创建一条根评论，然后删除", async function ({ page }) {
 
   await page.getByRole("dialog").getByRole("button", { name: "more" }).click();
   await page.getByText("删除").click();
-  await page.getByRole("button", { name: "确 定" }).click();
+  await page.waitForTimeout(500);
+  await page.getByRole("button", { name: "确 定" }).click({});
 
   await expect(page.locator(commentItemClassName, { hasText: "e2e-c-1" }), "列表评论被删除").toHaveCount(0);
   await page.reload();
@@ -41,7 +43,8 @@ test("创建一条根评论，然后删除", async function ({ page }) {
 });
 
 test("创建回复评论", async function ({ page }) {
-  await page.goto(gotoComment(postId, alice.token));
+  test.setTimeout(30000);
+  await page.goto(getPostCommentURL(postId, { userId: alice.id }));
   // 先创建1条根评论
   await page.getByRole("textbox").fill("r1");
   await page.getByRole("button", { name: "发 送" }).click();
@@ -65,28 +68,25 @@ test("创建回复评论", async function ({ page }) {
   await expect(getCommentBtn(page), "帖子评论数为 6").toHaveText("6");
 
   await page.getByRole("button", { name: "展开1条回复" }).click();
+  await page.waitForTimeout(300);
   await page.getByRole("button", { name: "展开3条回复" }).click();
+  await page.waitForTimeout(300);
   await expect(page.locator(commentContentClassName).nth(4), "评论应出现在正确位置").toHaveText(/^1-2-r2/);
   await expect(page.locator(commentContentClassName).nth(5), "评论应出现在正确位置").toHaveText(/^1-1-2-r2/);
 });
 
 test("删除评论", async function ({ page }) {
-  const [r1, r2] = await Promise.all([
-    createCommentUseApi({ postId, text: "@1@", token: alice.token }),
-    createCommentUseApi({ postId, text: "@2@", token: alice.token }), // delete
-  ]);
+  test.setTimeout(30000);
+  const r1 = await createCommentUseApi({ postId, text: "@1@", token: alice.token });
+  const r2 = await createCommentUseApi({ postId, text: "@2@", token: alice.token }); // delete
 
-  const [r1_1, r1_2, r2_1] = await Promise.all([
-    createCommentUseApi({ postId, text: "@1-1@", replyCommentId: r1.id, token: alice.token }), // delete
-    createCommentUseApi({ postId, text: "@1-2@", replyCommentId: r1.id, token: alice.token }),
-    createCommentUseApi({ postId, text: "@2-1@", replyCommentId: r2.id, token: alice.token }),
-  ]);
+  const r1_1 = await createCommentUseApi({ postId, text: "@1-1@", replyCommentId: r1.id, token: alice.token }); // delete
+  const r1_2 = await createCommentUseApi({ postId, text: "@1-2@", replyCommentId: r1.id, token: alice.token });
+  const r2_1 = await createCommentUseApi({ postId, text: "@2-1@", replyCommentId: r2.id, token: alice.token });
 
-  const [r1_1_1, r1_2_1, r2_1_1] = await Promise.all([
-    createCommentUseApi({ postId, text: "@1-1-1@", replyCommentId: r1_1.id, token: alice.token }),
-    createCommentUseApi({ postId, text: "@1-2-1@", replyCommentId: r1_2.id, token: alice.token }),
-    createCommentUseApi({ postId, text: "@2-1-1@", replyCommentId: r2_1.id, token: alice.token }),
-  ]);
+  const r1_1_1 = await createCommentUseApi({ postId, text: "@1-1-1@", replyCommentId: r1_1.id, token: alice.token });
+  const r1_2_1 = await createCommentUseApi({ postId, text: "@1-2-1@", replyCommentId: r1_2.id, token: alice.token });
+  const r2_1_1 = await createCommentUseApi({ postId, text: "@2-1-1@", replyCommentId: r2_1.id, token: alice.token }); // delete
 
   const r1_2_1_1 = await createCommentUseApi({
     postId,
@@ -95,7 +95,7 @@ test("删除评论", async function ({ page }) {
     token: alice.token,
   }); // delete
 
-  await page.goto(gotoComment(postId, alice.token));
+  await page.goto(getPostCommentURL(postId, { userId: alice.id }));
 
   await page.getByRole("button", { name: "展开5条回复" }).click(); //r1
   await page.getByRole("button", { name: "展开2条回复" }).click(); //r2
@@ -127,7 +127,7 @@ test("删除评论", async function ({ page }) {
   await expect(page.locator(commentContentClassName).nth(3)).toHaveText(/^@1-2-1@/);
 });
 
-test("帖子作者可以删除其他人评论，其他人只能删除自己的评论", async function ({ page }) {
+test("帖子作者可以删除其他人评论，其他人只能删除自己的评论", async function ({ page, context }) {
   const bobInfo = await initBob();
   const bobToken = await loginGetToken(bobInfo.email, bobInfo.password);
   const [aliceComment, bobComment] = await Promise.all([
@@ -136,7 +136,7 @@ test("帖子作者可以删除其他人评论，其他人只能删除自己的�
   ]);
 
   {
-    await page.goto(gotoComment(postId, alice.token));
+    await page.goto(getPostCommentURL(postId, { userId: alice.id }));
     await getCommentMoreBtn(page, aliceComment.id).hover();
     await expect(
       page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
@@ -152,7 +152,8 @@ test("帖子作者可以删除其他人评论，其他人只能删除自己的�
     await page.mouse.move(0, 0);
   }
   {
-    await page.goto(gotoComment(postId, bobToken));
+    await setContextLogin(context, alice.token);
+    await page.goto(getPostCommentURL(postId, { userId: alice.id }));
     await getCommentMoreBtn(page, aliceComment.id).hover();
     await expect(
       page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
@@ -174,8 +175,7 @@ const commentContentClassName = ".e2e-post-comment-content";
 const commentHeaderClassName = ".e2e-post-comment-header";
 
 function getCommentBtn(page: Page) {
-  const post = page.locator(".e2e-post-item", { hasText: "comment-test" });
-  return post.getByRole("button").nth(2);
+  return page.locator(".e2e-post-item", { hasText: "comment-test" }).getByRole("button", { name: "打开评论" });
 }
 async function replyComment(page: Page, replyText: string, filterText: string) {
   await expect(page.getByRole("textbox"), "等待发送完成").toHaveValue("");

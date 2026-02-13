@@ -1,7 +1,7 @@
 import { enumPlatform } from "@ijia/data/db";
 import { checkValue } from "@/global/check.ts";
 import { enumType, integer, optional } from "@asla/wokao";
-import { Role } from "@/middleware/auth.ts";
+import { requiredRoles, Role } from "@/middleware/auth.ts";
 import { getCheckerServer } from "@/services/douyin.ts";
 
 import routeGroup from "./_route.ts";

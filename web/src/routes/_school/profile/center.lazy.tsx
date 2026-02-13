@@ -1,11 +1,11 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 
-import { StudentIdCard, StudentIdCardBack } from "@/common/StudentIdCard.tsx";
+import { StudentIdCard, StudentIdCardBack } from "@/components/school/StudentIdCard.tsx";
 import { ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import { useMemo, useState } from "react";
-import { toFileUrl } from "@/common/http.ts";
-import { PagePadding } from "@/lib/components/Page.tsx";
+import { toFileUrl } from "@/request/client.ts";
+import * as styles from "@/lib/components/Page.tsx";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { CurrentUserProfileQueryOption } from "@/request/user.ts";
 import { queryClient } from "@/request/client.ts";
@@ -39,7 +39,7 @@ function RouteComponent() {
   }, [data]);
 
   return (
-    <PagePadding>
+    <div className={styles.PagePadding}>
       <Button
         icon={zoom === 1 ? <ZoomInOutlined /> : <ZoomOutOutlined />}
         onClick={() => setZoom((size) => (size === 1 ? 2 : 1))}
@@ -60,6 +60,6 @@ function RouteComponent() {
       </div>
       <BindAccountList profileData={data} profileLoading={isFetching} onProfileChange={invalidateProfile} />
       <BasicForm userInfo={data} profileLoading={isFetching} onProfileChange={invalidateProfile} />
-    </PagePadding>
+    </div>
   );
 }

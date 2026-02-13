@@ -2,14 +2,14 @@ import { useAsync } from "@/hooks/async.ts";
 import { Avatar, Button, Input, Divider, Popover, Typography, Tag } from "antd";
 import React, { useState } from "react";
 import { useAntdStatic, useThemeToken } from "@/provider/mod.tsx";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { BindPlatformCheckDto, Platform } from "@/api.ts";
 import step1Path from "./PlatformBind/douyin-step-1.webp";
 import step2Path from "./PlatformBind/douyin-step-2.jpg";
 import step3Path from "./PlatformBind/douyin-step-3.webp";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Meta } from "@/lib/components/Meta.tsx";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 
 export function PlatformBind(props: { userId?: number; onBindSuccess?(): void }) {
   const { onBindSuccess, userId } = props;
@@ -37,7 +37,7 @@ export function PlatformBind(props: { userId?: number; onBindSuccess?(): void })
   const [platform, setPlatform] = useState<Platform>(Platform.douYin);
   const [inputText, setInputText] = useState<string>();
   return (
-    <PlatformBindCSS>
+    <div className={PlatformBindCSS}>
       <div className="tip">
         {/* <ThirdPartSelect disabled value={platform} onChange={setPlatform}></ThirdPartSelect> */}
         {userId !== undefined && (
@@ -89,10 +89,10 @@ export function PlatformBind(props: { userId?: number; onBindSuccess?(): void })
           }}
         ></BindCheckResult>
       )}
-    </PlatformBindCSS>
+    </div>
   );
 }
-const PlatformBindCSS = styled.div`
+const PlatformBindCSS = css`
   max-width: 600px;
   margin: 8px 0;
   > .tip {
@@ -114,7 +114,7 @@ function BindCheckResult(
   const token = useThemeToken();
   const selfIsBind = bind?.user_id === currentUserId;
   return (
-    <BindCheckResultCSS style={{ backgroundColor: token.colorBgBase }}>
+    <div className={BindCheckResultCSS} style={{ backgroundColor: token.colorBgBase }}>
       <Meta
         icon={<Avatar size="large" src={platformUser.avatarPath} />}
         title={platformUser.username}
@@ -132,10 +132,10 @@ function BindCheckResult(
           {selfIsBind ? "已绑定" : "绑定"}
         </Button>
       </div>
-    </BindCheckResultCSS>
+    </div>
   );
 }
-const BindCheckResultCSS = styled.div`
+const BindCheckResultCSS = css`
   margin: 12px 0;
   padding: 8px;
   border-radius: 6px;
@@ -154,7 +154,7 @@ const { Paragraph, Title } = Typography;
 
 function TutorialModal() {
   return (
-    <TutorialModalCSS>
+    <div className={TutorialModalCSS}>
       <Paragraph>
         <Title level={5}>从抖音APP获取首页连接</Title>
         <Paragraph>
@@ -167,10 +167,10 @@ function TutorialModal() {
           <img src={step3Path} />
         </Paragraph>
       </Paragraph>
-    </TutorialModalCSS>
+    </div>
   );
 }
-const TutorialModalCSS = styled.div`
+const TutorialModalCSS = css`
   max-width: 500px;
   max-height: 400px;
   overflow-y: auto;

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { api } from "@/common/http.ts";
+import { api } from "@/request/client.ts";
 import { HomePageRes } from "@/api.ts";
 
 export const Route = createFileRoute("/(home)/")({

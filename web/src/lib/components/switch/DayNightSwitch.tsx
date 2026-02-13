@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 
 export type DayNightSwitchProps = {
   onChange?: (checked: boolean) => void;
@@ -10,9 +10,9 @@ export type DayNightSwitchProps = {
 };
 
 export const DayNightSwitch = (props: DayNightSwitchProps) => {
-  const { checked, defaultChecked, onChange, ...reset } = props;
+  const { checked, defaultChecked, onChange, className, ...reset } = props;
   return (
-    <StyledWrapper {...reset}>
+    <label {...reset} className={cx(StyledWrapper, className)}>
       <input
         type="checkbox"
         defaultChecked={defaultChecked}
@@ -75,11 +75,11 @@ export const DayNightSwitch = (props: DayNightSwitchProps) => {
           </svg>
         </div>
       </div>
-    </StyledWrapper>
+    </label>
   );
 };
 
-const StyledWrapper = styled.label`
+const StyledWrapper = css`
   position: relative;
   display: inline-block;
   width: 60px;

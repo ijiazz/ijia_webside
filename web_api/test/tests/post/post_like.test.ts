@@ -5,22 +5,20 @@ import { prepareUniqueUser } from "../../fixtures/user.ts";
 import {
   cancelPostLike,
   deletePost,
-  getPostReviewStatus,
   getUserStatFromDb,
   preparePost,
   reportPost,
-  ReviewStatus,
   setPostLike,
-  testGetPost,
+  getPublicPost,
   updatePostConfigFormApi,
   UserStat,
-} from "./utils/prepare_post.ts";
-import { PostReviewType } from "@ijia/data/db";
-import { DeepPartial } from "./utils/comment.ts";
-import { getReviewTarget } from "@/routers/post/review/-sql/post_review.sql.ts";
-import { select, update } from "@asla/yoursql";
+} from "../../utils/post.ts";
+import { select } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
 import postRoutes from "@/routers/post/mod.ts";
+import { ReviewStatus } from "@ijia/data/db";
+import { commitPostReview, setPostToReviewing } from "@/routers/review/mod.ts";
+import "#test/asserts/post.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);
@@ -31,16 +29,16 @@ test("自己作品点赞：点赞后返回的帖子信息包含点赞状态，�
 }) {
   const { post, alice } = await preparePost(api);
 
-  const item1 = await testGetPost(api, post.id, alice.token);
+  const item1 = await getPublicPost(api, post.id, alice.token);
   expect(item1.curr_user?.is_like).toBeFalsy();
   const likeRes = await setPostLike(api, post.id, alice.token);
   expect(likeRes.success).toBeTruthy();
-  const item2 = await testGetPost(api, post.id, alice.token);
+  const item2 = await getPublicPost(api, post.id, alice.token);
   expect(item2.curr_user?.is_like).toBeTruthy();
 
   const cancelRes = await cancelPostLike(api, post.id, alice.token);
   expect(cancelRes.success).toBeTruthy();
-  const item3 = await testGetPost(api, post.id, alice.token);
+  const item3 = await getPublicPost(api, post.id, alice.token);
   expect(item3.curr_user?.is_like).toBeFalsy();
 });
 
@@ -117,16 +115,16 @@ test("他人作品点赞：点赞后返回的帖子信息包含点赞状态，�
   const { post, alice } = await preparePost(api);
   const bob = await prepareUniqueUser("bob");
 
-  const item1 = await testGetPost(api, post.id, bob.token);
+  const item1 = await getPublicPost(api, post.id, bob.token);
   expect(item1.curr_user?.is_like).toBeFalsy();
   const likeRes = await setPostLike(api, post.id, bob.token);
   expect(likeRes.success).toBeTruthy();
-  const item2 = await testGetPost(api, post.id, bob.token);
+  const item2 = await getPublicPost(api, post.id, bob.token);
   expect(item2.curr_user?.is_like).toBeTruthy();
 
   const cancelRes = await cancelPostLike(api, post.id, bob.token);
   expect(cancelRes.success).toBeTruthy();
-  const item3 = await testGetPost(api, post.id, bob.token);
+  const item3 = await getPublicPost(api, post.id, bob.token);
   expect(item3.curr_user?.is_like).toBeFalsy();
 });
 test("已隐藏的帖子只有自己能点赞", async function ({ api, publicDbPool }) {
@@ -183,7 +181,7 @@ test("举报作品", async function ({ api, publicDbPool }) {
   expect(res.success).toBeTruthy();
   await expect(getPostReportCount(p.id)).resolves.toBe(1);
 
-  const info = await testGetPost(api, p.id, bob.token);
+  const info = await getPublicPost(api, p.id, bob.token);
   expect(info.curr_user?.is_report).toBeTruthy();
 });
 test("点赞后的作品不能再举报", async function ({ api, publicDbPool }) {
@@ -202,27 +200,19 @@ test("有效举报人数达到3人，帖子将进入审核状态", async functio
   }
 
   await expect(getPostReportCount(p.id)).resolves.toBe(2);
-  const status1 = await getPostReviewStatus(p.id);
-  expect(status1.is_reviewing).toBeFalsy();
-  await expect(getReviewTarget(PostReviewType.post, p.id), "未添加到审核队列").resolves.toBeUndefined();
+  await expect(p.id).postReviewStatusIs(null);
 
   const bob3 = await prepareUniqueUser("bob3");
   await reportPost(api, p.id, bob3.token, "测试举报");
   await expect(getPostReportCount(p.id)).resolves.toBe(3);
-
-  const status = await getPostReviewStatus(p.id);
-  expect(status).toMatchObject({
-    is_review_pass: null,
-    is_reviewing: true,
-    review: { is_review_pass: null, reviewed_time: null },
-  } satisfies DeepPartial<ReviewStatus>);
-
-  await expect(getReviewTarget(PostReviewType.post, p.id), "添加到审核队列").resolves.toBeTypeOf("object");
+  await expect(p.id, "帖子进入审核状态").postReviewStatusIs(ReviewStatus.pending);
 });
 test("审核通过的帖子，举报达到3人后，帖子仍然是审核通过", async function ({ api, publicDbPool }) {
   const { post: p, alice } = await preparePost(api);
 
-  await publicDbPool.execute(update("public.post").set({ is_review_pass: "true" }).where(`id=${p.id}`));
+  const reviewId = await setPostToReviewing(p.id);
+  await commitPostReview({ reviewId, isPass: true });
+  await expect(p.id, "提交后审核状态为审核通过").postReviewStatusIs(ReviewStatus.passed);
 
   const bo2 = await prepareUniqueUser("bob2");
   const bob3 = await prepareUniqueUser("bob3");
@@ -230,11 +220,7 @@ test("审核通过的帖子，举报达到3人后，帖子仍然是审核通过"
   await reportPost(api, p.id, bo2.token, "测试举报");
   await reportPost(api, p.id, bob3.token, "测试举报");
 
-  const status = await getPostReviewStatus(p.id);
-  expect(status).toMatchObject({
-    is_review_pass: true,
-    is_reviewing: false,
-  } satisfies Partial<ReviewStatus>);
+  await expect(p.id).postReviewStatusIs(ReviewStatus.passed);
 });
 test("已举报的帖子尝试取消点赞，不应删除举报记录", async function ({ api, publicDbPool }) {
   const { post: p, alice } = await preparePost(api);
@@ -245,7 +231,7 @@ test("已举报的帖子尝试取消点赞，不应删除举报记录", async fu
     const rp1 = await cancelPostLike(api, p.id, alice.token);
     expect(rp1.success).toBeFalsy();
     await expect(getPostLikeCount(p.id)).resolves.toBe(0);
-    const info = await testGetPost(api, p.id, alice.token);
+    const info = await getPublicPost(api, p.id, alice.token);
     expect(info.curr_user?.is_report, "仍是已举报状态").toBeTruthy();
     await expect(getPostReportCount(p.id), "举报数没有变化").resolves.toBe(1);
   }
@@ -257,7 +243,7 @@ test("已举报的帖子，不能再点赞", async function ({ api, publicDbPool
 
   const rp1 = await setPostLike(api, p.id, alice.token);
   expect(rp1.success).toBeFalsy();
-  const info = await testGetPost(api, p.id, alice.token);
+  const info = await getPublicPost(api, p.id, alice.token);
   expect(info.stat.like_total, "点赞数为0").toBe(0);
   expect(info.curr_user?.is_like, "点赞状态为false").toBeFalsy();
   expect(info.curr_user?.is_report, "仍是已举报状态").toBeTruthy();

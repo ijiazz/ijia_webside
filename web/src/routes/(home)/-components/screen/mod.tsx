@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useRef, useState } from "react";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { HomeBulletChat } from "../HomeBulletchat.tsx";
 import { ScreenAvatar } from "./ScreenAvatar.tsx";
 import { EffectMode, useWindowEffect } from "../../-hooks/useWindowEffect.ts";
@@ -46,7 +46,7 @@ export function Screen(props: AvatarListProps) {
   const godAvatarRef = useRef<HTMLDivElement>(null);
 
   return (
-    <ScreenCSS className="screen">
+    <div className={cx(ScreenCSS, "screen")}>
       {/* 头像墙 */}
       <AvatarWall godAvatarRef={godAvatarRef} />
       <div className="screen-top-mask" style={{ display: showMask ? undefined : "none" }}>
@@ -71,11 +71,11 @@ export function Screen(props: AvatarListProps) {
       </div>
       {/* 弹幕 */}
       <HomeBulletChat />
-    </ScreenCSS>
+    </div>
   );
 }
 
-const ScreenCSS = styled.div`
+const ScreenCSS = css`
   background: url("/main/home.webp");
   background-color: #d4f5ff;
   background-blend-mode: multiply;

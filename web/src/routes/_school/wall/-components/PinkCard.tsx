@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "@emotion/styled";
+import { css, cx } from "@emotion/css";
 import { CardLayoutProps } from "@/lib/components/card/card.tsx";
 import { PostHeader, PostHeaderProps } from "../../-components/post.tsx";
 import { useThemeToken } from "@/provider/mod.tsx";
@@ -9,7 +9,7 @@ export function PinkPostCard(props: Omit<CardLayoutProps, "header"> & { header: 
   const { children, extra, header, footer, icon, style, className } = props;
   const token = useThemeToken();
   return (
-    <CardLayoutCSS className={className} style={{ background: token.colorBgContainer, ...style }}>
+    <div className={cx(CardLayoutCSS, className)} style={{ background: token.colorBgContainer, ...style }}>
       <div className="card-layout-header">
         <div className="card-layout-icon">{icon}</div>
         <PostHeader {...header} style={{ flex: 1 }} />
@@ -17,11 +17,11 @@ export function PinkPostCard(props: Omit<CardLayoutProps, "header"> & { header: 
       </div>
       <div className="card-layout-content">{children}</div>
       <div className="card-layout-footer">{footer}</div>
-    </CardLayoutCSS>
+    </div>
   );
 }
 
-const CardLayoutCSS = styled.div`
+const CardLayoutCSS = css`
   .card-layout {
     &-header {
       padding: 6px 0px;
