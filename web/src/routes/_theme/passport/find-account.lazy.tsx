@@ -76,7 +76,7 @@ const PageCSS = css`
   background: url("/main/bg-login.webp");
   background-repeat: no-repeat;
   background-size: cover;
-  height: 100vh;
+  height: 100%;
 
   display: flex;
   justify-content: center;

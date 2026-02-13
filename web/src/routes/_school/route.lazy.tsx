@@ -19,6 +19,7 @@ import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
 import { BasicUserContext } from "./-context/UserContext.tsx";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { CurrentUserInfoQueryOption } from "@/request/user.ts";
+import { GlobalAlert } from "@/components/page_state/Alert.tsx";
 
 export const Route = createLazyFileRoute("/_school")({
   component: () => {
@@ -26,9 +27,11 @@ export const Route = createLazyFileRoute("/_school")({
     return (
       <AntdThemeProvider>
         <HoFetchProvider>
-          <BasicUserContext value={currentUser}>
-            <UserLayout />
-          </BasicUserContext>
+          <GlobalAlert>
+            <BasicUserContext value={currentUser}>
+              <UserLayout />
+            </BasicUserContext>
+          </GlobalAlert>
         </HoFetchProvider>
       </AntdThemeProvider>
     );
