@@ -21,7 +21,6 @@ export function HomeLinks(props: HomeLinkProps) {
         return (
           <Hover color={color} key={key}>
             <Dropdown
-              open
               menu={{
                 items: item.children.map((child) => ({
                   key: child.href,
