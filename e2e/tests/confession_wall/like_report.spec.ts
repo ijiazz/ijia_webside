@@ -2,6 +2,7 @@ import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
 import { createPost } from "@/utils/post.ts";
 import { Locator } from "@playwright/test";
+import { DROPDOWN_ACTION_WAIT_TIME } from "@/utils/browser.ts";
 
 const { expect, beforeAll } = test;
 
@@ -72,7 +73,7 @@ test("举报帖子", async function ({ page }) {
   await page.getByText("举报", { exact: true }).click();
   await page.getByRole("combobox", { name: "* 举报理由 :" }).click();
   await page.getByTitle("辱骂").locator("div").click();
-  await page.waitForTimeout(100);
+  await page.waitForTimeout(DROPDOWN_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: "确 定" }).click();
   await expect(page.getByText("已举报", { exact: true })).toHaveCount(1);
 

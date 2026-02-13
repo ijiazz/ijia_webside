@@ -3,6 +3,7 @@ import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
 import { dbPool } from "@/db/client.ts";
 import { deleteFrom, select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
+import { FORM_BEFORE_COMMIT_WAIT_TIME, REDIRECT_WAIT_TIME } from "@/utils/browser.ts";
 const { expect } = test;
 
 test("注册账号", async function ({ page }) {
@@ -35,11 +36,11 @@ test("注册账号", async function ({ page }) {
 
   await page.getByRole("textbox", { name: "* 邮件验证码 :" }).click();
   await page.getByRole("textbox", { name: "* 邮件验证码 :" }).fill("1234"); // 测试模式邮件验证码一定是 1234
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(FORM_BEFORE_COMMIT_WAIT_TIME);
   await page.getByRole("button", { name: "提 交" }).click();
 
   await expect(page, "注册成功后导航到个人配置页").toHaveURL(/\/profile\/center/, {});
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(REDIRECT_WAIT_TIME);
   await expect(page, "注册成功后导航到个人配置页").toHaveURL(/\/profile\/center/, {});
 
   await expect(

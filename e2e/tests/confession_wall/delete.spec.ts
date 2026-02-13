@@ -1,7 +1,7 @@
 import { vioServerTest as test } from "@/fixtures/test.ts";
 import { initAlice, initBob, loginGetToken } from "@/utils/user.ts";
 import { createPost, getPostURL, getSelfPostURL } from "@/utils/post.ts";
-import { setContextLogin } from "@/utils/browser.ts";
+import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 
 const { expect } = test;
 
@@ -24,7 +24,7 @@ test("删除", async function ({ page, context }) {
 
   await postItems.nth(2).getByRole("button", { name: "more" }).click();
   await page.getByRole("menuitem", { name: "删除" }).click();
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: "确 定" }).click();
   await expect(postItems.nth(2).getByLabel("content4")).toHaveCount(1);
   await postItems.nth(2).getByRole("button", { name: "more" }).click();
