@@ -3,7 +3,7 @@ import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts"
 import { createPost, createCommentUseApi, getPostCommentURL, getPostURL } from "@/utils/post.ts";
 import { expect, Page } from "@playwright/test";
 import { afterTime } from "evlib";
-import { setContextLogin } from "@/utils/browser.ts";
+import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 const { beforeEach } = test;
 
 let alice: AccountInfo & { token: string };
@@ -33,7 +33,7 @@ test("创建一条根评论，然后删除", async function ({ page }) {
 
   await page.getByRole("dialog").getByRole("button", { name: "more" }).click();
   await page.getByText("删除").click();
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: "确 定" }).click({});
 
   await expect(page.locator(commentItemClassName, { hasText: "e2e-c-1" }), "列表评论被删除").toHaveCount(0);
@@ -68,9 +68,7 @@ test("创建回复评论", async function ({ page }) {
   await expect(getCommentBtn(page), "帖子评论数为 6").toHaveText("6");
 
   await page.getByRole("button", { name: "展开1条回复" }).click();
-  await page.waitForTimeout(300);
   await page.getByRole("button", { name: "展开3条回复" }).click();
-  await page.waitForTimeout(300);
   await expect(page.locator(commentContentClassName).nth(4), "评论应出现在正确位置").toHaveText(/^1-2-r2/);
   await expect(page.locator(commentContentClassName).nth(5), "评论应出现在正确位置").toHaveText(/^1-1-2-r2/);
 });
@@ -103,16 +101,19 @@ test("删除评论", async function ({ page }) {
   await expect(page.locator(commentContentClassName)).toHaveCount(9);
   await getCommentMoreBtn(page, r2.id).click(); // r2
   await page.getByText("删除").first().click();
+  await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: "确 定" }).click();
 
   await expect(page.locator(commentContentClassName), "根评论被删除，它的所有子评论都应被删除").toHaveCount(6); // 只剩 r1
 
   await getCommentMoreBtn(page, r1_1.id).click(); // r1-1
   await page.getByText("删除").first().click();
+  await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: "确 定" }).click();
 
   await getCommentMoreBtn(page, r1_2_1_1.id).click(); // r1-2-1-1
   await page.getByText("删除").first().click();
+  await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: "确 定" }).click();
 
   await expect(page.locator(commentContentClassName), "根评论被删除，它的所有子评论都应被删除").toHaveCount(4);

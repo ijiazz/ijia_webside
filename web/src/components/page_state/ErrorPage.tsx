@@ -1,5 +1,34 @@
+import { getResponseErrorInfo, MaintenanceEvent } from "@/request/client.ts";
+import { HoFetchStatusError } from "@asla/hofetch";
+import { useMemo } from "react";
+
 export function ErrorPage(props: { error: any; reset: () => void; info?: string }) {
   const { error, reset, info } = props;
+
+  const errorMessage = useMemo(() => {
+    if (error instanceof Error) {
+      if (error instanceof HoFetchStatusError) {
+        const isMaintenance = MaintenanceEvent.parseMessage(MaintenanceEvent.maintenance);
+        if (isMaintenance) {
+          return `服务器维护中！请稍后再试`;
+        }
+
+        const info = getResponseErrorInfo(error.body);
+        if (info) {
+          if (info.code && info.message) {
+            return `请求发生错误${error.status}：${info.code} ${info.message}`;
+          } else {
+            return `请求发生错误${error.status}：${(info.message || info.code) ?? "unknown error"}`;
+          }
+        }
+        return `请求发生错误：${error.status}`;
+      } else {
+        return error.stack || error.message;
+      }
+    } else {
+      return JSON.stringify(error, null, 2);
+    }
+  }, [error]);
   return (
     <div
       style={{
@@ -31,7 +60,7 @@ export function ErrorPage(props: { error: any; reset: () => void; info?: string 
           borderRadius: 4,
         }}
       >
-        {error instanceof Error ? error.stack || error.message : JSON.stringify(error, null, 2)}
+        {errorMessage}
       </div>
     </div>
   );
