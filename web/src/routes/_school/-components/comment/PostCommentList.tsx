@@ -27,7 +27,7 @@ const { Text } = Typography;
 export type CreateData = {
   text: string;
 };
-export function CommentList(props: { postId?: number; allowAll?: boolean }) {
+export function CommentList(props: { postId: number; allowAll?: boolean }) {
   const { postId, allowAll } = props;
   const {
     commentData,
@@ -40,7 +40,7 @@ export function CommentList(props: { postId?: number; allowAll?: boolean }) {
   } = useCommentData<PostCommentNode>();
   const { message, modal } = useAntdStatic();
   const { isFetching: postInfoLoading, data } = useQuery({
-    ...getPostListQueryOption({ post_id: postId! }),
+    ...getPostListQueryOption({ post_id: postId }),
     enabled: typeof postId === "number",
   });
   const postInfo = postInfoLoading ? null : data?.items[0];

@@ -1,10 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { checkTypeCopy, integer, optional } from "@asla/wokao";
+
+const SearchSchema = {
+  openCommentPostId: optional(integer({ acceptString: true })),
+  userId: optional(integer({ acceptString: true })),
+};
+export type RouteSearch = {
+  openCommentPostId?: number;
+  userId?: number;
+};
 
 export const Route = createFileRoute("/_school/wall/list/{-$groupId}/")({
-  validateSearch(searchRaw) {
-    const idStr = searchRaw.openCommentPostId as string;
-    return {
-      openCommentPostId: idStr ? Number.parseInt(idStr) : undefined,
-    };
+  validateSearch(searchRaw): RouteSearch {
+    return checkTypeCopy(searchRaw, SearchSchema);
   },
 });

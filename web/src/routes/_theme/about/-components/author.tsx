@@ -1,6 +1,5 @@
-import { Link } from "@tanstack/react-router";
 import { Typography } from "antd";
-import React from "react";
+
 const { Title, Paragraph } = Typography;
 
 type AboutAuthorProps = {};
@@ -12,12 +11,12 @@ export function AboutAuthor(props: AboutAuthorProps) {
       <ul>
         <li>
           抖音：
-          <Link
-            to="https://www.douyin.com/user/MS4wLjABAAAAZo60aZRT3eSWCoOaYSHFF2i-eoYyZKxzTCb7NMkOLGIiHXb3OLvAeicdznzvEjdG"
+          <a
+            href="https://www.douyin.com/user/MS4wLjABAAAAZo60aZRT3eSWCoOaYSHFF2i-eoYyZKxzTCb7NMkOLGIiHXb3OLvAeicdznzvEjdG"
             target="_blank"
           >
             一维依_zZ
-          </Link>
+          </a>
         </li>
         <li>
           邮箱： <b>eaviyi@ijiazz.cn</b>

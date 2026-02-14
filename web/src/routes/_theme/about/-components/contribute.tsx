@@ -1,6 +1,4 @@
-import { Link } from "@tanstack/react-router";
 import { Typography } from "antd";
-import React from "react";
 const { Title, Paragraph } = Typography;
 export function Contribute() {
   return (
@@ -13,11 +11,13 @@ export function Contribute() {
       <Title level={4}>一、技术贡献</Title>
       <Paragraph>
         如果您具备一定的网站开发能力，欢迎在 IJIA 学院网站的
-        <Link to="https://github.com/ijiazz/ijia_webside" target="_blank">
+        <a href="https://github.com/ijiazz/ijia_webside" target="_blank">
           GitHub仓库
-        </Link>
+        </a>
         上参与我们的开源项目。您可以通过提交修复、功能改进或优化等相关的代码为网站贡献力量。在参与前，请务必仔细阅读
-        <Link to="https://github.com/ijiazz/ijia_webside/blob/main/CONTRIBUTING.md">《GitHub 贡献指南》</Link>
+        <a href="https://github.com/ijiazz/ijia_webside/blob/main/CONTRIBUTING.md" target="_blank">
+          《GitHub 贡献指南》
+        </a>
         ，了解代码规范、提交流程等相关要求，以确保您贡献的代码能够顺利合并。
       </Paragraph>
       <Title level={4}>二、创意与建议</Title>
@@ -27,7 +27,7 @@ export function Contribute() {
           <li>通过 GitHub issue 提交建议，这种方式便于我们对问题进行跟踪和管理，也方便您随时查看建议的处理进度</li>
           <li>您也可以选择通过抖音私信直接联系作者，或者在抖音上发布视频并 @作者，分享您的想法和建议</li>
           <li>
-            您也可以给作者发送邮件，详细阐述您的建议，见<Link to="#author">关于作者</Link>
+            您也可以给作者发送邮件，详细阐述您的建议，见<a href="#author">关于作者</a>
           </li>
         </ul>
       </Paragraph>
@@ -38,7 +38,7 @@ export function Contribute() {
       </Paragraph>
       <Title level={4}>四、支持与赞助</Title>
       <Paragraph>
-        您可以直接赞助作者，无论多少，都是对作者莫大的鼓励。赞助渠道见<Link to="#author">关于作者</Link>
+        您可以直接赞助作者，无论多少，都是对作者莫大的鼓励。赞助渠道见<a href="#author">关于作者</a>
       </Paragraph>
     </Typography>
   );

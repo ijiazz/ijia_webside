@@ -15,11 +15,11 @@ export function genRouter() {
     basepath: getPathByRoute("/"),
   });
 }
-// declare module "@tanstack/react-router" {
-//   interface Register {
-//     router: ReturnType<typeof genRouter>;
-//   }
-// }
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: ReturnType<typeof genRouter>;
+  }
+}
 
 export function SpaRoot(props: {}) {
   const router = useMemo(() => genRouter(), []);

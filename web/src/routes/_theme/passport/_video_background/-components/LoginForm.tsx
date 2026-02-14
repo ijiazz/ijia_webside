@@ -128,10 +128,10 @@ export function LoginForm() {
           <LoginFooter />
           <div className="message">{messageText && <Alert type={messageText.type} title={messageText.title} />}</div>
           <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
-            <Link to="../find-account" style={{ float: "right" }} viewTransition>
+            <Link to="/passport/find-account" style={{ float: "right" }} viewTransition>
               忘记密码
             </Link>
-            <Link to="../signup" style={{ float: "right" }} viewTransition>
+            <Link to="/passport/signup" style={{ float: "right" }} viewTransition>
               注册账号
             </Link>
           </div>

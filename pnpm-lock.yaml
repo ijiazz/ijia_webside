@@ -85,6 +85,9 @@ importers:
       '@asla/hofetch':
         specifier: npm:@jsr/asla__hofetch@^0.0.1
         version: '@jsr/asla__hofetch@0.0.1'
+      '@asla/wokao':
+        specifier: npm:@jsr/asla__wokao@^0.0.3
+        version: '@jsr/asla__wokao@0.0.3'
       '@emotion/css':
         specifier: ^11.13.5
         version: 11.13.5

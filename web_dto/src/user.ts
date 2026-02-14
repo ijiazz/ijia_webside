@@ -36,10 +36,8 @@ export interface UserApi {
     body: UpdateUserProfileParam;
   };
 }
-
-export type UserBasicDto = {
+export type PublicUserInfo = {
   user_id: number;
-  email: string;
   nickname?: string;
   avatar_url?: string;
   /** 是否已认证 */
@@ -48,6 +46,9 @@ export type UserBasicDto = {
     class_id: number;
     class_name: string;
   };
+};
+export type UserBasicDto = PublicUserInfo & {
+  email: string;
 };
 export type UserInfoDto = UserBasicDto & {
   bind_accounts: BindAccountDto[];

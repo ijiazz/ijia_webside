@@ -44,7 +44,7 @@ export function ReviewItem(props: ReviewItemProps) {
             <Avatar size="small" src={item.reviewer.avatar}>
               {item.reviewer.nickname}
             </Avatar>
-            <Link to={`/user/${item.reviewer.user_id}`} target="_blank">
+            <Link to={`/user/$userId`} params={{ userId: item.reviewer.user_id.toString() }} target="_blank">
               {item.reviewer.nickname}
             </Link>
           </div>

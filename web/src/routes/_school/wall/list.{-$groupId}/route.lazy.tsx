@@ -36,9 +36,19 @@ function PostLayout() {
     if (id === groupId) return; // 如果当前分组已选中，则不进行任何操作
     if (typeof id !== "string" || id === "all") {
       if (groupId === undefined) return;
-      navigate({ from: matchPathname, to: "..", viewTransition: true });
+      navigate({
+        //@ts-ignore
+        from: matchPathname,
+        to: "..",
+        viewTransition: true,
+      });
     } else {
-      navigate({ from: matchPathname, to: groupId === undefined ? id : "../" + id, viewTransition: true });
+      navigate({
+        //@ts-ignore
+        from: matchPathname,
+        to: groupId === undefined ? id : "../" + id,
+        viewTransition: true,
+      });
     }
   };
 

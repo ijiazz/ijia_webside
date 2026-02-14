@@ -2,7 +2,7 @@ import { createLazyFileRoute, NavigateOptions, useNavigate } from "@tanstack/rea
 
 import { PostGroupResponse } from "@/api.ts";
 import { MenuProps } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Route as ParentRoute } from "./route.tsx";
 import { CommentDrawer } from "../../-components/comment.tsx";
 import { PublicPostList } from "./-components/PostList.tsx";
@@ -34,7 +34,7 @@ function RouteComponent() {
   return (
     <>
       <PublicPostList groupOptions={option} userId={search.userId} onOpenComment={drawer.onOpenComment} />
-      <CommentDrawer postId={drawer.commentId} open={drawer.open} onClose={drawer.closeCommentDrawer} />
+      <CommentDrawer postId={drawer.postId} open={drawer.open} onClose={drawer.closeCommentDrawer} />
     </>
   );
 }
@@ -44,6 +44,7 @@ function useCommentDrawer() {
   const navigate = useNavigate();
 
   const onOpenComment = (postId: number) => {
+    setPostId(postId);
     const options: NavigateOptions = {
       search: (prev: any) => ({ ...prev, openCommentPostId: postId }),
       viewTransition: true,
@@ -51,11 +52,7 @@ function useCommentDrawer() {
     navigate(options);
   };
 
-  const [commentId, setCommentId] = useState<number | undefined>();
-
-  useEffect(() => {
-    setCommentId(openCommentPostId);
-  }, [openCommentPostId]);
+  const [postId, setPostId] = useState<number | undefined>(openCommentPostId);
 
   const closeCommentDrawer = () => {
     const options: NavigateOptions = {
@@ -68,6 +65,6 @@ function useCommentDrawer() {
     onOpenComment,
     closeCommentDrawer,
     open: openCommentPostId !== undefined,
-    commentId: commentId,
+    postId: postId,
   };
 }
