@@ -1,5 +1,5 @@
-import { UserInfoDto } from "@/dto.ts";
-import { getUserProfile } from "../-sql/user.service.ts";
+import { UserConfig } from "@/dto.ts";
+import { getUserConfig } from "../-sql/user.service.ts";
 import routeGroup from "../_route.ts";
 
 export default routeGroup.create({
@@ -9,7 +9,7 @@ export default routeGroup.create({
     const userId = await ctx.get("userInfo").getUserId();
     return userId;
   },
-  async handler(userId): Promise<UserInfoDto> {
-    return getUserProfile(userId);
+  async handler(userId): Promise<UserConfig> {
+    return getUserConfig(userId);
   },
 });

@@ -1,10 +1,11 @@
 import { PUBLIC_CLASS_ROOT_ID, Platform } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
-import { UserBasicDto, UserInfoDto } from "@/dto.ts";
+import { User, UserConfig } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
 import { deleteFrom, insertInto, select } from "@asla/yoursql";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { ExecutableSQL } from "@asla/pg";
+import { jsonb_build_object } from "@/global/sql_util.ts";
 
 export function setUserPublicClass(userId: number, classId: number | null): ExecutableSQL {
   return dbPool.createExecutableSQL(
@@ -28,15 +29,23 @@ export function deletePublicClassOfUser(userId: number): ExecutableSQL {
     ]),
   );
 }
-export async function getUserBasic(userId: number): Promise<UserBasicDto> {
+/** 这是公开的，每个用户都能获取 */
+export async function getUserInfo(userId: number): Promise<User> {
   const users = await dbPool.queryRows(
-    select<UserBasicDto>({
+    select<User>({
       user_id: "id",
-      email: "email",
       avatar_url: "'/file/avatar/'||avatar",
-      nickname: true,
+      nickname: "COALESCE(nickname, id::TEXT)",
       is_official: `(SELECT EXISTS ${getUserBindAccount(userId).toSelect()})`,
       primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,
+      profile: select(
+        jsonb_build_object({
+          acquaintance_time: "p.acquaintance_time",
+        }),
+      )
+        .from("user_profile", { as: "p" })
+        .where(`user_id=${v(userId)}`)
+        .toSelect(),
     })
       .from("public.user", { as: "u" })
       .where(`u.id=${v(userId)}`)
@@ -46,19 +55,22 @@ export async function getUserBasic(userId: number): Promise<UserBasicDto> {
   const userInfo = users[0];
   return userInfo;
 }
-export async function getUserProfile(userId: number): Promise<UserInfoDto> {
-  const profile = select({ acquaintance_time: true, comment_stat_enabled: true, live_notice: true })
-    .from("user_profile")
-    .where(`user_id=${v(userId)}`);
+export async function getUserConfig(userId: number): Promise<UserConfig> {
   const users = await dbPool.queryRows(
-    select<UserInfoDto>({
+    select<UserConfig>({
       user_id: "id",
       email: "email",
-      avatar_url: "'/file/avatar/'||avatar",
-      nickname: true,
-      primary_class: `(SELECT row_to_json(pub_class) FROM ${getUserPublicClass(userId).toSelect()} AS pub_class)`,
       bind_accounts: `(SELECT json_agg(row_to_json(accounts)) FROM ${getUserBindAccount(userId).toSelect()} AS accounts)`,
-      profile: `(SELECT row_to_json(profile) FROM ${profile.toSelect()} AS profile)`,
+      profile: select(
+        jsonb_build_object({
+          acquaintance_time: "p.acquaintance_time",
+          comment_stat_enabled: "p.comment_stat_enabled",
+          live_notice: "p.live_notice",
+        }),
+      )
+        .from("user_profile", { as: "p" })
+        .where(`user_id=${v(userId)}`)
+        .toSelect(),
     })
       .from("public.user", { as: "u" })
       .where(`u.id=${v(userId)}`)
@@ -67,7 +79,7 @@ export async function getUserProfile(userId: number): Promise<UserInfoDto> {
   if (!users.length) throw new HttpError(404, { message: "用户不存在" });
   const userInfo = users[0];
   if (!userInfo.bind_accounts) userInfo.bind_accounts = [];
-  userInfo.is_official = userInfo.bind_accounts.length > 0;
+
   return userInfo;
 }
 export async function bindPlatformAccount(userId: number, platform: Platform, pla_uid: string, skipCheck?: boolean) {

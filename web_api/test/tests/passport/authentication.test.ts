@@ -39,7 +39,7 @@ test("刷新 token 后应返回新的 token", async function ({ hoFetch, ijiaDbP
 });
 
 async function getInfo(hoFetch: HoFetch, tokenStr: string = "") {
-  return hoFetch.fetch("/user/basic_info", {
+  return hoFetch.fetch("/user", {
     headers: { cookie: `${REQUEST_AUTH_KEY}=${tokenStr}` },
     allowFailed: true,
   });

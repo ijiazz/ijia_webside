@@ -1,16 +1,17 @@
 import { Dispatch, SetStateAction, useCallback, useRef, useState } from "react";
 
-export type InfiniteLoadResult<T, P> = { items: T[]; nextParam: P | undefined; prevParam: P | undefined };
+export type InfiniteLoadResult<T, P> = { items: T; nextParam: P | undefined; prevParam: P | undefined };
 export type LoadMoreContext<T> = { param?: T; isNext: boolean };
 export type UseInfiniteLoadOption<T, Param> = {
-  onPush: (items: T[]) => void;
-  onUnshift: (items: T[]) => void;
   load: (param: Param | undefined, forward: boolean) => Promise<InfiniteLoadResult<T, Param>>;
+  init: () => T;
+  mergeFront: (prev: T, next: T) => T;
+  mergeBack: (prev: T, next: T) => T;
 };
 
 export type UseInfiniteDataResult<T> = {
-  data: T[];
-  setData: Dispatch<SetStateAction<T[]>>;
+  data: T;
+  setData: Dispatch<SetStateAction<T>>;
   reset: () => void;
   next: UserPageDataResult;
   previous: UserPageDataResult;
@@ -32,10 +33,9 @@ export function useInfiniteLoad<T, Param>(option: UseInfiniteLoadOption<T, Param
   optionRef.current = option;
   const loadRef = useRef<RefState<Param>>({ next: {}, prev: {}, isFirst: true });
 
-  const [items, setItems] = useState<T[]>([]);
+  const [items, setItems] = useState<T>(option.init);
 
   const loadMore = useCallback((isNext: boolean): Promise<void> => {
-    let onAdd: (typeof option)["onPush"];
     let setStatus: typeof setNextStatus;
     const load = optionRef.current.load;
     let ref: typeof loadRef.current.next;
@@ -43,11 +43,9 @@ export function useInfiniteLoad<T, Param>(option: UseInfiniteLoadOption<T, Param
     if (isNext) {
       setStatus = setNextStatus;
       ref = loadRef.current.next;
-      onAdd = optionRef.current.onPush;
     } else {
       setStatus = setPrevStatus;
       ref = loadRef.current.prev;
-      onAdd = optionRef.current.onUnshift;
     }
     if (!loadRef.current.isFirst && ref.param === undefined) return Promise.resolve();
 
@@ -71,9 +69,10 @@ export function useInfiniteLoad<T, Param>(option: UseInfiniteLoadOption<T, Param
           setStatus({ error: null, hasMore: param !== undefined, loading: false });
         }
         ref.promise = undefined;
-        if (res.items.length) {
-          onAdd(res.items);
-        }
+
+        const { mergeBack, mergeFront } = optionRef.current;
+        if (isNext) setItems((prev) => mergeBack(prev, res.items));
+        else setItems((prev) => mergeFront(prev, res.items));
       },
       (error) => {
         if (ref.promise !== promise) return; // rest 时可能已经发起了新的请求，当前请求结果不再处理
@@ -92,7 +91,7 @@ export function useInfiniteLoad<T, Param>(option: UseInfiniteLoadOption<T, Param
       loadRef.current = { next: {}, prev: {}, isFirst: true };
       setNextStatus({ loading: false, error: null, hasMore: true });
       setPrevStatus({ loading: false, error: null, hasMore: true });
-      setItems([]);
+      setItems(option.init());
     },
     error: nextStatus.error || prevStatus.error,
     loading: nextStatus.loading || prevStatus.loading,

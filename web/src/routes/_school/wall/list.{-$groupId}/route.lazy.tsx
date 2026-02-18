@@ -36,9 +36,19 @@ function PostLayout() {
     if (id === groupId) return; // 如果当前分组已选中，则不进行任何操作
     if (typeof id !== "string" || id === "all") {
       if (groupId === undefined) return;
-      navigate({ from: matchPathname, to: "..", viewTransition: true });
+      navigate({
+        //@ts-ignore
+        from: matchPathname,
+        to: "..",
+        viewTransition: true,
+      });
     } else {
-      navigate({ from: matchPathname, to: groupId === undefined ? id : "../" + id, viewTransition: true });
+      navigate({
+        //@ts-ignore
+        from: matchPathname,
+        to: groupId === undefined ? id : "../" + id,
+        viewTransition: true,
+      });
     }
   };
 
@@ -49,9 +59,6 @@ function PostLayout() {
         label: item.group_name,
       })) ?? [];
 
-    if (currentUser) {
-      menus.unshift({ key: "self", label: "我的" });
-    }
     menus.unshift({ key: "all", label: "全部" });
 
     return menus;
@@ -59,12 +66,7 @@ function PostLayout() {
 
   const filter = useMemo((): PostQueryFilter => {
     if (!postGroup || !groupId) return {};
-    const isSelf = groupId === "self";
-    if (isSelf) {
-      return {
-        self: true,
-      };
-    }
+
     const current = postGroup.items.find((item) => item.group_id.toString() === groupId);
     if (!current) return {};
     return {

@@ -3,13 +3,14 @@ import { css } from "@emotion/css";
 import school_card_front from "@/assets/school-card-front.webp";
 import school_card_back from "@/assets/school-card-back.webp";
 import logo from "@/assets/ijia-logo.png";
+import { useMemo } from "react";
 
 export type StudentIdCardInfo = {
   avatarUrl?: string;
-  id?: string;
+  id: string | number;
   name?: string;
-  className?: string;
-  date?: string;
+  targetClass?: string;
+  date?: Date | string | number | null;
   isOfficial?: boolean;
 };
 
@@ -18,9 +19,16 @@ const HEIGHT = 220;
 const WIDTH = HEIGHT * WIDTH_HEIGHT;
 const borderRadius = Math.floor(HEIGHT / 27.5);
 export function StudentIdCard(props: StudentIdCardInfo & { scale?: number }) {
+  const { date } = props;
   const studentInfo = props;
   const scale = props.scale ?? 1;
 
+  const dateStr = useMemo(() => {
+    if (!date) return undefined;
+    let dateObj: Date = typeof date === "number" || typeof date === "string" ? new Date(date) : date;
+
+    return `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, `0`)}-${dateObj.getDate().toString().padStart(2, `0`)}`;
+  }, [date]);
   return (
     <div
       className={StudentIdCardCSS}
@@ -47,18 +55,22 @@ export function StudentIdCard(props: StudentIdCardInfo & { scale?: number }) {
         </Avatar>
         <div className="student-card-info-core" style={{ fontSize: 14 * scale }}>
           <div className="student-card-name">姓名：{studentInfo.name ?? "--"}</div>
-          <div className="student-card-class">班级：{studentInfo.className ?? "--"}</div>
-          <div className="student-card-id">学号：{studentInfo.id ?? "--"}</div>
+          <div className="student-card-class">班级：{studentInfo.targetClass ?? "--"}</div>
+          <div className="student-card-id">学号：{formatId(studentInfo.id)}</div>
         </div>
       </div>
       {studentInfo.date && (
         <i className="student-card-date" style={{ fontSize: 11 * scale }}>
-          {studentInfo.date}
+          {dateStr}
         </i>
       )}
       {studentInfo.isOfficial && <img className="student-card-logo" src={logo}></img>}
     </div>
   );
+}
+function formatId(id: string | number) {
+  if (typeof id === "number") return id.toString().padStart(5, "0");
+  return id;
 }
 
 const StudentIdCardCSS = css`

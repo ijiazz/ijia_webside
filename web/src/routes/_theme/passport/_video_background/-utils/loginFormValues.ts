@@ -2,8 +2,7 @@ import { LoginMethod, UserIdentifierType, UserLoginParam, UserLoginByPasswordPar
 import { tryHashPassword } from "@/common/pwd_hash.ts";
 import { clearUserCache } from "@/common/user.ts";
 import { useAntdStatic } from "@/provider/AntdProvider.tsx";
-import { api, IGNORE_ERROR_MSG, queryClient } from "@/request/client.ts";
-import { ijiaLocalStorage } from "@/stores/local_store.ts";
+import { api, IGNORE_ERROR_MSG } from "@/request/client.ts";
 import { useMutation } from "@tanstack/react-query";
 
 export type EmailLoginFormValues = {

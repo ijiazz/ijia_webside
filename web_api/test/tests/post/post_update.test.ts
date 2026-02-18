@@ -52,7 +52,7 @@ test("更新自己的发布的帖子的可见状态", async function ({ api, pub
   await expect(getPublicPost(api, post.id), "帖子应该对访客不可见").resolves.toBe(undefined);
 
   const aliceView = await getSelfPost(api, post.id, alice.token);
-  expect(aliceView.config.self_visible, "帖子应该对自己可见").toBeTruthy();
+  expect(aliceView.config?.self_visible, "帖子应该对自己可见").toBeTruthy();
   expect(aliceView.update_time, "时间不应该被更新").toEqual(base.update_time);
   expect(aliceView.content_text).toBe("12");
 });
@@ -158,27 +158,27 @@ test("更新帖子的评论关闭状态", async function ({ api, publicDbPool })
     await updatePostConfigFormApi(api, postInfo.id, { comment_disabled: false }, alice.token);
     const selfGet = await getSelfPost(api, postInfo.id, alice.token);
     expect(selfGet.curr_user?.can_comment).toBe(true);
-    expect(selfGet.config.comment_disabled).toBe(false);
+    expect(selfGet.config?.comment_disabled).toBe(false);
   }
 });
 test("更新帖子的评论关闭状态, 不应影响可见配置", async function ({ api, publicDbPool }) {
   const { post: postInfo, alice } = await preparePost(api, { is_hide: true, content_text: "1" });
 
   const bobGet = await getSelfPost(api, postInfo.id, alice.token);
-  expect(bobGet.config.comment_disabled).toBe(false);
-  expect(bobGet.config.self_visible).toBe(true);
+  expect(bobGet.config?.comment_disabled).toBe(false);
+  expect(bobGet.config?.self_visible).toBe(true);
 
   {
     await updatePostConfigFormApi(api, postInfo.id, { comment_disabled: true }, alice.token);
 
     const bobGet = await getSelfPost(api, postInfo.id, alice.token);
-    expect(bobGet.config.self_visible).toBe(true);
-    expect(bobGet.config.comment_disabled).toBe(true);
+    expect(bobGet.config?.self_visible).toBe(true);
+    expect(bobGet.config?.comment_disabled).toBe(true);
   }
   {
     await updatePostConfigFormApi(api, postInfo.id, { comment_disabled: false }, alice.token);
     const bobGet = await getSelfPost(api, postInfo.id, alice.token);
-    expect(bobGet.config.self_visible).toBe(true);
-    expect(bobGet.config.comment_disabled).toBe(false);
+    expect(bobGet.config?.self_visible).toBe(true);
+    expect(bobGet.config?.comment_disabled).toBe(false);
   }
 });

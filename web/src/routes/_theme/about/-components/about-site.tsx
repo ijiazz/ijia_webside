@@ -1,6 +1,4 @@
-import { Link } from "@tanstack/react-router";
 import { Typography } from "antd";
-import React from "react";
 const { Title, Paragraph } = Typography;
 
 type AboutSiteProps = { id?: string };
@@ -15,18 +13,18 @@ export function AboutSite(props: AboutSiteProps) {
       </Paragraph>
       <Paragraph>
         本站秉持开源理念，会不断更新完善，以呈现更多精彩内容。如果你有任何创意或建议，欢迎随时联系作者，让我们携手让
-        IJIA 这个大家庭更加温馨、有趣。更多关于作者的信息，可查看 <Link to="#author">关于作者</Link>页面。
+        IJIA 这个大家庭更加温馨、有趣。更多关于作者的信息，可查看 <a href="#author">关于作者</a>页面。
       </Paragraph>
       <Paragraph>
         在浏览过程中，如果你发现了任何 bug，可以前往
-        <Link to="https://github.com/ijiazz/ijia_website" target="_blank" rel="noopener noreferrer">
+        <a href="https://github.com/ijiazz/ijia_website" target="_blank" rel="noopener noreferrer">
           GitHub
-        </Link>
+        </a>
         提交 issue，或是直接联系作者。
       </Paragraph>
       <Paragraph>若发现网站存在漏洞，请及时告知作者，以保障网站的安全稳定运行。</Paragraph>
       <Paragraph>
-        此外，如果你对本站充满热爱，渴望为其贡献一份力量，那么请查看“<Link to="#contribute">为本站贡献</Link>”栏目
+        此外，如果你对本站充满热爱，渴望为其贡献一份力量，那么请查看“<a href="#contribute">为本站贡献</a>”栏目
         ，了解具体的参与方式，期待你的加入！
       </Paragraph>
     </Typography>

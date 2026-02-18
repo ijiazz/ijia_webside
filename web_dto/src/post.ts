@@ -4,11 +4,12 @@ import type { GetPlatformPostListParam, PlatformPostResponse } from "./post/_dto
 import type {
   CreatePostParam,
   GetPostListParam,
-  PostResponse,
+  PostListResponse,
+  GetPostResponse,
   UpdatePostConfigParam,
   UpdatePostContentParam,
   PostGroupResponse,
-  PostSelfResponse,
+  PostUserResponse,
 } from "./post/_dto/mod.ts";
 import type { PostCommentApi } from "./post_comment.ts";
 
@@ -29,12 +30,16 @@ export interface PostApi {
 export interface PostApi {
   /** 获取公开作品列表 */
   "GET /post/list": {
-    response: PostResponse;
+    response: PostListResponse;
     query?: GetPostListParam;
   };
-  /** 获取自己的作品列表 */
-  "GET /post/self/list": {
-    response: PostSelfResponse;
+  /**
+   * 获取用户的作品列表。
+   * 如果不传 userId 则获取自己的作品列表。
+   * 如果是获取自己的作品列表，则包含自己未公开的作品
+   */
+  "GET /post/user": {
+    response: PostUserResponse;
     query?: GetPostListParam;
   };
   /** 创建作品 */
@@ -43,6 +48,11 @@ export interface PostApi {
     response: {
       id: number;
     };
+  };
+  /** 获取帖子 */
+  "GET /post/entity/:postId": {
+    response: GetPostResponse;
+    query?: GetPostListParam;
   };
   /** 删除作品 */
   "DELETE /post/entity/:postId": {};

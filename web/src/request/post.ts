@@ -1,13 +1,15 @@
 import { QueryOptions } from "@tanstack/react-query";
 import { api } from "./client.ts";
-import { GetPostListParam, GetSelfPostListParam } from "@/api.ts";
+import { GetPostListParam } from "@/api.ts";
 
 export const POST_QUERY_KEY_PREFIX = "post";
 
-export const PublicPostGroupOption = {
-  queryKey: [POST_QUERY_KEY_PREFIX, "/post/group/list"],
-  queryFn: () => api["/post/group/list"].get(),
-} satisfies QueryOptions;
+export function getPublicPostGroupOption() {
+  return {
+    queryKey: [POST_QUERY_KEY_PREFIX, "/post/group/list"],
+    queryFn: () => api["/post/group/list"].get(),
+  } satisfies QueryOptions;
+}
 
 export function getPostListQueryOption(param: Omit<GetPostListParam, "cursor" | "forward">) {
   return {
@@ -16,9 +18,9 @@ export function getPostListQueryOption(param: Omit<GetPostListParam, "cursor" | 
   } satisfies QueryOptions;
 }
 
-export function getShelfPostListQueryOption(param: Omit<GetSelfPostListParam, "cursor" | "forward">) {
+export function getPostQueryOption(param: { postId: number }) {
   return {
-    queryKey: [POST_QUERY_KEY_PREFIX, "/post/self/list"],
-    queryFn: () => api["/post/self/list"].get({ query: param }),
+    queryKey: [POST_QUERY_KEY_PREFIX, "/post/user"],
+    queryFn: () => api["/post/entity/:postId"].get({ params: param }),
   } satisfies QueryOptions;
 }

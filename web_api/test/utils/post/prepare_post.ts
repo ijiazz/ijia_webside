@@ -6,12 +6,11 @@ import {
   PublicPost,
   UpdatePostConfigParam,
   UpdatePostContentParam,
-  SelfPost,
+  Post,
   ReviewStatus,
 } from "@/dto.ts";
 import { dbPool } from "@/db/client.ts";
 import { prepareUniqueUser } from "#test/fixtures/user.ts";
-import { jsonb_build_object } from "@/global/sql_util.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { select, update } from "@asla/yoursql";
 import { DbQueryPool } from "@asla/pg";
@@ -109,8 +108,8 @@ export async function getPublicPost(api: Api, postId: number, token?: string): P
   return items[0];
 }
 /** 获取自己的一个指定帖子 */
-export async function getSelfPost(api: Api, postId: number, token: string): Promise<SelfPost> {
-  const { items } = await api["/post/self/list"].get({
+export async function getSelfPost(api: Api, postId: number, token: string): Promise<Post> {
+  const { items } = await api["/post/user"].get({
     query: { post_id: postId, number: 1 },
     [JWT_TOKEN_KEY]: token,
   });

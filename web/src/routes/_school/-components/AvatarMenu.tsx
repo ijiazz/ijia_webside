@@ -1,17 +1,17 @@
 import { Avatar, Button, Dropdown } from "antd";
-import { LoadingOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { LoadingOutlined, LogoutOutlined, UserOutlined, HomeOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { css, cx } from "@emotion/css";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { IS_MOBILE_LAYOUT, useThemeToken } from "@/provider/mod.tsx";
-import { UserBasicDto } from "@/api.ts";
+import { User } from "@/api.ts";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/request/client.ts";
 import { clearUserCache } from "@/common/user.ts";
 import { ROUTES } from "@/app.ts";
 import { useMemo } from "react";
 
-export function AvatarMenu(props: { user: UserBasicDto | null }) {
+export function AvatarMenu(props: { user: User | null }) {
   const { user } = props;
   const { mutate, isPending: isLogoutLoading } = useMutation({
     mutationFn: () => api["/passport/logout"].post(),
@@ -44,6 +44,18 @@ export function AvatarMenu(props: { user: UserBasicDto | null }) {
       trigger={["hover"]}
       menu={{
         items: [
+          {
+            key: "user-home",
+            icon: <HomeOutlined />,
+            label: "个人主页",
+            onClick: () => {
+              navigate({
+                to: "/user/$userId",
+                params: { userId: user.user_id.toString() },
+                viewTransition: true,
+              });
+            },
+          },
           {
             key: "profile",
             icon: <UserOutlined />,

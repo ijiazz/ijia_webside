@@ -1,11 +1,12 @@
 import { CommentList } from "./comment/PostCommentList.tsx";
-import { Drawer } from "antd";
+import { Drawer, Spin } from "antd";
 import { LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
+import { Suspense } from "react";
 
 export function CommentDrawer(props: {
   open?: boolean;
   onClose?: () => void;
-  /** 需要根据 postId 获取评论权限。 如果不传 postId ，则关闭评论区 */
+  /** 需要根据 postId 获取评论权限 */
   postId?: string | number | null;
 }) {
   const { onClose, postId: postId, open } = props;
@@ -28,7 +29,7 @@ export function CommentDrawer(props: {
         },
       }}
     >
-      <CommentList postId={postIdNum} />
+      <Suspense fallback={<Spin />}>{postIdNum !== undefined && <CommentList postId={postIdNum} />}</Suspense>
     </Drawer>
   );
 }

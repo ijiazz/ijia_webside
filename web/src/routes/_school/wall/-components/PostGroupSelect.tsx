@@ -17,10 +17,10 @@ export function PRadio<V extends string | number = string | number, T extends Ra
 ) {
   const { options, value, onChange, className, style } = props;
   return (
-    <label className={cx(StyledWrapper, className)} style={style}>
+    <div className={cx(StyledWrapper, className)} style={style}>
       {options?.map((item) => {
         return (
-          <div className={StyledRadio} key={item.value}>
+          <label className={StyledRadio} key={item.value}>
             <input
               type="radio"
               checked={item.value === value}
@@ -39,10 +39,10 @@ export function PRadio<V extends string | number = string | number, T extends Ra
               }
             />
             <span className="name">{item.label}</span>
-          </div>
+          </label>
         );
       })}
-    </label>
+    </div>
   );
 }
 const StyledRadio = css`

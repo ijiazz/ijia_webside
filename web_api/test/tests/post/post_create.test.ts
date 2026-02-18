@@ -6,7 +6,7 @@ import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { createPostGroup, getPublicPost, getSelfPost } from "../../utils/post.ts";
 import { createPost } from "../../utils/post.ts";
 import postRoutes from "@/routers/post/mod.ts";
-import { SelfPost } from "@/dto.ts";
+import { Post } from "@/dto.ts";
 import "#test/asserts/post.ts";
 
 beforeEach<Context>(async ({ hono }) => {
@@ -23,7 +23,7 @@ test("发布一条帖子", async function ({ api, publicDbPool }) {
   expect(item.stat).toMatchObject({
     comment_total: 0,
     like_total: 0,
-  } satisfies Partial<SelfPost["stat"]>);
+  } satisfies Partial<Post["stat"]>);
   expect(item.content_text).toBe("你好");
 });
 test("文本结构需要正确传递和保存", async function ({ api, publicDbPool }) {
@@ -104,7 +104,7 @@ test("发布帖子关闭评论区", async function ({ api, publicDbPool }) {
 
   {
     const item = await getSelfPost(api, postInfo.id, alice.token);
-    expect(item.config.comment_disabled).toBe(true);
+    expect(item.config?.comment_disabled).toBe(true);
     expect(item.curr_user?.can_comment).toBe(true);
   }
   {

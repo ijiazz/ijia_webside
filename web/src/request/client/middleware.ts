@@ -11,7 +11,7 @@ export async function errorHandler(ctx: HoContext, next: () => Promise<HoRespons
   const apiErrorEvent = new ApiErrorEvent(ctx, res, body);
   const isUnhandled = apiEvent.dispatchEvent(apiErrorEvent);
   if (isUnhandled) {
-    const redirect = apiErrorEvent.getRedirect();
+    const { url: redirect } = apiErrorEvent.getRedirect();
     if (redirect) {
       window.location.assign(redirect);
       console.info("全局 http 拦截器重定向到登录页：", redirect, `原因： ${ctx.url}`);
@@ -52,13 +52,18 @@ export class ApiErrorEvent extends Event {
       else return this.response.status;
     }
   }
-  getRedirect(): string | undefined {
-    if (this.response.status === 401 && !this.ctx[IGNORE_UNAUTHORIZED_REDIRECT]) {
-      const err = this.#getError();
-      if (err?.code === "REQUIRED_LOGIN") {
-        return goRedirectLoginPath();
+  getRedirect(): { url?: string; isIgnore?: boolean } {
+    const isUnauthorized = this.response.status === 401 && this.#getError()?.code === "REQUIRED_LOGIN";
+    if (isUnauthorized) {
+      if (!this.ctx[IGNORE_UNAUTHORIZED_REDIRECT]) {
+        return { url: goRedirectLoginPath() };
+      } else {
+        return {
+          isIgnore: true,
+        };
       }
     }
+    return {};
   }
 }
 export function isHttpErrorCode(err: any, code: string | number) {

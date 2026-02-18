@@ -1,4 +1,4 @@
-import { UserBasicDto } from "@/api.ts";
+import { User } from "@/api.ts";
 import React from "react";
 
-export const BasicUserContext = React.createContext<UserBasicDto | null>(null);
+export const BasicUserContext = React.createContext<User | null>(null);

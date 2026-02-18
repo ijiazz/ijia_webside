@@ -13,22 +13,21 @@ import {
   useAntdStatic,
   useThemeController,
 } from "@/provider/mod.tsx";
-import { css, cx } from "@emotion/css";
+import { css } from "@emotion/css";
 import { RootLayout } from "../-layout/RootLayout.tsx";
 import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
 import { BasicUserContext } from "./-context/UserContext.tsx";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { CurrentUserInfoQueryOption } from "@/request/user.ts";
+import { LoaderData } from "./route.tsx";
 import { GlobalAlert } from "@/components/page_state/Alert.tsx";
 
 export const Route = createLazyFileRoute("/_school")({
   component: () => {
-    const { data: currentUser } = useSuspenseQuery(CurrentUserInfoQueryOption);
+    const { userInfo }: LoaderData = Route.useLoaderData();
     return (
       <AntdThemeProvider>
         <HoFetchProvider>
           <GlobalAlert>
-            <BasicUserContext value={currentUser}>
+            <BasicUserContext value={userInfo}>
               <UserLayout />
             </BasicUserContext>
           </GlobalAlert>
@@ -69,7 +68,12 @@ function UserLayout(props: PropsWithChildren<{}>) {
         </div>
       }
       renderLink={(item) => (
-        <Link style={{ color: "inherit" }} from={match.pathname} to={item.path}>
+        <Link
+          style={{ color: "inherit" }}
+          //@ts-ignore
+          from={match.pathname}
+          to={item.path}
+        >
           {item.label}
         </Link>
       )}

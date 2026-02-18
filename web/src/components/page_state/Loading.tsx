@@ -1,5 +1,3 @@
-import React from "react";
-
 export function PageLoading(props: { title?: string }) {
   const { title = "Loading" } = props;
   return (

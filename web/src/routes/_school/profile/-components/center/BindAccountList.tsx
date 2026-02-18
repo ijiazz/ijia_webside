@@ -4,12 +4,12 @@ import { useState } from "react";
 import { PlatformBind } from "../PlatformBind.tsx";
 import { css, cx } from "@emotion/css";
 import { Meta } from "@/lib/components/Meta.tsx";
-import { BindAccountDto, UserInfoDto } from "@/api.ts";
+import { BindAccountDto, UserConfig } from "@/api.ts";
 import { api } from "@/request/client.ts";
 import { useMutation } from "@tanstack/react-query";
 
 export function BindAccountList(props: {
-  profileData: UserInfoDto;
+  profileData: UserConfig;
   profileLoading?: boolean;
   onProfileChange?(): void;
 }) {

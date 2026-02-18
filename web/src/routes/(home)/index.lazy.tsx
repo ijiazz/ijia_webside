@@ -23,7 +23,7 @@ export function RouteComponent() {
   const size = useWindowResize();
 
   const platformRef = useRef<HTMLDivElement>(null);
-  const avatarScreenRef = useElementOverScreen({ onChange: setBlackMode });
+  const { ref: avatarScreenRef } = useElementOverScreen({ onChange: setBlackMode });
   return (
     <div className={HomePageCSS}>
       <div className="header-link">

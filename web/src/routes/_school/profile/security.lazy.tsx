@@ -12,7 +12,7 @@ import { EmailInput } from "@/components/EmailInput.tsx";
 import { EmailCaptchaActionType } from "@/api.ts";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { EmailAuthentication } from "./-components/security/EmailAuthentication.tsx";
-import { CurrentUserInfoQueryOption } from "@/request/user.ts";
+import { CurrentUserProfileQueryOption } from "@/request/user.ts";
 import { queryClient } from "@/request/client.ts";
 
 export const Route = createLazyFileRoute("/_school/profile/security")({
@@ -82,13 +82,12 @@ function ChangePassport() {
 }
 
 function ChangeEmail(props: {}) {
-  const { data: user } = useSuspenseQuery(CurrentUserInfoQueryOption);
+  const { data: user } = useSuspenseQuery(CurrentUserProfileQueryOption);
   const invalidateUser = () => {
-    queryClient.invalidateQueries({ queryKey: CurrentUserInfoQueryOption.queryKey });
+    queryClient.invalidateQueries({ queryKey: CurrentUserProfileQueryOption.queryKey });
   };
   const [open, setOpen] = useState(false);
 
-  if (!user) return;
   return (
     <div style={{ maxWidth: 400 }}>
       <h3>修改邮箱</h3>

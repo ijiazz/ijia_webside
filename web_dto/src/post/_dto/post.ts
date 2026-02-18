@@ -1,9 +1,11 @@
 import type { CursorListDto, TextStructure, AssetMediaUploadFile, ReviewStatus } from "../../common.ts";
 import type { PostGroupInfo } from "./post_group.ts";
 import type { PostBase, PostUserInfo } from "./common.ts";
-
-export type PostResponse = CursorListDto<PublicPost, string> & { needLogin?: boolean };
-export type PostSelfResponse = CursorListDto<SelfPost, string>;
+export type GetPostResponse = {
+  item: Post;
+};
+export type PostListResponse = CursorListDto<PublicPost, string> & { needLogin?: boolean };
+export type PostUserResponse = CursorListDto<Post, string>;
 
 type GetPostListBaseParam = {
   number?: number;
@@ -16,13 +18,12 @@ type GetPostListBaseParam = {
 
   s_content?: string;
   s_author?: string;
+  userId?: string | number;
 };
 export type GetPostListParam = GetPostListBaseParam & {
-  userId?: string | number;
-
   // sort?: Record<"digg_total" | "forward_total" | "collection_num", "ASC" | "DESC">;
 };
-export type GetSelfPostListParam = GetPostListBaseParam;
+export type GetUserPostListParam = GetPostListBaseParam;
 
 export type CreatePostParam = {
   content_text?: string | null;
@@ -48,6 +49,7 @@ export type UpdatePostConfigParam = {
   /** 是否开启评论 */
   comment_disabled?: boolean;
 };
+
 export type PublicPost = PostBase & {
   post_id: number;
   /** 作者信息，如果为空则是匿名 */
@@ -69,16 +71,19 @@ export type PublicPost = PostBase & {
     comment_total: number;
   };
 };
-export type SelfPost = PublicPost & {
-  config: {
-    /** 是否匿名 */
-    is_anonymous?: boolean;
-    /** 是否仅自己可见 */
-    self_visible?: boolean;
-    /** 是否关闭评论 */
-    comment_disabled?: boolean;
-  };
-  review: {
+
+type PostConfig = {
+  /** 是否匿名 */
+  is_anonymous?: boolean;
+  /** 是否仅自己可见 */
+  self_visible?: boolean;
+  /** 是否关闭评论 */
+  comment_disabled?: boolean;
+};
+
+export type Post = PublicPost & {
+  config?: PostConfig;
+  review?: {
     status?: ReviewStatus;
     remark?: string; // 审核结果评论
   };
