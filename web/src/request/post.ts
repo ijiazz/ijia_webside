@@ -20,7 +20,7 @@ export function getPostListQueryOption(param: Omit<GetPostListParam, "cursor" | 
 
 export function getShelfPostListQueryOption(param: Omit<GetSelfPostListParam, "cursor" | "forward">) {
   return {
-    queryKey: [POST_QUERY_KEY_PREFIX, "/post/self/list"],
-    queryFn: () => api["/post/self/list"].get({ query: param }),
+    queryKey: [POST_QUERY_KEY_PREFIX, "/post/user"],
+    queryFn: () => api["/post/user"].get({ query: param }),
   } satisfies QueryOptions;
 }

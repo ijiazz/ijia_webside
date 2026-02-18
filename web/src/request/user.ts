@@ -1,6 +1,6 @@
 import { QueryOptions } from "@tanstack/react-query";
 import { api, IGNORE_UNAUTHORIZED_REDIRECT } from "./client.ts";
-import { UserBasicDto, UserInfoDto } from "@/api.ts";
+import { User, UserConfig } from "@/api.ts";
 
 export const USER_QUERY_KEY_PREFIX = "user";
 
@@ -10,7 +10,7 @@ export type GetCurrentUserInfoOption = {
 export function getCurrentUserInfoQueryOption(option: GetCurrentUserInfoOption = {}) {
   return {
     queryKey: [USER_QUERY_KEY_PREFIX, "/user/basic_info"],
-    queryFn: (): Promise<UserBasicDto> => {
+    queryFn: (): Promise<User> => {
       return api["/user/basic_info"].get({ [IGNORE_UNAUTHORIZED_REDIRECT]: option.ignoreUnAuthorizeRedirect });
     },
   } satisfies QueryOptions;
@@ -18,5 +18,5 @@ export function getCurrentUserInfoQueryOption(option: GetCurrentUserInfoOption =
 
 export const CurrentUserProfileQueryOption = {
   queryKey: [USER_QUERY_KEY_PREFIX, "/user/profile"],
-  queryFn: (): Promise<UserInfoDto> => api["/user/profile"].get(),
+  queryFn: (): Promise<UserConfig> => api["/user/profile"].get(),
 } satisfies QueryOptions;

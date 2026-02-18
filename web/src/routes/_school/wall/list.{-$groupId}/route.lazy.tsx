@@ -59,9 +59,6 @@ function PostLayout() {
         label: item.group_name,
       })) ?? [];
 
-    if (currentUser) {
-      menus.unshift({ key: "self", label: "我的" });
-    }
     menus.unshift({ key: "all", label: "全部" });
 
     return menus;

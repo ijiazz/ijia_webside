@@ -8,7 +8,7 @@ import type {
   UpdatePostConfigParam,
   UpdatePostContentParam,
   PostGroupResponse,
-  PostSelfResponse,
+  PostUserResponse,
 } from "./post/_dto/mod.ts";
 import type { PostCommentApi } from "./post_comment.ts";
 
@@ -33,8 +33,8 @@ export interface PostApi {
     query?: GetPostListParam;
   };
   /** 获取自己的作品列表 */
-  "GET /post/self/list": {
-    response: PostSelfResponse;
+  "GET /post/user": {
+    response: PostUserResponse;
     query?: GetPostListParam;
   };
   /** 创建作品 */

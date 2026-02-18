@@ -6,7 +6,7 @@ import routeGroup from "./_route.ts";
 
 export default routeGroup.create({
   method: "GET",
-  routePath: "/post/self/list",
+  routePath: "/post/user",
   async validateInput(ctx) {
     const userInfo = ctx.get("userInfo");
     const userId = await userInfo.getUserId();

@@ -110,7 +110,7 @@ export async function getPublicPost(api: Api, postId: number, token?: string): P
 }
 /** 获取自己的一个指定帖子 */
 export async function getSelfPost(api: Api, postId: number, token: string): Promise<SelfPost> {
-  const { items } = await api["/post/self/list"].get({
+  const { items } = await api["/post/user"].get({
     query: { post_id: postId, number: 1 },
     [JWT_TOKEN_KEY]: token,
   });

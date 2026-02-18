@@ -19,11 +19,11 @@ export interface UserApi {
 
   /** 获取用户基本信息 */
   "GET /user/basic_info": {
-    response: UserBasicDto;
+    response: User;
   };
   /** 获取用户配置信息 */
   "GET /user/profile": {
-    response: UserInfoDto;
+    response: UserConfig;
   };
   /** 同步平台用户信息 */
   "POST /user/profile/sync": {
@@ -36,27 +36,31 @@ export interface UserApi {
     body: UpdateUserProfileParam;
   };
 }
-export type PublicUserInfo = {
+export type User = {
   user_id: number;
-  nickname?: string;
+  nickname: string;
   avatar_url?: string;
   /** 是否已认证 */
   is_official?: boolean;
+  profile: {
+    acquaintance_time: string | null;
+  };
   primary_class?: {
     class_id: number;
     class_name: string;
   };
 };
-export type UserBasicDto = PublicUserInfo & {
+export type Self = User & {};
+
+export type UserConfig = {
+  user_id: number;
   email: string;
-};
-export type UserInfoDto = UserBasicDto & {
   bind_accounts: BindAccountDto[];
-  profile?: UserProfileDto;
+  profile: UserProfile;
 };
-export type UserProfileDto = {
+export type UserProfile = {
   live_notice: boolean;
-  acquaintance_time: Date | null;
+  acquaintance_time: string | null;
   comment_stat_enabled: boolean;
 };
 

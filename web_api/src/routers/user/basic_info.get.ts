@@ -1,4 +1,4 @@
-import { getUserBasic } from "./-sql/user.service.ts";
+import { getUserInfo } from "./-sql/user.service.ts";
 import routeGroup from "./_route.ts";
 
 export default routeGroup.create({
@@ -8,6 +8,6 @@ export default routeGroup.create({
     return ctx.get("userInfo").getUserId();
   },
   async handler(userId: number) {
-    return getUserBasic(userId);
+    return getUserInfo(userId);
   },
 });

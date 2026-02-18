@@ -1,7 +1,7 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { Button, Checkbox, DatePicker, Form, message, Select, Space, Spin, Tooltip, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import { UserInfoDto } from "@/api.ts";
+import { UserConfig } from "@/api.ts";
 import { api } from "@/request/client.ts";
 import dayjs, { Dayjs } from "dayjs";
 import { useThemeToken } from "@/provider/mod.tsx";
@@ -15,21 +15,27 @@ type BasicFormData = {
   /** 是否开启年度评论统计 */
   comment_stat_enabled?: boolean;
 };
-export function BasicForm(props: { userInfo: UserInfoDto; profileLoading?: boolean; onProfileChange?(): void }) {
-  const { userInfo, profileLoading, onProfileChange } = props;
+export function BasicForm(props: {
+  userConfig: UserConfig;
+  is_official?: boolean;
+  classId?: number | null;
+  loading?: boolean;
+  onProfileChange?(): void;
+}) {
+  const { userConfig, is_official, classId, loading, onProfileChange } = props;
 
   const [form] = Form.useForm<BasicFormData>();
   const [isChanged, setIsChanged] = useState(false);
 
   const defaultData = useMemo((): BasicFormData => {
-    const pf = userInfo.profile ?? { acquaintance_time: null, comment_stat_enabled: false, live_notice: false };
+    const pf = userConfig.profile;
     return {
-      received_live: pf.live_notice ?? false,
-      primary_class_id: userInfo.primary_class?.class_id ?? null,
+      received_live: pf.live_notice,
+      primary_class_id: classId,
       acquaintance_time: pf.acquaintance_time && dayjs(pf.acquaintance_time),
       comment_stat_enabled: pf.comment_stat_enabled,
     };
-  }, [userInfo]);
+  }, [userConfig, classId]);
   useEffect(() => {
     form.setFieldsValue(defaultData);
   }, [defaultData]);
@@ -54,10 +60,9 @@ export function BasicForm(props: { userInfo: UserInfoDto; profileLoading?: boole
   });
 
   const theme = useThemeToken();
-
   return (
     <div>
-      <Spin spinning={profileLoading}>
+      <Spin spinning={loading}>
         <Space size="large" align="baseline">
           <Typography.Title level={5}>基础设置</Typography.Title>
           {isChanged && (
@@ -84,7 +89,7 @@ export function BasicForm(props: { userInfo: UserInfoDto; profileLoading?: boole
             </Space>
           )}
         </Space>
-        {userInfo.is_official || (
+        {is_official || (
           <div style={{ color: theme.colorWarningText, margin: "0 0 14px 0" }}>部分信息需要绑定平台账号后才能修改</div>
         )}
         <Form
@@ -104,7 +109,7 @@ export function BasicForm(props: { userInfo: UserInfoDto; profileLoading?: boole
               </Space>
             }
           >
-            <PublicClassSelect disabled={!userInfo.is_official} />
+            <PublicClassSelect disabled={!is_official} />
           </Form.Item>
           <Form.Item
             name="acquaintance_time"
@@ -130,7 +135,7 @@ export function BasicForm(props: { userInfo: UserInfoDto; profileLoading?: boole
             </Checkbox>
           </Form.Item>
           <Form.Item label={null} name="comment_stat_enabled" valuePropName="checked">
-            <Checkbox disabled={!userInfo?.is_official}>
+            <Checkbox disabled={!is_official}>
               <Space>
                 年度评论统计
                 <Tooltip title="如果勾选，将在年度(12月份)统计时统计(抽样)你在佳佳作品的评论数，然后生成头像排名">

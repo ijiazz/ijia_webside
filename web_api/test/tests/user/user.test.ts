@@ -6,7 +6,8 @@ import userRoutes from "@/routers/user/mod.ts";
 import { getUserPublicClassId } from "./util.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
-import { UpdateUserProfileParam } from "@/dto.ts";
+import { UpdateUserProfileParam, User, UserConfig } from "@/dto.ts";
+import { DeepPartial } from "#test/utils/common.ts";
 
 beforeEach<Context>(async ({ hono, publicDbPool }) => {
   userRoutes.apply(hono);
@@ -37,16 +38,7 @@ test("获取用户信息", async function ({ api, publicDbPool }) {
       class_id: classes[0],
       class_name: "1",
     },
-  });
-
-  await expect(apiGetProfile(api, alice.token)).resolves.toMatchObject({
-    user_id: alice.id,
-    is_official: false,
-    primary_class: {
-      class_id: classes[0],
-      class_name: "1",
-    },
-  });
+  } satisfies DeepPartial<User>);
 });
 test("获取用户信息-绑定账号后", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
@@ -67,9 +59,8 @@ test("获取用户信息-绑定账号后", async function ({ api, publicDbPool }
   });
   await expect(apiGetProfile(api, alice.token)).resolves.toMatchObject({
     user_id: alice.id,
-    is_official: true,
     bind_accounts: [{ avatar_url: null, pla_uid: "1", platform: Platform.douYin, user_name: null }],
-  });
+  } satisfies DeepPartial<UserConfig>);
 });
 test("只能选择公共班级，且公共班级只能选一个", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");

@@ -2,7 +2,7 @@ export { default } from "./_route.ts";
 
 import "./entity/.put.ts";
 import "./list.get.ts";
-import "./self.list.get.ts";
+import "./user.get.ts";
 import "./god_list.get.ts";
 
 import "./entity/$postId.patch.ts";

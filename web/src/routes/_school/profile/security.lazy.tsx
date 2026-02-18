@@ -12,7 +12,7 @@ import { EmailInput } from "@/components/EmailInput.tsx";
 import { EmailCaptchaActionType } from "@/api.ts";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { EmailAuthentication } from "./-components/security/EmailAuthentication.tsx";
-import { getCurrentUserInfoQueryOption } from "@/request/user.ts";
+import { CurrentUserProfileQueryOption } from "@/request/user.ts";
 import { queryClient } from "@/request/client.ts";
 
 export const Route = createLazyFileRoute("/_school/profile/security")({
@@ -82,9 +82,9 @@ function ChangePassport() {
 }
 
 function ChangeEmail(props: {}) {
-  const { data: user } = useSuspenseQuery(getCurrentUserInfoQueryOption());
+  const { data: user } = useSuspenseQuery(CurrentUserProfileQueryOption);
   const invalidateUser = () => {
-    queryClient.invalidateQueries({ queryKey: getCurrentUserInfoQueryOption().queryKey });
+    queryClient.invalidateQueries({ queryKey: CurrentUserProfileQueryOption.queryKey });
   };
   const [open, setOpen] = useState(false);
 

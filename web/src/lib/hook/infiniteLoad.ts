@@ -3,8 +3,6 @@ import { Dispatch, SetStateAction, useCallback, useRef, useState } from "react";
 export type InfiniteLoadResult<T, P> = { items: T[]; nextParam: P | undefined; prevParam: P | undefined };
 export type LoadMoreContext<T> = { param?: T; isNext: boolean };
 export type UseInfiniteLoadOption<T, Param> = {
-  onPush: (items: T[]) => void;
-  onUnshift: (items: T[]) => void;
   load: (param: Param | undefined, forward: boolean) => Promise<InfiniteLoadResult<T, Param>>;
 };
 
@@ -35,7 +33,6 @@ export function useInfiniteLoad<T, Param>(option: UseInfiniteLoadOption<T, Param
   const [items, setItems] = useState<T[]>([]);
 
   const loadMore = useCallback((isNext: boolean): Promise<void> => {
-    let onAdd: (typeof option)["onPush"];
     let setStatus: typeof setNextStatus;
     const load = optionRef.current.load;
     let ref: typeof loadRef.current.next;
@@ -43,11 +40,9 @@ export function useInfiniteLoad<T, Param>(option: UseInfiniteLoadOption<T, Param
     if (isNext) {
       setStatus = setNextStatus;
       ref = loadRef.current.next;
-      onAdd = optionRef.current.onPush;
     } else {
       setStatus = setPrevStatus;
       ref = loadRef.current.prev;
-      onAdd = optionRef.current.onUnshift;
     }
     if (!loadRef.current.isFirst && ref.param === undefined) return Promise.resolve();
 
@@ -72,7 +67,8 @@ export function useInfiniteLoad<T, Param>(option: UseInfiniteLoadOption<T, Param
         }
         ref.promise = undefined;
         if (res.items.length) {
-          onAdd(res.items);
+          if (isNext) setItems((prev) => prev.concat(res.items));
+          else setItems((prev) => res.items.concat(prev));
         }
       },
       (error) => {

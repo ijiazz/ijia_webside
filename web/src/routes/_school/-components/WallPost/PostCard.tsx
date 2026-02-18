@@ -4,14 +4,12 @@ import { PostContent } from "../post/PostContent.tsx";
 import { MoreOutlined, UserOutlined } from "@ant-design/icons";
 import { PinkPostCard } from "../../wall/-components/PinkCard.tsx";
 import { ExportOutlined, MessageOutlined } from "@ant-design/icons";
-import { PublicPost, ReviewStatus, SelfPost } from "@/api.ts";
+import { ReviewStatus, Post } from "@/api.ts";
 import { useThemeToken } from "@/provider/mod.tsx";
 import { LikeButton } from "../LikeButton.tsx";
 
 export type PCardProps = {
-  item: PublicPost;
-  config?: SelfPost["config"];
-  review?: SelfPost["review"];
+  item: Post;
   moreMenus?: MenuProps["items"];
   onLike?: (postId: number, isCancel: boolean) => void;
   onOpenComment?: (postId: number) => void;
@@ -20,12 +18,13 @@ export type PCardProps = {
 };
 
 export function WallPostCard(props: PCardProps) {
-  const { config, review, item, moreMenus, onLike, onOpenComment, className, style } = props;
+  const { item, moreMenus, onLike, onOpenComment, className, style } = props;
   const theme = useThemeToken();
   const author = item.author;
   const isAnonymous = !author;
   const userName = !author ? <Tag color={theme.colorTextSecondary}>匿名</Tag> : author.user_name || author.user_id;
 
+  const { review, config } = item;
   return (
     <PinkPostCard
       icon={

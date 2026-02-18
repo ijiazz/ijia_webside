@@ -1,7 +1,7 @@
 import { queryClient } from "@/request/client.ts";
 import { createFileRoute } from "@tanstack/react-router";
 import { getCurrentUserInfoQueryOption } from "@/request/user.ts";
-import { UserBasicDto } from "@/api.ts";
+import { User } from "@/api.ts";
 
 export const Route = createFileRoute("/_school")({
   async loader(ctx): Promise<LoaderData> {
@@ -14,5 +14,5 @@ export const Route = createFileRoute("/_school")({
 });
 
 export type LoaderData = {
-  userInfo: UserBasicDto | null;
+  userInfo: User | null;
 };

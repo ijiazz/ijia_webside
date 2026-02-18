@@ -7,10 +7,10 @@ import { useMemo } from "react";
 
 export type StudentIdCardInfo = {
   avatarUrl?: string;
-  id?: string;
+  id: string | number;
   name?: string;
   targetClass?: string;
-  date?: Date | number;
+  date?: Date | string | number | null;
   isOfficial?: boolean;
 };
 
@@ -25,7 +25,7 @@ export function StudentIdCard(props: StudentIdCardInfo & { scale?: number }) {
 
   const dateStr = useMemo(() => {
     if (!date) return undefined;
-    let dateObj: Date = typeof date === "number" ? new Date(date) : date;
+    let dateObj: Date = typeof date === "number" || typeof date === "string" ? new Date(date) : date;
 
     return `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, `0`)}-${dateObj.getDate().toString().padStart(2, `0`)}`;
   }, [date]);
@@ -56,7 +56,7 @@ export function StudentIdCard(props: StudentIdCardInfo & { scale?: number }) {
         <div className="student-card-info-core" style={{ fontSize: 14 * scale }}>
           <div className="student-card-name">姓名：{studentInfo.name ?? "--"}</div>
           <div className="student-card-class">班级：{studentInfo.targetClass ?? "--"}</div>
-          <div className="student-card-id">学号：{studentInfo.id ?? "--"}</div>
+          <div className="student-card-id">学号：{formatId(studentInfo.id)}</div>
         </div>
       </div>
       {studentInfo.date && (
@@ -67,6 +67,10 @@ export function StudentIdCard(props: StudentIdCardInfo & { scale?: number }) {
       {studentInfo.isOfficial && <img className="student-card-logo" src={logo}></img>}
     </div>
   );
+}
+function formatId(id: string | number) {
+  if (typeof id === "number") return id.toString().padStart(5, "0");
+  return id;
 }
 
 const StudentIdCardCSS = css`

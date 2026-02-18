@@ -1,12 +1,15 @@
 import { CreatePostParam, UpdatePostContentParam, UpdatePostConfigParam } from "@/api.ts";
 import { api } from "@/request/client.ts";
 import { useAntdStatic } from "@/provider/mod.tsx";
-import { useAsync } from "@/hooks/async.ts";
-import { Alert, Button, Form, Input, Select, Switch, SelectProps, Space } from "antd";
-import React, { useMemo } from "react";
-import { PRadio, RadioOption } from "../../wall/-components/PostGroupSelect.tsx";
+import { Alert, Button, Input, Switch, Space } from "antd";
+import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
+import { FormItem, getAntdErrorStatus } from "@/components/form.tsx";
+import { css } from "@emotion/css";
+import { GroupSelect } from "./GroupSelect.tsx";
+import { useMutation } from "@tanstack/react-query";
 
 export type UpdatePostParam = Omit<UpdatePostContentParam, "type"> & Omit<UpdatePostConfigParam, "type">;
+
 export function PublishPost(props: {
   editId?: number;
   editType?: "content" | "config";
@@ -17,150 +20,166 @@ export function PublishPost(props: {
   groupOptions?: { label: string; value: number; desc?: string }[];
 }) {
   const { initValues, onEditOk, onCreateOk, groupOptions, editId, groupLoading, editType } = props;
-
+  const form = useForm<UpdatePostParam | CreatePostParam>({ defaultValues: initValues });
+  const {
+    formState: { isDirty, isSubmitting },
+  } = form;
   const isEdit = editId !== undefined;
   const disableEditContent = isEdit && editType === "config";
   const disableSetting = isEdit && editType === "content";
 
   const { message } = useAntdStatic();
-  const { loading: editLoading, run: commitEdit } = useAsync(async (editId: number, data: UpdatePostParam) => {
-    const updateValue: UpdatePostParam = diffUpdateValue(
-      {
-        content_text: data.content_text,
-        content_text_structure: data.content_text_structure ?? null,
-        is_hide: data.is_hide,
-        comment_disabled: data.comment_disabled,
-      },
-      initValues as UpdatePostParam | undefined,
-    );
-    const isChange = Object.keys(updateValue).length;
-    if (isChange) {
-      switch (editType) {
-        case "content":
-          await updatePostContent(editId.toString(), {
-            content_text: updateValue.content_text,
-            content_text_structure: updateValue.content_text_structure,
-          });
-          break;
-        case "config":
-          await updatePostConfig(editId.toString(), {
-            is_hide: updateValue.is_hide,
-            comment_disabled: updateValue.comment_disabled,
-          });
-          break;
-        default:
-          throw new Error("未知的编辑类型");
-      }
 
-      message.success("已修改");
-    }
-    onEditOk?.(editId);
+  const { mutateAsync: submitUpdateContent } = useMutation({
+    mutationFn: async (data: UpdateContentParam & { postId: number }) => {
+      const { postId, ...updateValue } = data;
+      return updatePostContent(postId, updateValue);
+    },
   });
-  const { run: commitCreate, loading: createLoading } = useAsync(async (data: CreatePostParam) => {
-    const { id } = await api["/post/entity"].put({ body: data });
-    message.success("已发布");
-    onCreateOk?.(id);
+  const { mutateAsync: submitUpdateConfig } = useMutation({
+    mutationFn: async (data: UpdateConfigParam & { postId: number }) => {
+      const { postId, ...updateValue } = data;
+      return updatePostConfig(postId, updateValue);
+    },
   });
-  const loading = editLoading || createLoading;
+  const { mutateAsync: submitCreate } = useMutation({
+    mutationFn: (data: CreatePostParam) => {
+      return api["/post/entity"].put({ body: data });
+    },
+  });
 
-  const [form] = Form.useForm<UpdatePostParam | CreatePostParam>();
-  const groupId = Form.useWatch("group_id", form);
+  const groupId = useWatch({ control: form.control, name: "group_id" });
+
   return (
-    <div>
-      <Form
-        form={form}
-        onFinish={(data) => {
+    <FormProvider {...form}>
+      <form
+        style={{ fontSize: 14 }}
+        onSubmit={form.handleSubmit(async (data) => {
           if (isEdit) {
-            commitEdit(editId!, data as UpdatePostParam);
+            if (editId) {
+              if (editType === "config") await submitUpdateConfig({ postId: editId, ...data });
+              else if (editType === "content") await submitUpdateContent({ postId: editId, ...data });
+            }
+            message.success("已修改");
+            onEditOk?.(editId);
           } else {
-            commitCreate(data as CreatePostParam);
+            const { id } = await submitCreate(data as CreatePostParam);
+            message.success("已发布");
+            onCreateOk?.(id);
           }
-        }}
-        wrapperCol={{ span: 18 }}
-        labelCol={{ span: 4 }}
-        initialValues={initValues || {}}
+        })}
       >
-        <Form.Item
-          hidden={disableEditContent}
-          label="发布内容"
-          name="content_text"
-          rules={[{ required: true, message: "请输入内容" }]}
-        >
-          <Input.TextArea placeholder="请输入内容" autoSize={{ minRows: 4, maxRows: 10 }} style={{ width: "100%" }} />
-        </Form.Item>
-        <Form.Item hidden={isEdit || groupOptions?.length === 0} label="内容分类" name="group_id">
-          <GroupSelect disabled={isEdit} options={groupOptions} loading={groupLoading} allowClear></GroupSelect>
-        </Form.Item>
-        <Form.Item hidden={disableSetting} label="仅自己可见" name="is_hide">
-          <Switch></Switch>
-        </Form.Item>
-        <Form.Item hidden={disableSetting} label="关闭评论区" name="comment_disabled">
-          <Switch></Switch>
-        </Form.Item>
-        <Form.Item hidden={isEdit} label="匿名发布" name="is_anonymous">
-          <Switch></Switch>
-        </Form.Item>
-        <Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              {isEdit ? "确认" : "发布"}
-            </Button>
-            {!isEdit && groupId !== undefined && <Alert title="已选择分类，发布后将在审核通过公开" />}
-          </Space>
-        </Form.Item>
-      </Form>
-    </div>
+        {disableEditContent || (
+          <Controller
+            name="content_text"
+            disabled={disableEditContent}
+            rules={{ required: "请输入内容" }}
+            render={({ field, fieldState }) => {
+              return (
+                <FormItem error={fieldState.error?.message} required={true} label="发布内容">
+                  <Input.TextArea
+                    {...field}
+                    placeholder="请输入内容"
+                    autoSize={{ minRows: 4, maxRows: 10 }}
+                    style={{ width: "100%" }}
+                    status={getAntdErrorStatus(fieldState)}
+                  />
+                </FormItem>
+              );
+            }}
+          />
+        )}
+        {isEdit || groupOptions?.length === 0 || (
+          <Controller
+            name="group_id"
+            render={({ field, fieldState }) => {
+              return (
+                <FormItem error={fieldState.error?.message} label="主题">
+                  <GroupSelect
+                    {...field}
+                    disabled={isEdit}
+                    options={groupOptions}
+                    loading={groupLoading}
+                    allowClear
+                    status={getAntdErrorStatus(fieldState)}
+                  />
+                </FormItem>
+              );
+            }}
+          />
+        )}
+        {disableSetting || (
+          <>
+            <Controller
+              name="is_hide"
+              render={({ field, fieldState }) => (
+                <FormItem
+                  error={fieldState.error?.message}
+                  classNames={{ label: SwitchLabelCSS }}
+                  label="仅自己可见"
+                  layout="horizontal"
+                >
+                  <Switch {...field} />
+                </FormItem>
+              )}
+            />
+            <Controller
+              name="comment_disabled"
+              render={({ field, fieldState }) => (
+                <FormItem
+                  error={fieldState.error?.message}
+                  classNames={{ label: SwitchLabelCSS }}
+                  label="关闭评论区"
+                  layout="horizontal"
+                >
+                  <Switch {...field} />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
+        {isEdit || (
+          <Controller
+            name="is_anonymous"
+            render={({ field, fieldState }) => (
+              <FormItem
+                error={fieldState.error?.message}
+                classNames={{ label: SwitchLabelCSS }}
+                label="匿名发布"
+                layout="horizontal"
+              >
+                <Switch {...field} />
+              </FormItem>
+            )}
+          />
+        )}
+        <Space>
+          <Button type="primary" htmlType="submit" disabled={isEdit ? !isDirty : undefined} loading={isSubmitting}>
+            {isEdit ? "确认" : "发布"}
+          </Button>
+          {!isEdit && groupId !== undefined && <Alert title="选择主题后，将在审核通过后公开" />}
+        </Space>
+      </form>
+    </FormProvider>
   );
 }
-async function updatePostContent(postId: string, content: Omit<UpdatePostContentParam, "type">) {
+
+const SwitchLabelCSS = css`
+  min-width: 75px;
+`;
+
+type UpdateContentParam = Omit<UpdatePostContentParam, "type">;
+
+async function updatePostContent(postId: number | string, content: UpdateContentParam) {
   await api["/post/entity/:postId"].patch({
     params: { postId },
     body: { ...content, type: "content" },
   });
 }
-async function updatePostConfig(postId: string, config: Omit<UpdatePostConfigParam, "type">) {
+type UpdateConfigParam = Omit<UpdatePostConfigParam, "type">;
+async function updatePostConfig(postId: number | string, config: UpdateConfigParam) {
   await api["/post/entity/:postId"].patch({
     params: { postId },
     body: { ...config, type: "config" },
   });
-}
-
-function GroupSelect(props: SelectProps) {
-  const { options, value } = props;
-  const pruneOption = useMemo(() => {
-    let op: SelectProps["options"];
-    if (!options || options.length <= 4) op = options;
-    else op = options.slice(0, 4);
-
-    return op?.map((item): RadioOption => ({ label: item.label, value: item.value! }));
-  }, [options]);
-
-  const tip = useMemo(() => {
-    return options?.find((item) => item.value === value)?.desc || "";
-  }, [options, value]);
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      {options?.length && options.length <= 4 ? (
-        <PRadio value={props.value} options={pruneOption} onChange={props.onChange} />
-      ) : (
-        <Select {...props}></Select>
-      )}
-      {props.value !== undefined && <Alert title={tip} type="warning" />}
-    </div>
-  );
-}
-
-function diffUpdateValue(news: UpdatePostParam, old?: UpdatePostParam): UpdatePostParam {
-  if (!old) {
-    return news;
-  } else {
-    let updateValue: UpdatePostParam = {};
-    if (news.content_text !== old.content_text) updateValue.content_text = news.content_text;
-    if (news.is_hide !== old.is_hide) updateValue.is_hide = news.is_hide;
-    if (news.comment_disabled !== old.comment_disabled) updateValue.comment_disabled = news.comment_disabled;
-    if (news.content_text_structure !== old.content_text_structure)
-      updateValue.content_text_structure = news.content_text_structure;
-
-    return updateValue;
-  }
 }

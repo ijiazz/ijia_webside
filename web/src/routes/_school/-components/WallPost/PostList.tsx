@@ -1,4 +1,4 @@
-import { PublicPost, SelfPost } from "@ijia/api-types";
+import { PublicPost } from "@ijia/api-types";
 import { WallPostCard } from "./PostCard.tsx";
 import { ReportModal } from "../ReportModal.tsx";
 import { useState, Dispatch, useRef, useImperativeHandle } from "react";
@@ -19,12 +19,13 @@ export type PostListProps<T extends PublicPost> = Pick<React.HTMLAttributes<HTML
   onSetting?: (item: T) => void;
   onEdit?: (item: T) => void;
   canEdit?: boolean;
+  hideReport?: boolean;
 
   ref?: React.Ref<PostListHandle>;
 };
 
 export function PostList<T extends PublicPost>(props: PostListProps<T>) {
-  const { data, setData, loadItem, onOpenComment, onSetting, onEdit, canEdit, ref, ...rest } = props;
+  const { data, setData, loadItem, onOpenComment, onSetting, onEdit, canEdit, hideReport, ref, ...rest } = props;
   const { modal, message } = useAntdStatic();
   const reloadingRef = useRef<Record<number, Promise<any>>>({});
 
@@ -102,7 +103,7 @@ export function PostList<T extends PublicPost>(props: PostListProps<T>) {
     <div {...rest}>
       {data.map((item, index) => {
         const moreMenus: MenuProps["items"] = [];
-        if (item.curr_user) {
+        if (item.curr_user && !hideReport) {
           moreMenus.push({
             icon: <WarningOutlined />,
             label: item.curr_user.is_report ? "已举报" : "举报",
@@ -128,8 +129,6 @@ export function PostList<T extends PublicPost>(props: PostListProps<T>) {
             className={cx(PostListCSS, "e2e-post-item")}
             key={item.post_id}
             item={item}
-            config={(item as any as SelfPost).config}
-            review={(item as any as SelfPost).review}
             moreMenus={moreMenus}
             onLike={onPostLike}
             onOpenComment={onOpenComment}
