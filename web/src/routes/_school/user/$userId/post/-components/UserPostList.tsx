@@ -6,13 +6,13 @@ import { useInfiniteLoad } from "@/lib/hook/infiniteLoad.ts";
 import { Modal, Spin } from "antd";
 import { dateToString } from "@/common/date.ts";
 import { LoaderIndicator, LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
-import { useScrollLoad } from "@/lib/hook/scrollLoad.ts";
 import { useNavigate } from "@tanstack/react-router";
 import { CreatePostBtn } from "@/routes/_school/wall/-components/PublishBtn.tsx";
 import { EditOutlined } from "@ant-design/icons";
 import { useThemeToken } from "@/provider/AntdProvider.tsx";
 
 import { api } from "@/request/client.ts";
+import { useElementOverScreen } from "@/lib/hook/observer.ts";
 type PostListProps = {
   groupId?: number;
   userId: number;
@@ -30,7 +30,7 @@ export function UserPostList(props: PostListProps) {
     undefined,
   );
 
-  const { data, setData, reset, next, previous } = useInfiniteLoad<Post, string>({
+  const { data, setData, reset, next, previous } = useInfiniteLoad<Post[], string>({
     async load(param, forward) {
       const promise = getUserPostList({ group_id: groupId, cursor: param, forward, userId });
       const result = await promise;
@@ -40,15 +40,20 @@ export function UserPostList(props: PostListProps) {
       }
 
       return {
-        items: forward ? result.items.reverse() : result.items,
+        items: result.items,
         nextParam: result.cursor_next ? result.cursor_next : undefined,
         prevParam: result.cursor_prev ? result.cursor_prev : undefined,
       };
     },
+    init: () => [],
+    mergeBack: (prev, next) => (next.length ? prev.concat(next) : prev),
+    mergeFront: (prev, next) => (next.length ? next.reverse().concat(prev) : prev),
   });
-  const listScroll = useScrollLoad({
-    bottomThreshold: 100,
-    onScrollBottom: () => next.loadMore(),
+  const { ref } = useElementOverScreen({
+    onChange: (visible) => {
+      if (visible) next.loadMore();
+    },
+    defaultVisible: true,
   });
   const onEditPost = (item: Post, isEdit: boolean) => {
     if (!item.config) return;
@@ -75,17 +80,12 @@ export function UserPostList(props: PostListProps) {
     next.loadMore();
   }, [groupId, userId]);
 
-  useEffect(() => {
-    if (listScroll.isInBottom()) {
-      next.loadMore();
-    }
-  }, [data.length]);
   const theme = useThemeToken();
   return (
     <div style={{ height: "100%" }}>
-      <div className={cx(HomePageCSS, PostListCSS)} ref={listScroll.ref}>
+      <div className={cx(HomePageCSS, PostListCSS)}>
         {canEdit && (
-          <div style={{ marginBottom: 14, display: "flex", justifyContent: "end" }}>
+          <div style={{ marginBottom: 14, display: "flex" }}>
             <CreatePostBtn
               style={{ "--color1": theme.colorPrimaryHover, "--color2": theme.colorPrimary }}
               icon={<EditOutlined />}
@@ -117,6 +117,7 @@ export function UserPostList(props: PostListProps) {
           loading={next.loading}
           isEmpty={data.length === 0}
           onLoad={() => next.loadMore()}
+          ref={ref}
         />
       </div>
       <Modal

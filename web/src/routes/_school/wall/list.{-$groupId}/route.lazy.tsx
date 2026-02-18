@@ -66,12 +66,7 @@ function PostLayout() {
 
   const filter = useMemo((): PostQueryFilter => {
     if (!postGroup || !groupId) return {};
-    const isSelf = groupId === "self";
-    if (isSelf) {
-      return {
-        self: true,
-      };
-    }
+
     const current = postGroup.items.find((item) => item.group_id.toString() === groupId);
     if (!current) return {};
     return {

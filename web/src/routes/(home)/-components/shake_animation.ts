@@ -42,7 +42,7 @@ export function useShakeAnimation(config: {
     };
   }, [widthRange, heightRange, xSpeed, ySpeed]);
 
-  const targetRef = useElementOverScreen({
+  const { ref: targetRef } = useElementOverScreen({
     onChange: (isIntersecting) => {
       if (isIntersecting) {
         animationCtrlRef.current?.play();

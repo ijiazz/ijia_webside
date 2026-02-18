@@ -17,7 +17,7 @@ import { Spin } from "antd";
 import { api } from "@/request/client.ts";
 import { dateToString } from "@/common/date.ts";
 import { LoaderIndicator, LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
-import { useScrollLoad } from "@/lib/hook/scrollLoad.ts";
+import { useElementOverScreen } from "@/lib/hook/observer.ts";
 type PostListProps = {
   userId?: number;
   onOpenComment?: (postId: number) => void;
@@ -26,26 +26,31 @@ export function PublicPostList(props: PostListProps) {
   const { userId, onOpenComment } = props;
   const filter = useContext(PostQueryFilterContext);
   const group = filter.group;
-  const isSelf = filter.self;
   const navigate = useNavigate();
   const location = useLocation();
 
   const itemsCtrl = useRef<PostListHandle>(null);
 
   const currentUser = useContext(BasicUserContext);
-  const { data, setData, reset, next, previous } = useInfiniteLoad<PublicPost, string>({
+  const { data, setData, reset, next, previous } = useInfiniteLoad<PublicPost[], string>({
     async load(param, forward) {
       const result = await getPostList({ group_id: group?.group_id, cursor: param, forward, userId: userId });
       return {
-        items: forward ? result.items.reverse() : result.items,
+        items: result.items,
         nextParam: result.cursor_next ? result.cursor_next : undefined,
         prevParam: result.cursor_prev ? result.cursor_prev : undefined,
       };
     },
+    init: () => [],
+    mergeBack: (prev, next) => (next.length ? prev.concat(next) : prev),
+    mergeFront: (prev, next) => (next.length ? next.reverse().concat(prev) : prev),
   });
-  const listScroll = useScrollLoad({
-    bottomThreshold: 100,
-    onScrollBottom: () => next.loadMore(),
+
+  const { ref } = useElementOverScreen({
+    onChange: (visible) => {
+      if (visible) next.loadMore();
+    },
+    defaultVisible: true,
   });
 
   const onOpenPublish = () => {
@@ -59,19 +64,13 @@ export function PublicPostList(props: PostListProps) {
   useEffect(() => {
     reset();
     next.loadMore();
-  }, [group?.group_id, isSelf, userId]);
-
-  useEffect(() => {
-    if (listScroll.isInBottom()) {
-      next.loadMore();
-    }
-  }, [data.length]);
+  }, [group?.group_id, userId]);
 
   const isVertical = useLayoutDirection() === LayoutDirection.Vertical;
   const theme = useThemeToken();
   return (
     <div style={{ height: "100%" }}>
-      <div className={HomePageCSS} ref={listScroll.ref}>
+      <div className={HomePageCSS}>
         <div className={PostListCSS}>
           <ImageFitCover src={wallCoverSrc}>
             <div style={{ display: isVertical ? "none" : "block", position: "absolute", right: 20, bottom: 20 }}>
@@ -96,7 +95,6 @@ export function PublicPostList(props: PostListProps) {
             setData={setData}
             loadItem={getPostItem}
             onOpenComment={onOpenComment}
-            canEdit={isSelf}
           />
           <LoadMoreIndicator
             error={!!next.error}
@@ -104,6 +102,7 @@ export function PublicPostList(props: PostListProps) {
             loading={next.loading}
             isEmpty={data.length === 0}
             onLoad={() => next.loadMore()}
+            ref={ref}
           />
         </div>
       </div>

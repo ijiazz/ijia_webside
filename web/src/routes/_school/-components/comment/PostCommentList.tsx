@@ -1,5 +1,4 @@
-import { useAsync } from "@/hooks/async.ts";
-import { Avatar, Button, Divider, Input, Typography } from "antd";
+import { Avatar, Button, Input, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PostCommentDto } from "@/api.ts";
 import { CommentTree, useCommentData, findNodeRoot } from "./CommentItem.tsx";
@@ -19,8 +18,9 @@ import {
 } from "./api.ts";
 import { CommentHeader } from "./CommentHeader.tsx";
 import { CommentFooter } from "./CommentFooter.tsx";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getPostQueryOption } from "@/request/post.ts";
+import { LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
 
 const { Text } = Typography;
 
@@ -29,11 +29,9 @@ export type CreateData = {
 };
 export type CommentListProps = {
   postId: number;
-  allowAll?: boolean;
-  self?: boolean;
 };
 export function CommentList(props: CommentListProps) {
-  const { postId, allowAll, self } = props;
+  const { postId } = props;
   const {
     commentData,
     addItem,
@@ -51,7 +49,6 @@ export function CommentList(props: CommentListProps) {
   const postInfo = postInfoLoading ? null : data?.item;
 
   const config = useMemo(() => {
-    if (allowAll) return { createDisabled: undefined };
     let createDisabled: string | undefined = "";
     if (postInfo) {
       createDisabled = postInfo.curr_user ? postInfo.curr_user.disabled_comment_reason : "登录后可以评论";
@@ -61,60 +58,72 @@ export function CommentList(props: CommentListProps) {
     return {
       createDisabled,
     };
-  }, [postInfo, postInfoLoading, allowAll]);
+  }, [postInfo, postInfoLoading]);
 
-  const loadRoot = useAsync(async (nextCursor?: string | null) => {
-    if (typeof postId !== "number") return undefined;
-
-    const res = await loadCommentList({ postId, cursor: nextCursor ?? undefined, number: 10 });
-    const nodeList = res.items.map((item) => commentDtoToCommentNode(item, null));
-    pushList(nodeList);
-    return res;
+  const loadRoot = useMutation({
+    mutationFn: async (nextCursor?: string | null) =>
+      loadCommentList({ postId, cursor: nextCursor ?? undefined, number: 10 }),
+    onSuccess(res) {
+      const nodeList = res.items.map((item) => commentDtoToCommentNode(item, null));
+      pushList(nodeList);
+    },
   });
-
-  const loadReply = useAsync(async function (parent: PostCommentNode) {
-    parent.loading = true;
-    forceRender();
-    let nodeList: PostCommentNode[];
-    try {
-      const res = await loadCommentList({
+  const { mutateAsync: loadReply } = useMutation({
+    onMutate(parent, context) {
+      parent.loading = true;
+      forceRender();
+    },
+    mutationFn: async (parent: PostCommentNode) => {
+      return loadCommentList({
         parentCommentId: parent.comment_id,
         cursor: parent.childrenCursor ?? undefined,
         number: 5,
       });
-      nodeList = res.items.map((item) => commentDtoToCommentNode(item, parent));
+    },
+    async onSuccess(res, parent) {
+      const nodeList = res.items.map((item) => commentDtoToCommentNode(item, parent));
       parent.hasMore = !!res.cursor_next;
       parent.childrenCursor = res.cursor_next;
-    } catch (error) {
+
+      parent.loading = false;
+      pushList(nodeList, parent);
+    },
+    onError(error, parent) {
       parent.loading = false;
       forceRender();
-      throw error;
-    }
-    parent.loading = false;
-    pushList(nodeList, parent);
+    },
   });
 
-  const { loading: commentLoading, run: commentCreateComment } = useAsync(async function (
-    postId: number,
-    text: string,
-  ) {
-    const replyId = replyingComment?.comment_id ?? null;
-    const newCommendId = await createComment(postId, { text }, replyId);
-    setText("");
-    setReplyingComment(null);
-    let comment: PostCommentDto | undefined;
-    try {
-      comment = await loadComment(newCommendId);
-    } catch (error) {
-      message.error("已创建评论但刷新失败，请手动刷新评论");
-      throw error;
-    }
-    if (comment) {
-      const addTarget = replyingComment ? findNodeRoot(replyingComment) : null;
-      addItem(commentDtoToCommentNode(comment, addTarget), addTarget);
-    }
-  }, {});
+  const { isPending: commentLoading, mutateAsync: submitCreateComment } = useMutation({
+    mutationFn: async (param: { postId: number; text: string; replyId?: number }) => {
+      const { postId, text, replyId } = param;
+      return createComment(postId, { text }, replyId);
+    },
+    onSuccess: async (newCommendId) => {
+      setText("");
+      setReplyingComment(null);
+      let comment: PostCommentDto | undefined;
+      try {
+        comment = await loadComment(newCommendId);
+      } catch (error) {
+        message.error("已创建评论但刷新失败，请手动刷新评论");
+        throw error;
+      }
+      if (comment) {
+        const addTarget = replyingComment ? findNodeRoot(replyingComment) : null;
+        addItem(commentDtoToCommentNode(comment, addTarget), addTarget);
+      }
+    },
+  });
 
+  const commentCreateComment = async (postId: number, text: string) => {
+    const replyId = replyingComment?.comment_id ?? null;
+    await submitCreateComment({
+      postId,
+      text,
+      replyId: typeof replyId === "number" ? replyId : undefined,
+    });
+  };
   const { reloadItem, onLike } = useReload({ replaceItem });
 
   const onCreateComment = () => {
@@ -139,7 +148,7 @@ export function CommentList(props: CommentListProps) {
 
   useEffect(() => {
     resetData();
-    loadRoot.run();
+    loadRoot.mutate(null);
   }, [postId]);
 
   const [text, setText] = useState<string | undefined>();
@@ -188,7 +197,7 @@ export function CommentList(props: CommentListProps) {
                 </div>
                 {children}
                 {data.hasMore && (
-                  <Button type="link" loading={data.loading} size="small" onClick={() => loadReply.run(data)}>
+                  <Button type="link" loading={data.loading} size="small" onClick={() => loadReply(data)}>
                     {data.children?.size ? "佳载更多" : `展开${data.is_root_reply_count}条回复`}
                   </Button>
                 )}
@@ -197,15 +206,14 @@ export function CommentList(props: CommentListProps) {
           }}
           data={commentData}
         />
-        <div style={{ textAlign: "center" }}>
-          {loadRoot.data?.cursor_next ? (
-            <Button type="link" onClick={() => loadRoot.run(loadRoot.data!.cursor_next)} loading={loadRoot.loading}>
-              佳载更多
-            </Button>
-          ) : (
-            <Divider plain>可恶，没有更多了</Divider>
-          )}
-        </div>
+
+        <LoadMoreIndicator
+          error={!!loadRoot.error}
+          hasMore={!!loadRoot.data?.cursor_next}
+          isEmpty={commentData.size === 0}
+          loading={loadRoot.isPending}
+          onLoad={() => loadRoot.mutate(loadRoot.data?.cursor_next ?? null)}
+        />
       </div>
       <div style={{ paddingTop: 12, display: "flex", gap: 8, flexDirection: "column" }}>
         {replyingComment && (

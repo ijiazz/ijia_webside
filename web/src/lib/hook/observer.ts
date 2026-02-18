@@ -6,6 +6,8 @@ export function useElementOverScreen(option: {
   defaultVisible?: boolean;
 }) {
   const { onChange } = option;
+  const onChangeRef = useRef<(isOver: boolean) => void>(onChange);
+  onChangeRef.current = onChange;
   const elementRef = useRef<{ element?: HTMLElement; prevVisible: boolean }>({
     prevVisible: option.defaultVisible ?? true,
   });
@@ -16,7 +18,7 @@ export function useElementOverScreen(option: {
         const prevVisibleRef = elementRef.current;
 
         if (prevVisibleRef.prevVisible !== entry.isIntersecting) {
-          onChange(entry.isIntersecting);
+          onChangeRef.current(entry.isIntersecting);
         }
         prevVisibleRef.prevVisible = entry.isIntersecting;
       });
@@ -37,5 +39,5 @@ export function useElementOverScreen(option: {
     };
   }, []);
 
-  return ref;
+  return { ref, isIntersecting: () => elementRef.current.prevVisible };
 }

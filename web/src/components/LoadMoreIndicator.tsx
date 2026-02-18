@@ -8,9 +8,10 @@ export type LoadMoreIndicatorProps = {
   hasMore: boolean;
   isEmpty: boolean;
   onLoad: () => void;
+  ref?: React.Ref<HTMLDivElement>;
 };
 export function LoadMoreIndicator(props: LoadMoreIndicatorProps) {
-  const { onLoad, error: errored, hasMore, isEmpty, loading } = props;
+  const { onLoad, error: errored, hasMore, isEmpty, loading, ...rest } = props;
   const renderIndicatorText = () => {
     if (loading) {
       return <Spin />;
@@ -35,20 +36,25 @@ export function LoadMoreIndicator(props: LoadMoreIndicatorProps) {
       }
     }
     return (
-      <Button type="link" onClick={() => onLoad()}>
+      <Button size="small" type="link" onClick={() => onLoad()}>
         加载更多
       </Button>
     );
   };
-  return <LoaderIndicator>{renderIndicatorText()}</LoaderIndicator>;
+  return <LoaderIndicator {...rest}>{renderIndicatorText()}</LoaderIndicator>;
 }
-export interface LoaderIndicatorProps {
+export interface LoaderIndicatorProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
+  ref?: React.Ref<HTMLDivElement>;
 }
 export function LoaderIndicator(props: LoaderIndicatorProps) {
   const theme = useThemeToken();
   return (
-    <div className={StyledIndicator} style={{ color: theme.colorTextTertiary, fontSize: theme.fontSize }}>
+    <div
+      {...props}
+      className={StyledIndicator}
+      style={{ color: theme.colorTextTertiary, fontSize: theme.fontSize, ...props.style }}
+    >
       {props.children}
     </div>
   );

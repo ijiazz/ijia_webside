@@ -1,18 +1,17 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 
-import { useEffect } from "react";
 import { removeLoading } from "@/app.ts";
 import { LayoutDirectionProvider } from "@/provider/LayoutDirectionProvider.tsx";
 import { RouterProgress } from "./-layout/Progress.tsx";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/request/client.ts";
+import { PageLoading } from "@/components/page_state.tsx";
 
 export const Route = createRootRoute({
+  beforeLoad(ctx) {
+    removeLoading();
+  },
   component: () => {
-    useEffect(() => {
-      removeLoading();
-    }, []);
-
     return (
       <QueryClientProvider client={queryClient}>
         <LayoutDirectionProvider>
@@ -22,4 +21,5 @@ export const Route = createRootRoute({
       </QueryClientProvider>
     );
   },
+  pendingComponent: PageLoading,
 });
