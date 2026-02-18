@@ -3,7 +3,7 @@ import { Avatar, Button } from "antd";
 import * as styles from "./UserWall.css.ts";
 import { useAntdStatic } from "@/provider/AntdProvider.tsx";
 import { StudentIdCard } from "@/components/school/StudentIdCard.tsx";
-import userCover from "../-img/user-cover.png";
+import userCover from "../-img/user-cover.webp";
 import { ArrowLeftOutlined, IdcardOutlined } from "@ant-design/icons";
 import { cx } from "@emotion/css";
 import { User } from "@/api.ts";
