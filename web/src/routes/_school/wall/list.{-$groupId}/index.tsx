@@ -10,6 +10,6 @@ export type RouteSearch = {
 
 export const Route = createFileRoute("/_school/wall/list/{-$groupId}/")({
   validateSearch(searchRaw): RouteSearch {
-    return checkTypeCopy(searchRaw, SearchSchema);
+    return checkTypeCopy(searchRaw, SearchSchema, { policy: "pass" });
   },
 });

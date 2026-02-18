@@ -1,6 +1,6 @@
 import { vioServerTest as test } from "@/fixtures/test.ts";
 import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
-import { createPost, createCommentUseApi, getPostCommentURL, getPostURL } from "@/utils/post.ts";
+import { createPost, createCommentUseApi, getPostCommentURL, getUserPostURL } from "@/utils/post.ts";
 import { expect, Page } from "@playwright/test";
 import { afterTime } from "evlib";
 import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
@@ -18,7 +18,7 @@ beforeEach(async function ({ context }) {
 });
 
 test("创建一条根评论，然后删除", async function ({ page }) {
-  await page.goto(getPostURL({ userId: alice.id }));
+  await page.goto(getUserPostURL(alice.id));
 
   await expect(getCommentBtn(page), "帖子评论数初始为0").toHaveText("0");
   await getCommentBtn(page).click();
@@ -44,7 +44,7 @@ test("创建一条根评论，然后删除", async function ({ page }) {
 
 test("创建回复评论", async function ({ page }) {
   test.setTimeout(30000);
-  await page.goto(getPostCommentURL(postId, { userId: alice.id }));
+  await page.goto(getPostCommentURL({ postId, userId: alice.id }));
   // 先创建1条根评论
   await page.getByRole("textbox").fill("r1");
   await page.getByRole("button", { name: "发 送" }).click();
@@ -93,7 +93,7 @@ test("删除评论", async function ({ page }) {
     token: alice.token,
   }); // delete
 
-  await page.goto(getPostCommentURL(postId, { userId: alice.id }));
+  await page.goto(getPostCommentURL({ postId, userId: alice.id }));
 
   await page.getByRole("button", { name: "展开5条回复" }).click(); //r1
   await page.getByRole("button", { name: "展开2条回复" }).click(); //r2
@@ -137,7 +137,7 @@ test("帖子作者可以删除其他人评论，其他人只能删除自己的�
   ]);
 
   {
-    await page.goto(getPostCommentURL(postId, { userId: alice.id }));
+    await page.goto(getPostCommentURL({ postId, userId: alice.id }));
     await getCommentMoreBtn(page, aliceComment.id).hover();
     await expect(
       page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
@@ -154,7 +154,7 @@ test("帖子作者可以删除其他人评论，其他人只能删除自己的�
   }
   {
     await setContextLogin(context, alice.token);
-    await page.goto(getPostCommentURL(postId, { userId: alice.id }));
+    await page.goto(getPostCommentURL({ postId, userId: alice.id }));
     await getCommentMoreBtn(page, aliceComment.id).hover();
     await expect(
       page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),

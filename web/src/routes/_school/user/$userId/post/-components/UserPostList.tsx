@@ -1,10 +1,9 @@
-import { GetSelfPostListParam, Post } from "@/api.ts";
+import { GetUserPostListParam, Post, PostUserResponse } from "@/api.ts";
 import { css, cx } from "@emotion/css";
 import { useEffect, useRef, useState } from "react";
 import { PostList, PostListHandle, PublishPost, UpdatePostParam } from "@/routes/_school/-components/WallPost.tsx";
 import { useInfiniteLoad } from "@/lib/hook/infiniteLoad.ts";
 import { Modal, Spin } from "antd";
-import { api } from "@/request/client.ts";
 import { dateToString } from "@/common/date.ts";
 import { LoaderIndicator, LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
 import { useScrollLoad } from "@/lib/hook/scrollLoad.ts";
@@ -12,14 +11,17 @@ import { useNavigate } from "@tanstack/react-router";
 import { CreatePostBtn } from "@/routes/_school/wall/-components/PublishBtn.tsx";
 import { EditOutlined } from "@ant-design/icons";
 import { useThemeToken } from "@/provider/AntdProvider.tsx";
+
+import { api } from "@/request/client.ts";
 type PostListProps = {
   groupId?: number;
   userId: number;
   canEdit?: boolean;
+  hideReport?: boolean;
   onOpenComment?: (postId: number) => void;
 };
 export function UserPostList(props: PostListProps) {
-  const { groupId, userId, canEdit, onOpenComment } = props;
+  const { groupId, userId, canEdit, hideReport, onOpenComment } = props;
   const navigate = useNavigate();
   const itemsCtrl = useRef<PostListHandle>(null);
 
@@ -30,8 +32,13 @@ export function UserPostList(props: PostListProps) {
 
   const { data, setData, reset, next, previous } = useInfiniteLoad<Post, string>({
     async load(param, forward) {
-      const promise = getSelfPostList({ group_id: groupId, cursor: param, forward });
+      const promise = getUserPostList({ group_id: groupId, cursor: param, forward, userId });
       const result = await promise;
+
+      for (const item of result.items) {
+        replaceTime(item);
+      }
+
       return {
         items: forward ? result.items.reverse() : result.items,
         nextParam: result.cursor_next ? result.cursor_next : undefined,
@@ -59,7 +66,7 @@ export function UserPostList(props: PostListProps) {
     onEditPost(item, false);
   };
   const loadItem = async (id: number) => {
-    const item = await getSelfPostItem(id);
+    const item = await getUserPostItem(id);
     setData((prev) => [item, ...prev]);
   };
 
@@ -97,12 +104,12 @@ export function UserPostList(props: PostListProps) {
           ref={itemsCtrl}
           data={data}
           setData={setData}
-          loadItem={getSelfPostItem}
+          loadItem={getUserPostItem}
           onEdit={(item) => onEditPost(item, true)}
           onSetting={(item) => onSettingPost(item)}
           onOpenComment={onOpenComment}
           canEdit={canEdit}
-          hideReport
+          hideReport={hideReport}
         />
         <LoadMoreIndicator
           error={!!next.error}
@@ -142,20 +149,16 @@ export function UserPostList(props: PostListProps) {
   );
 }
 
-async function getSelfPostItem(id: number) {
-  const { items } = await getSelfPostList({ post_id: id });
+async function getUserPostItem(id: number): Promise<Post> {
+  const { items } = await getUserPostList({ post_id: id });
   const item = items[0];
   if (!item) throw new Error("帖子不存在");
   return item;
 }
-async function getSelfPostList(param?: GetSelfPostListParam) {
-  return api["/post/user"].get({ query: param }).then((res) => {
-    for (const item of res.items) {
-      replaceTime(item);
-    }
-    return res;
-  });
+async function getUserPostList(param?: GetUserPostListParam): Promise<PostUserResponse> {
+  return api["/post/user"].get({ query: param });
 }
+
 function replaceTime<T extends { publish_time?: string | null; update_time?: string | null }>(item: T): T {
   if (item.publish_time) {
     item.publish_time = dateToString(item.publish_time, "minute");

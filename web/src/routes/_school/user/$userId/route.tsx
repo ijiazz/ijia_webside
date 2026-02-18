@@ -3,23 +3,29 @@ import { UserWall } from "../-components/UserWall.tsx";
 import { css } from "@emotion/css";
 import { queryClient } from "@/request/client.ts";
 import { getPublicPostGroupOption } from "@/request/post.ts";
-import { PostGroupItem } from "@/api.ts";
+import { PostGroupItem, User } from "@/api.ts";
 import { Tabs, TabsProps } from "antd";
+import { getUserInfoQueryOption } from "@/request/user.ts";
+import { checkTypeCopy, integer } from "@asla/wokao";
 
 export const Route = createFileRoute("/_school/user/$userId")({
   component: RouteComponent,
   async loader(ctx): Promise<LoaderData> {
-    const [{ items }] = await Promise.all([queryClient.ensureQueryData(getPublicPostGroupOption())]);
+    const { userId } = ctx.params;
+    const [{ items }, user] = await Promise.all([
+      queryClient.ensureQueryData(getPublicPostGroupOption()),
+      queryClient.ensureQueryData(getUserInfoQueryOption({ userId })),
+    ]);
     return {
       publicPostGroup: items,
+      user,
     };
   },
   params: {
     parse: (value) => {
-      const { userId } = value;
-      if (userId && !Number.isInteger(Number.parseInt(userId))) {
-        throw new Error("userId must be an integer");
-      }
+      checkTypeCopy(value, {
+        userId: integer({ acceptString: true }),
+      });
       return value;
     },
   },
@@ -27,8 +33,10 @@ export const Route = createFileRoute("/_school/user/$userId")({
 });
 export type LoaderData = {
   publicPostGroup: PostGroupItem[];
+  user: User;
 };
 function RouteComponent() {
+  const { user } = Route.useLoaderData();
   const tabs: TabsProps["items"] = [
     {
       key: "post",
@@ -37,7 +45,7 @@ function RouteComponent() {
   ];
   return (
     <div>
-      <UserWall classNames={{ userInfoCard: Padding }} />
+      <UserWall user={user} classNames={{ userInfoCard: Padding }} />
       <Tabs items={tabs} className={Padding} />
       <Outlet />
     </div>

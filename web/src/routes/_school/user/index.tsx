@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_school/user/")({
   async beforeLoad(ctx) {
     let user: User;
     try {
-      user = await queryClient.ensureQueryData(getCurrentUserInfoQueryOption());
+      user = await queryClient.ensureQueryData(getCurrentUserInfoQueryOption({ ignoreUnAuthorizeRedirect: true }));
     } catch (error) {
       throw notFound();
     }

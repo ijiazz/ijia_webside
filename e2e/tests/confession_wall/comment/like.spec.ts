@@ -1,9 +1,8 @@
-import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
+import { vioServerTest as test } from "@/fixtures/test.ts";
 import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
-import { createPost } from "@/utils/post.ts";
-import { Locator } from "@playwright/test";
+import { createPost, getUserPostURL } from "@/utils/post.ts";
 import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";
-import { DROPDOWN_ACTION_WAIT_TIME } from "@/utils/browser.ts";
+import { DROPDOWN_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 
 const { expect, beforeEach } = test;
 
@@ -26,7 +25,8 @@ beforeEach(async function () {
 
 test("点赞自己和别人的评论", async function ({ page, context, browser }) {
   await createRootComment(postId, "comment", alice.token);
-  await page.goto(getAppUrlFromRoute(`/wall/list/self?openCommentPostId=${postId}`, alice.token));
+  await setContextLogin(context, alice.token);
+  await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId }));
   {
     //alice 点赞
     const firstBtn = page.getByRole("dialog").getByRole("button", { name: "heart" });
@@ -36,11 +36,13 @@ test("点赞自己和别人的评论", async function ({ page, context, browser 
   }
 
   const bobContext = await browser.newContext();
+  await setContextLogin(bobContext, bob.token);
   const bobPage = await bobContext.newPage();
   {
     //bob 点赞
     const page = bobPage;
-    await page.goto(getAppUrlFromRoute(`/wall/list/self?openCommentPostId=${postId}`, bob.token));
+
+    await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId }));
 
     const firstBtn = page.getByRole("dialog").getByRole("button", { name: "heart" });
 
@@ -61,14 +63,14 @@ test("点赞自己和别人的评论", async function ({ page, context, browser 
 
 test("游客禁止点赞", async function ({ page }) {
   await createRootComment(postId, "comment", alice.token);
-  await page.goto(getAppUrlFromRoute(`/wall/list?openCommentPostId=${postId}`));
+  await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId }));
   const firstBtn = page.getByRole("dialog").getByRole("button", { name: "heart" });
   await expect(firstBtn).toBeDisabled();
 });
 
 test("举报评论", async function ({ page }) {
   await createRootComment(postId, "comment", alice.token);
-  await page.goto(getAppUrlFromRoute(`/wall/list/self?openCommentPostId=${postId}`, alice.token));
+  await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId, access_token: alice.token }));
   await page.getByRole("dialog").getByRole("button", { name: "more" }).click();
   await page.getByText("举报", { exact: true }).click();
   await page.getByRole("combobox", { name: "* 举报理由 :" }).click();
@@ -81,9 +83,6 @@ test("举报评论", async function ({ page }) {
   await expect(page.getByRole("menuitem", { name: "warning 已举报" })).toBeDisabled();
 });
 
-function getLikeBtn(locator: Locator) {
-  return locator.locator(".e2e-post-comment-like-btn");
-}
 function createRootComment(postId: number, content: string, token?: string) {
   return api["/post/comment/entity"].put({
     body: { text: content, postId },

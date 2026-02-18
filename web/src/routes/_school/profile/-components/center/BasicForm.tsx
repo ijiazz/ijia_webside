@@ -32,7 +32,7 @@ export function BasicForm(props: {
     return {
       received_live: pf.live_notice,
       primary_class_id: classId,
-      acquaintance_time: pf.acquaintance_time && dayjs(pf.acquaintance_time),
+      acquaintance_time: pf.acquaintance_time ? dayjs(pf.acquaintance_time) : undefined,
       comment_stat_enabled: pf.comment_stat_enabled,
     };
   }, [userConfig, classId]);

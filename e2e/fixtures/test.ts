@@ -23,7 +23,7 @@ export const vioServerTest = test.extend<Context>({
     return use(env);
   },
 });
-/** @deprecated 改用 getAppURFromRoute */
+/** @deprecated 改用 getAppURLFromRoute */
 export function getAppUrlFromRoute(route: string, token?: string): string {
   if (!route.startsWith("/")) throw new Error("router must start with /");
   const base = new URL(env.WEB_URL + route);

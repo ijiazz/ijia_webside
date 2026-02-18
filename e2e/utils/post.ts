@@ -31,18 +31,18 @@ export async function createCommentUseApi(config: {
   });
 }
 
-export function getPostURL(option: { userId?: number } = {}) {
-  return getAppURLFromRoute("/wall/list", { userId: option.userId });
-}
-export function getSelfPostURL() {
-  return getAppURLFromRoute("/wall/list/self");
+export function getPostListURL() {
+  return getAppURLFromRoute("/wall/list");
 }
 
-export function getPostCommentURL(postId: number, option: { userId?: number } = {}) {
-  const { userId } = option;
-  return getAppURLFromRoute("/wall/list", {
+export function getUserPostURL(userId: number, search?: Record<string, any>) {
+  return getAppURLFromRoute(`/user/${userId}/post`, search);
+}
+
+export function getPostCommentURL(option: { userId: number; postId: number }) {
+  const { userId, postId } = option;
+  return getAppURLFromRoute(`/user/${userId}/post`, {
     openCommentPostId: postId,
-    userId,
   });
 }
 export const POST_GROUPS: { id: number; name: string }[] = [

@@ -4,7 +4,7 @@ import { test, Context } from "../../fixtures/hono.ts";
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { createPost, preparePost, getPublicPost, getSelfPost } from "../../utils/post.ts";
 import postRoutes from "@/routers/post/mod.ts";
-import { ReviewStatus, SelfPost } from "@/dto.ts";
+import { ReviewStatus, Post } from "@/dto.ts";
 import { commitPostReview, setPostToReviewing } from "@/routers/review/mod.ts";
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);
@@ -19,7 +19,7 @@ test("匿名帖子不应返回作者信息", async function ({ api, publicDbPool
   const aliceView = await getSelfPost(api, id, alice.token);
 
   expect(aliceView.author).toBe(null);
-  expect(aliceView.config.is_anonymous).toBe(true);
+  expect(aliceView.config?.is_anonymous).toBe(true);
   {
     const bobView = await getPublicPost(api, id, bob.token);
     expect(bobView.author, "bob不能看到别人发布发布的匿名作品的用户信息").toBeNull();
@@ -58,7 +58,7 @@ test("审核失败的帖子只有自己能查看", async function ({ api, public
   expect(aliceView.review).toMatchObject({
     status: ReviewStatus.rejected,
     remark: "123",
-  } satisfies Partial<SelfPost["review"]>);
+  } satisfies Partial<Post["review"]>);
 
   await expect(getPublicPost(api, id, alice.token), "审核失败的帖子，自己不能在公共查询中获取").resolves.toBe(
     undefined,

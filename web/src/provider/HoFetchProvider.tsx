@@ -11,10 +11,13 @@ export function HoFetchProvider(props: PropsWithChildren<{}>) {
     const error = (event: Event) => {
       const apiErrorEvent = event as ApiErrorEvent;
       const msg = apiErrorEvent.getMessage();
-      if (msg) {
+
+      const { url: redirect, isIgnore } = apiErrorEvent.getRedirect();
+
+      if (!isIgnore && msg) {
         message.error(msg);
       }
-      const redirect = apiErrorEvent.getRedirect();
+
       if (redirect) {
         navigate({ href: redirect, viewTransition: true });
       }

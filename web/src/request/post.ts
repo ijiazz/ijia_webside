@@ -1,6 +1,6 @@
 import { QueryOptions } from "@tanstack/react-query";
 import { api } from "./client.ts";
-import { GetPostListParam, GetSelfPostListParam } from "@/api.ts";
+import { GetPostListParam } from "@/api.ts";
 
 export const POST_QUERY_KEY_PREFIX = "post";
 
@@ -18,9 +18,9 @@ export function getPostListQueryOption(param: Omit<GetPostListParam, "cursor" | 
   } satisfies QueryOptions;
 }
 
-export function getShelfPostListQueryOption(param: Omit<GetSelfPostListParam, "cursor" | "forward">) {
+export function getPostQueryOption(param: { postId: number }) {
   return {
     queryKey: [POST_QUERY_KEY_PREFIX, "/post/user"],
-    queryFn: () => api["/post/user"].get({ query: param }),
+    queryFn: () => api["/post/entity/:postId"].get({ params: param }),
   } satisfies QueryOptions;
 }

@@ -18,7 +18,10 @@ export interface UserApi {
   };
 
   /** 获取用户基本信息 */
-  "GET /user/basic_info": {
+  "GET /user": {
+    query?: {
+      userId?: number | string;
+    };
     response: User;
   };
   /** 获取用户配置信息 */

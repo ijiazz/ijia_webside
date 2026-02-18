@@ -29,6 +29,7 @@ export function deletePublicClassOfUser(userId: number): ExecutableSQL {
     ]),
   );
 }
+/** 这是公开的，每个用户都能获取 */
 export async function getUserInfo(userId: number): Promise<User> {
   const users = await dbPool.queryRows(
     select<User>({

@@ -1,8 +1,10 @@
 import type { CursorListDto, TextStructure, AssetMediaUploadFile, ReviewStatus } from "../../common.ts";
 import type { PostGroupInfo } from "./post_group.ts";
 import type { PostBase, PostUserInfo } from "./common.ts";
-
-export type PostResponse = CursorListDto<PublicPost, string> & { needLogin?: boolean };
+export type GetPostResponse = {
+  item: Post;
+};
+export type PostListResponse = CursorListDto<PublicPost, string> & { needLogin?: boolean };
 export type PostUserResponse = CursorListDto<Post, string>;
 
 type GetPostListBaseParam = {
@@ -16,13 +18,12 @@ type GetPostListBaseParam = {
 
   s_content?: string;
   s_author?: string;
+  userId?: string | number;
 };
 export type GetPostListParam = GetPostListBaseParam & {
-  userId?: string | number;
-
   // sort?: Record<"digg_total" | "forward_total" | "collection_num", "ASC" | "DESC">;
 };
-export type GetSelfPostListParam = GetPostListBaseParam;
+export type GetUserPostListParam = GetPostListBaseParam;
 
 export type CreatePostParam = {
   content_text?: string | null;

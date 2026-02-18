@@ -5,6 +5,7 @@ import "./list.get.ts";
 import "./user.get.ts";
 import "./god_list.get.ts";
 
+import "./entity/$postId.get.ts";
 import "./entity/$postId.patch.ts";
 import "./entity/$postId.delete.ts";
 import "./entity/$postId/like.post.ts";

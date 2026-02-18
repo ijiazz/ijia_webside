@@ -21,7 +21,7 @@ function RouteComponent() {
 
   return (
     <div>
-      <UserPostList canEdit={isSelf} userId={userId} onOpenComment={commentDrawer.onOpenComment} />
+      <UserPostList canEdit={isSelf} hideReport={isSelf} userId={userId} onOpenComment={commentDrawer.onOpenComment} />
 
       <CommentDrawer
         postId={commentDrawer.postId}

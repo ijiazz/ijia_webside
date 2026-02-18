@@ -11,5 +11,5 @@ export type RouteSearch = {
 };
 
 export const Route = createFileRoute("/_school/user/$userId/post/")({
-  validateSearch: (searchRaw): RouteSearch => checkTypeCopy(searchRaw, SearchSchema),
+  validateSearch: (searchRaw): RouteSearch => checkTypeCopy(searchRaw, SearchSchema, { policy: "pass" }),
 });

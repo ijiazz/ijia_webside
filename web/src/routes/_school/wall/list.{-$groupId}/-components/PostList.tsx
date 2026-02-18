@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "@tanstack/react-router";
 
-import { GetPostListParam, GetSelfPostListParam, PublicPost } from "@/api.ts";
+import { GetPostListParam, PublicPost } from "@/api.ts";
 import { css } from "@emotion/css";
 import { useContext, useEffect, useRef } from "react";
 import { EditOutlined } from "@ant-design/icons";
@@ -70,8 +70,8 @@ export function PublicPostList(props: PostListProps) {
   const isVertical = useLayoutDirection() === LayoutDirection.Vertical;
   const theme = useThemeToken();
   return (
-    <div className={HomePageCSS}>
-      <div className="post-list" ref={listScroll.ref}>
+    <div style={{ height: "100%" }}>
+      <div className={HomePageCSS} ref={listScroll.ref}>
         <div className={PostListCSS}>
           <ImageFitCover src={wallCoverSrc}>
             <div style={{ display: isVertical ? "none" : "block", position: "absolute", right: 20, bottom: 20 }}>
@@ -125,14 +125,7 @@ async function getPostList(param?: GetPostListParam) {
     return res;
   });
 }
-async function getSelfPostList(param?: GetSelfPostListParam) {
-  return api["/post/user"].get({ query: param }).then((res) => {
-    for (const item of res.items) {
-      replaceTime(item);
-    }
-    return res;
-  });
-}
+
 function replaceTime<T extends { publish_time?: string | null; update_time?: string | null }>(item: T): T {
   if (item.publish_time) {
     item.publish_time = dateToString(item.publish_time, "minute");
@@ -159,17 +152,12 @@ const StyledTip = css`
 `;
 
 const HomePageCSS = css`
+  box-sizing: border-box;
+  padding: 0 12px 4px 12px;
   height: 100%;
-  .post-list {
-    box-sizing: border-box;
-    padding: 0 12px 4px 12px;
-    height: 100%;
-    overflow: auto;
-  }
+  overflow: auto;
   @media screen and (max-width: 400px) {
-    .post-list {
-      padding: 0 6px 12px 6px;
-    }
+    padding: 0 6px 12px 6px;
   }
 `;
 const PostListCSS = css`

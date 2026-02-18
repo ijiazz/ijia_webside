@@ -2,7 +2,7 @@ import { beforeEach, expect } from "vitest";
 import { Api, Context, test } from "../../fixtures/hono.ts";
 
 import postRoutes from "@/routers/post/mod.ts";
-import { CommitReviewParam, CommitReviewResult, ReviewStatus, ReviewTargetType, SelfPost } from "@/dto.ts";
+import { CommitReviewParam, CommitReviewResult, ReviewStatus, ReviewTargetType, Post } from "@/dto.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import { Role } from "@/middleware/auth.ts";
 import { createPost, preparePost, reportPost, setPostLike, getPublicPost, getSelfPost } from "#test/utils/post.ts";
@@ -69,7 +69,7 @@ test("帖子审核不通过，帖子应该为审核不通过状态", async funct
   expect(author2.review, "作者能看到‘审核不通过’的状态").toMatchObject({
     status: ReviewStatus.rejected,
     remark: "9999",
-  } satisfies SelfPost["review"]);
+  } satisfies Post["review"]);
 });
 
 test("帖子审核通过后，应更新举报用户的审核正确/错误统计", async function ({ api, publicDbPool }) {

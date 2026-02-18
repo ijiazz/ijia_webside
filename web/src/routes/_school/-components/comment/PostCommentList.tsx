@@ -20,15 +20,20 @@ import {
 import { CommentHeader } from "./CommentHeader.tsx";
 import { CommentFooter } from "./CommentFooter.tsx";
 import { useQuery } from "@tanstack/react-query";
-import { getPostListQueryOption } from "@/request/post.ts";
+import { getPostQueryOption } from "@/request/post.ts";
 
 const { Text } = Typography;
 
 export type CreateData = {
   text: string;
 };
-export function CommentList(props: { postId: number; allowAll?: boolean }) {
-  const { postId, allowAll } = props;
+export type CommentListProps = {
+  postId: number;
+  allowAll?: boolean;
+  self?: boolean;
+};
+export function CommentList(props: CommentListProps) {
+  const { postId, allowAll, self } = props;
   const {
     commentData,
     addItem,
@@ -40,14 +45,13 @@ export function CommentList(props: { postId: number; allowAll?: boolean }) {
   } = useCommentData<PostCommentNode>();
   const { message, modal } = useAntdStatic();
   const { isFetching: postInfoLoading, data } = useQuery({
-    ...getPostListQueryOption({ post_id: postId }),
+    ...getPostQueryOption({ postId }),
     enabled: typeof postId === "number",
   });
-  const postInfo = postInfoLoading ? null : data?.items[0];
+  const postInfo = postInfoLoading ? null : data?.item;
 
   const config = useMemo(() => {
     if (allowAll) return { createDisabled: undefined };
-
     let createDisabled: string | undefined = "";
     if (postInfo) {
       createDisabled = postInfo.curr_user ? postInfo.curr_user.disabled_comment_reason : "登录后可以评论";

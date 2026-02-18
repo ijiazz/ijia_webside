@@ -101,6 +101,7 @@ export function PublishPost(props: {
                     options={groupOptions}
                     loading={groupLoading}
                     allowClear
+                    aria-label="主题"
                     status={getAntdErrorStatus(fieldState)}
                   />
                 </FormItem>
@@ -119,7 +120,7 @@ export function PublishPost(props: {
                   label="仅自己可见"
                   layout="horizontal"
                 >
-                  <Switch {...field} />
+                  <Switch {...field} aria-label="仅自己可见" />
                 </FormItem>
               )}
             />
@@ -132,7 +133,7 @@ export function PublishPost(props: {
                   label="关闭评论区"
                   layout="horizontal"
                 >
-                  <Switch {...field} />
+                  <Switch {...field} aria-label="关闭评论区" />
                 </FormItem>
               )}
             />
@@ -148,7 +149,7 @@ export function PublishPost(props: {
                 label="匿名发布"
                 layout="horizontal"
               >
-                <Switch {...field} />
+                <Switch {...field} aria-label="匿名发布" />
               </FormItem>
             )}
           />

@@ -1,6 +1,6 @@
 import { vioServerTest as test } from "@/fixtures/test.ts";
 import { initAlice, initBob, loginGetToken } from "@/utils/user.ts";
-import { createPost, getPostURL, getSelfPostURL } from "@/utils/post.ts";
+import { createPost, getUserPostURL } from "@/utils/post.ts";
 import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 
 const { expect } = test;
@@ -15,7 +15,7 @@ test("删除", async function ({ page, context }) {
     await createPost({ content_text: "content2" }, aliceToken);
     await createPost({ content_text: "content1" }, aliceToken);
     await setContextLogin(context, aliceToken);
-    await page.goto(getSelfPostURL());
+    await page.goto(getUserPostURL(aliceInfo.id));
   }
 
   const postItems = page.locator(".e2e-post-item");
@@ -44,7 +44,7 @@ test("不能删除别人的内容", async function ({ page, context }) {
 
   await setContextLogin(context, bobToken);
 
-  await page.goto(getPostURL({ userId: aliceInfo.id }));
+  await page.goto(getUserPostURL(aliceInfo.id));
   const postItems = page.locator(".e2e-post-item");
   await postItems.nth(0).getByRole("button", { name: "more" }).click();
   await expect(page.getByText("删除"), "看不到Alice作品的删除按钮").toHaveCount(0);

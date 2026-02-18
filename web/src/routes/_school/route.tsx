@@ -5,7 +5,9 @@ import { User } from "@/api.ts";
 
 export const Route = createFileRoute("/_school")({
   async loader(ctx): Promise<LoaderData> {
-    const userInfo = await queryClient.ensureQueryData(getCurrentUserInfoQueryOption()).catch(() => null);
+    const userInfo = await queryClient
+      .ensureQueryData(getCurrentUserInfoQueryOption({ ignoreUnAuthorizeRedirect: true }))
+      .catch(() => null);
 
     return {
       userInfo,

@@ -14,12 +14,12 @@ beforeEach<Context>(async ({ hono, publicDbPool }) => {
 });
 test("获取用户信息", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
+  const bob = await prepareUniqueUser("bob");
   const classes = await publicDbPool
     .queryRows(
       insertIntoValues("public.class", [
         { class_name: "1", parent_class_id: PUBLIC_CLASS_ROOT_ID },
         { class_name: "2" },
-        { class_name: "3" },
       ]).returning("*"),
     )
     .then((res) => res.map((item) => item.id));
@@ -31,15 +31,23 @@ test("获取用户信息", async function ({ api, publicDbPool }) {
     ),
   );
 
-  await expect(apiGetBasicInfo(api, alice.token)).resolves.toMatchObject({
+  await expect(apiGetUser(api, { token: alice.token })).resolves.toMatchObject({
     user_id: alice.id,
-    is_official: false,
+    primary_class: {
+      class_id: classes[0],
+      class_name: "1",
+    },
+  } satisfies DeepPartial<User>);
+
+  await expect(apiGetUser(api, { token: bob.token, userId: alice.id })).resolves.toMatchObject({
+    user_id: alice.id,
     primary_class: {
       class_id: classes[0],
       class_name: "1",
     },
   } satisfies DeepPartial<User>);
 });
+
 test("获取用户信息-绑定账号后", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   await publicDbPool.queryCount(
@@ -53,11 +61,11 @@ test("获取用户信息-绑定账号后", async function ({ api, publicDbPool }
     insertIntoValues("user_platform_bind", [{ pla_uid: "1", platform: Platform.douYin, user_id: alice.id }]),
   );
 
-  await expect(apiGetBasicInfo(api, alice.token)).resolves.toMatchObject({
+  await expect(apiGetUser(api, { token: alice.token }), "is_official 应为 true").resolves.toMatchObject({
     user_id: alice.id,
     is_official: true,
   });
-  await expect(apiGetProfile(api, alice.token)).resolves.toMatchObject({
+  await expect(apiGetProfile(api, alice.token), "bind_accounts 应包含绑定的账号").resolves.toMatchObject({
     user_id: alice.id,
     bind_accounts: [{ avatar_url: null, pla_uid: "1", platform: Platform.douYin, user_name: null }],
   } satisfies DeepPartial<UserConfig>);
@@ -94,6 +102,6 @@ function apiGetProfile(api: Api, token?: string) {
   return api["/user/profile"].get({ [JWT_TOKEN_KEY]: token });
 }
 
-function apiGetBasicInfo(api: Api, token?: string) {
-  return api["/user/basic_info"].get({ [JWT_TOKEN_KEY]: token });
+function apiGetUser(api: Api, param: { token?: string; userId?: number | string }) {
+  return api["/user"].get({ [JWT_TOKEN_KEY]: param.token, query: { userId: param.userId } });
 }

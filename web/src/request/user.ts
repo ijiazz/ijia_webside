@@ -9,13 +9,27 @@ export type GetCurrentUserInfoOption = {
 };
 export function getCurrentUserInfoQueryOption(option: GetCurrentUserInfoOption = {}) {
   return {
-    queryKey: [USER_QUERY_KEY_PREFIX, "/user/basic_info"],
+    queryKey: [USER_QUERY_KEY_PREFIX, "currentUser"],
     queryFn: (): Promise<User> => {
-      return api["/user/basic_info"].get({ [IGNORE_UNAUTHORIZED_REDIRECT]: option.ignoreUnAuthorizeRedirect });
+      return api["/user"].get({ [IGNORE_UNAUTHORIZED_REDIRECT]: option.ignoreUnAuthorizeRedirect });
     },
   } satisfies QueryOptions;
 }
 
+export function getUserInfoQueryOption(option: { userId: number | string | undefined }) {
+  return {
+    queryKey: [USER_QUERY_KEY_PREFIX, "user"],
+    queryFn: async (): Promise<User> => {
+      const targetUserId = typeof option.userId === "string" ? Number.parseInt(option.userId) : option.userId;
+      const user = await api["/user"].get({ query: { userId: option.userId } });
+
+      if (user.user_id !== targetUserId) {
+        throw new Error("请求的用户ID与返回的用户ID不匹配");
+      }
+      return user;
+    },
+  } satisfies QueryOptions;
+}
 export const CurrentUserProfileQueryOption = {
   queryKey: [USER_QUERY_KEY_PREFIX, "/user/profile"],
   queryFn: (): Promise<UserConfig> => api["/user/profile"].get(),
