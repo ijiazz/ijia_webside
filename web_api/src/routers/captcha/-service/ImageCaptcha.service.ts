@@ -158,10 +158,10 @@ export class ImageCaptchaService {
   async getCaptchaImageStream(imageUri: string) {
     const imageId = await this.imageUrlToId(imageUri).catch(() => null);
     if (!imageId) throw new HTTPException(404);
-    const bucket = getOSS().getBucket(BUCKET.CAPTCHA_PICTURE);
+    const oss = getOSS();
     const mime = contentType(path.parse(imageId).ext);
     try {
-      const stream = await bucket.getObjectStream(imageId);
+      const stream = await oss.toReadable({ bucket: BUCKET.CAPTCHA_PICTURE, objectName: imageId });
       return { mime, stream };
     } catch (error) {
       throw new HTTPException(404, { cause: error });
