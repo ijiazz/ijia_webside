@@ -19,6 +19,6 @@ export enum UploadMethod {
 }
 
 export type UploadFileResult = {
-  path: string;
+  previewURL: string;
   uploadFileKey: string;
 };

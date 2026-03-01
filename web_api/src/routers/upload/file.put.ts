@@ -12,6 +12,9 @@ export default routeGroup.create({
     const { req } = ctx;
     const raw = req.raw;
     const stream = raw.body;
+    if (!stream) {
+      throw new HttpError(400, "上传文件不能为空");
+    }
     const mime = req.header("Content-Type") ?? "application/octet-stream";
     const method = ctx.req.query("method");
     return {
@@ -23,7 +26,7 @@ export default routeGroup.create({
   async handler({ stream, type, method }): Promise<UploadFileResult> {
     switch (method) {
       case UploadMethod.question:
-        return uploadQuestion();
+        return uploadQuestion(stream, type);
 
       default:
         throw new HttpError(400, "不支持的上传类型");
