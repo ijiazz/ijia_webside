@@ -1,9 +1,9 @@
 import { verifyAccessToken, AccessUserData, AccessToken } from "@/global/jwt.ts";
 import { HttpError, RequiredLoginError } from "@/global/errors.ts";
 import { getValidUserSampleInfoByUserId, SampleUserInfo } from "@/sql/user.ts";
-import { setTimeoutUnRef } from "@/global/utils.ts";
 import { getUserRoleNameList, UserWithRole } from "@ijia/data/query";
 import { Role } from "./roles.ts";
+import { setTimeoutUnRef } from "@/lib/timer.ts";
 
 export class UserInfo {
   private static verifyCache = new Map<string, VerifyAccessTokenCache<AccessUserData>>();

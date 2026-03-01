@@ -4,6 +4,7 @@ import { AppConfig, checkConfig } from "./config_check.ts";
 import * as jsonc from "@std/jsonc";
 import { ENV } from "./env.ts";
 import { getCheckTypeErrorReason } from "@asla/wokao";
+import { unrefTimer } from "@/lib/timer.ts";
 
 export function getPackageJson() {
   return import("../../package.json", { with: { type: "json" } }).then((mod) => mod.default);
@@ -39,10 +40,7 @@ class Watcher {
             },
           );
         }, 1000);
-
-        //@ts-ignore
-        if (typeof globalThis.Deno === "object") Deno.unrefTimer(timer);
-        else timer.unref();
+        unrefTimer(timer);
       }
     }
   }

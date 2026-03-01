@@ -6,6 +6,7 @@ import { getEmailSender } from "../email.ts";
 import { toErrorStr } from "evlib";
 import { insertIntoValues } from "@/sql/utils.ts";
 import { dbPool } from "@/db/client.ts";
+import { unrefTimer } from "@/lib/timer.ts";
 type LiveStatus = 0 | 1 | undefined;
 class UserLive {
   #onTick?: () => Promise<LiveStatus>;
@@ -58,6 +59,7 @@ class UserLive {
       throw new Error("轮询间隔时间过短");
     }
     this.#id = setTimeout(this.#onCheck, this.#waitTime);
+    unrefTimer(this.#id);
   };
   onError(err: any) {
     console.error("直播状态轮询请求异常, 已停止轮询", err);
