@@ -13,6 +13,7 @@ import { Route as ThemeRouteRouteImport } from './routes/_theme/route.tsx'
 import { Route as SchoolRouteRouteImport } from './routes/_school/route.tsx'
 import { Route as StoryIndexRouteImport } from './routes/story/index.tsx'
 import { Route as homeIndexRouteImport } from './routes/(home)/index.tsx'
+import { Route as TestPageUploadRouteImport } from './routes/test-page/upload.tsx'
 import { Route as ThemeTestPageIndexRouteImport } from './routes/_theme/test-page/index.tsx'
 import { Route as ThemeAboutIndexRouteImport } from './routes/_theme/about/index.tsx'
 import { Route as SchoolWallIndexRouteImport } from './routes/_school/wall/index.tsx'
@@ -63,6 +64,11 @@ const homeIndexRoute = homeIndexRouteImport
     getParentRoute: () => rootRouteImport,
   } as any)
   .lazy(() => import('./routes/(home)/index.lazy.tsx').then((d) => d.Route))
+const TestPageUploadRoute = TestPageUploadRouteImport.update({
+  id: '/test-page/upload',
+  path: '/test-page/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ThemeTestPageIndexRoute = ThemeTestPageIndexRouteImport.update({
   id: '/test-page/',
   path: '/test-page/',
@@ -228,6 +234,7 @@ const SchoolUserUserIdPostIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof homeIndexRoute
+  '/test-page/upload': typeof TestPageUploadRoute
   '/story/': typeof StoryIndexRoute
   '/review/$type': typeof SchoolReviewTypeRouteRouteWithChildren
   '/user/$userId': typeof SchoolUserUserIdRouteRouteWithChildren
@@ -255,6 +262,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof homeIndexRoute
+  '/test-page/upload': typeof TestPageUploadRoute
   '/story': typeof StoryIndexRoute
   '/passport': typeof ThemePassportVideo_backgroundRouteRouteWithChildren
   '/examination/$': typeof SchoolExaminationSplatRoute
@@ -281,6 +289,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_school': typeof SchoolRouteRouteWithChildren
   '/_theme': typeof ThemeRouteRouteWithChildren
+  '/test-page/upload': typeof TestPageUploadRoute
   '/(home)/': typeof homeIndexRoute
   '/story/': typeof StoryIndexRoute
   '/_school/review/$type': typeof SchoolReviewTypeRouteRouteWithChildren
@@ -311,6 +320,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/test-page/upload'
     | '/story/'
     | '/review/$type'
     | '/user/$userId'
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/test-page/upload'
     | '/story'
     | '/passport'
     | '/examination/$'
@@ -363,6 +374,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_school'
     | '/_theme'
+    | '/test-page/upload'
     | '/(home)/'
     | '/story/'
     | '/_school/review/$type'
@@ -393,6 +405,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   SchoolRouteRoute: typeof SchoolRouteRouteWithChildren
   ThemeRouteRoute: typeof ThemeRouteRouteWithChildren
+  TestPageUploadRoute: typeof TestPageUploadRoute
   homeIndexRoute: typeof homeIndexRoute
   StoryIndexRoute: typeof StoryIndexRoute
 }
@@ -425,6 +438,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof homeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/test-page/upload': {
+      id: '/test-page/upload'
+      path: '/test-page/upload'
+      fullPath: '/test-page/upload'
+      preLoaderRoute: typeof TestPageUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_theme/test-page/': {
@@ -711,6 +731,7 @@ const ThemeRouteRouteWithChildren = ThemeRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   SchoolRouteRoute: SchoolRouteRouteWithChildren,
   ThemeRouteRoute: ThemeRouteRouteWithChildren,
+  TestPageUploadRoute: TestPageUploadRoute,
   homeIndexRoute: homeIndexRoute,
   StoryIndexRoute: StoryIndexRoute,
 }

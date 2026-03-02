@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createFetchSuite, FetchSuiteBase, HoFetch, InferFetchSuite } from "@asla/hofetch";
-import { ApiDefined } from "@/api.ts";
+import { ApiDefined, FileAPI } from "@/api.ts";
 import { errorHandler, alert } from "./client/middleware.ts";
 
 export * from "./client/middleware.ts";
@@ -19,13 +19,18 @@ export const queryClient = new QueryClient({
     },
   },
 });
-export type Api = {
+type API = {
   [x: string]: FetchSuiteBase;
 } & InferFetchSuite<ApiDefined>;
 
+type FileAPISuite = {
+  [x: string]: FetchSuiteBase;
+} & InferFetchSuite<FileAPI>;
+
 export const API_PREFIX = "/api";
 export const http = new HoFetch({ bodyParser: {} });
-export const api: Api = createFetchSuite<ApiDefined>(http, { basePath: API_PREFIX });
+export const api: API = createFetchSuite<ApiDefined>(http, { basePath: API_PREFIX });
+export const fileAPI: FileAPISuite = createFetchSuite<FileAPI>(http);
 
 http.use(errorHandler);
 http.use(alert);

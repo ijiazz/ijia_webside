@@ -1,13 +1,17 @@
+import { ENV, RunMode } from "@/config.ts";
 import { UploadFileResult } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
 import { getOSS } from "@ijia/data/oss";
 
 export async function uploadToTemp(
   stream: ReadableStream<Uint8Array>,
-  prefix: string,
-  options: { limitByte: number },
+  options: {
+    prefix: string;
+    suffix: string;
+    limitByte: number;
+  },
 ): Promise<UploadFileResult> {
-  const { limitByte } = options;
+  const { limitByte, suffix, prefix } = options;
   const oss = getOSS();
 
   let saveStream: ReadableStream<Uint8Array>;
@@ -29,13 +33,17 @@ export async function uploadToTemp(
     saveStream = stream;
   }
 
-  const { tempKey } = await oss.tempDir.save(saveStream, { prefix });
+  const { tempKey } = await oss.tempDir.save(saveStream, {
+    prefix,
+    suffix,
+    lifetime: ENV.MODE === RunMode.Dev ? 1 : 60,
+  });
   return {
     previewURL: getPreviewURL(tempKey),
     uploadFileKey: tempKey,
   };
 }
-class FileTooLargeError extends HttpError {
+export class FileTooLargeError extends HttpError {
   constructor(limitByte: number) {
     super(400, `文件大小不能超过${limitByte / 1024}KB`);
   }

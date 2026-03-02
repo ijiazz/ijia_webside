@@ -1,8 +1,8 @@
 import type { BlobLike } from "./common.ts";
 
-export interface FileApi {
+export interface FileAPI {
   /** 上传文件 */
-  "PUT /upload/file": {
+  "PUT /file/upload": {
     query: { method: UploadMethod };
     body: BlobLike;
     response: UploadFileResult;
