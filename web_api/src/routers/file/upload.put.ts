@@ -3,26 +3,27 @@ import { requiredLogin } from "@/middleware/auth.ts";
 import { UploadFileResult, UploadMethod } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
 import { uploadQuestion } from "./_utils/uploadQuestion.ts";
-import * as mimeType from "@std/media-types";
 
 export default routeGroup.create({
   method: "PUT",
   routePath: "/file/upload",
   middlewares: [requiredLogin],
-  async validateInput(ctx) {
+  async validateInput(ctx): Promise<{ stream: ReadableStream; type: string; fileSize?: number; method: UploadMethod }> {
     const { req } = ctx;
     const raw = req.raw;
-    const stream = raw.body;
-    if (!stream) {
-      throw new HttpError(400, "上传文件不能为空");
+    const rawContentType = raw.headers.get("Content-Type");
+    if (!rawContentType) {
+      throw new HttpError(400, "Content-Type 不能为空");
     }
-    const [mime, info] = mimeType.parseMediaType(req.header("Content-Type") ?? "application/octet-stream");
-
+    if (!raw.body) {
+      throw new HttpError(400, "请求体不能为空");
+    }
+    const method = (req.query("method") ?? "") as UploadMethod;
     const fileSize = req.header("Content-Length");
-    const method = ctx.req.query("method");
+
     return {
-      stream,
-      type: mime,
+      stream: raw.body,
+      type: rawContentType,
       method,
       fileSize: fileSize ? Number.parseInt(fileSize) : undefined,
     };
