@@ -1,28 +1,59 @@
 import { UploadMethod } from "@/api.ts";
-import { fileAPI } from "@/request/client.ts";
 
-export async function uploadStream(config: {
-  readableStream: ReadableStream<Uint8Array>;
+export type UploadBlobConfig = {
+  file: Blob;
   method: UploadMethod;
-  mime: string;
-  size: number;
-}) {
-  const { readableStream, method, mime, size } = config;
+  onProgress?: (loaded: number, total: number) => void;
+  signal?: AbortSignal;
+};
+export async function uploadBlob(config: UploadBlobConfig): Promise<string> {
+  const { file, method, onProgress, signal } = config;
+  const resp = await new Promise<Response>((resolve, reject) => {
+    if (signal) {
+      signal.throwIfAborted();
+      signal.addEventListener("abort", () => {
+        xhr.abort();
+        reject(new Error("上传被中断"));
+      });
+    }
+    const xhr = new XMLHttpRequest();
+    xhr.onerror = (e) => {
+      reject(new Error("网络错误或请求被中断"));
+    };
+    if (onProgress) {
+      xhr.upload.onprogress = (event) => {
+        onProgress(event.loaded, event.total);
+      };
+    }
 
-  const { previewURL } = await fileAPI["/file/upload"].put({
-    duplex: "half", // 必需
-    body: readableStream,
-    query: { method },
-    headers: { "Content-Type": mime, "Content-Length": size.toString() },
+    xhr.open("PUT", "/file/upload?method=" + method);
+    xhr.responseType = "arraybuffer";
+    xhr.setRequestHeader("Content-Type", file.type);
+    xhr.send(file);
+    xhr.onload = () => {
+      const resp = getXhrResponse(xhr);
+      resolve(resp);
+    };
   });
-  return previewURL;
+  if (resp.ok) {
+    const json = await resp.json();
+    return json.previewURL;
+  } else {
+    throw new Error(`上传失败，状态码: ${resp.status}`);
+  }
 }
 
-export async function uploadBlob(blob: Blob, method: UploadMethod) {
-  const { previewURL } = await fileAPI["/file/upload"].put({
-    body: blob,
-    query: { method },
-    headers: { "Content-Type": blob.type },
+function getXhrResponse(xhr: XMLHttpRequest): Response {
+  const headers = new Headers();
+  for (const element of xhr.getAllResponseHeaders().split("\r\n")) {
+    const [key, value] = element.split(": ");
+    if (key && value) {
+      headers.append(key, value);
+    }
+  }
+  return new Response(xhr.response, {
+    status: xhr.status,
+    statusText: xhr.statusText,
+    headers,
   });
-  return previewURL;
 }

@@ -1,5 +1,4 @@
-import { uploadBlob, uploadStream } from "@/common/upload.ts";
-import { listenStream } from "@/lib/stream.ts";
+import { uploadBlob } from "@/common/upload.ts";
 import { UploadMethod } from "@ijia/api-types";
 import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "antd";
@@ -15,30 +14,18 @@ function RouteComponent() {
       <Upload
         customRequest={(option) => {
           const { file, filename, onError, onProgress, onSuccess } = option;
+
           if (!(file instanceof Blob)) {
             onError?.(new Error("不支持的文件类型"));
             return;
           }
-          uploadBlob(file, UploadMethod.question).then(onSuccess, (e) => {
-            console.error(e);
-            onError?.(e instanceof Error ? e : new Error("上传失败"));
-          });
-          return;
-          const stream = listenStream(file.stream(), {
-            onProgress: (uploaded) => {
-              onProgress?.({
-                percent: Math.round((uploaded / file.size) * 100),
-              });
-            },
-          });
-          uploadStream({
-            readableStream: stream,
+          uploadBlob({
+            file,
             method: UploadMethod.question,
-            mime: file.type,
-            size: file.size,
+            onProgress: (loaded, total) => onProgress?.({ percent: (loaded / total) * 100 }),
           }).then(onSuccess, (e) => {
+            onError?.(e);
             console.error(e);
-            onError?.(e instanceof Error ? e : new Error("上传失败"));
           });
         }}
       >
