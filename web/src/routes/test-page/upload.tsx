@@ -15,10 +15,6 @@ function RouteComponent() {
         customRequest={(option) => {
           const { file, filename, onError, onProgress, onSuccess } = option;
 
-          if (!(file instanceof Blob)) {
-            onError?.(new Error("不支持的文件类型"));
-            return;
-          }
           uploadBlob({
             file,
             method: UploadMethod.question,

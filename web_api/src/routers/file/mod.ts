@@ -1,3 +1,3 @@
 export { default } from "./_route.ts";
 export * from "./upload.put.ts";
-export { addServeStatic } from "./_middleware/serve_static.ts";
+export { addServeStatic } from "./_middleware/add_static.ts";

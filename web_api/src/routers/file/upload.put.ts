@@ -4,11 +4,17 @@ import { UploadFileResult, UploadMethod } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
 import { uploadQuestion } from "./_utils/uploadQuestion.ts";
 
+type Param = {
+  stream: ReadableStream;
+  type: string;
+  fileSize?: number;
+  method: UploadMethod;
+};
 export default routeGroup.create({
   method: "PUT",
   routePath: "/file/upload",
   middlewares: [requiredLogin],
-  async validateInput(ctx): Promise<{ stream: ReadableStream; type: string; fileSize?: number; method: UploadMethod }> {
+  async validateInput(ctx): Promise<Param> {
     const { req } = ctx;
     const raw = req.raw;
     const rawContentType = raw.headers.get("Content-Type");

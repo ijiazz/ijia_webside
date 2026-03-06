@@ -1,6 +1,6 @@
-import { UploadFileResult, UploadMethod } from "@/dto.ts";
+import { MediaType, UploadFileResult, UploadImageFileResult, UploadMethod } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
-import { FileTooLargeError, uploadToTemp } from "./upload.ts";
+import { FileTooLargeError, uploadToTemp, getFileURL } from "./upload.ts";
 import * as mimeType from "@std/media-types";
 
 const MB = 1024 * 1024;
@@ -12,7 +12,7 @@ const SIZE_LIMIT: Record<string, number | undefined> = {
 export async function uploadQuestion(
   stream: ReadableStream<Uint8Array>,
   option: { mime: string; fileSize?: number },
-): Promise<UploadFileResult> {
+): Promise<UploadFileResult | UploadImageFileResult> {
   const { mime, fileSize } = option;
   const mediaType = mime.split("/")[0];
   const limitSize = SIZE_LIMIT[mediaType];
@@ -23,5 +23,23 @@ export async function uploadQuestion(
     throw new FileTooLargeError(limitSize);
   }
 
-  return uploadToTemp(stream, { prefix: UploadMethod.question, limitByte: limitSize, suffix: `.${suffix}` });
+  const key = await uploadToTemp(stream, { prefix: UploadMethod.question, limitByte: limitSize, suffix: `.${suffix}` });
+  switch (mediaType) {
+    case "image": {
+      const previewURL = getFileURL(key);
+      const result: UploadImageFileResult = {
+        uploadFileKey: key,
+        type: MediaType.image,
+        image: {
+          url: previewURL,
+        },
+      };
+      return result;
+    }
+
+    default:
+      return {
+        uploadFileKey: key,
+      };
+  }
 }

@@ -1,4 +1,4 @@
-import type { BlobLike } from "./common.ts";
+import type { BlobLike, MediaType, ImageLevel } from "./common.ts";
 
 export interface FileAPI {
   /** 上传文件 */
@@ -19,6 +19,13 @@ export enum UploadMethod {
 }
 
 export type UploadFileResult = {
-  previewURL: string;
   uploadFileKey: string;
+};
+
+export type UploadImageFileResult = UploadFileResult & {
+  type: MediaType.image;
+  image: {
+    url: string;
+    formats?: Record<ImageLevel, { url: string } | undefined>;
+  };
 };

@@ -1,5 +1,4 @@
 import { ENV, RunMode } from "@/config.ts";
-import { UploadFileResult } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
 import { getOSS } from "@ijia/data/oss";
 
@@ -10,7 +9,7 @@ export async function uploadToTemp(
     suffix: string;
     limitByte: number;
   },
-): Promise<UploadFileResult> {
+): Promise<string> {
   const { limitByte, suffix, prefix } = options;
   const oss = getOSS();
 
@@ -38,10 +37,7 @@ export async function uploadToTemp(
     suffix,
     lifetime: ENV.MODE === RunMode.Dev ? 1 : 60,
   });
-  return {
-    previewURL: getPreviewURL(tempKey),
-    uploadFileKey: tempKey,
-  };
+  return tempKey;
 }
 export class FileTooLargeError extends HttpError {
   constructor(limitByte: number) {
@@ -49,6 +45,6 @@ export class FileTooLargeError extends HttpError {
   }
 }
 
-export function getPreviewURL(tempKey: string): string {
+export function getFileURL(tempKey: string): string {
   return `/temp/${tempKey}`;
 }
