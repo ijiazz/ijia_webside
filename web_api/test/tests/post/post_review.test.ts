@@ -5,7 +5,15 @@ import postRoutes from "@/routers/post/mod.ts";
 import { CommitReviewParam, CommitReviewResult, ReviewStatus, ReviewTargetType, Post } from "@/dto.ts";
 import { prepareUniqueUser } from "test/fixtures/user.ts";
 import { Role } from "@/middleware/auth.ts";
-import { createPost, preparePost, reportPost, setPostLike, getPublicPost, getSelfPost } from "#test/utils/post.ts";
+import {
+  createPost,
+  preparePost,
+  reportPost,
+  setPostLike,
+  getPublicPost,
+  getSelfPost,
+  createPostGroup,
+} from "#test/utils/post.ts";
 import { setPostToReviewing } from "@/routers/review/mod.ts";
 import { select, v } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
@@ -39,7 +47,22 @@ test("只有超级管理员可以查看帖子审核和提交审核", async funct
   await commitPostReviewNext(api, { ...p, remark: Admin.nickname }, Admin.token);
   await expect(post.id).postReviewStatusIs(ReviewStatus.passed);
 });
+test("选择分组的帖子审核通过后，帖子应在公共列表可见", async function ({ api, publicDbPool }) {
+  const Admin = await prepareUniqueUser("Admin", { roles: new Set([Role.Admin]) });
+  const groupId = await createPostGroup(publicDbPool, "test1");
 
+  const { alice, post } = await preparePost(api, { content_text: "测试", group_id: groupId });
+  const reviewId = await getPostReviewId(post.id);
+
+  await commitPostReviewNext(api, { is_passed: true, review_id: reviewId!, remark: "123" }, Admin.token);
+
+  const visitor2 = await getPublicPost(api, post.id);
+  expect(visitor2, "其他人能看到审核通过的帖子").toBeTypeOf("object");
+
+  const author2 = await getSelfPost(api, post.id, alice.token);
+  await expect(post.id).postReviewStatusIs(ReviewStatus.passed);
+  expect(author2.review?.status, "作者能看到‘审核不通过’的状态").toBe(ReviewStatus.passed);
+});
 test("帖子审核通过后，帖子应在公共列表可见", async function ({ api, publicDbPool }) {
   const Admin = await prepareUniqueUser("Admin", { roles: new Set([Role.Admin]) });
 
@@ -52,7 +75,7 @@ test("帖子审核通过后，帖子应在公共列表可见", async function ({
   expect(visitor2, "其他人能看到审核通过的帖子").toBeTypeOf("object");
 
   const author2 = await getSelfPost(api, post.id, alice.token);
-  expect(post.id).postReviewStatusIs(ReviewStatus.passed);
+  await expect(post.id).postReviewStatusIs(ReviewStatus.passed);
   expect(author2.review?.status, "作者能看到‘审核不通过’的状态").toBe(ReviewStatus.passed);
 });
 test("帖子审核不通过，帖子应该为审核不通过状态", async function ({ api, publicDbPool }) {
