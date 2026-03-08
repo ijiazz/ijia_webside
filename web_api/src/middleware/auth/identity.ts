@@ -43,3 +43,9 @@ export function requiredRoles(...roles: string[]) {
     return next();
   };
 }
+
+export async function requiredLogin(ctx: HonoContext, next: () => Promise<void>) {
+  const userInfo = ctx.get("userInfo");
+  const userId = await userInfo.getUserId();
+  return next();
+}

@@ -1,4 +1,4 @@
 {
-  "deno.disablePaths": ["./web_api", "./web"],
+  "deno.enablePaths": ["./deps/ijia-data","./web_ssr"],
   "files.eol": "\n"
 }

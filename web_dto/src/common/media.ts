@@ -8,6 +8,11 @@ export enum MediaLevel {
   origin = "origin",
   thumb = "thumb",
 }
+export enum ImageLevel {
+  other = "other",
+  origin = "origin",
+  thumb = "thumb",
+}
 
 type AssetMediaBase<T> = {
   covers?: MulFormat<AssetImage>;

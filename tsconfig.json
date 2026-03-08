@@ -1,22 +1,10 @@
 {
-  "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "lib": ["ESNext"],
-    "strict": true,
-
-    "isolatedDeclarations": false,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-
-    "allowImportingTsExtensions": true,
-    "skipLibCheck": true,
-    "allowJs": true,
-    "baseUrl": ".",
-    "resolveJsonModule": true,
-    "noImplicitOverride": true,
-    "noEmit": true,
-    "outDir": "dist"
-  },
-  "exclude": ["node_modules", "dist"]
+  "files": [],
+  "references": [
+    { "path": "./web" },
+    { "path": "./web_api" },
+    { "path": "./web_dto" },
+    { "path": "./e2e" },
+    { "path": "./tsconfig.node.json" }
+  ]
 }

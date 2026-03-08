@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root.tsx'
 import { Route as ThemeRouteRouteImport } from './routes/_theme/route.tsx'
 import { Route as SchoolRouteRouteImport } from './routes/_school/route.tsx'
@@ -36,6 +38,10 @@ import { Route as ThemePassportVideo_backgroundLoginRouteImport } from './routes
 import { Route as SchoolWallListChar123GroupIdChar125RouteRouteImport } from './routes/_school/wall/list.{-$groupId}/route.tsx'
 import { Route as SchoolWallListChar123GroupIdChar125IndexRouteImport } from './routes/_school/wall/list.{-$groupId}/index.tsx'
 import { Route as SchoolUserUserIdPostIndexRouteImport } from './routes/_school/user/$userId/post/index.tsx'
+
+const ThemeTestPageUploadLazyRouteImport = createFileRoute(
+  '/_theme/test-page/upload',
+)()
 
 const ThemeRouteRoute = ThemeRouteRouteImport.update({
   id: '/_theme',
@@ -96,6 +102,13 @@ const SchoolLiveIndexRoute = SchoolLiveIndexRouteImport.update({
   getParentRoute: () => SchoolRouteRoute,
 } as any).lazy(() =>
   import('./routes/_school/live/index.lazy.tsx').then((d) => d.Route),
+)
+const ThemeTestPageUploadLazyRoute = ThemeTestPageUploadLazyRouteImport.update({
+  id: '/test-page/upload',
+  path: '/test-page/upload',
+  getParentRoute: () => ThemeRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_theme/test-page/upload.lazy.tsx').then((d) => d.Route),
 )
 const ThemePassportFindAccountRoute =
   ThemePassportFindAccountRouteImport.update({
@@ -239,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/about/guide': typeof ThemeAboutGuideRoute
   '/about/introduction': typeof ThemeAboutIntroductionRoute
   '/passport/find-account': typeof ThemePassportFindAccountRoute
+  '/test-page/upload': typeof ThemeTestPageUploadLazyRoute
   '/live/': typeof SchoolLiveIndexRoute
   '/review/': typeof SchoolReviewIndexRoute
   '/user/': typeof SchoolUserIndexRoute
@@ -264,6 +278,7 @@ export interface FileRoutesByTo {
   '/about/guide': typeof ThemeAboutGuideRoute
   '/about/introduction': typeof ThemeAboutIntroductionRoute
   '/passport/find-account': typeof ThemePassportFindAccountRoute
+  '/test-page/upload': typeof ThemeTestPageUploadLazyRoute
   '/live': typeof SchoolLiveIndexRoute
   '/review': typeof SchoolReviewIndexRoute
   '/user': typeof SchoolUserIndexRoute
@@ -293,6 +308,7 @@ export interface FileRoutesById {
   '/_theme/about/guide': typeof ThemeAboutGuideRoute
   '/_theme/about/introduction': typeof ThemeAboutIntroductionRoute
   '/_theme/passport/find-account': typeof ThemePassportFindAccountRoute
+  '/_theme/test-page/upload': typeof ThemeTestPageUploadLazyRoute
   '/_school/live/': typeof SchoolLiveIndexRoute
   '/_school/review/': typeof SchoolReviewIndexRoute
   '/_school/user/': typeof SchoolUserIndexRoute
@@ -322,6 +338,7 @@ export interface FileRouteTypes {
     | '/about/guide'
     | '/about/introduction'
     | '/passport/find-account'
+    | '/test-page/upload'
     | '/live/'
     | '/review/'
     | '/user/'
@@ -347,6 +364,7 @@ export interface FileRouteTypes {
     | '/about/guide'
     | '/about/introduction'
     | '/passport/find-account'
+    | '/test-page/upload'
     | '/live'
     | '/review'
     | '/user'
@@ -375,6 +393,7 @@ export interface FileRouteTypes {
     | '/_theme/about/guide'
     | '/_theme/about/introduction'
     | '/_theme/passport/find-account'
+    | '/_theme/test-page/upload'
     | '/_school/live/'
     | '/_school/review/'
     | '/_school/user/'
@@ -468,6 +487,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/live/'
       preLoaderRoute: typeof SchoolLiveIndexRouteImport
       parentRoute: typeof SchoolRouteRoute
+    }
+    '/_theme/test-page/upload': {
+      id: '/_theme/test-page/upload'
+      path: '/test-page/upload'
+      fullPath: '/test-page/upload'
+      preLoaderRoute: typeof ThemeTestPageUploadLazyRouteImport
+      parentRoute: typeof ThemeRouteRoute
     }
     '/_theme/passport/find-account': {
       id: '/_theme/passport/find-account'
@@ -690,6 +716,7 @@ interface ThemeRouteRouteChildren {
   ThemeAboutGuideRoute: typeof ThemeAboutGuideRoute
   ThemeAboutIntroductionRoute: typeof ThemeAboutIntroductionRoute
   ThemePassportFindAccountRoute: typeof ThemePassportFindAccountRoute
+  ThemeTestPageUploadLazyRoute: typeof ThemeTestPageUploadLazyRoute
   ThemeAboutIndexRoute: typeof ThemeAboutIndexRoute
   ThemeTestPageIndexRoute: typeof ThemeTestPageIndexRoute
 }
@@ -700,6 +727,7 @@ const ThemeRouteRouteChildren: ThemeRouteRouteChildren = {
   ThemeAboutGuideRoute: ThemeAboutGuideRoute,
   ThemeAboutIntroductionRoute: ThemeAboutIntroductionRoute,
   ThemePassportFindAccountRoute: ThemePassportFindAccountRoute,
+  ThemeTestPageUploadLazyRoute: ThemeTestPageUploadLazyRoute,
   ThemeAboutIndexRoute: ThemeAboutIndexRoute,
   ThemeTestPageIndexRoute: ThemeTestPageIndexRoute,
 }

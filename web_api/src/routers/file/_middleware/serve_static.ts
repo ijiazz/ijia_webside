@@ -1,58 +1,11 @@
 import { Context, MiddlewareHandler, Next } from "hono";
 import { ServeStaticOptions } from "hono/serve-static";
-import { Hono } from "hono";
-import { ENV } from "@/config.ts";
 import path from "node:path";
 import { HTTPException } from "hono/http-exception";
-import { UserInfo } from "@/middleware/auth.ts";
-import { getCookie } from "hono/cookie";
-import { getBucket, createFileStream } from "@ijia/data/oss";
+import { createFileStream } from "@ijia/data/oss";
 import fs from "node:fs/promises";
 import { Stats } from "node:fs";
 import { contentType } from "@std/media-types";
-import { REQUEST_AUTH_KEY } from "@/dto.ts";
-
-export async function addServeStatic(hono: Hono) {
-  const rooDir = path.resolve(ENV.OSS_ROOT_DIR!);
-  console.log("useStatic", rooDir);
-  const oos = getBucket();
-  const bucketTest = {
-    AVATAR: new RegExp(`^/${oos.AVATAR}/`),
-    PLA_POST_MEDIA: new RegExp(`^/${oos.PLA_POST_MEDIA}/`),
-  };
-  hono.use(
-    "/file/*",
-    await createRuntimeServeStatic({
-      async onFound(path, c) {
-        if (c.req.method !== "GET") return;
-        const rel = path.slice(rooDir.length).replaceAll("\\", "/");
-        if (bucketTest.AVATAR.test(rel)) {
-          c.header("Cache-Control", "private, max-age=" + 86400 * 3);
-          return;
-        }
-        if (bucketTest.PLA_POST_MEDIA.test(rel)) {
-          c.header("Cache-Control", "private, max-age=86400");
-          const userInfo = new UserInfo(getCookie(c, REQUEST_AUTH_KEY));
-          await userInfo.getUserId();
-          return;
-        }
-        throw new HTTPException(404, { res: new Response("访问不存在的资源地址") });
-      },
-      rewriteRequestPath(path) {
-        const rel = path.replace(/^\/file\//, "/");
-        if (rel.startsWith(`/${oos.AVATAR}/`)) {
-          return rel;
-        }
-        if (bucketTest.PLA_POST_MEDIA.test(rel)) {
-          //TODO 需要鉴权
-          return rel;
-        }
-        throw new HTTPException(404, { res: new Response("访问不存在的资源地址") });
-      },
-      root: rooDir,
-    }),
-  );
-}
 
 function isCached(mtime: Date, ctx: Context) {
   const realMtimeStr = mtime.toUTCString();
@@ -72,7 +25,7 @@ function getHttpHeaderRange(range: string) {
   }
   throw new HTTPException(416, { res: new Response("Range Not Satisfiable") });
 }
-async function createRuntimeServeStatic(
+export async function createRuntimeServeStatic(
   options: Pick<ServeStaticOptions, "rewriteRequestPath" | "root" | "onFound">,
 ): Promise<MiddlewareHandler> {
   const { rewriteRequestPath, onFound } = options;
@@ -80,19 +33,14 @@ async function createRuntimeServeStatic(
 
   return async function (ctx: Context, next: Next) {
     const method = ctx.req.method;
-    if (!["HEAD", "GET"].includes(method)) return next();
+    if (method !== "HEAD" && method !== "GET") return next();
 
     let pathname = ctx.req.path;
     if (rewriteRequestPath) pathname = rewriteRequestPath(pathname);
     const filename = path.resolve(rooDir, pathname.slice(1));
-    let stat: Stats;
-    try {
-      stat = await fs.stat(filename);
-    } catch (error) {
-      if (error instanceof Error && (error as any).code === "ENOENT") {
-        return ctx.text("文件不存在", 404);
-      }
-      throw error;
+    const stat = await statFile(filename);
+    if (!stat) {
+      return ctx.text("文件不存在", 404);
     }
 
     ctx.header("Content-Type", contentType(filename));
@@ -118,4 +66,14 @@ async function createRuntimeServeStatic(
     ctx.header("Content-Length", stat.size.toString());
     return ctx.body(createFileStream(filename));
   };
+}
+async function statFile(filename: string): Promise<Stats | null> {
+  try {
+    return await fs.stat(filename);
+  } catch (error) {
+    if (error instanceof Error && (error as any).code === "ENOENT") {
+      return null;
+    }
+    throw error;
+  }
 }
