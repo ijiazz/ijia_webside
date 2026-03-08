@@ -4,7 +4,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
 RUN corepack enable && corepack prepare pnpm@10.4.0 --activate
 WORKDIR /build
-ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
+ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.base.json tsconfig.node.json ./
 
 FROM prepare AS installed
 ADD ./web_dto/package.json ./web_dto/package.json
