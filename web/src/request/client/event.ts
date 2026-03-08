@@ -19,7 +19,6 @@ export type ApiErrorEventOption = {
 };
 export class ApiErrorEvent extends Event {
   #response: Readonly<ApiErrorEventOption>;
-  #ignoreUnauthorizedRedirect?: boolean;
   constructor(option: ApiErrorEventOption) {
     super(ApiEvent.error);
     this.#response = { ...option };
@@ -43,7 +42,7 @@ export class ApiErrorEvent extends Event {
   getRedirect(): { url?: string; isIgnore?: boolean } {
     const isUnauthorized = this.#response.status === 401 && this.#getError()?.code === "REQUIRED_LOGIN";
     if (isUnauthorized) {
-      if (!this.#ignoreUnauthorizedRedirect) {
+      if (!this.#response.ignoreUnauthorizedRedirect) {
         return { url: goRedirectLoginPath() };
       } else {
         return {
