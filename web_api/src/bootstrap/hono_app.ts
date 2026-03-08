@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { addServeStatic } from "./serve_static.ts";
 import { RouteApplyOption } from "@/lib/route.ts";
 import { errorHandler } from "./_error_handler.ts";
 
@@ -13,12 +12,18 @@ import {
   passportRoutes,
   liveRoutes,
   reviewRoutes,
+  uploadRoutes,
 } from "@/routers/mod.ts";
 
 import { setUserInfo } from "@/middleware/auth.ts";
+import { addServeStatic } from "@/routers/file/mod.ts";
 
 export function createHonoApp() {
-  const hono = createHono({ static: true });
+  const hono = createHono();
+
+  uploadRoutes.apply(hono);
+  addServeStatic(hono);
+
   const options: RouteApplyOption = { basePath: "/api" };
 
   postRoutes.apply(hono, options);
@@ -33,10 +38,9 @@ export function createHonoApp() {
   return hono;
 }
 
-export function createHono(option: { static?: boolean } = {}) {
+export function createHono() {
   const hono = new Hono();
   hono.onError(errorHandler);
-  if (option.static) addServeStatic(hono);
   hono.use(function (ctx, next) {
     ctx.header("Server", "Hono");
     return next();

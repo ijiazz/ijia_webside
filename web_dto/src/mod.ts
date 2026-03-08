@@ -7,8 +7,8 @@ import type { PostApi } from "./post.ts";
 import type { ReviewApi } from "./review.ts";
 
 export interface ApiDefined extends PostApi, ClassApi, LiveApi, UserApi, PassportApi, CaptchaApi, ReviewApi {}
-
 export * from "./common.ts";
+export * from "./file.ts";
 export * from "./post.ts";
 export * from "./post_comment.ts";
 export * from "./class.ts";

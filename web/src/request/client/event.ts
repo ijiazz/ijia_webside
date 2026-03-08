@@ -1,25 +1,6 @@
 import { goRedirectLoginPath } from "@/app.ts";
-import { HoContext, HoResponse } from "@asla/hofetch";
+import { getResponseErrorInfo } from "./util.ts";
 
-export async function errorHandler(ctx: HoContext, next: () => Promise<HoResponse>) {
-  if (ctx.allowFailed === true || ctx[IGNORE_ERROR_MSG]) return next();
-  const res = await next();
-  if (res.ok) return res;
-  if (ctx.allowFailed instanceof Array && ctx.allowFailed.includes(res.status)) return res;
-
-  const body = await res.parseBody();
-  const apiErrorEvent = new ApiErrorEvent(ctx, res, body);
-  const isUnhandled = apiEvent.dispatchEvent(apiErrorEvent);
-  if (isUnhandled) {
-    const { url: redirect } = apiErrorEvent.getRedirect();
-    if (redirect) {
-      window.location.assign(redirect);
-      console.info("全局 http 拦截器重定向到登录页：", redirect, `原因： ${ctx.url}`);
-    }
-  }
-
-  return res;
-}
 export const IGNORE_ERROR_MSG = Symbol("ignore error message");
 export const IGNORE_UNAUTHORIZED_REDIRECT = Symbol("ignore unauthorized redirect");
 
@@ -29,33 +10,40 @@ export enum ApiEvent {
   error = "error",
   alert = "alert",
 }
+
+export type ApiErrorEventOption = {
+  ignoreUnauthorizedRedirect?: boolean;
+  headers: Headers;
+  status: number;
+  body?: unknown;
+};
 export class ApiErrorEvent extends Event {
-  constructor(
-    readonly ctx: HoContext,
-    readonly response: HoResponse,
-    public body?: unknown,
-  ) {
+  #response: Readonly<ApiErrorEventOption>;
+  #ignoreUnauthorizedRedirect?: boolean;
+  constructor(option: ApiErrorEventOption) {
     super(ApiEvent.error);
+    this.#response = { ...option };
   }
   #err?: { message?: string; code?: string };
   #getError() {
     if (!this.#err) {
-      this.#err = getResponseErrorInfo(this.body);
+      this.#err = getResponseErrorInfo(this.#response.body);
     }
     return this.#err;
   }
   getMessage(): string | number | undefined {
     const err = this.#getError();
     if (err) {
-      const isHtml = this.response.headers.get("content-type")?.startsWith("text/html");
+      const { headers, status } = this.#response;
+      const isHtml = headers.get("content-type")?.startsWith("text/html");
       if (err.message && !isHtml) return err.message;
-      else return this.response.status;
+      else return status;
     }
   }
   getRedirect(): { url?: string; isIgnore?: boolean } {
-    const isUnauthorized = this.response.status === 401 && this.#getError()?.code === "REQUIRED_LOGIN";
+    const isUnauthorized = this.#response.status === 401 && this.#getError()?.code === "REQUIRED_LOGIN";
     if (isUnauthorized) {
-      if (!this.ctx[IGNORE_UNAUTHORIZED_REDIRECT]) {
+      if (!this.#ignoreUnauthorizedRedirect) {
         return { url: goRedirectLoginPath() };
       } else {
         return {
@@ -66,23 +54,7 @@ export class ApiErrorEvent extends Event {
     return {};
   }
 }
-export function isHttpErrorCode(err: any, code: string | number) {
-  return typeof err === "object" && err.code === code;
-}
 
-export function getResponseErrorInfo(body: unknown): { message?: string; code?: string } | undefined {
-  switch (typeof body) {
-    case "string":
-      return { message: body };
-    case "object": {
-      if (body === null) return;
-      return body;
-    }
-    default:
-      break;
-  }
-  return;
-}
 export class MaintenanceEvent extends Event {
   static maintenance: string | null;
   static parseMessage(maintenance: string | null): string | null {
@@ -131,18 +103,4 @@ export class MaintenanceEvent extends Event {
   constructor(readonly message: string) {
     super(ApiEvent.alert);
   }
-}
-
-export async function alert(ctx: HoContext, next: () => Promise<HoResponse>): Promise<HoResponse> {
-  const res = await next();
-
-  /** 格式 ISO/ISO */
-  const maintenance = res.headers.get("x-service-maintenance");
-  MaintenanceEvent.maintenance = maintenance;
-  const message = MaintenanceEvent.parseMessage(maintenance);
-  if (message) {
-    apiEvent.dispatchEvent(new MaintenanceEvent(message));
-  }
-
-  return res;
 }
