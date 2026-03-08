@@ -15,8 +15,7 @@ describe("默认组", function () {
     await page.getByRole("textbox", { name: "请输入内容" }).fill("一条普通帖子");
     await page.getByRole("button", { name: "发 布" }).click();
 
-    await expect(page, "发布成功后返回进入时的页面").toHaveURL(getPostListURL());
-    await page.goto(getUserPostURL(alice.id));
+    await expect(page, "发布成功后返回进入时的页面").toHaveURL(getUserPostURL(alice.id));
 
     const postItems = page.locator(".e2e-post-item");
     await expect(postItems.first().getByText("一条普通帖子")).toBeVisible();
@@ -33,8 +32,7 @@ describe("默认组", function () {
     await page.getByRole("textbox", { name: "请输入内容" }).fill("一条移动端普通帖子");
     await page.getByRole("button", { name: "发 布" }).click();
 
-    await expect(page, "发布成功后返回进入时的页面").toHaveURL(getPostListURL());
-    await page.goto(getUserPostURL(alice.id));
+    await expect(page, "发布成功后返回进入时的页面").toHaveURL(getUserPostURL(alice.id));
 
     const postItems = page.locator(".e2e-post-item");
     await expect(postItems.first().getByText("一条移动端普通帖子")).toBeVisible();

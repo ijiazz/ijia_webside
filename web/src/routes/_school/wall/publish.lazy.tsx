@@ -13,16 +13,18 @@ function RouteComponent() {
   const { user } = Route.useLoaderData();
   const navigate = useNavigate();
   const router = useRouter();
+  const goToUserPost = () => {
+    navigate({
+      to: "/user/$userId/post",
+      params: { userId: user.user_id.toString() },
+      viewTransition: true,
+    });
+  };
   const onBack = () => {
     if (router.history.canGoBack()) {
       router.history.back();
     } else {
-      navigate({
-        to: "/user/$userId",
-        params: { userId: user.user_id.toString() },
-        replace: true,
-        viewTransition: true,
-      });
+      goToUserPost();
     }
   };
   const { data: option, isFetching: loading } = useSuspenseQuery({
@@ -40,7 +42,7 @@ function RouteComponent() {
         </Button>
       </div>
       <div style={{ padding: "12px", flex: 1, overflow: "auto" }}>
-        <PublishPost onCreateOk={onBack} onEditOk={onBack} groupOptions={option} groupLoading={loading} />
+        <PublishPost onCreateOk={goToUserPost} onEditOk={onBack} groupOptions={option} groupLoading={loading} />
       </div>
     </div>
   );
