@@ -82,7 +82,7 @@ function RouteComponent() {
           <Controller
             name="remark"
             rules={{
-              required: "请填写原因",
+              required: isPass ? undefined : "请填写原因",
             }}
             render={({ field, fieldState }) => {
               return (

@@ -8,6 +8,7 @@ import {
   UpdatePostContentParam,
   Post,
   ReviewStatus,
+  GetUserPostListParam,
 } from "@/dto.ts";
 import { dbPool } from "@/db/client.ts";
 import { prepareUniqueUser } from "#test/fixtures/user.ts";
@@ -109,12 +110,19 @@ export async function getPublicPost(api: Api, postId: number, token?: string): P
 }
 /** 获取自己的一个指定帖子 */
 export async function getSelfPost(api: Api, postId: number, token: string): Promise<Post> {
-  const { items } = await api["/post/user"].get({
-    query: { post_id: postId, number: 1 },
-    [JWT_TOKEN_KEY]: token,
-  });
+  const items = await getUserPostList(api, { token, post_id: postId });
   return items[0];
 }
+
+export async function getUserPostList(api: Api, option: GetUserPostListParam & { token?: string }): Promise<Post[]> {
+  const { userId, token } = option;
+  const { items } = await api["/post/user"].get({
+    query: { userId: userId },
+    [JWT_TOKEN_KEY]: token,
+  });
+  return items;
+}
+
 export async function deletePost(api: Api, postId: number, token?: string) {
   return api["/post/entity/:postId"].delete({
     params: { postId: postId },

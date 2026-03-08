@@ -64,7 +64,6 @@ test("文本结构需要正确传递和保存", async function ({ api, publicDbP
     await expect(res, "不允许传递超过范围的结构").responseStatus(400);
   }
 });
-test("发布时选择分组，不允许选择仅自己可见", async function () {});
 
 test("发布帖子，如果选择了分组，发布后将直接进入审核状态", async function ({ publicDbPool, api }) {
   const alice = await prepareUniqueUser("alice");
