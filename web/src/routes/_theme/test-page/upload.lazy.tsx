@@ -4,17 +4,31 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 import { Button, UploadFile } from "antd";
 import { Upload } from "@/components/Upload.tsx";
 import { useState } from "react";
+import { CropImageModal } from "./-components/Crop.tsx";
+
 export const Route = createLazyFileRoute("/_theme/test-page/upload")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const [fileList, setFileList] = useState<UploadFile<any>[]>([]);
-  console.log("fileList", fileList);
+
+  const [pendingCropImage, setPendingCropImage] = useState<{
+    file: File;
+    resolve: (file: File | Promise<File>) => void;
+  } | null>(null);
+  const [cropImageModalOpen, setCropImageModalOpen] = useState<boolean>(false);
+
   return (
     <div>
       <Upload
         fileList={fileList}
+        beforeUpload={(file) => {
+          return new Promise((resolve) => {
+            setPendingCropImage({ file, resolve });
+            setCropImageModalOpen(true);
+          });
+        }}
         onChange={(value) => setFileList(value.fileList)}
         listType="picture-card"
         iconRender={() => "111"}
@@ -31,6 +45,8 @@ function RouteComponent() {
         }}
         customRequest={(option) => {
           const { file, filename, onError, onProgress, onSuccess } = option;
+          onSuccess?.(undefined);
+          return;
 
           uploadBlob({
             file,
@@ -48,8 +64,9 @@ function RouteComponent() {
           );
         }}
       >
-        <Button>Click to Upload</Button>
+        <Button>上传图片</Button>
       </Upload>
+      <CropImageModal open={cropImageModalOpen} onCropComplete={() => {}} image={pendingCropImage?.file} />
     </div>
   );
 }
