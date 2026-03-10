@@ -1,4 +1,5 @@
 @import "antd/dist/antd.css";
+@import "./antd.css";
 
 :root {
   /* --scrollbar-bgColor: #212121; */

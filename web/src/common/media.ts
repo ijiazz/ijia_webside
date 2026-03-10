@@ -42,7 +42,7 @@ export async function preprocessCanvasImage(canvas: HTMLCanvasElement): Promise<
 
   for (const t of types) {
     try {
-      const b = await canvasToBlob(canvas, t);
+      const b = await canvasToBlob(canvas, t, 0.8);
       fileInfo = { blob: b, type: t };
       break;
     } catch (error) {

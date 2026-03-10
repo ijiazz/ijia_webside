@@ -8,6 +8,7 @@ import { theme } from "antd";
 import { ijiaLocalStorage } from "@/stores/local_store.ts";
 import zh_CN from "antd/es/locale/zh_CN.js";
 import type { Locale } from "antd/es/locale/index.js";
+import { ModalProvider } from "@/components/Modal/static.tsx";
 
 export function AntdStaticProvider(props: PropsWithChildren<{}>) {
   const [messageApi, messageSlot] = message.useMessage({});
@@ -20,7 +21,8 @@ export function AntdStaticProvider(props: PropsWithChildren<{}>) {
     <AntdContext value={staticMethod}>
       {messageSlot}
       {noticeSlot}
-      {modalSlot} {props.children}
+      {modalSlot}
+      <ModalProvider>{props.children}</ModalProvider>
     </AntdContext>
   );
 }

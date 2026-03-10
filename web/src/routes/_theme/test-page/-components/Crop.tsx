@@ -66,6 +66,8 @@ export function CropImageModal(props: CropImageModalProps) {
     <Modal
       title="裁剪图片"
       open={open}
+      cancelText="跳过"
+      centered
       onCancel={() => {
         image && mutate(image);
       }}
@@ -73,6 +75,9 @@ export function CropImageModal(props: CropImageModalProps) {
         const cropper = cropperRef?.current;
         if (!cropper) return;
         mutate(cropper);
+      }}
+      cancelButtonProps={{
+        disabled: isPending,
       }}
       okButtonProps={{
         loading: isPending,
