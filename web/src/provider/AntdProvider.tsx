@@ -9,6 +9,7 @@ import { ijiaLocalStorage } from "@/stores/local_store.ts";
 import zh_CN from "antd/es/locale/zh_CN.js";
 import type { Locale } from "antd/es/locale/index.js";
 import { ModalProvider } from "@/components/Modal/static.tsx";
+import { StaticImagePreviewProvider } from "@/components/Modal/staticImagePreview.tsx";
 
 export function AntdStaticProvider(props: PropsWithChildren<{}>) {
   const [messageApi, messageSlot] = message.useMessage({});
@@ -22,14 +23,19 @@ export function AntdStaticProvider(props: PropsWithChildren<{}>) {
       {messageSlot}
       {noticeSlot}
       {modalSlot}
-      <ModalProvider>{props.children}</ModalProvider>
+      <StaticImagePreviewProvider>
+        <ModalProvider>{props.children}</ModalProvider>
+      </StaticImagePreviewProvider>
     </AntdContext>
   );
 }
 
-const AntdContext = createContext<{ message: MessageInstance; notice: NotificationInstance; modal: HookAPI }>(
-  undefined as any,
-);
+const AntdContext = createContext<{
+  message: MessageInstance;
+  notice: NotificationInstance;
+  /** 已废弃，改用 useModal */
+  modal: HookAPI;
+}>(undefined as any);
 
 export function AntdThemeProvider(props: PropsWithChildren<{ fixedMode?: ThemeMode }>) {
   const { fixedMode } = props;

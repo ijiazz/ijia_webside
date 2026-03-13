@@ -4,64 +4,52 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 import { UploadFile } from "antd";
 import { Upload } from "@/components/Upload.tsx";
 import { useState } from "react";
-import { CropImageModal } from "./-components/Crop.tsx";
+import { useCropModal } from "@/components/ImageCrop.tsx";
 import { UploadOutlined } from "@ant-design/icons";
-import {} from "@/components/Modal.ts";
-import { useModal } from "@/components/Modal.ts";
+import { useImagePreviewModal } from "@/components/Modal.ts";
 
 export const Route = createLazyFileRoute("/_theme/test-page/upload")({
   component: RouteComponent,
 });
 type UploadResult = UploadFileResult;
 
-const cache = new WeakMap<File, string>();
 function RouteComponent() {
   const [fileList, setFileList] = useState<UploadFile<UploadResult>[]>([]);
 
-  const [pendingCropImage, setPendingCropImage] = useState<{
-    file: File;
-    resolve: (file: File | Promise<File>) => void;
-  } | null>(null);
-  const [cropImageModalOpen, setCropImageModalOpen] = useState<boolean>(false);
-  const modals = useModal();
+  const imagePreview = useImagePreviewModal();
+  const openCrop = useCropModal();
+
   return (
     <div>
       <Upload<UploadResult>
         fileList={fileList}
-        beforeUpload={(file) => {
-          return new Promise((resolve) => {
-            setPendingCropImage({ file, resolve });
-            setCropImageModalOpen(true);
+        accept="image/*"
+        beforeUpload={async (file) => {
+          const blob = await openCrop(file, {
+            fillColor: "#fff",
+            maxHeight: 1280,
+            maxWidth: 1280,
           });
+          const fileName = replaceFileExtension(file.name, blob.type.split("/")[1]);
+          const cropFile = new File([blob], fileName, { type: blob.type, lastModified: Date.now() });
+          return cropFile;
         }}
         onChange={(value) => setFileList(value.fileList)}
         listType="picture-card"
-        showUploadList={{
-          extra: (file) => {
-            const size = file.size || 0;
-            return <span style={{ color: "#cccccc" }}>({(size / 1024).toFixed(2)}KB)</span>;
-          },
-        }}
         onPreview={(file) => {
-          console.log("预览文件:", file);
-          const url = file.response ? getImagePreviewURL(file.response) : getFilePreviewURL(file.originFileObj!);
-          if (url) {
-            modals.open({
-              title: "图片预览",
-              centered: true,
-              children: (
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                  <img src={url} />
-                </div>
-              ),
-              width: 600,
+          if (file.response) {
+            const url = getImagePreviewURL(file.response);
+            if (url) imagePreview.open({ url });
+          } else {
+            const url = URL.createObjectURL(file.originFileObj!);
+            imagePreview.open({
+              url,
+              onClear: () => URL.revokeObjectURL(url),
             });
           }
         }}
         customRequest={(option) => {
           const { file, filename, onError, onProgress, onSuccess } = option;
-          onSuccess?.(undefined);
-          return;
 
           uploadBlob({
             file,
@@ -81,23 +69,10 @@ function RouteComponent() {
       >
         <UploadOutlined />
       </Upload>
-      <CropImageModal
-        open={cropImageModalOpen}
-        onCropComplete={(file) => {
-          pendingCropImage?.resolve(file);
-          setPendingCropImage(null);
-          setCropImageModalOpen(false);
-        }}
-        image={pendingCropImage?.file}
-      />
     </div>
   );
 }
-function getFilePreviewURL(file: File) {
-  if (cache.has(file)) {
-    return cache.get(file)!;
-  }
-  const url = URL.createObjectURL(file);
-  cache.set(file, url);
-  return url;
+
+function replaceFileExtension(fileName: string, newExtension: string): string {
+  return fileName.replace(/(\.[^/.]*)?$/, `.${newExtension}`);
 }

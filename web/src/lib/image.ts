@@ -1,4 +1,4 @@
-export async function loadImage(file: File): Promise<HTMLImageElement> {
+export async function loadImage(file: Blob): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const objectURL = URL.createObjectURL(file);
     const img = new Image();

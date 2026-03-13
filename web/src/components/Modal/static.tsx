@@ -1,16 +1,17 @@
 import { Modal, ModalProps } from "antd";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { cx } from "@emotion/css";
 
 const ModalContext = createContext<StaticModal>({} as any);
 type deprecatedAttr = "destroyOnClose" | "bodyStyle" | "maskStyle" | "focusTriggerAfterClose";
 
 export type StaticModalProps = Omit<ModalProps, "open" | deprecatedAttr>;
-
+export type StaticModalOpenInfo = {
+  id: string;
+};
 export interface StaticModal {
-  open: (options: StaticModalProps) => string;
+  open: (options: StaticModalProps) => StaticModalOpenInfo;
   close: (id: string) => void;
-  update: (id: string, options: Partial<StaticModalProps>) => void;
+  update: (id: string, options: StaticModalProps | ((prev: StaticModalProps) => StaticModalProps)) => void;
   closeAll: () => void;
 }
 export function useModal() {
@@ -39,16 +40,26 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
     setModals((prev) => prev.map((item) => ({ ...item, open: false })));
   }, []);
 
-  const update = useCallback((id: string, options: Partial<StaticModalProps>) => {
-    setModals((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, options: { ...item.options, ...options } } : item)),
-    );
-  }, []);
+  const update = useCallback(
+    (id: string, options: StaticModalProps | ((prev: StaticModalProps) => StaticModalProps)) => {
+      setModals((prev) => {
+        return prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                options: typeof options === "function" ? options(item.options) : options,
+              }
+            : item,
+        );
+      });
+    },
+    [],
+  );
 
-  const open = useCallback((options: StaticModalProps) => {
+  const open = useCallback((options: StaticModalProps): StaticModalOpenInfo => {
     const id = createModalId();
     setModals((prev) => [...prev, { id, open: true, options }]);
-    return id;
+    return { id };
   }, []);
 
   const value = useMemo<StaticModal>(() => ({ open, close, update, closeAll }), []);
