@@ -9,7 +9,23 @@ export type StaticModalOpenInfo = {
   id: string;
 };
 export interface StaticModal {
+  /**
+   * 点击确定，需要手动传入 onOk 处理关闭
+   * 如果想阻止关闭弹窗，可以传入 onCancel:(e)=>  e.preventDefault()
+   */
   open: (options: StaticModalProps) => StaticModalOpenInfo;
+  /**
+   * onOk 如果返回 Promise ，确认按钮会变成loading 状态，直到 Promise 敲定。如果 resolve ，则关闭弹窗，否则不关闭
+   *
+   * ```ts
+   *  confirm({
+   *    onOk: async (e)=>{
+   *       e.preventDefault() // 可阻止弹窗关闭
+   *    }
+   *  })
+   * ```
+   */
+  confirm: (options: StaticModalProps) => StaticModalOpenInfo;
   close: (id: string) => void;
   update: (id: string, options: StaticModalProps | ((prev: StaticModalProps) => StaticModalProps)) => void;
   closeAll: () => void;
@@ -62,10 +78,39 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
     return { id };
   }, []);
 
-  const value = useMemo<StaticModal>(() => ({ open, close, update, closeAll }), []);
+  const ctrl = useMemo<StaticModal>(() => {
+    return {
+      open,
+      close,
+      update,
+      closeAll,
+      confirm(options) {
+        const { onOk } = options;
+        const modal = open({
+          ...options,
+          onOk(e) {
+            const result = onOk?.(e) as unknown;
+            if (result instanceof Promise) {
+              update(modal.id, (props) => ({ ...props, confirmLoading: true }));
+              result.then(
+                () => {
+                  if (e.defaultPrevented) return;
+                  close(modal.id);
+                },
+                () => {
+                  update(modal.id, (props) => ({ ...props, confirmLoading: false }));
+                },
+              );
+            }
+          },
+        });
+        return modal;
+      },
+    };
+  }, []);
 
   return (
-    <ModalContext.Provider value={value}>
+    <ModalContext.Provider value={ctrl}>
       {children}
       {modals.map(({ id, open, options }) => {
         const { onCancel, afterOpenChange } = options;
@@ -77,6 +122,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
             open={open}
             onCancel={(event) => {
               onCancel?.(event);
+              if (event.isDefaultPrevented()) return;
               close(id);
             }}
             afterOpenChange={(visible) => {

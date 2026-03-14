@@ -1,7 +1,7 @@
 import { LoginMethod, UserIdentifierType, UserLoginParam, UserLoginByPasswordParam, UserLoginResult } from "@/api.ts";
 import { tryHashPassword } from "@/common/pwd_hash.ts";
 import { clearUserCache } from "@/common/user.ts";
-import { useAntdStatic } from "@/provider/AntdProvider.tsx";
+import { useModal } from "@/components/Modal.ts";
 import { api, IGNORE_ERROR_MSG } from "@/request/client.ts";
 import { useMutation } from "@tanstack/react-query";
 
@@ -57,7 +57,7 @@ export type UserLoginOption = {
 };
 export function useLogin(options: UserLoginOption) {
   const { onField, onSuccess } = options;
-  const { modal } = useAntdStatic();
+  const modals = useModal();
   const { isPending: loginLoading, mutateAsync } = useMutation({
     mutationFn: async (param: UserLoginParam) => {
       const result = await api["/passport/login"].post({ body: param, allowFailed: true, [IGNORE_ERROR_MSG]: true });
@@ -71,11 +71,17 @@ export function useLogin(options: UserLoginOption) {
       }
       if (result.tip) {
         await new Promise<void>((resolve, reject) => {
-          modal.info({
+          const modal = modals.open({
             title: result.tip?.title,
-            content: result.tip?.content,
+            children: result.tip?.content,
             onCancel: () => reject(),
-            onOk: resolve,
+            styles: {
+              body: { display: "flex", justifyContent: "center" },
+            },
+            onOk: () => {
+              resolve();
+              modals.close(modal.id);
+            },
           });
         });
       }

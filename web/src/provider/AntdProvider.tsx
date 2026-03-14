@@ -1,9 +1,8 @@
-import { ConfigProvider, message, notification, Modal, ThemeConfig } from "antd";
+import { ConfigProvider, message, notification, ThemeConfig } from "antd";
 import { PropsWithChildren, createContext, useContext, useMemo, useState } from "react";
 
 import type { MessageInstance } from "antd/es/message/interface.js";
 import type { NotificationInstance } from "antd/es/notification/interface.js";
-import type { HookAPI } from "antd/es/modal/useModal/index.js";
 import { theme } from "antd";
 import { ijiaLocalStorage } from "@/stores/local_store.ts";
 import zh_CN from "antd/es/locale/zh_CN.js";
@@ -14,28 +13,24 @@ import { StaticImagePreviewProvider } from "@/components/Modal/staticImagePrevie
 export function AntdStaticProvider(props: PropsWithChildren<{}>) {
   const [messageApi, messageSlot] = message.useMessage({});
   const [noticeApi, noticeSlot] = notification.useNotification({});
-  const [modalApi, modalSlot] = Modal.useModal();
-  const staticMethod = useMemo(() => {
-    return { message: messageApi, notice: noticeApi, modal: modalApi };
-  }, [messageApi, noticeApi, modalApi]);
+
   return (
-    <AntdContext value={staticMethod}>
-      {messageSlot}
-      {noticeSlot}
-      {modalSlot}
-      <StaticImagePreviewProvider>
-        <ModalProvider>{props.children}</ModalProvider>
-      </StaticImagePreviewProvider>
-    </AntdContext>
+    <MessageContext value={messageApi}>
+      <NoticeContext value={noticeApi}>
+        <StaticImagePreviewProvider>
+          <ModalProvider>
+            {messageSlot}
+            {noticeSlot}
+            {props.children}
+          </ModalProvider>
+        </StaticImagePreviewProvider>
+      </NoticeContext>
+    </MessageContext>
   );
 }
+const NoticeContext = createContext<NotificationInstance>(undefined as any);
 
-const AntdContext = createContext<{
-  message: MessageInstance;
-  notice: NotificationInstance;
-  /** 已废弃，改用 useModal */
-  modal: HookAPI;
-}>(undefined as any);
+const MessageContext = createContext<MessageInstance>(undefined as any);
 
 export function AntdThemeProvider(props: PropsWithChildren<{ fixedMode?: ThemeMode }>) {
   const { fixedMode } = props;
@@ -106,9 +101,16 @@ export type ThemeController = {
   setMode(mode: ThemeMode): void;
   changeTheme(theme: ThemeConfig): void;
 };
-
-export function useAntdStatic() {
-  return useContext(AntdContext);
+export function useMessage() {
+  return useContext(MessageContext);
+}
+export function useNotification() {
+  return useContext(NoticeContext);
+}
+/** 改用 useMessage */
+export function useAntdStatic(): { message: MessageInstance } {
+  const message = useContext(MessageContext);
+  return { message };
 }
 export function useThemeToken() {
   return theme.useToken().token;
