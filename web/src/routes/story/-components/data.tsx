@@ -77,7 +77,7 @@ export const be2Card: Dialogue = {
   captions: [{ type: CaptionType.MONOLOGUE, text: "既然这样的话，那我以后就不会再纠缠你了。", id: "0" }],
   background: { image_url: be2 },
 };
-/* 
+/*
  
 
 你会...  你会一直陪着我的吧？

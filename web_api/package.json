@@ -1,10 +1,16 @@
 {
   "name": "@ijia/web-api",
-  "type": "module",
   "version": "1.0.0",
-  "buildMeta": {
-    "commitSha": "dev",
-    "commitDate": ""
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "files": [
+    "dist/**",
+    "./config.jsonc"
+  ],
+  "type": "module",
+  "exports": {
+    "dto": "./dist/dto.js"
   },
   "scripts": {
     "test": "vitest run",
@@ -12,17 +18,11 @@
     "check-type": "tsgo -p tsconfig.json",
     "start": "node --env-file=.env dist/main.js"
   },
-  "exports": {
-    "dto": "./dist/dto.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@asla/hofetch": "jsr:^0.0.1",
     "@asla/pg": "catalog:",
-    "@asla/yoursql": "catalog:",
     "@asla/wokao": "jsr:^0.0.3",
+    "@asla/yoursql": "catalog:",
     "@hono/node-server": "^1.19.11",
     "@ijia/api-types": "workspace:^",
     "@ijia/data": "workspace:^",
@@ -39,8 +39,8 @@
     "@types/nodemailer": "^7.0.11",
     "vitest": "^4.1.0"
   },
-  "files": [
-    "dist/**",
-    "./config.jsonc"
-  ]
+  "buildMeta": {
+    "commitSha": "dev",
+    "commitDate": ""
+  }
 }

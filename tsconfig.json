@@ -5,6 +5,6 @@
     { "path": "./web_api" },
     { "path": "./web_dto" },
     { "path": "./e2e" },
-    { "path": "./tsconfig.node.json" }
-  ]
+    { "path": "./tsconfig.node.json" },
+  ],
 }

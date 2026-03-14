@@ -1,5 +1,5 @@
 {
-  "deno.enablePaths": ["./deps/ijia-data","./web_ssr"],
+  "deno.enablePaths": ["./deps/ijia-data", "./web_ssr"],
   "files.eol": "\n",
   "vitest.runtime": "node",
 }

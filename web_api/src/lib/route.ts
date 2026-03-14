@@ -19,13 +19,18 @@ interface RouteConfigCommon<C extends HonoContextLike = HonoContextLike> {
   method: string;
   routePath: string;
 }
-export interface RouteConfigWithInput<C extends HonoContextLike, Res = unknown, Input = unknown>
-  extends RouteConfigCommon<C> {
+export interface RouteConfigWithInput<
+  C extends HonoContextLike,
+  Res = unknown,
+  Input = unknown,
+> extends RouteConfigCommon<C> {
   handler: (input: Awaited<Input>, ctx: C) => Res | Promise<Res>;
   validateInput: (ctx: C) => Awaited<Input> | Promise<Awaited<Input>>;
 }
-export interface RouteConfigWithoutInput<C extends HonoContextLike = HonoContextLike, Res = unknown>
-  extends RouteConfigCommon<C> {
+export interface RouteConfigWithoutInput<
+  C extends HonoContextLike = HonoContextLike,
+  Res = unknown,
+> extends RouteConfigCommon<C> {
   handler: (input: undefined, ctx: C) => Res | Promise<Res>;
   validateInput?: undefined;
 }
