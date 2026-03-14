@@ -3,7 +3,7 @@ import { Api, Context, test } from "#test/fixtures/hono.ts";
 import { postRoutes, reviewRoutes } from "@/routers/mod.ts";
 
 import { CommitReviewParam, CommitReviewResult, ReviewTargetType } from "@/dto.ts";
-import { prepareUniqueUser } from "test/fixtures/user.ts";
+import { prepareUniqueUser } from "#test/fixtures/user.ts";
 import { Role } from "@/middleware/auth.ts";
 import { createPost, prepareCommentPost } from "#test/utils/post.ts";
 import { setPostToReviewing } from "@/routers/review/mod.ts";

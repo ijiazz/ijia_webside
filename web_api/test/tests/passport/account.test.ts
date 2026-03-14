@@ -7,7 +7,7 @@ import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { createUser } from "@/routers/passport/-sql/signup.ts";
 
-import { getUniqueEmail, getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
+import { getUniqueEmail, getUniqueName, prepareUniqueUser } from "#test/fixtures/user.ts";
 import { update } from "@asla/yoursql";
 import { EmailCaptchaActionType, LoginMethod, UserIdentifierType } from "@/dto.ts";
 import { mockSendEmailCaptcha, mockSendSelfEmailCaptcha } from "./_mocks/captcha.ts";

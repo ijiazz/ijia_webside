@@ -7,7 +7,7 @@ import {
   CommentInfo,
   cancelCommentLike,
 } from "../../utils/post.ts";
-import { prepareUniqueUser } from "test/fixtures/user.ts";
+import { prepareUniqueUser } from "#test/fixtures/user.ts";
 import commentRoutes from "@/routers/post/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
 

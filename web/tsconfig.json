@@ -5,7 +5,6 @@
     "moduleResolution": "NodeNext",
     "types": [],
     "lib": ["DOM", "ESNext"],
-    "baseUrl": ".",
     "rootDir": ".",
     "jsx": "react-jsx",
     "paths": {

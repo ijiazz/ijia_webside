@@ -4,7 +4,7 @@ import { Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import userRoutes from "@/routers/user/mod.ts";
 
 import { getUserPublicClassId } from "./util.ts";
-import { prepareUniqueUser } from "test/fixtures/user.ts";
+import { prepareUniqueUser } from "#test/fixtures/user.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 import { UpdateUserProfileParam, User, UserConfig } from "@/dto.ts";
 import { DeepPartial } from "#test/utils/common.ts";

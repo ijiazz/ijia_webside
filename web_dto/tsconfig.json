@@ -9,7 +9,6 @@
     "rewriteRelativeImportExtensions": true,
     "declaration": true,
     "declarationMap": true,
-    "baseUrl": ".",
     "rootDir": "./src",
     "outDir": "./dist",
     "noEmit": false

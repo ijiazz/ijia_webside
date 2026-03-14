@@ -7,7 +7,7 @@ import { initCaptcha } from "../../__mocks__/captcha.ts";
 import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
 import { emailCaptchaService } from "@/routers/captcha/mod.ts";
-import { getUniqueEmail, getUniqueName } from "test/fixtures/user.ts";
+import { getUniqueEmail, getUniqueName } from "#test/fixtures/user.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { select } from "@asla/yoursql";
 import { EmailCaptchaActionType, CreateUserProfileParam } from "@/dto.ts";

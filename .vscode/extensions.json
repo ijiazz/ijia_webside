@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "oxc.oxc-vscode",
+    "TypeScriptTeam.native-preview",
+    "styled-components.vscode-styled-components",
+    "vitest.explorer",
+    "ms-playwright.playwright",
+  ],
+}

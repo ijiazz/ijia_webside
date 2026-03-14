@@ -1,5 +1,4 @@
 import type { UserConfig, Plugin } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import legacy from "@vitejs/plugin-legacy";
@@ -15,8 +14,10 @@ export default {
       "/file/": { target: origin, secure: false, changeOrigin: true },
     },
   },
+  resolve: {
+    tsconfigPaths: true,
+  },
   plugins: [
-    tsconfigPaths(),
     tanstackRouter({
       target: "react",
       autoCodeSplitting: false,
@@ -71,7 +72,7 @@ function createManualChunks() {
     "@tanstack/react-router": true,
     "@tanstack/react-query": true,
     "@emotion/css": true,
-    "@jsr/asla__hofetch": "@asla/hofetch",
+    "@asla/hofetch": true,
   };
   const manualChunks = (id: string) => {
     const modInfo = pnpmParser.parserId(id);

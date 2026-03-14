@@ -15,6 +15,7 @@ export default routeGroup.create({
   async validateInput(ctx) {
     const { req } = ctx;
     const type = req.param("type");
+    if (!type) throw new HttpError(400, "缺少 type");
     const userInfo = ctx.get("userInfo");
 
     const { user_id: reviewerId, role_id_list } = await userInfo.getRolesFromDb();
