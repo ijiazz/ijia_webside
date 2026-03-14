@@ -8,7 +8,7 @@
     "paths": {
       "@/*": ["./*"],
       "@api/*": ["../web_api/src/*"],
-      "@api-test/*": ["../web_api/test/*"],
-    },
-  },
+      "@api-test/*": ["../web_api/test/*"]
+    }
+  }
 }
