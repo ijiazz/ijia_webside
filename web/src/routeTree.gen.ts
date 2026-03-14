@@ -15,7 +15,6 @@ import { Route as ThemeRouteRouteImport } from './routes/_theme/route.tsx'
 import { Route as SchoolRouteRouteImport } from './routes/_school/route.tsx'
 import { Route as StoryIndexRouteImport } from './routes/story/index.tsx'
 import { Route as homeIndexRouteImport } from './routes/(home)/index.tsx'
-import { Route as ThemeTestPageIndexRouteImport } from './routes/_theme/test-page/index.tsx'
 import { Route as ThemeAboutIndexRouteImport } from './routes/_theme/about/index.tsx'
 import { Route as SchoolWallIndexRouteImport } from './routes/_school/wall/index.tsx'
 import { Route as SchoolUserIndexRouteImport } from './routes/_school/user/index.tsx'
@@ -39,6 +38,8 @@ import { Route as SchoolWallListChar123GroupIdChar125RouteRouteImport } from './
 import { Route as SchoolWallListChar123GroupIdChar125IndexRouteImport } from './routes/_school/wall/list.{-$groupId}/index.tsx'
 import { Route as SchoolUserUserIdPostIndexRouteImport } from './routes/_school/user/$userId/post/index.tsx'
 
+const ThemeTestPageIndexLazyRouteImport =
+  createFileRoute('/_theme/test-page/')()
 const ThemeTestPageUploadLazyRouteImport = createFileRoute(
   '/_theme/test-page/upload',
 )()
@@ -69,11 +70,13 @@ const homeIndexRoute = homeIndexRouteImport
     getParentRoute: () => rootRouteImport,
   } as any)
   .lazy(() => import('./routes/(home)/index.lazy.tsx').then((d) => d.Route))
-const ThemeTestPageIndexRoute = ThemeTestPageIndexRouteImport.update({
+const ThemeTestPageIndexLazyRoute = ThemeTestPageIndexLazyRouteImport.update({
   id: '/test-page/',
   path: '/test-page/',
   getParentRoute: () => ThemeRouteRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_theme/test-page/index.lazy.tsx').then((d) => d.Route),
+)
 const ThemeAboutIndexRoute = ThemeAboutIndexRouteImport.update({
   id: '/about/',
   path: '/about/',
@@ -258,7 +261,7 @@ export interface FileRoutesByFullPath {
   '/user/': typeof SchoolUserIndexRoute
   '/wall/': typeof SchoolWallIndexRoute
   '/about/': typeof ThemeAboutIndexRoute
-  '/test-page/': typeof ThemeTestPageIndexRoute
+  '/test-page/': typeof ThemeTestPageIndexLazyRoute
   '/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125RouteRouteWithChildren
   '/passport/login': typeof ThemePassportVideo_backgroundLoginRoute
   '/passport/signup': typeof ThemePassportVideo_backgroundSignupRoute
@@ -284,7 +287,7 @@ export interface FileRoutesByTo {
   '/user': typeof SchoolUserIndexRoute
   '/wall': typeof SchoolWallIndexRoute
   '/about': typeof ThemeAboutIndexRoute
-  '/test-page': typeof ThemeTestPageIndexRoute
+  '/test-page': typeof ThemeTestPageIndexLazyRoute
   '/passport/login': typeof ThemePassportVideo_backgroundLoginRoute
   '/passport/signup': typeof ThemePassportVideo_backgroundSignupRoute
   '/review/$type': typeof SchoolReviewTypeIndexRoute
@@ -314,7 +317,7 @@ export interface FileRoutesById {
   '/_school/user/': typeof SchoolUserIndexRoute
   '/_school/wall/': typeof SchoolWallIndexRoute
   '/_theme/about/': typeof ThemeAboutIndexRoute
-  '/_theme/test-page/': typeof ThemeTestPageIndexRoute
+  '/_theme/test-page/': typeof ThemeTestPageIndexLazyRoute
   '/_school/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125RouteRouteWithChildren
   '/_theme/passport/_video_background/login': typeof ThemePassportVideo_backgroundLoginRoute
   '/_theme/passport/_video_background/signup': typeof ThemePassportVideo_backgroundSignupRoute
@@ -450,7 +453,7 @@ declare module '@tanstack/react-router' {
       id: '/_theme/test-page/'
       path: '/test-page'
       fullPath: '/test-page/'
-      preLoaderRoute: typeof ThemeTestPageIndexRouteImport
+      preLoaderRoute: typeof ThemeTestPageIndexLazyRouteImport
       parentRoute: typeof ThemeRouteRoute
     }
     '/_theme/about/': {
@@ -718,7 +721,7 @@ interface ThemeRouteRouteChildren {
   ThemePassportFindAccountRoute: typeof ThemePassportFindAccountRoute
   ThemeTestPageUploadLazyRoute: typeof ThemeTestPageUploadLazyRoute
   ThemeAboutIndexRoute: typeof ThemeAboutIndexRoute
-  ThemeTestPageIndexRoute: typeof ThemeTestPageIndexRoute
+  ThemeTestPageIndexLazyRoute: typeof ThemeTestPageIndexLazyRoute
 }
 
 const ThemeRouteRouteChildren: ThemeRouteRouteChildren = {
@@ -729,7 +732,7 @@ const ThemeRouteRouteChildren: ThemeRouteRouteChildren = {
   ThemePassportFindAccountRoute: ThemePassportFindAccountRoute,
   ThemeTestPageUploadLazyRoute: ThemeTestPageUploadLazyRoute,
   ThemeAboutIndexRoute: ThemeAboutIndexRoute,
-  ThemeTestPageIndexRoute: ThemeTestPageIndexRoute,
+  ThemeTestPageIndexLazyRoute: ThemeTestPageIndexLazyRoute,
 }
 
 const ThemeRouteRouteWithChildren = ThemeRouteRoute._addFileChildren(
