@@ -1,7 +1,7 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 import { getCommentStat, prepareCommentPost, setCommentLike, CommentInfo, reportComment } from "../../utils/post.ts";
-import { prepareUniqueUser } from "test/fixtures/user.ts";
+import { prepareUniqueUser } from "#test/fixtures/user.ts";
 import { dbPool } from "@/db/client.ts";
 import { select } from "@asla/yoursql";
 import { postRoutes, commentRoutes } from "@/routers/mod.ts";

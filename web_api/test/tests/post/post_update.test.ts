@@ -2,7 +2,7 @@ import { beforeEach, describe, expect } from "vitest";
 import { Context, test } from "../../fixtures/hono.ts";
 import { ReviewStatus, TextStructureType } from "@ijia/data/db";
 
-import { prepareUniqueUser } from "test/fixtures/user.ts";
+import { prepareUniqueUser } from "#test/fixtures/user.ts";
 import {
   createPost,
   createPostGroup,

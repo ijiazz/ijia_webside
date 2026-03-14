@@ -4,7 +4,7 @@ import { passportRoutes, captchaRoutes } from "@/routers/mod.ts";
 
 import { createCaptchaSession, initCaptcha } from "../../__mocks__/captcha.ts";
 import { hashPasswordFrontEnd } from "@/routers/passport/-services/password.ts";
-import { getUniqueName, prepareUniqueUser } from "test/fixtures/user.ts";
+import { getUniqueName, prepareUniqueUser } from "#test/fixtures/user.ts";
 import { createUser } from "@/routers/passport/-sql/signup.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";

@@ -1,12 +1,23 @@
 import type { ViteUserConfig } from "vitest/config";
-import tsconfigPaths from "vite-tsconfig-paths";
 import process from "node:process";
 
 const PG_URL = process.env.PG_URL || "pg://postgres@127.0.0.1:5432/postgres";
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
-
+const rootDir = import.meta.dirname;
 export default {
-  esbuild: { target: "es2024" },
+  resolve: {
+    tsconfigPaths: true,
+    alias: [
+      {
+        find: /^@\//,
+        replacement: `${rootDir}/src/`,
+      },
+      {
+        find: /^#test\//,
+        replacement: `${rootDir}/test/`,
+      },
+    ],
+  },
   test: {
     env: {
       TEST_LOGIN_DB: PG_URL,
@@ -18,5 +29,4 @@ export default {
     include: ["./test/**/*.test.ts"],
     setupFiles: ["./test/asserts/asserts.ts", "./test/setup/db.ts"],
   },
-  plugins: [tsconfigPaths({})],
 } satisfies ViteUserConfig;

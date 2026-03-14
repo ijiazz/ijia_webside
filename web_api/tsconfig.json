@@ -4,7 +4,6 @@
     "target": "ESNext",
     "lib": ["ESNext"],
     "isolatedModules": true,
-    "baseUrl": ".",
     "paths": { "@/*": ["./src/*"], "#test/*": ["./test/*"] },
     "jsx": "react"
   },
