@@ -1,14 +1,14 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
+    "types": ["node"],
     "target": "ESNext",
     "lib": ["ESNext"],
     "isolatedModules": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
       "@api/*": ["../web_api/src/*"],
-      "@api-test/*": ["../web_api/test/*"]
-    }
-  }
+      "@api-test/*": ["../web_api/test/*"],
+    },
+  },
 }
