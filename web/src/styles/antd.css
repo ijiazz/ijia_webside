@@ -1,0 +1,54 @@
+/**
+ * 定义：
+ * 1. modal 在高度足够时居中显示
+ * 2. 高度不足时，收缩, 垂直滚动条出现在 body。
+ *    1. 如果需要全局滚动，值需要设置 
+         .ant-modal-body{
+            overflow: visible;
+            max-height: unset;
+         } 
+ * 3. body 宽度不足时，出现横向滚动条
+ */
+
+/* 垂直居中，且自适应 */
+.ant-modal-wrap.ant-modal-centered {
+  height: 100vh;
+  width: 100vw;
+  display: grid;
+  justify-content: center;
+  align-items: center;
+
+  .ant-modal {
+    position: static;
+    top: unset;
+    margin: 0;
+  }
+
+  &:before {
+    display: none;
+  }
+}
+.ant-modal-wrap.ant-modal-centered {
+  /* 校正 body */
+  .ant-modal {
+    display: flex;
+    flex-direction: column;
+    .ant-modal-container {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ant-modal-body {
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+    }
+  }
+
+  /* 高度不够时，让 body 出现纵向滚动条 */
+  .ant-modal {
+    max-height: 100%;
+    overflow: hidden;
+  }
+}

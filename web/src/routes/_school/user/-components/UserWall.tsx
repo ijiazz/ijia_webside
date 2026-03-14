@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { Avatar, Button } from "antd";
 import * as styles from "./UserWall.css.ts";
-import { useAntdStatic } from "@/provider/AntdProvider.tsx";
 import { StudentIdCard } from "@/components/school/StudentIdCard.tsx";
 import userCover from "../-img/user-cover.webp";
 import { ArrowLeftOutlined, IdcardOutlined } from "@ant-design/icons";
 import { cx } from "@emotion/css";
 import { User } from "@/api.ts";
+import { useModal } from "@/components/Modal.ts";
 
 export type UserWallProps = {
   className?: string;
@@ -17,12 +17,11 @@ export type UserWallProps = {
 };
 export function UserWall(props: UserWallProps) {
   const { className, classNames = {}, user } = props;
-  const { modal } = useAntdStatic();
+  const modals = useModal();
   const viewStudentIdCard = () => {
-    modal.info({
+    const modal = modals.open({
       title: `${user.nickname} 的学生证`,
-      icon: null,
-      content: (
+      children: (
         <StudentIdCard
           id={user.user_id}
           name={user.nickname}
@@ -31,6 +30,14 @@ export function UserWall(props: UserWallProps) {
           date={user.profile.acquaintance_time}
         />
       ),
+      styles: {
+        body: { display: "flex", justifyContent: "center" },
+      },
+      onOk: () => modals.close(modal.id),
+      cancelText: null,
+      cancelButtonProps: {
+        style: { display: "none" },
+      },
       okText: "关闭",
     });
   };

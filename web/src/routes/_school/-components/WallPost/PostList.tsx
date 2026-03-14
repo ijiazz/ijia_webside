@@ -7,6 +7,7 @@ import { MenuProps } from "antd";
 import { api } from "@/request/client.ts";
 import { useAntdStatic } from "@/provider/mod.tsx";
 import { css, cx } from "@emotion/css";
+import { useModal } from "@/components/Modal.ts";
 
 export type PostListHandle = {
   reloadItem: (id: number) => Promise<void>;
@@ -26,7 +27,8 @@ export type PostListProps<T extends PublicPost> = Pick<React.HTMLAttributes<HTML
 
 export function PostList<T extends PublicPost>(props: PostListProps<T>) {
   const { data, setData, loadItem, onOpenComment, onSetting, onEdit, canEdit, hideReport, ref, ...rest } = props;
-  const { modal, message } = useAntdStatic();
+  const { message } = useAntdStatic();
+  const modals = useModal();
   const reloadingRef = useRef<Record<number, Promise<any>>>({});
 
   const [reportOpen, setReportOpen] = useState<T | undefined>();
@@ -45,7 +47,7 @@ export function PostList<T extends PublicPost>(props: PostListProps<T>) {
     return promise;
   };
   const onDeletePost = (item: T) => {
-    modal.confirm({
+    modals.confirm({
       title: "删除确认",
       onOk: () => {
         return api["/post/entity/:postId"].delete({ params: { postId: item.post_id } }).then(() => {

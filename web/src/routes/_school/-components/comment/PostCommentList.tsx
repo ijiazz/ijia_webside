@@ -21,6 +21,7 @@ import { CommentFooter } from "./CommentFooter.tsx";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getPostQueryOption } from "@/request/post.ts";
 import { LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
+import { useModal } from "@/components/Modal.ts";
 
 const { Text } = Typography;
 
@@ -41,7 +42,8 @@ export function CommentList(props: CommentListProps) {
     forceRender,
     replaceItem,
   } = useCommentData<PostCommentNode>();
-  const { message, modal } = useAntdStatic();
+  const { message } = useAntdStatic();
+  const modals = useModal();
   const { isFetching: postInfoLoading, data } = useQuery({
     ...getPostQueryOption({ postId }),
     enabled: typeof postId === "number",
@@ -137,7 +139,7 @@ export function CommentList(props: CommentListProps) {
   };
 
   const deleteComment = (node: PostCommentNode) => {
-    modal.confirm({
+    modals.confirm({
       title: "确认删除？",
       async onOk(...args) {
         await api["/post/comment/entity/:commentId"].delete({ params: { commentId: node.comment_id } });
