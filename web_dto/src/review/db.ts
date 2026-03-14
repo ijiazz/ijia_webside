@@ -2,10 +2,20 @@ import type { TextStructure } from "../common.ts";
 export enum ReviewDisplayItemType {
   text = "text",
   media = "media",
+  /** 考试题目 */
+  exam_question = "exam_question",
+  /** 公共评论 */
+  comment = "comment",
 }
 export enum ReviewTargetType {
+  /** 帖子 */
   post = "post",
+  /** 帖子评论 */
   post_comment = "post_comment",
+  /** 考试题目 */
+  exam_question = "exam_question",
+  /** 公共评论 */
+  comment = "comment",
 }
 
 export type ReviewDisplayItemText = {

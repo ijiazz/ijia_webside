@@ -1,4 +1,4 @@
-import type { InfiniteListDto, ListDto, SocialPlatform } from "../common.ts";
+import type { InfiniteListResult, ListDto, SocialPlatform } from "../common.ts";
 
 export type UserAvatarDto = {
   avatar_url: string;
@@ -54,4 +54,4 @@ export type BulletChat = {
 export type GetBulletChatParam = {
   index?: number;
 };
-export type GetBulletChatListRes = InfiniteListDto<BulletChat> & {};
+export type GetBulletChatListRes = InfiniteListResult<BulletChat> & {};

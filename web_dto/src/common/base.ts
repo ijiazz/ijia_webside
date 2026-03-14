@@ -2,17 +2,20 @@ export type Option<T> = {
   label: string;
   value: T;
 };
-export type ListDto<T> = {
+/** @deprecated 改用 ListResult */
+export type ListDto<T> = ListResult<T>;
+export type ListResult<T> = {
   items: T[];
   total: number;
 };
 
-export type InfiniteListDto<T> = {
+export type InfiniteListResult<T> = {
   items: T[];
   has_more: boolean;
 };
-
-export type CursorListDto<T, C> = {
+/** @deprecated 改用 CursorList */
+export type CursorListDto<T, C> = CursorListResult<T, C>;
+export type CursorListResult<T, C> = {
   items: T[];
   cursor_prev?: C | null;
   cursor_next?: C | null;

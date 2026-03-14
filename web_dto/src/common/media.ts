@@ -21,11 +21,6 @@ type AssetMediaBase<T> = {
   origin: T;
 };
 
-export type AssetMediaUploadFile = {
-  tmp_file_id: string;
-  type: MediaType;
-};
-
 export type AssetMediaInfoDto<Meta extends {} = Record<string, any>> = {
   size: number;
   url: string;
