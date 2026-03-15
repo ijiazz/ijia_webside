@@ -5,7 +5,7 @@ packages:
   - deps/*
   - e2e
 catalog:
-  "@asla/pg": "npm:@jsr/asla__pg@^0.2.2"
-  "@asla/yoursql": "npm:@jsr/asla__yoursql@0.13.0"
+  "@asla/pg": "npm:@jsr/asla__pg@^0.2.3"
+  "@asla/yoursql": "npm:@jsr/asla__yoursql@0.13.1"
   "@types/node": "^25.5.0"
   "evlib": "^3.1.3"

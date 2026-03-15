@@ -36,6 +36,7 @@ import { Route as ThemePassportVideo_backgroundSignupRouteImport } from './route
 import { Route as ThemePassportVideo_backgroundLoginRouteImport } from './routes/_theme/passport/_video_background/login.tsx'
 import { Route as SchoolWallListChar123GroupIdChar125RouteRouteImport } from './routes/_school/wall/list.{-$groupId}/route.tsx'
 import { Route as SchoolWallListChar123GroupIdChar125IndexRouteImport } from './routes/_school/wall/list.{-$groupId}/index.tsx'
+import { Route as SchoolUserUserIdQuestionIndexRouteImport } from './routes/_school/user/$userId/question/index.tsx'
 import { Route as SchoolUserUserIdPostIndexRouteImport } from './routes/_school/user/$userId/post/index.tsx'
 
 const ThemeTestPageIndexLazyRouteImport =
@@ -231,6 +232,16 @@ const SchoolWallListChar123GroupIdChar125IndexRoute =
       (d) => d.Route,
     ),
   )
+const SchoolUserUserIdQuestionIndexRoute =
+  SchoolUserUserIdQuestionIndexRouteImport.update({
+    id: '/question/',
+    path: '/question/',
+    getParentRoute: () => SchoolUserUserIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_school/user/$userId/question/index.lazy.tsx').then(
+      (d) => d.Route,
+    ),
+  )
 const SchoolUserUserIdPostIndexRoute =
   SchoolUserUserIdPostIndexRouteImport.update({
     id: '/post/',
@@ -268,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/review/$type/': typeof SchoolReviewTypeIndexRoute
   '/user/$userId/': typeof SchoolUserUserIdIndexRoute
   '/user/$userId/post/': typeof SchoolUserUserIdPostIndexRoute
+  '/user/$userId/question/': typeof SchoolUserUserIdQuestionIndexRoute
   '/wall/list/{-$groupId}/': typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
 export interface FileRoutesByTo {
@@ -293,6 +305,7 @@ export interface FileRoutesByTo {
   '/review/$type': typeof SchoolReviewTypeIndexRoute
   '/user/$userId': typeof SchoolUserUserIdIndexRoute
   '/user/$userId/post': typeof SchoolUserUserIdPostIndexRoute
+  '/user/$userId/question': typeof SchoolUserUserIdQuestionIndexRoute
   '/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
 export interface FileRoutesById {
@@ -324,6 +337,7 @@ export interface FileRoutesById {
   '/_school/review/$type/': typeof SchoolReviewTypeIndexRoute
   '/_school/user/$userId/': typeof SchoolUserUserIdIndexRoute
   '/_school/user/$userId/post/': typeof SchoolUserUserIdPostIndexRoute
+  '/_school/user/$userId/question/': typeof SchoolUserUserIdQuestionIndexRoute
   '/_school/wall/list/{-$groupId}/': typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
 export interface FileRouteTypes {
@@ -354,6 +368,7 @@ export interface FileRouteTypes {
     | '/review/$type/'
     | '/user/$userId/'
     | '/user/$userId/post/'
+    | '/user/$userId/question/'
     | '/wall/list/{-$groupId}/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -379,6 +394,7 @@ export interface FileRouteTypes {
     | '/review/$type'
     | '/user/$userId'
     | '/user/$userId/post'
+    | '/user/$userId/question'
     | '/wall/list/{-$groupId}'
   id:
     | '__root__'
@@ -409,6 +425,7 @@ export interface FileRouteTypes {
     | '/_school/review/$type/'
     | '/_school/user/$userId/'
     | '/_school/user/$userId/post/'
+    | '/_school/user/$userId/question/'
     | '/_school/wall/list/{-$groupId}/'
   fileRoutesById: FileRoutesById
 }
@@ -610,6 +627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolWallListChar123GroupIdChar125IndexRouteImport
       parentRoute: typeof SchoolWallListChar123GroupIdChar125RouteRoute
     }
+    '/_school/user/$userId/question/': {
+      id: '/_school/user/$userId/question/'
+      path: '/question'
+      fullPath: '/user/$userId/question/'
+      preLoaderRoute: typeof SchoolUserUserIdQuestionIndexRouteImport
+      parentRoute: typeof SchoolUserUserIdRouteRoute
+    }
     '/_school/user/$userId/post/': {
       id: '/_school/user/$userId/post/'
       path: '/post'
@@ -636,11 +660,13 @@ const SchoolReviewTypeRouteRouteWithChildren =
 interface SchoolUserUserIdRouteRouteChildren {
   SchoolUserUserIdIndexRoute: typeof SchoolUserUserIdIndexRoute
   SchoolUserUserIdPostIndexRoute: typeof SchoolUserUserIdPostIndexRoute
+  SchoolUserUserIdQuestionIndexRoute: typeof SchoolUserUserIdQuestionIndexRoute
 }
 
 const SchoolUserUserIdRouteRouteChildren: SchoolUserUserIdRouteRouteChildren = {
   SchoolUserUserIdIndexRoute: SchoolUserUserIdIndexRoute,
   SchoolUserUserIdPostIndexRoute: SchoolUserUserIdPostIndexRoute,
+  SchoolUserUserIdQuestionIndexRoute: SchoolUserUserIdQuestionIndexRoute,
 }
 
 const SchoolUserUserIdRouteRouteWithChildren =

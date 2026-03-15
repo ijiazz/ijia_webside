@@ -1,5 +1,5 @@
 import routeGroup from "./_route.ts";
-import { getQuestionPublicStats } from "./-sql/question.sql.ts";
+import { getQuestionPublicStats } from "./_sql/question.sql.ts";
 import { requiredLogin } from "@/middleware/auth.ts";
 
 export default routeGroup.create({

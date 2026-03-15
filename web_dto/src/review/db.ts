@@ -13,7 +13,7 @@ export enum ReviewTargetType {
   /** 帖子评论 */
   post_comment = "post_comment",
   /** 考试题目 */
-  exam_question = "exam_question",
+  exam_question = "question",
   /** 公共评论 */
   comment = "comment",
 }

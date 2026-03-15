@@ -1,16 +1,16 @@
 import { ReviewStatus, TextStructure } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
-import { textStructChecker } from "../-utils/text_struct.ts";
 import { HttpError } from "@/global/errors.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { deleteFrom, update } from "@asla/yoursql";
 import { CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "@/dto.ts";
 import { QueryRowsResult } from "@asla/pg";
 import { setPostToReviewing } from "@/routers/review/mod.ts";
+import { TEXT_STRUCT_SCHEMA } from "@/global/schema.ts";
 
 export async function createPost(userId: number, param: CreatePostParam): Promise<{ id: number }> {
-  param.content_text_structure = checkTypeCopy(param.content_text_structure, optional(textStructChecker));
+  param.content_text_structure = checkTypeCopy(param.content_text_structure, optional(TEXT_STRUCT_SCHEMA));
   checkCreateContent(param); // 检查文本结构
   const { content_text, group_id, is_hide, media_file, content_text_structure } = param;
 
@@ -48,7 +48,7 @@ export async function updatePostContent(
   userId: number,
   param: Pick<UpdatePostContentParam, "content_text" | "content_text_structure">,
 ): Promise<number> {
-  const struct = checkTypeCopy(param.content_text_structure, optional(textStructChecker, "nullish"));
+  const struct = checkTypeCopy(param.content_text_structure, optional(TEXT_STRUCT_SCHEMA, "nullish"));
 
   let update_content_text: string | undefined;
   let update_content_text_struct: string | undefined;

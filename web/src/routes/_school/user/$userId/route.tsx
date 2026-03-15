@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { UserWall } from "../-components/UserWall.tsx";
 import { css } from "@emotion/css";
 import { queryClient } from "@/request/client.ts";
@@ -37,16 +37,34 @@ export type LoaderData = {
 };
 function RouteComponent() {
   const { user } = Route.useLoaderData();
+  const { userId } = Route.useParams();
+  const navigate = Route.useNavigate();
+  const location = useLocation();
   const tabs: TabsProps["items"] = [
     {
       key: "post",
       label: "帖子",
     },
+    {
+      key: "question",
+      label: "题目",
+    },
   ];
+  const activeKey = location.pathname.includes("/question") ? "question" : "post";
   return (
     <div>
       <UserWall user={user} classNames={{ userInfoCard: Padding }} />
-      <Tabs items={tabs} className={Padding} />
+      <Tabs
+        items={tabs}
+        className={Padding}
+        activeKey={activeKey}
+        onChange={(key) => {
+          navigate({
+            to: key === "question" ? "/user/$userId/question" : "/user/$userId/post",
+            params: { userId },
+          });
+        }}
+      />
       <Outlet />
     </div>
   );

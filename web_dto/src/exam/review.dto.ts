@@ -12,6 +12,8 @@ export type QuestionCommitReviewResult = {
 };
 
 export type GetQuestionReviewNextResult = {
+  review_id?: string;
+  question_id?: string;
   item?: ExamQuestionReviewItem;
 
   can_update_question: boolean;
