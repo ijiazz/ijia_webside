@@ -1,13 +1,13 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import { ReviewStatus, TextStructure, TextStructureType, TextStructureUser } from "@ijia/data/db";
+import { ReviewStatus, TextStructureType, TextStructureUser } from "@ijia/data/db";
 
 import { prepareUniqueUser } from "../../fixtures/user.ts";
 import { createPostGroup, getPublicPost, getSelfPost } from "../../utils/post.ts";
 import { createPost } from "../../utils/post.ts";
 import postRoutes from "@/routers/post/mod.ts";
-import { Post } from "@/dto.ts";
-import "#test/asserts/post.ts";
+import { Post, TextStructure } from "@/dto.ts";
+import "#test/asserts/review.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);
@@ -43,7 +43,14 @@ test("文本结构需要正确传递和保存", async function ({ api, publicDbP
 
   {
     const res = await create("你好123", [
-      { type: TextStructureType.user, user_id: "1", index: 1, length: 2, abcd: "11" },
+      {
+        type: TextStructureType.user,
+        user_id: "1",
+        index: 1,
+        length: 2,
+        //@ts-expect-error 故意传递多余的字段，测试是否会被保存
+        abcd: "11",
+      },
     ] satisfies TextStructureUser[]);
     const item = await getPublicPost(api, res.id, alice.token);
     expect(item.content_text_structure, "不应保存多余的字段").toEqual([

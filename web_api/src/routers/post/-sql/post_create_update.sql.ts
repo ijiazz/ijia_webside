@@ -1,10 +1,10 @@
-import { ReviewStatus, TextStructure } from "@ijia/data/db";
+import { ReviewStatus } from "@ijia/data/db";
 import { dbPool } from "@/db/client.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
 import { HttpError } from "@/global/errors.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { deleteFrom, update } from "@asla/yoursql";
-import { CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam } from "@/dto.ts";
+import { CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam, TextStructure } from "@/dto.ts";
 import { QueryRowsResult } from "@asla/pg";
 import { setPostToReviewing } from "@/routers/review/mod.ts";
 import { TEXT_STRUCT_SCHEMA } from "@/global/schema.ts";

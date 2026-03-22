@@ -17,7 +17,7 @@ export default routeGroup.create({
   async handler({ questionId, currentUserId }): Promise<{ item: ExamUserQuestion }> {
     const question = await getQuestionDetail(questionId, currentUserId);
     if (!question) {
-      throw new HttpError(404, "题目不存在");
+      throw new HttpError(400, "题目不存在，或没有权限");
     }
     return { item: question };
   },

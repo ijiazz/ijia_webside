@@ -4,16 +4,9 @@ import { CommitReviewParam, CommitReviewResult, ReviewTargetType } from "@/dto.t
 import { prepareUniqueUser } from "#test/fixtures/user.ts";
 import { Role } from "@/middleware/auth.ts";
 import { setPostCommentToReviewing } from "@/routers/review/mod.ts";
-import {
-  CommentReviewStatus,
-  getCommentReviewStatus,
-  prepareCommentPost,
-  reportComment,
-  setCommentLike,
-  getSelfPost,
-} from "#test/utils/post.ts";
+import { prepareCommentPost, reportComment, setCommentLike, getSelfPost } from "#test/utils/post.ts";
 import { commentRoutes, postRoutes, reviewRoutes } from "@/routers/mod.ts";
-import { commitReview, getReviewNext } from "../../utils/review.ts";
+import { commitReview, getCommentReviewStatus, getReviewNext, CommentReviewStatus } from "#test/utils/review.ts";
 import { select, v } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
 beforeEach<Context>(async ({ hono }) => {

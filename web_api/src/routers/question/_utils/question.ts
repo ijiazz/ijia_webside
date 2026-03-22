@@ -1,4 +1,4 @@
-import { MediaType, QuestionPublic, QuestionMedia } from "@/dto.ts";
+import { QuestionPublic, QuestionAttachment, QuestionOption } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
 
 export function parseCursorId(cursor: string) {
@@ -13,31 +13,27 @@ export function toCursor(question_id: string) {
 }
 export type QuestionMediaRaw = {
   index: number;
-  title: string | null;
-  type: MediaType;
-  url: string;
+  text: string | null;
+  data: string | null;
+  type: string | null;
 };
 
-export function genQuestionMedias(mediasRaw: QuestionMediaRaw[], optionsText: string[]) {
-  const medias: QuestionPublic["medias"] = [];
-  const options: QuestionPublic["options"] = new Array(optionsText.length);
+export function genQuestionMedias(mediasRaw: QuestionMediaRaw[]) {
+  const attachments: QuestionPublic["attachments"] = [];
+  const options: QuestionPublic["options"] = [];
 
-  let media: QuestionMedia;
+  let option: QuestionAttachment | QuestionOption;
 
   for (const t of mediasRaw) {
-    media = {
-      origin: {
-        url: t.url,
-        meta: undefined,
-      },
-      type: t.type as MediaType.audio | MediaType.image,
-      title: t.title || undefined,
+    option = {
+      file: t.data && t.type ? { data: t.data, type: t.type } : undefined,
+      text: t.text ?? undefined,
     };
     if (t.index >= 0) {
-      options[t.index] = { media, text: optionsText[t.index] };
+      options[t.index] = option;
     } else {
-      medias.push(media);
+      attachments[-t.index - 1] = option;
     }
   }
-  return { medias, options };
+  return { attachments, options };
 }

@@ -1,86 +1,96 @@
 import { dbPool } from "@/db/client.ts";
-import { CreateQuestionParam, ReviewTargetType } from "@/dto.ts";
+import { CreateQuestionParam } from "@/dto.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
 import { DbExamQuestion, ReviewStatus } from "@ijia/data/db";
-import { checkQuestionOption, parserCreateQuestionInput } from "../_utils/create.schema.ts";
+import { checkQuestionTypeOption, parserCreateQuestionInput } from "../_utils/create.schema.ts";
+import { SqlLike } from "@asla/pg";
 
-export async function createQuestion(userId: number, input: CreateQuestionParam): Promise<number> {
-  const { themes, options, question_medias } = input;
+export async function createQuestion(
+  userId: number,
+  input: CreateQuestionParam,
+  option: { skipReview?: boolean } = {},
+): Promise<number> {
+  const { advanced_config } = input;
 
-  const { option_text, medias, answerIndex } = parserCreateQuestionInput(options, question_medias);
-  checkQuestionOption(input.question_type, option_text, answerIndex);
-  const insertQuestionSql = insertIntoValues("exam_question", {
+  const attachmentOptions = parserCreateQuestionInput(input.options, input.attachments);
+
+  const answer_index = input.answer_index.sort((a, b) => a - b);
+
+  checkQuestionTypeOption(input.question_type, input.options?.length ?? 0, answer_index);
+
+  const updateObject = {
     user_id: userId,
     question_text: input.question_text,
-    question_text_struct: input.question_text_struct ?? undefined,
+    question_text_struct: input.question_text_struct
+      ? new String(v(JSON.stringify(input.question_text_struct)))
+      : undefined,
     question_type: input.question_type,
-    option_text: option_text,
-    answer_index: answerIndex,
+    answer_index: answer_index,
     answer_text: input.explanation_text,
-    answer_text_struct: input.explanation_text_struct ?? undefined,
+    answer_text_struct: input.explanation_text_struct
+      ? new String(v(JSON.stringify(input.explanation_text_struct)))
+      : undefined,
     event_time: input.event_time,
-    long_time: input.long_time,
-  } satisfies DbCreateExamQuestion).returning<{ id: number }>(["id"]);
-  const firstInsert: string[] = [insertQuestionSql.genSql()];
-
-  if (medias.length > 0) {
-    //TODO: 把临时文件移动到正式位置
-    // 先插入题目，获取到题目ID后，再插入媒体
-    const insertMediasSql = insertIntoValues(
-      "exam_question_media",
-      medias.map((media, index) => ({ ...media, question_id: `${index}` })),
-    );
-    firstInsert.push(insertMediasSql.genSql());
+  } satisfies { [key in keyof DbCreateExamQuestion]?: String | DbCreateExamQuestion[key] };
+  if (advanced_config) {
+    Object.assign(updateObject, {
+      long_time: advanced_config.long_time,
+      difficulty_level: advanced_config.difficulty_level,
+      collection_level: advanced_config.collection_level,
+    });
   }
-  // 更新用户的题目数量
-  firstInsert.push(
-    update("user_profile")
-      .set({ exam_question_count: "exam_question_count + 1" })
-      .where(`user_id=${v(userId)}`)
-      .genSql(),
-  );
+  if (option.skipReview) {
+    //@ts-ignore
+    updateObject.review_status = new String("'passed'::review_status");
+  }
+
+  const insertQuestionSql = insertIntoValues("exam_question", updateObject).returning<{ id: number }>(["id"]);
 
   await using t = dbPool.begin();
 
-  const res = await t.query(firstInsert);
-  const questionId = res[0].rows![0].id;
+  const [res] = await t.query([
+    insertQuestionSql,
+    update("user_profile")
+      .set({ exam_question_count: "exam_question_count + 1" })
+      .where(`user_id=${v(userId)}`),
+  ]);
+  const questionId = res.rows![0].id;
 
-  const insertReviewSql = [
-    insertIntoValues("review", {
-      target_type: ReviewTargetType.exam_question,
-      info: { target_id: questionId },
-    })
-      .returning<{ id: number }>(["id"])
-      .genSql(),
-  ];
-  if (themes?.length) {
-    const insertThemes = insertIntoValues(
-      "exam_question_theme_bind",
-      themes?.map((theme) => ({ theme_id: theme, question_id: questionId })) ?? [],
-    );
-    insertReviewSql.push(insertThemes.genSql());
+  const insertReviewSql: SqlLike[] = [];
+  if (!option.skipReview) {
+    insertReviewSql.push(v.gen`SELECT review_question_set_to_reviewing(${v(questionId)}) AS id`);
   }
 
-  const res2 = await t.query(insertReviewSql);
+  if (attachmentOptions.length > 0) {
+    const optionsValues = attachmentOptions.map((media) => {
+      const file = media.file;
+      return {
+        index: media.index,
+        text: media.text,
+        media_type: file?.type,
+        media: file ? new String(`decode(${v(file.data)}, 'base64')`) : undefined,
+        question_id: questionId,
+      };
+    });
+    // 先插入题目，获取到题目ID后，再插入媒体
+    insertReviewSql.push(insertIntoValues("exam_question_option", optionsValues));
+  }
 
-  const reviewId: number = res2[0].rows![0].id;
-
-  await t.query(
-    update("exam_question")
-      .set({ review_id: v(reviewId), review_status: v(ReviewStatus.pending) })
-      .where(`id=${v(questionId)}`),
-  );
+  const themes = advanced_config?.themes;
+  if (themes?.length) {
+    const themesValues = themes.map((theme) => ({ theme_id: theme, question_id: questionId }));
+    insertReviewSql.push(insertIntoValues("exam_question_theme_bind", themesValues));
+  }
+  if (insertReviewSql.length) await t.execute(insertReviewSql);
 
   await t.commit();
   return questionId;
 }
 
-type AdminCreateQuestionOption = Pick<DbExamQuestion, "difficulty_level" | "collection_level">;
-
 type DbCreateExamQuestion = Pick<
   DbExamQuestion,
-  "user_id" | "question_text" | "question_type" | "option_text" | "answer_text" | "answer_index"
+  "user_id" | "question_text" | "question_type" | "answer_text" | "answer_index"
 > &
   Partial<Pick<DbExamQuestion, "question_text_struct" | "answer_text_struct" | "long_time">> & {
     event_time?: string;

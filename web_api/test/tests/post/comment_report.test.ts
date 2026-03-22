@@ -7,7 +7,7 @@ import { select } from "@asla/yoursql";
 import { postRoutes, commentRoutes } from "@/routers/mod.ts";
 import { commitPostCommentReview, setPostCommentToReviewing } from "@/routers/review/mod.ts";
 import { ReviewStatus } from "@ijia/data/db";
-import "#test/asserts/post.ts";
+import "#test/asserts/review.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);

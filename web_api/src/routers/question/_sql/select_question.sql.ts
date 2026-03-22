@@ -1,11 +1,11 @@
-import { MediaType } from "@/dto.ts";
+import { ReviewStatus } from "@/dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
-import { select } from "@asla/yoursql";
+import { select, v } from "@asla/yoursql";
 import { DbExamQuestion } from "@ijia/data/db";
 
 export type PublicSelectRaw = Pick<
   DbExamQuestion,
-  "question_text" | "question_text_struct" | "question_type" | "option_text" | "difficulty_level" | "collection_level"
+  "question_text" | "question_text_struct" | "question_type" | "difficulty_level" | "collection_level"
 > & {
   user: {
     user_id: number;
@@ -16,21 +16,24 @@ export type PublicSelectRaw = Pick<
     id: string;
     total: number;
   };
-  medias: {
+  options: {
     index: number;
-    title: string | null;
-    type: MediaType;
-    url: string;
+    text: string | null;
+    type: string | null;
+    data: string | null;
   }[];
   question_id: string;
+  review?: {
+    status: ReviewStatus;
+    resolved_time?: string;
+    comment?: string;
+  } | null;
 };
 
 const SELECT_PUBLIC = [
   "q.question_text",
   "q.question_text_struct",
   "q.question_type",
-
-  "q.option_text",
 
   "q.difficulty_level",
   "q.collection_level",
@@ -52,19 +55,33 @@ const SELECT_PUBLIC = [
   select(
     `array_agg(${jsonb_build_object({
       index: "m.index",
-      filename: "m.filename",
-      title: "m.title",
-      type: "m.type",
-      url: "m.url",
+      text: "m.text",
+      type: "m.media_type",
+      data: "encode(m.media, 'base64')",
     })})`,
   )
-    .from("exam_question_media", { as: "m" })
+    .from("exam_question_option", { as: "m" })
     .where("m.question_id = q.id")
-    .orderBy("m.index ASC")
-    .toSelect("medias"),
+    .toSelect("options"),
   "q.id::TEXT AS question_id",
 ];
-export function getQuestionPublicSelect() {
+function getReviewInfo() {
+  return select(
+    jsonb_build_object({
+      status: "q.review_status",
+      resolved_time: "r.resolved_time",
+      comment: "r.comment",
+    }),
+  )
+    .from("review", { as: "r" })
+    .where(`r.id = q.review_id`);
+}
+export function getQuestionPublicSelect(option: { withReview?: boolean } = {}) {
+  if (option.withReview) {
+    return select<PublicSelectRaw>([...SELECT_PUBLIC, getReviewInfo().toSelect("review")]).from("exam_question", {
+      as: "q",
+    });
+  }
   return select<PublicSelectRaw>(SELECT_PUBLIC).from("exam_question", { as: "q" });
 }
 export type QuestionDetailSelectRaw = PublicSelectRaw & {
@@ -73,14 +90,16 @@ export type QuestionDetailSelectRaw = PublicSelectRaw & {
   event_time?: Date;
   long_time?: boolean;
 };
-export function getQuestionDetailSelect() {
-  return select<QuestionDetailSelectRaw>([
+export function getQuestionDetailSelect(option: { requestUserId: number | null }) {
+  const { requestUserId = null } = option;
+  const SELECT = [
     ...SELECT_PUBLIC,
     "q.create_time",
     "q.update_time",
     "q.event_time",
     "q.long_time",
-  ]).from("exam_question", {
-    as: "q",
-  });
+    `(CASE WHEN q.user_id = ${v(requestUserId)} AND q.user_id IS NOT NULL THEN ${getReviewInfo().toSelect()} ELSE NULL END) AS review`,
+  ];
+
+  return select<QuestionDetailSelectRaw>(SELECT).from("exam_question", { as: "q" });
 }

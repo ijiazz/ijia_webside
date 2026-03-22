@@ -1,21 +1,18 @@
-import type { AssetAudio, AssetImage, MediaType, ReviewStatus, TextStructure } from "../common.ts";
+import type { ReviewStatus, TextStructure } from "../common.ts";
 
-export type QuestionMedia = { title?: string | null } & (
-  | { origin: AssetAudio; type: MediaType.audio }
-  | { origin: AssetImage; type: MediaType.image }
-);
-
-export type QuestionOption = {
-  media?: QuestionMedia;
-  text: string;
+export type QuestionAttachment = {
+  text?: string;
+  file?: { data: string; type: string };
 };
+
+export type QuestionOption = QuestionAttachment;
 
 type QuestionBase = {
   question_text: string;
   question_text_struct?: TextStructure[];
   /** 题目类型 */
   question_type: ExamQuestionType;
-  medias: QuestionMedia[];
+  attachments?: QuestionAttachment[];
 
   options?: QuestionOption[];
 };
@@ -38,8 +35,8 @@ export type QuestionPublic = QuestionBase & {
   };
   review?: {
     status: ReviewStatus;
-    reviewed_time?: string;
-    reject_reason?: string;
+    resolved_time?: string;
+    comment?: string;
   };
 };
 

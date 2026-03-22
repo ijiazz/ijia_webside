@@ -1,9 +1,8 @@
 import { dbPool } from "@/db/client.ts";
-import { GetUserQuestionListResult, QuestionDetail, QuestionPublic, ReviewStatus } from "@/dto.ts";
+import { GetUserQuestionListResult, QuestionDetail, QuestionPublic } from "@/dto.ts";
 import { v } from "@/sql/utils.ts";
 import { genQuestionMedias, parseCursorId, toCursor } from "../_utils/question.ts";
 import { getQuestionDetailSelect, getQuestionPublicSelect, PublicSelectRaw } from "./select_question.sql.ts";
-import { HttpError } from "@/global/errors.ts";
 
 export async function getUserQuestionPublicList(
   config: {
@@ -17,7 +16,7 @@ export async function getUserQuestionPublicList(
   const limit = 15;
   const cursorNextId = cursorNext ? parseCursorId(cursorNext) : undefined;
 
-  const sql = getQuestionPublicSelect()
+  const sql = getQuestionPublicSelect({ withReview: isOwner })
     .where(() => {
       const where = [`q.user_id=${v(userId)}`];
 
@@ -40,12 +39,12 @@ export async function getUserQuestionPublicList(
   };
 }
 function mapQuestion(item: PublicSelectRaw): QuestionPublic {
-  const option = genQuestionMedias(item.medias, item.option_text);
+  const option = genQuestionMedias(item.options);
   return {
     question_text: item.question_text,
     question_text_struct: item.question_text_struct,
     question_type: item.question_type,
-    medias: option.medias,
+    attachments: option.attachments,
     options: option.options,
 
     difficulty_level: item.difficulty_level,
@@ -53,12 +52,13 @@ function mapQuestion(item: PublicSelectRaw): QuestionPublic {
     question_id: item.question_id,
     user: item.user,
     comment: item.comment,
+    review: item.review ?? undefined,
   };
 }
 
 export async function getQuestionDetail(questionId: number, userId: number | null): Promise<QuestionDetail | null> {
-  const sql = getQuestionDetailSelect()
-    .where([`q.id = ${questionId}`, `(q.review_status=${v(ReviewStatus.passed)} OR q.user_id = ${v(userId)})`])
+  const sql = getQuestionDetailSelect({ requestUserId: userId })
+    .where([`q.id = ${v(questionId)}`, `q.user_id = ${v(userId)}`])
     .limit(1);
   const items = await dbPool.queryRows(sql);
 

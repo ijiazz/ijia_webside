@@ -6,15 +6,9 @@ import type {
   GetUserQuestionListResult,
   UpdateQuestionParam,
 } from "./exam/question.ts";
-import type {
-  QuestionCommitReviewParam,
-  GetQuestionReviewNextResult,
-  QuestionCommitReviewResult,
-} from "./exam/review.dto.ts";
 
 export * from "./exam/question.ts";
 export * from "./exam/question.dto.ts";
-export * from "./exam/review.dto.ts";
 
 export interface QuestionAPI {
   /**
@@ -42,7 +36,7 @@ export interface QuestionAPI {
   };
   /** 获取用户题目列表 */
   "GET /question/list_user": {
-    query: GetUserQuestionListParam;
+    query?: GetUserQuestionListParam;
     response: GetUserQuestionListResult;
   };
   "GET /question/public_stats": {
@@ -50,17 +44,5 @@ export interface QuestionAPI {
       reviewing_count: number;
       total_count: number;
     };
-  };
-}
-
-export interface QuestionReviewAPI {
-  "POST /question/review/entity/:review_id/commit": {
-    params: { review_id: string };
-    body: QuestionCommitReviewParam;
-    response: QuestionCommitReviewResult;
-  };
-  /** 获取下一个待审核题目 */
-  "GET /question/review/next": {
-    response: GetQuestionReviewNextResult;
   };
 }

@@ -1,5 +1,11 @@
 import { dbPool } from "@/db/client.ts";
-import { CreateQuestionParam, ExamQuestionType, QuestionCommitReviewParam, UpdateQuestionParam } from "@/dto.ts";
+import {
+  CreateQuestionParam,
+  ExamQuestionType,
+  ReviewTargetType,
+  UpdateQuestionParam,
+  CommitQuestionReviewParam,
+} from "@/dto.ts";
 import { Api, JWT_TOKEN_KEY } from "#test/fixtures/hono.ts";
 import { select, v } from "@asla/yoursql";
 
@@ -7,11 +13,15 @@ export async function createSampleQuestion(api: Api, token: string, body: Partia
   const baseQuestionBody: CreateQuestionParam = {
     question_text: "1 + 1 = ?",
     question_type: ExamQuestionType.SingleChoice,
-    options: [{ text: "1" }, { text: "2", is_answer: true }, { text: "3" }],
+    answer_index: [1],
+    options: [{ text: "1" }, { text: "2" }, { text: "3" }],
     explanation_text: "1 加 1 等于 2",
   };
+  return createQuestion(api, token, { ...baseQuestionBody, ...body });
+}
+export async function createQuestion(api: Api, token: string, body: CreateQuestionParam) {
   return api["/question/entity"].put({
-    body: { ...baseQuestionBody, ...body },
+    body: body,
     [JWT_TOKEN_KEY]: token,
   });
 }
@@ -40,34 +50,30 @@ export async function getQuestion(api: Api, questionId: string, token?: string) 
     [JWT_TOKEN_KEY]: token,
   });
 }
-export async function listUserQuestion(api: Api, option: { token?: string; userId?: number | string } = {}) {
-  const { token, userId } = option;
+export async function listUserQuestion(api: Api, option: { token?: string } = {}) {
+  const { token } = option;
   return api["/question/list_user"].get({
-    query: { user_id: userId },
+    query: {},
     [JWT_TOKEN_KEY]: token,
   });
 }
 
 export async function getQuestionReviewNext(api: Api, token?: string) {
-  return api["/question/review/next"].get({
+  return api["/review/next/:type"].get({
+    params: { type: ReviewTargetType.exam_question },
     [JWT_TOKEN_KEY]: token,
   });
 }
 
-export async function commitQuestionReview(
-  api: Api,
-  reviewId: number,
-  token: string | undefined,
-  body: QuestionCommitReviewParam,
-) {
-  return api["/question/review/entity/:review_id/commit"].post({
-    params: { review_id: reviewId.toString() },
+export async function commitQuestionReview(api: Api, token: string | undefined, body: CommitQuestionReviewParam) {
+  return api["/review/commit/:type"].post({
+    params: { type: ReviewTargetType.exam_question },
     body,
     [JWT_TOKEN_KEY]: token,
   });
 }
 
-export async function getQuestionReviewId(questionId: string | number): Promise<number> {
+export async function getQuestionReviewId(questionId: string): Promise<number> {
   const row = await dbPool.queryFirstRow<{ review_id: number | null }>(
     select("review_id")
       .from("exam_question")
@@ -75,20 +81,6 @@ export async function getQuestionReviewId(questionId: string | number): Promise<
   );
   if (row.review_id === null) throw new Error("题目没有对应的审核项");
   return row.review_id;
-}
-
-export async function getQuestionDbState(questionId: string | number) {
-  return dbPool.queryFirstRow<{
-    user_id: number | null;
-    is_system_gen: boolean;
-    review_status: string | null;
-    question_text: string;
-    answer_text: string | null;
-  }>(
-    select(["user_id", "is_system_gen", "review_status", "question_text", "answer_text"])
-      .from("exam_question")
-      .where(`id=${v(questionId)}`),
-  );
 }
 
 export async function getQuestionCount(userId: number) {

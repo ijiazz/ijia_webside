@@ -1,6 +1,6 @@
 import { expect } from "vitest";
 import { ReviewStatus } from "@ijia/data/db";
-import { getCommentReviewStatus, getPostReviewStatus } from "#test/utils/post.ts";
+import { getPostReviewStatus, getCommentReviewStatus, getQuestionReviewStatus } from "#test/utils/review.ts";
 
 expect.extend({
   async postReviewStatusIs(postId: number, status: ReviewStatus | null) {
@@ -57,6 +57,23 @@ expect.extend({
       expected: status,
     };
   },
+  async questionReviewStatusIs(questionId: number, status: ReviewStatus) {
+    const info = await getQuestionReviewStatus(questionId);
+    const expectMsg = `预期题目 "${questionId}" 的审核状态为 ${status}`;
+    if (info.status === status) {
+      return {
+        pass: true,
+        message: () => expectMsg,
+      };
+    }
+
+    return {
+      pass: false,
+      message: () => `${expectMsg}，但实际为 ${info.status}`,
+      actual: info.status,
+      expected: status,
+    };
+  },
 });
 const REVIEW_PASSED = {
   [ReviewStatus.passed]: true,
@@ -68,6 +85,7 @@ const REVIEW_PASSED = {
 interface PostMatchers<R = unknown> {
   postReviewStatusIs: (status: ReviewStatus | null) => Promise<Awaited<R>>;
   postCommentReviewStatusIs: (status: ReviewStatus | null) => Promise<Awaited<R>>;
+  questionReviewStatusIs: (status: ReviewStatus) => Promise<Awaited<R>>;
 }
 
 declare module "vitest" {

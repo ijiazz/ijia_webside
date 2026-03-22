@@ -19,7 +19,7 @@ import { select, v } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
 import { commitReview, getReviewNext } from "../../utils/review.ts";
 import { commentRoutes, reviewRoutes } from "@/routers/mod.ts";
-import "#test/asserts/post.ts";
+import "#test/asserts/review.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);

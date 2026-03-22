@@ -8,7 +8,7 @@ import { Role } from "@/middleware/auth.ts";
 import { createPost, prepareCommentPost } from "#test/utils/post.ts";
 import { setPostToReviewing } from "@/routers/review/mod.ts";
 import { commitReview, getReviewNext } from "../../utils/review.ts";
-import "#test/asserts/post.ts";
+import "#test/asserts/review.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);

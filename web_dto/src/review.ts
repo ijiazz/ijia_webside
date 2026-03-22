@@ -20,6 +20,10 @@ export interface ReviewApi {
     response: GetReviewNextResult;
     params: { type: ReviewTargetType };
   };
+  "POST /review/commit/question": {
+    body: CommitReviewParam;
+    response: CommitReviewResult;
+  };
   "POST /review/commit/:type": {
     body: CommitReviewParam;
     params: { type: ReviewTargetType };
