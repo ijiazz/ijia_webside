@@ -41,10 +41,10 @@ export type CommitQuestionReviewParam = CommitReviewParam & {
   advanced_config?: QuestionAdvancedConfig;
 };
 
-export type CommitReviewResult = {
-  next?: ReviewItem<unknown>;
+export type CommitReviewResult<T = unknown> = {
+  next?: ReviewItem<T>;
   success: boolean;
 };
-export type GetReviewNextResult = {
-  item?: ReviewItem<unknown>;
+export type GetReviewNextResult<T = unknown> = {
+  item?: ReviewItem<T>;
 };

@@ -35,22 +35,11 @@ export type LoaderData = {
   publicPostGroup: PostGroupItem[];
   user: User;
 };
+
 function RouteComponent() {
   const { user } = Route.useLoaderData();
-  const { userId } = Route.useParams();
-  const navigate = Route.useNavigate();
-  const location = useLocation();
-  const tabs: TabsProps["items"] = [
-    {
-      key: "post",
-      label: "帖子",
-    },
-    {
-      key: "question",
-      label: "题目",
-    },
-  ];
-  const activeKey = location.pathname.includes("/question") ? "question" : "post";
+  const { activeKey, setTab } = useTab();
+
   return (
     <div>
       <UserWall user={user} classNames={{ userInfoCard: Padding }} />
@@ -59,16 +48,39 @@ function RouteComponent() {
         className={Padding}
         activeKey={activeKey}
         onChange={(key) => {
-          navigate({
-            to: key === "question" ? "/user/$userId/question" : "/user/$userId/post",
-            params: { userId },
-          });
+          setTab(key as Tab);
         }}
       />
       <Outlet />
     </div>
   );
 }
+enum Tab {
+  Post = "post",
+  Question = "question",
+}
+const tabs: TabsProps["items"] = [
+  {
+    key: Tab.Post,
+    label: "帖子",
+  },
+  {
+    key: Tab.Question,
+    label: "题目",
+  },
+];
+
+function useTab() {
+  const { pathname } = Route.useMatch();
+  const location = useLocation();
+  const navigate = Route.useNavigate();
+  const activeKey = location.pathname.slice(1 + pathname.length);
+  return {
+    activeKey: activeKey as Tab,
+    setTab: (tab: Tab) => navigate({ href: `${pathname}/${tab}` }),
+  };
+}
+
 const Padding = css`
   --padding: 48px;
   padding-left: var(--padding);

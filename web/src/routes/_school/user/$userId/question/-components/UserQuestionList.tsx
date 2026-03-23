@@ -17,8 +17,8 @@ export function UserQuestionList(props: UserQuestionListProps) {
   const { userId, canManage } = props;
   const { data, reset, next, previous } = useInfiniteLoad<ExamUserQuestion[], string>({
     async load(cursor, forward) {
-      const result = await getUserQuestionList({ user_id: userId, cursor });
-      const items = (forward ? result.items.slice().reverse() : result.items).map(normalizeQuestionTime);
+      const result = await getUserQuestionList({ cursor });
+      const items = forward ? result.items.slice().reverse() : result.items;
       return {
         items,
         nextParam: result.cursor_next ? result.cursor_next : undefined,
@@ -40,7 +40,7 @@ export function UserQuestionList(props: UserQuestionListProps) {
   useEffect(() => {
     reset();
     next.loadMore();
-  }, [reset, next.loadMore, userId]);
+  }, [userId]);
 
   return (
     <div className={listCss}>
@@ -69,7 +69,7 @@ export function UserQuestionList(props: UserQuestionListProps) {
                   <Typography.Text type="secondary">选项</Typography.Text>
                   <ol className={optionListCss}>
                     {(item.options ?? []).map((option, index) => {
-                      const isAnswer = item.answer_index.includes(index);
+                      const isAnswer = item.answer_index?.includes(index);
                       return (
                         <li key={index}>
                           <Tag color={isAnswer ? "green" : "default"}>{String.fromCharCode(65 + index)}</Tag>
@@ -85,10 +85,10 @@ export function UserQuestionList(props: UserQuestionListProps) {
                 </div>
                 <div className={metaRowCss}>
                   <span>创建于 {dateToString(item.create_time, "minute")}</span>
-                  <span>评论 {item.comment.total_count}</span>
+                  <span>评论 {item.comment.total}</span>
                 </div>
-                {canManage && review?.status === ReviewStatus.rejected && review.reject_reason && (
-                  <Alert type="warning" showIcon message={`驳回原因：${review.reject_reason}`} />
+                {canManage && review?.status === ReviewStatus.rejected && review.comment && (
+                  <Alert type="warning" showIcon title={`驳回原因：${review.comment}`} />
                 )}
               </Space>
             </Card>
@@ -105,12 +105,6 @@ export function UserQuestionList(props: UserQuestionListProps) {
       />
     </div>
   );
-}
-
-function normalizeQuestionTime<T extends { create_time: string; update_time: string }>(item: T): T {
-  item.create_time = dateToString(item.create_time, "minute");
-  item.update_time = dateToString(item.update_time, "minute");
-  return item;
 }
 
 const questionTypeLabel: Record<ExamQuestionType, string> = {
