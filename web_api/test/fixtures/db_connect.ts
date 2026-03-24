@@ -1,9 +1,10 @@
-import { test as viTest, afterAll, vi } from "vitest";
+import { test as viTest, afterAll } from "vitest";
 import { dbPool } from "@/db/client.ts";
 import { createInitIjiaDb } from "@ijia/data/testlib";
 import process from "node:process";
 import { redisPool, RedisPool } from "@/services/redis.ts";
-import { PgDbQueryPool, DbManage, parserDbConnectUrl } from "@asla/pg";
+import { PgDbQueryPool, DbManage } from "@asla/pg";
+import { DB_CONNECT_INFO } from "#test/utils/db.ts";
 
 export interface DbContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
@@ -15,7 +16,6 @@ export interface DbContext {
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
 const DB_NAME_PREFIX = "test_ijia_";
-const DB_CONNECT_INFO = getConfigEnv(process.env);
 const TEST_REDIS_RUL = process.env.TEST_REDIS_RUL!;
 
 const pubDbName = DB_NAME_PREFIX + "pub_" + VITEST_WORKER_ID;
@@ -41,7 +41,7 @@ export const test = viTest.extend<DbContext>({
     console.log("publicDbPool init", !!publicDbPool);
     if (!publicDbPool) {
       publicDbPool = (async () => {
-        await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true });
+        await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true, test: true });
         dbPool.connectOption = { ...DB_CONNECT_INFO, database: pubDbName };
         dbPool.open();
         publicDbPool = dbPool;
@@ -77,11 +77,7 @@ export const test = viTest.extend<DbContext>({
     }
   },
 });
-function getConfigEnv(env: Record<string, string | undefined>) {
-  const url = env["TEST_LOGIN_DB"];
-  if (!url) throw new Error("缺少 TEST_LOGIN_DB 环境变量");
-  return parserDbConnectUrl(url);
-}
+
 async function clearDropDb(pool: PgDbQueryPool, dbName: string) {
   await pool.close(true);
   const useCount = pool.totalCount - pool.idleCount;

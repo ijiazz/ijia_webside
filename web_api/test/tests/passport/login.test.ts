@@ -73,7 +73,7 @@ test("使用邮箱验证码登录", async function ({ api, publicDbPool }) {
   await expect(res.user.id).toBe(userInfo.id.toString());
 });
 test("使用大写域名邮箱加密码登录", async function ({ api, publicDbPool }) {
-  const emailName = getUniqueName("alice");
+  const emailName = await getUniqueName("alice");
   const userInfo = await createUser(`${emailName}@ijiazz.中文`, { password: AlicePassword });
 
   await loginNoCheckCaptcha(api, {
