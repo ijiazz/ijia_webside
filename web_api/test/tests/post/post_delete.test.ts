@@ -10,7 +10,7 @@ beforeEach<Context>(async ({ hono }) => {
 test("帖子删除后不能再获取", async function ({ api, publicDbPool }) {
   const { alice, post: postInfo } = await preparePost(api);
   await deletePost(api, postInfo.id, alice.token);
-  const { items: aliceList } = await api["/post/list"].get({ [JWT_TOKEN_KEY]: alice.token });
+  const { items: aliceList } = await api["/post/user"].get({ [JWT_TOKEN_KEY]: alice.token });
 
   expect(aliceList.length, "删除后，列表中不再包含该帖子").toBe(0);
 

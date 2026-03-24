@@ -37,7 +37,7 @@ test("有效举报人数达到3人时，评论将进入审核状态", async func
   await expect(comment.id, "评论未在审核状态").postCommentReviewStatusIs(null);
 
   const bob3 = await prepareUniqueUser("bob3");
-  await reportComment(api, p.id, "测试举报", bob3.token);
+  await reportComment(api, comment.id, "测试举报", bob3.token);
   await expect(getCommentReviewWeight(comment.id)).resolves.toBe(300);
   await expect(comment.id).postCommentReviewStatusIs(ReviewStatus.pending);
 });
@@ -64,9 +64,9 @@ test("已举报的评论，不能再点赞", async function ({ api, publicDbPool
   const { post: p, alice, action } = await prepareCommentPost(api);
   const comment = await action.createComment("abc", { token: alice.token });
 
-  await reportComment(api, p.id, "测试举报", alice.token);
+  await reportComment(api, comment.id, "测试举报", alice.token);
 
-  const rp1 = await setCommentLike(api, p.id, alice.token);
+  const rp1 = await setCommentLike(api, comment.id, alice.token);
   expect(rp1.success).toBeFalsy();
   await expect(getCommentStat(comment.id)).resolves.toMatchObject({
     like_count: 0,

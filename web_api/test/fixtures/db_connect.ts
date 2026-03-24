@@ -2,9 +2,8 @@ import { test as viTest, afterAll } from "vitest";
 import { dbPool } from "@/db/client.ts";
 import { createInitIjiaDb } from "@ijia/data/testlib";
 import process from "node:process";
-import { redisPool, RedisPool } from "@/services/redis.ts";
 import { PgDbQueryPool, DbManage } from "@asla/pg";
-import { DB_CONNECT_INFO } from "#test/utils/db.ts";
+import { DB_CONNECT_INFO, PUBLIC_CONNECT_INFO } from "#test/utils/db.ts";
 
 export interface DbContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
@@ -12,19 +11,18 @@ export interface DbContext {
   /** 初始化一个空的数据库（初始表和初始数据），需要注意，不同测试之间会共享同一个实例和数据库, 以优化测试速度，如果需要一个全新的数据库，请使用 ijiaDbPool */
   publicDbPool: PgDbQueryPool;
   emptyDbPool: PgDbQueryPool;
-  redis: RedisPool;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
 const DB_NAME_PREFIX = "test_ijia_";
-const TEST_REDIS_RUL = process.env.TEST_REDIS_RUL!;
 
-const pubDbName = DB_NAME_PREFIX + "pub_" + VITEST_WORKER_ID;
 let publicDbPool: PgDbQueryPool | Promise<PgDbQueryPool> | undefined;
 
 afterAll(async function () {
   if (publicDbPool) {
     const pool = await publicDbPool;
-    await clearDropDb(pool, pubDbName);
+
+    const useCount = pool.totalCount - pool.idleCount;
+    if (useCount !== 0) throw new Error("存在未释放的数据库连接");
   }
 });
 
@@ -38,11 +36,9 @@ export const test = viTest.extend<DbContext>({
     await clearDropDb(dbPool, dbName);
   },
   async publicDbPool({}, use) {
-    console.log("publicDbPool init", !!publicDbPool);
     if (!publicDbPool) {
       publicDbPool = (async () => {
-        await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true, test: true });
-        dbPool.connectOption = { ...DB_CONNECT_INFO, database: pubDbName };
+        dbPool.connectOption = PUBLIC_CONNECT_INFO;
         dbPool.open();
         publicDbPool = dbPool;
         return dbPool;
@@ -61,20 +57,6 @@ export const test = viTest.extend<DbContext>({
     dbPool.open();
     await use(dbPool);
     await clearDropDb(dbPool, dbName);
-  },
-  async redis({}, use) {
-    const url = new URL(TEST_REDIS_RUL);
-    url.pathname = VITEST_WORKER_ID.toString();
-    redisPool.url = url;
-    const conn = await redisPool.connect();
-    await conn.flushDb("SYNC");
-    conn.release();
-    use(redisPool);
-    const used = redisPool.totalCount - redisPool.idleCount;
-    await redisPool.close(true);
-    if (used !== 0) {
-      throw new Error("存在未释放的 Redis 连接");
-    }
   },
 });
 

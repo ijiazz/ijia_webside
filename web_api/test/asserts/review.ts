@@ -60,6 +60,12 @@ expect.extend({
   async questionReviewStatusIs(questionId: number, status: ReviewStatus) {
     const info = await getQuestionReviewStatus(questionId);
     const expectMsg = `预期题目 "${questionId}" 的审核状态为 ${status}`;
+    if (info === null) {
+      return {
+        pass: false,
+        message: () => `题目 "${questionId}" 不存在`,
+      };
+    }
     if (info.status === status) {
       return {
         pass: true,

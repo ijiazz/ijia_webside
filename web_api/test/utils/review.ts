@@ -34,7 +34,7 @@ type ReviewInfoBase = {
 export type QuestionReviewInfo = ReviewInfoBase & {
   review_id: number | null;
 };
-export async function getQuestionReviewStatus(questionId: number): Promise<QuestionReviewInfo> {
+export async function getQuestionReviewStatus(questionId: number): Promise<QuestionReviewInfo | null> {
   const sql = select<QuestionReviewInfo>({
     status: "q.review_status",
     review_id: "q.id",
@@ -48,7 +48,8 @@ export async function getQuestionReviewStatus(questionId: number): Promise<Quest
     .where(`q.id=${v(questionId)}`)
     .limit(1);
 
-  return dbPool.queryFirstRow<QuestionReviewInfo>(sql);
+  const [row] = await dbPool.queryRows<QuestionReviewInfo>(sql);
+  return row ?? null;
 }
 
 export type PostReviewInfo = ReviewInfoBase & {

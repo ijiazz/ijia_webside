@@ -43,7 +43,7 @@ test("审核通过", async function ({ api, publicDbPool }) {
   const result = await commitQuestionReview(api, admin.token, { is_passed: true, remark: "通过", review_id: reviewId });
   expect(result.success).toBe(true);
 
-  await expect(reviewId).questionReviewStatusIs(ReviewStatus.passed);
+  await expect(created.question_id).questionReviewStatusIs(ReviewStatus.passed);
 });
 
 test("审核不通过，并给出评论", async function ({ api, publicDbPool }) {
@@ -96,7 +96,7 @@ test("同一个审核项不能重复提交审核", async function ({ api, public
     commitQuestionReview(api, admin.token, { is_passed: false, remark: "再次提交", review_id: reviewId }),
   ).responseStatus(400);
 
-  await expect(reviewId).questionReviewStatusIs(ReviewStatus.passed);
+  await expect(created.question_id).questionReviewStatusIs(ReviewStatus.passed);
 });
 
 test("审核修正题目时，非法答案索引应返回 400", async function ({ api, publicDbPool }) {
@@ -127,7 +127,7 @@ test("审核中的题目被用户删除后，仍需要审核", async function ({
   const res1 = await commitQuestionReview(api, admin.token, { is_passed: true, remark: "通过", review_id: reviewId });
   expect(res1.success).toBe(true);
 
-  await expect(reviewId).questionReviewStatusIs(ReviewStatus.passed);
+  await expect(question_id).questionReviewStatusIs(ReviewStatus.passed);
 });
 
 test("修改题目后，应能提交审核", async function ({ api, publicDbPool }) {
