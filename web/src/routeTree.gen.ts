@@ -24,6 +24,7 @@ import { Route as ThemePassportFindAccountRouteImport } from './routes/_theme/pa
 import { Route as ThemeAboutIntroductionRouteImport } from './routes/_theme/about/introduction.tsx'
 import { Route as ThemeAboutGuideRouteImport } from './routes/_theme/about/guide.tsx'
 import { Route as SchoolWallPublishRouteImport } from './routes/_school/wall/publish.tsx'
+import { Route as SchoolQuestionCreateRouteImport } from './routes/_school/question/create.tsx'
 import { Route as SchoolProfileSecurityRouteImport } from './routes/_school/profile/security.tsx'
 import { Route as SchoolProfileCenterRouteImport } from './routes/_school/profile/center.tsx'
 import { Route as SchoolExaminationSplatRouteImport } from './routes/_school/examination/$.tsx'
@@ -145,6 +146,13 @@ const SchoolWallPublishRoute = SchoolWallPublishRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_school/wall/publish.lazy.tsx').then((d) => d.Route),
 )
+const SchoolQuestionCreateRoute = SchoolQuestionCreateRouteImport.update({
+  id: '/question/create',
+  path: '/question/create',
+  getParentRoute: () => SchoolRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_school/question/create.lazy.tsx').then((d) => d.Route),
+)
 const SchoolProfileSecurityRoute = SchoolProfileSecurityRouteImport.update({
   id: '/profile/security',
   path: '/profile/security',
@@ -262,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/examination/$': typeof SchoolExaminationSplatRoute
   '/profile/center': typeof SchoolProfileCenterRoute
   '/profile/security': typeof SchoolProfileSecurityRoute
+  '/question/create': typeof SchoolQuestionCreateRoute
   '/wall/publish': typeof SchoolWallPublishRoute
   '/about/guide': typeof ThemeAboutGuideRoute
   '/about/introduction': typeof ThemeAboutIntroductionRoute
@@ -289,6 +298,7 @@ export interface FileRoutesByTo {
   '/examination/$': typeof SchoolExaminationSplatRoute
   '/profile/center': typeof SchoolProfileCenterRoute
   '/profile/security': typeof SchoolProfileSecurityRoute
+  '/question/create': typeof SchoolQuestionCreateRoute
   '/wall/publish': typeof SchoolWallPublishRoute
   '/about/guide': typeof ThemeAboutGuideRoute
   '/about/introduction': typeof ThemeAboutIntroductionRoute
@@ -320,6 +330,7 @@ export interface FileRoutesById {
   '/_school/examination/$': typeof SchoolExaminationSplatRoute
   '/_school/profile/center': typeof SchoolProfileCenterRoute
   '/_school/profile/security': typeof SchoolProfileSecurityRoute
+  '/_school/question/create': typeof SchoolQuestionCreateRoute
   '/_school/wall/publish': typeof SchoolWallPublishRoute
   '/_theme/about/guide': typeof ThemeAboutGuideRoute
   '/_theme/about/introduction': typeof ThemeAboutIntroductionRoute
@@ -351,6 +362,7 @@ export interface FileRouteTypes {
     | '/examination/$'
     | '/profile/center'
     | '/profile/security'
+    | '/question/create'
     | '/wall/publish'
     | '/about/guide'
     | '/about/introduction'
@@ -378,6 +390,7 @@ export interface FileRouteTypes {
     | '/examination/$'
     | '/profile/center'
     | '/profile/security'
+    | '/question/create'
     | '/wall/publish'
     | '/about/guide'
     | '/about/introduction'
@@ -408,6 +421,7 @@ export interface FileRouteTypes {
     | '/_school/examination/$'
     | '/_school/profile/center'
     | '/_school/profile/security'
+    | '/_school/question/create'
     | '/_school/wall/publish'
     | '/_theme/about/guide'
     | '/_theme/about/introduction'
@@ -541,6 +555,13 @@ declare module '@tanstack/react-router' {
       path: '/wall/publish'
       fullPath: '/wall/publish'
       preLoaderRoute: typeof SchoolWallPublishRouteImport
+      parentRoute: typeof SchoolRouteRoute
+    }
+    '/_school/question/create': {
+      id: '/_school/question/create'
+      path: '/question/create'
+      fullPath: '/question/create'
+      preLoaderRoute: typeof SchoolQuestionCreateRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
     '/_school/profile/security': {
@@ -695,6 +716,7 @@ interface SchoolRouteRouteChildren {
   SchoolExaminationSplatRoute: typeof SchoolExaminationSplatRoute
   SchoolProfileCenterRoute: typeof SchoolProfileCenterRoute
   SchoolProfileSecurityRoute: typeof SchoolProfileSecurityRoute
+  SchoolQuestionCreateRoute: typeof SchoolQuestionCreateRoute
   SchoolWallPublishRoute: typeof SchoolWallPublishRoute
   SchoolLiveIndexRoute: typeof SchoolLiveIndexRoute
   SchoolReviewIndexRoute: typeof SchoolReviewIndexRoute
@@ -709,6 +731,7 @@ const SchoolRouteRouteChildren: SchoolRouteRouteChildren = {
   SchoolExaminationSplatRoute: SchoolExaminationSplatRoute,
   SchoolProfileCenterRoute: SchoolProfileCenterRoute,
   SchoolProfileSecurityRoute: SchoolProfileSecurityRoute,
+  SchoolQuestionCreateRoute: SchoolQuestionCreateRoute,
   SchoolWallPublishRoute: SchoolWallPublishRoute,
   SchoolLiveIndexRoute: SchoolLiveIndexRoute,
   SchoolReviewIndexRoute: SchoolReviewIndexRoute,
