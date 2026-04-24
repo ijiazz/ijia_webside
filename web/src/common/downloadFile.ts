@@ -20,3 +20,7 @@ export function downloadFile(url: string, filename?: string): void {
   }
   return;
 }
+
+export function replaceFileExtension(fileName: string, newExtension: string): string {
+  return fileName.replace(/(\.[^/.]*)?$/, `.${newExtension}`);
+}

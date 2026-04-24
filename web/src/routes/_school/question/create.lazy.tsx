@@ -12,6 +12,7 @@ type FromValues = EditQuestionFormFields;
 function RouteComponent() {
   const form = useForm<FromValues>({
     defaultValues: {
+      question_type: ExamQuestionType.SingleChoice,
       options: [{}, {}, {}, {}],
     },
   });
@@ -24,7 +25,7 @@ function RouteComponent() {
       }}
     >
       <FormProvider {...form}>
-        <EditQuestionFields mode="create" />
+        <EditQuestionFields mode="edit" />
       </FormProvider>
     </div>
   );

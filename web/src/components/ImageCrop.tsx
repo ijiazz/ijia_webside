@@ -140,6 +140,7 @@ export function useCropModal() {
             },
           );
         },
+        maskClosable: false,
       });
     });
   }, []);

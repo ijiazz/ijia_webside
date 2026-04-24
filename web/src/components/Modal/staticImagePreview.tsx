@@ -84,7 +84,7 @@ export function StaticImagePreviewProvider({ children }: { children: React.React
   };
 
   return (
-    <ImagePreviewContext.Provider value={context}>
+    <ImagePreviewContext value={context}>
       {children}
       {images ? (
         typeof images.url === "string" ? (
@@ -118,7 +118,7 @@ export function StaticImagePreviewProvider({ children }: { children: React.React
           </Image.PreviewGroup>
         )
       ) : null}
-    </ImagePreviewContext.Provider>
+    </ImagePreviewContext>
   );
 }
 function disposeImage(config: ImagePreviewConfig | ImageGroupPreviewConfig) {

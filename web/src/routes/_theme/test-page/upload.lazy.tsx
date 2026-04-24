@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useCropModal } from "@/components/ImageCrop.tsx";
 import { UploadOutlined } from "@ant-design/icons";
 import { useImagePreviewModal } from "@/components/Modal.ts";
+import { replaceFileExtension } from "@/common/downloadFile.ts";
 
 export const Route = createLazyFileRoute("/_theme/test-page/upload")({
   component: RouteComponent,
@@ -71,8 +72,4 @@ function RouteComponent() {
       </Upload>
     </div>
   );
-}
-
-function replaceFileExtension(fileName: string, newExtension: string): string {
-  return fileName.replace(/(\.[^/.]*)?$/, `.${newExtension}`);
 }

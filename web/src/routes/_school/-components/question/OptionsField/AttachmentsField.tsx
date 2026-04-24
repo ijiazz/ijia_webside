@@ -1,20 +1,47 @@
-import { Upload } from "@/components/Upload.tsx";
-import { UploadOutlined } from "@ant-design/icons";
+import { DeleteOutlined } from "@ant-design/icons";
+import { Button, Image, Tooltip } from "antd";
 import { useFieldArray } from "react-hook-form";
 import { EditQuestionFormFields } from "./form.ts";
+import { Base64Image } from "@/components/Base64Image.tsx";
+import { css } from "@emotion/css";
+import { ImageOptionUpload } from "./ImageOptionUpload.tsx";
 
 export function AttachmentsField() {
   const { fields, append, remove } = useFieldArray<EditQuestionFormFields>({
     name: "attachments",
   });
+
   return (
-    <div>
-      {fields.map((field, index) => (
-        <div key={field.id}></div>
-      ))}
-      <Upload customRequest={() => {}} onChange={() => {}}>
-        <UploadOutlined />
-      </Upload>
+    <div style={{ display: "flex", gap: 8, marginBottom: 16, marginTop: -16 }}>
+      <Image.PreviewGroup>
+        {fields.map((field, index) => (
+          <div className={ImageItemCSS} key={field.id}>
+            {field.file ? <Base64Image data={field.file.data} type={field.file.type} /> : null}
+            <div className={ImageItemTitleRootCSS}>
+              <span>{field.text || `图 ${index + 1}`}</span>
+              <Button icon={<DeleteOutlined />} size="small" danger type="text" onClick={() => remove(index)} />
+            </div>
+          </div>
+        ))}
+      </Image.PreviewGroup>
+      <Tooltip title="添加图片">
+        <ImageOptionUpload
+          onChange={(file) => append({ file: { data: file.base64, type: file.type }, text: undefined })}
+        />
+      </Tooltip>
     </div>
   );
 }
+
+const ImageItemCSS = css`
+  display: flex;
+  flex-direction: column;
+  width: 100px;
+  height: 100px;
+`;
+const ImageItemTitleRootCSS = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+`;

@@ -1,9 +1,11 @@
 import { ExamQuestionType } from "@/api.ts";
-import { FormItem, getAntdErrorStatus } from "@/components/form.tsx";
+import { FormItem } from "@/components/form.tsx";
 import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Input, Radio, Tag } from "antd";
-import { Controller, useController, useFieldArray, useWatch } from "react-hook-form";
-import { EditQuestionFormFields } from "./form.ts";
+import { Button, Checkbox, Radio, Tag } from "antd";
+import { useController, useFieldArray, useFormState, useWatch } from "react-hook-form";
+import { EditQuestionFormFields, FormMode, FormModeContext } from "./form.ts";
+import { Option } from "./Option.tsx";
+import { useContext } from "react";
 
 export function OptionsField() {
   const questionType = useWatch<EditQuestionFormFields, "question_type">({ name: "question_type" });
@@ -19,15 +21,17 @@ export function OptionsField() {
   }
 }
 function MultipleOptions() {
+  const mode = useContext(FormModeContext);
   const answerIndexField = useController<EditQuestionFormFields, "answer_index">({
     name: "answer_index",
   });
-
+  const { defaultValues } = useFormState();
   const { fields, append, remove } = useFieldArray<EditQuestionFormFields>({
     name: "options",
   });
   const maxOptionCount = 6,
     minOptionCount = 3;
+  const defaultOptionCount = defaultValues?.options?.length || 0;
 
   return (
     <FormItem
@@ -38,33 +42,34 @@ function MultipleOptions() {
     >
       <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}>
         {fields.map((field, index) => (
-          <div key={field.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <Tag>{String.fromCharCode(65 + index)}</Tag>
-            <Checkbox
-              value={index}
-              checked={answerIndexField.field.value.includes(index)}
-              onChange={() => {
-                const current = answerIndexField.field.value || [];
-                if (current.includes(index)) {
-                  answerIndexField.field.onChange(current.filter((i) => i !== index));
-                } else {
-                  answerIndexField.field.onChange([...current, index]);
-                }
-              }}
-            />
-            <Controller
-              name={`options.${index}.value` as const}
-              render={({ field, fieldState }) => (
-                <Input {...field} status={getAntdErrorStatus(fieldState)} placeholder={`选项 ${index + 1}`} />
-              )}
-            />
-            <Button
-              danger
-              disabled={fields.length <= minOptionCount}
-              type="text"
-              icon={<DeleteOutlined />}
-              onClick={() => remove(index)}
-            />
+          <div key={field.id} style={{ display: "flex", gap: 8, alignItems: "start" }}>
+            <div style={{ marginBlock: 3 }}>
+              <Tag>{String.fromCharCode(65 + index)}</Tag>
+              <Checkbox
+                value={index}
+                checked={answerIndexField.field.value.includes(index)}
+                onChange={() => {
+                  if (mode !== "fullEdit") return;
+                  const current = answerIndexField.field.value || [];
+                  if (current.includes(index)) {
+                    answerIndexField.field.onChange(current.filter((i) => i !== index));
+                  } else {
+                    answerIndexField.field.onChange([...current, index]);
+                  }
+                }}
+              />
+            </div>
+            <Option index={index} />
+
+            {(mode === FormMode.FullEdit || defaultOptionCount > index) && (
+              <Button
+                danger
+                disabled={fields.length <= minOptionCount}
+                type="text"
+                icon={<DeleteOutlined />}
+                onClick={() => remove(index)}
+              />
+            )}
           </div>
         ))}
         {fields.length < maxOptionCount && (
@@ -77,6 +82,9 @@ function MultipleOptions() {
   );
 }
 function SingleOptions() {
+  const mode = useContext(FormModeContext);
+  const { defaultValues } = useFormState();
+  const defaultOptionCount = defaultValues?.options?.length || 0;
   const answerIndexField = useController<EditQuestionFormFields, "answer_index">({
     name: "answer_index",
   });
@@ -96,28 +104,29 @@ function SingleOptions() {
     >
       <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8 }}>
         {fields.map((field, index) => (
-          <div key={field.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <Tag>{String.fromCharCode(65 + index)}</Tag>
-            <Radio
-              value={index}
-              checked={answerIndexField.field.value?.[0] === index}
-              onChange={() => {
-                answerIndexField.field.onChange([index]);
-              }}
-            />
-            <Controller
-              name={`options.${index}.value` as const}
-              render={({ field, fieldState }) => (
-                <Input {...field} status={getAntdErrorStatus(fieldState)} placeholder={`选项 ${index + 1}`} />
-              )}
-            />
-            <Button
-              danger
-              disabled={fields.length <= minOptionCount}
-              type="text"
-              icon={<DeleteOutlined />}
-              onClick={() => remove(index)}
-            />
+          <div key={field.id} style={{ display: "flex", gap: 8, alignItems: "start" }}>
+            <div style={{ marginBlock: 3 }}>
+              <Tag>{String.fromCharCode(65 + index)}</Tag>
+              <Radio
+                value={index}
+                checked={answerIndexField.field.value?.[0] === index}
+                onChange={() => {
+                  if (mode !== FormMode.FullEdit) return;
+                  answerIndexField.field.onChange([index]);
+                }}
+                style={{ margin: 0 }}
+              />
+            </div>
+            <Option index={index} />
+            {(mode === FormMode.FullEdit || defaultOptionCount <= index) && (
+              <Button
+                danger
+                disabled={fields.length <= minOptionCount}
+                type="text"
+                icon={<DeleteOutlined />}
+                onClick={() => remove(index)}
+              />
+            )}
           </div>
         ))}
         {fields.length < maxOptionCount && (
@@ -130,6 +139,7 @@ function SingleOptions() {
   );
 }
 function TrueFalseOptions() {
+  const mode = useContext(FormModeContext);
   const answerIndexField = useController<EditQuestionFormFields, "answer_index">({
     name: "answer_index",
   });
@@ -138,7 +148,14 @@ function TrueFalseOptions() {
   return (
     <FormItem label="答案" required error={answerIndexField.fieldState.error?.message}>
       <div style={{ width: "100%", display: "flex", gap: 8 }}>
-        <Radio.Group value={radioValue} onChange={(e) => answerIndexField.field.onChange([e.target.value ? 0 : 1])}>
+        <Radio.Group
+          value={radioValue}
+          aria-readonly={mode !== FormMode.FullEdit}
+          onChange={(e) => {
+            if (mode !== FormMode.FullEdit) return;
+            answerIndexField.field.onChange([e.target.value ? 0 : 1]);
+          }}
+        >
           <Radio value={true}>✅ 正确</Radio>
           <Radio value={false}>❌ 错误</Radio>
         </Radio.Group>

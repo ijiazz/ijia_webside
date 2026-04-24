@@ -1,15 +1,9 @@
-import {
-  CommitQuestionReviewParam,
-  CommitReviewResult,
-  ExamQuestionType,
-  QuestionPublic,
-  ReviewTargetType,
-} from "@/api.ts";
+import { CommitQuestionReviewParam, CommitReviewResult, ReviewTargetType } from "@/api.ts";
 import { useMessage } from "@/provider/AntdProvider.tsx";
 import { api } from "@/request/client.ts";
 import { getReviewNextQueryOption } from "@/request/review.ts";
 import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { Button, Empty, Space, Spin, Tag, Typography } from "antd";
+import { Button, Empty, Spin, Typography } from "antd";
 import { FormProvider, useForm } from "react-hook-form";
 import { ResultRadioField } from "./form/ResultRadioField.tsx";
 import { FormValues } from "./form/schema.ts";

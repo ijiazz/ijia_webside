@@ -1,4 +1,5 @@
 import { ExamQuestionType, QuestionAttachment, QuestionOption } from "@/api.ts";
+import { createContext } from "react";
 
 export type EditQuestionFormFields = {
   question_text: string;
@@ -14,6 +15,16 @@ export type EditQuestionFormFields = {
 
   /** 题目类型 */
   question_type: ExamQuestionType;
-  attachments?: QuestionAttachment[];
-  options?: QuestionOption[];
+  attachments?: AttachmentField[];
+  options?: OptionField[];
 };
+
+export type AttachmentField = QuestionAttachment;
+export type OptionField = QuestionOption;
+
+export enum FormMode {
+  Edit = "edit",
+  FullEdit = "fullEdit",
+}
+
+export const FormModeContext = createContext<FormMode>(FormMode.Edit);

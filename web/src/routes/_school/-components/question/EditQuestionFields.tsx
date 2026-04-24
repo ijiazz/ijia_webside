@@ -4,7 +4,7 @@ import { Input, Radio } from "antd";
 import { Controller, useFormContext } from "react-hook-form";
 import { AttachmentsField } from "./OptionsField/AttachmentsField.tsx";
 import { OptionsField } from "./OptionsField/OptionsField.tsx";
-import { EditQuestionFormFields } from "./OptionsField/form.ts";
+import { EditQuestionFormFields, FormModeContext } from "./OptionsField/form.ts";
 
 export type { EditQuestionFormFields } from "./OptionsField/form.ts";
 
@@ -20,7 +20,6 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
     <>
       <Controller
         name="question_type"
-        defaultValue={ExamQuestionType.SingleChoice}
         render={({ field, fieldState }) => {
           const isReadonly = mode === "edit";
           return (
@@ -69,7 +68,9 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
         )}
       />
       <AttachmentsField />
-      <OptionsField />
+      <FormModeContext value={mode}>
+        <OptionsField />
+      </FormModeContext>
 
       <Controller
         name="explanation_text"
