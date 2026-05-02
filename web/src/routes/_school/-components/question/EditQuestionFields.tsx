@@ -4,24 +4,29 @@ import { Input, Radio } from "antd";
 import { Controller, useFormContext } from "react-hook-form";
 import { AttachmentsField } from "./OptionsField/AttachmentsField.tsx";
 import { OptionsField } from "./OptionsField/OptionsField.tsx";
-import { EditQuestionFormFields, FormModeContext } from "./OptionsField/form.ts";
+import {
+  EditQuestionFormFields,
+  QuestionEditMode,
+  FormModeContext,
+  EditQuestionFormInput,
+} from "./OptionsField/form.ts";
 
-export type { EditQuestionFormFields } from "./OptionsField/form.ts";
+export { type EditQuestionFormFields, QuestionEditMode } from "./OptionsField/form.ts";
 
 export type EditQuestionFieldsProps = {
-  mode: "create" | "edit";
+  mode?: QuestionEditMode;
 };
 
 export function EditQuestionFields(props: EditQuestionFieldsProps) {
-  const { mode = "edit" } = props;
-  const form = useFormContext<EditQuestionFormFields>();
+  const { mode = QuestionEditMode.Edit } = props;
+  const form = useFormContext<EditQuestionFormInput, undefined, EditQuestionFormFields>();
 
   return (
     <>
       <Controller
         name="question_type"
         render={({ field, fieldState }) => {
-          const isReadonly = mode === "edit";
+          const isReadonly = mode === QuestionEditMode.Edit;
           return (
             <FormItem label="题型" error={fieldState.error?.message}>
               <Radio.Group
@@ -50,6 +55,7 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
                 }}
                 optionType="button"
                 buttonStyle="solid"
+                aria-readonly={isReadonly}
               >
                 <Radio.Button value={ExamQuestionType.SingleChoice}>单选</Radio.Button>
                 <Radio.Button value={ExamQuestionType.MultipleChoice}>多选</Radio.Button>
@@ -61,6 +67,9 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
       />
       <Controller
         name="question_text"
+        rules={{
+          required: "请输入题目",
+        }}
         render={({ field, fieldState }) => (
           <FormItem required label="题目" error={fieldState.error?.message}>
             <Input.TextArea {...field} autoSize={{ minRows: 3, maxRows: 8 }} status={getAntdErrorStatus(fieldState)} />
@@ -74,8 +83,11 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
 
       <Controller
         name="explanation_text"
+        rules={{
+          required: "请输入答案解析",
+        }}
         render={({ field, fieldState }) => (
-          <FormItem required label="答案解析" error={fieldState.error?.message}>
+          <FormItem required label="答案解析" error={fieldState.error?.message} description="可以添加抖音或外站链接">
             <Input.TextArea {...field} autoSize={{ minRows: 3, maxRows: 8 }} status={getAntdErrorStatus(fieldState)} />
           </FormItem>
         )}

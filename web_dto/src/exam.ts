@@ -1,4 +1,4 @@
-import type { ExamUserQuestion } from "./exam/question.dto.ts";
+import type { GetUserQuestionResult } from "./exam/result.ts";
 import type {
   CreateQuestionParam,
   CreateQuestionResult,
@@ -9,6 +9,7 @@ import type {
 
 export * from "./exam/question.ts";
 export * from "./exam/question.dto.ts";
+export * from "./exam/result.ts";
 
 export interface QuestionAPI {
   /**
@@ -30,9 +31,7 @@ export interface QuestionAPI {
   /** 获取题目 */
   "GET /question/entity/:question_id": {
     params: { question_id: string };
-    response: {
-      item: ExamUserQuestion;
-    };
+    response: GetUserQuestionResult;
   };
   /** 获取用户题目列表 */
   "GET /question/list_user": {
@@ -44,5 +43,11 @@ export interface QuestionAPI {
       reviewing_count: number;
       total_count: number;
     };
+  };
+
+  /** 审核获取题目详情，返回结果与用户获取题目详情相同 */
+  "GET /question/review_get/:review_id": {
+    params: { review_id: string };
+    response: GetUserQuestionResult;
   };
 }

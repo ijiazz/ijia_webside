@@ -1,31 +1,46 @@
 import { CommitQuestionReviewParam, CommitReviewResult, ReviewTargetType } from "@/api.ts";
 import { useMessage } from "@/provider/AntdProvider.tsx";
-import { api } from "@/request/client.ts";
+import { api, queryClient } from "@/request/client.ts";
 import { getReviewNextQueryOption } from "@/request/review.ts";
-import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { Button, Empty, Spin, Typography } from "antd";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { Button, Empty, Typography } from "antd";
 import { FormProvider, useForm } from "react-hook-form";
 import { ResultRadioField } from "./form/ResultRadioField.tsx";
-import { FormValues } from "./form/schema.ts";
 import { ReviewItem } from "../-components/ReviewItem.tsx";
 import * as styles from "./comment.css.ts";
-import { getQuestionDetail } from "@/request/question.ts";
-import { EditQuestionFields, EditQuestionFormFields } from "../../-components/question/EditQuestionFields.tsx";
+import { getQuestionDetailForReview } from "@/request/question.ts";
+import {
+  EditQuestionFields,
+  EditQuestionFormFields,
+  QuestionEditMode,
+} from "../../-components/question/EditQuestionFields.tsx";
 
-type QuestionFormValues = FormValues & EditQuestionFormFields;
+type QuestionFormInput = Partial<EditQuestionFormFields>;
+type QuestionFormOutput = EditQuestionFormFields;
+
 type QuestionInfo = {
   target_id: number;
 };
 
 export function QuestionReview() {
   const message = useMessage();
-  const form = useForm<QuestionFormValues>();
-
   const {
     data: initData,
     isFetching,
     refetch,
   } = useSuspenseQuery(getReviewNextQueryOption<QuestionInfo>({ type: ReviewTargetType.exam_question }));
+
+  const updateForm = useForm<QuestionFormInput, undefined, EditQuestionFormFields>({
+    defaultValues: async () => {
+      const questionId = initData.item?.info.target_id;
+      if (questionId === undefined) {
+        return {};
+      }
+      const questionDetail = await queryClient.fetchQuery(getQuestionDetailForReview(questionId.toString()));
+      return questionDetail;
+    },
+  });
+
   const { data, mutateAsync } = useMutation({
     mutationFn(param: CommitQuestionReviewParam) {
       return api["/review/commit/question"].post({ body: param }) as Promise<CommitReviewResult<QuestionInfo>>;
@@ -61,36 +76,28 @@ export function QuestionReview() {
       </Typography.Title>
       <ReviewItem item={reviewData} />
 
-      <FormProvider {...form}>
-        <form
-          style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}
-          onSubmit={form.handleSubmit(async (values) => {
-            const { isPass, remark, question_type, ...updates } = values;
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <FormProvider {...updateForm}>
+          <EditQuestionFields mode={QuestionEditMode.FullEdit} />
+        </FormProvider>
+        <ResultRadioField
+          onSubmit={async (values) => {
+            const questionFormValues = await new Promise<QuestionFormOutput>((resolve) =>
+              updateForm.handleSubmit(async (formValues) => {
+                resolve(formValues);
+              })(),
+            );
 
             const body: CommitQuestionReviewParam = {
               review_id: reviewData.id.toString(),
               is_passed: values.isPass,
               remark: values.remark,
-              update: updates,
+              update: questionFormValues,
             };
-            return mutateAsync(body);
-          })}
-        >
-          <QuestionReviewInfoPanel questionId={questionId.toString()} />
-          <ResultRadioField />
-        </form>
-      </FormProvider>
+            await mutateAsync(body);
+          }}
+        />
+      </div>
     </div>
   );
-}
-
-function QuestionReviewInfoPanel(props: { questionId: string }) {
-  const { questionId } = props;
-  const { data: question, error, isLoading } = useQuery(getQuestionDetail(questionId));
-
-  if (isLoading) return <Spin />;
-  if (!question) {
-    return <Empty description="题目信息不存在" />;
-  }
-  return <EditQuestionFields mode="edit" />;
 }

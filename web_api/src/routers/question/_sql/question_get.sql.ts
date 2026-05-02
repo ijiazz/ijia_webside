@@ -2,7 +2,12 @@ import { dbPool } from "@/db/client.ts";
 import { GetUserQuestionListResult, QuestionDetail, QuestionPublic } from "@/dto.ts";
 import { v } from "@/sql/utils.ts";
 import { genQuestionMedias, parseCursorId, toCursor } from "../_utils/question.ts";
-import { getQuestionDetailSelect, getQuestionPublicSelect, PublicSelectRaw } from "./select_question.sql.ts";
+import {
+  getQuestionDetailSelect,
+  getQuestionPublicSelect,
+  PublicSelectRaw,
+  QuestionDetailSelectRaw,
+} from "./select_question.sql.ts";
 
 export async function getUserQuestionPublicList(
   config: {
@@ -67,6 +72,23 @@ export async function getQuestionDetail(questionId: number, userId: number | nul
     return null;
   }
 
+  return pruneQuestionDetail(item);
+}
+export async function getQuestionDetailForReview(questionId: number): Promise<QuestionDetail | null> {
+  const sql = getQuestionDetailSelect({ requestUserId: null })
+    .where([`q.id = ${v(questionId)}`])
+    .limit(1);
+  const items = await dbPool.queryRows(sql);
+
+  const item = items[0];
+  if (!item) {
+    return null;
+  }
+
+  return pruneQuestionDetail(item);
+}
+
+function pruneQuestionDetail(item: QuestionDetailSelectRaw) {
   const publicQuestion = mapQuestion(item) as QuestionDetail;
   publicQuestion.create_time = item.create_time.toISOString();
   publicQuestion.update_time = item.update_time.toISOString();

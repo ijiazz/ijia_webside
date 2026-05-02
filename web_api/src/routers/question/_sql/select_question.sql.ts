@@ -90,7 +90,10 @@ export type QuestionDetailSelectRaw = PublicSelectRaw & {
   event_time?: Date;
   long_time?: boolean;
 };
-export function getQuestionDetailSelect(option: { requestUserId: number | null }) {
+export function getQuestionDetailSelect(option: {
+  /** 如果不为空，返回审核信息，否则不返回审核信息 */
+  requestUserId: number | null;
+}) {
   const { requestUserId = null } = option;
   const SELECT = [
     ...SELECT_PUBLIC,

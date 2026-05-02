@@ -1,6 +1,5 @@
 import { ExamQuestionType, QuestionAttachment, QuestionOption } from "@/api.ts";
 import { createContext } from "react";
-
 export type EditQuestionFormFields = {
   question_text: string;
   // question_text_struct?: TextStructure[] | null;
@@ -18,13 +17,16 @@ export type EditQuestionFormFields = {
   attachments?: AttachmentField[];
   options?: OptionField[];
 };
+export type EditQuestionFormInput = Partial<EditQuestionFormFields>;
 
 export type AttachmentField = QuestionAttachment;
 export type OptionField = QuestionOption;
 
-export enum FormMode {
+export enum QuestionEditMode {
+  /**编辑模式，部分字段只读，无法更改题型 */
   Edit = "edit",
+  /**全编辑模式 */
   FullEdit = "fullEdit",
 }
 
-export const FormModeContext = createContext<FormMode>(FormMode.Edit);
+export const FormModeContext = createContext<QuestionEditMode>(QuestionEditMode.Edit);

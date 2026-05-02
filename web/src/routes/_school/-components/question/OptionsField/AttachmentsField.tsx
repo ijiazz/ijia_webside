@@ -1,13 +1,13 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Image, Tooltip } from "antd";
 import { useFieldArray } from "react-hook-form";
-import { EditQuestionFormFields } from "./form.ts";
+import { EditQuestionFormInput } from "./form.ts";
 import { Base64Image } from "@/components/Base64Image.tsx";
 import { css } from "@emotion/css";
 import { ImageOptionUpload } from "./ImageOptionUpload.tsx";
 
 export function AttachmentsField() {
-  const { fields, append, remove } = useFieldArray<EditQuestionFormFields>({
+  const { fields, append, remove } = useFieldArray<EditQuestionFormInput, "attachments">({
     name: "attachments",
   });
 
@@ -24,18 +24,21 @@ export function AttachmentsField() {
           </div>
         ))}
       </Image.PreviewGroup>
-      <Tooltip title="添加图片">
-        <ImageOptionUpload
-          onChange={(file) => append({ file: { data: file.base64, type: file.type }, text: undefined })}
-        />
-      </Tooltip>
+      {fields.length <= 8 && (
+        <Tooltip title="添加图片">
+          <ImageOptionUpload
+            onChange={(file) => append({ file: { data: file.base64, type: file.type }, text: undefined })}
+          />
+        </Tooltip>
+      )}
     </div>
   );
 }
 
 const ImageItemCSS = css`
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  align-items: end;
+  grid-template-rows: 1fr auto;
   width: 100px;
   height: 100px;
 `;

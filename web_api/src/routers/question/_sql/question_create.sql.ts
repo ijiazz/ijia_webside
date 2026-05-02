@@ -2,7 +2,7 @@ import { dbPool } from "@/db/client.ts";
 import { CreateQuestionParam } from "@/dto.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
-import { DbExamQuestion, ReviewStatus } from "@ijia/data/db";
+import { DbExamQuestion } from "@ijia/data/db";
 import { checkQuestionTypeOption, parserCreateQuestionInput } from "../_utils/create.schema.ts";
 import { SqlLike } from "@asla/pg";
 
@@ -59,7 +59,7 @@ export async function createQuestion(
 
   const insertReviewSql: SqlLike[] = [];
   if (!option.skipReview) {
-    insertReviewSql.push(v.gen`SELECT review_question_set_to_reviewing(${v(questionId)}) AS id`);
+    insertReviewSql.push(v.gen`SELECT review_question_set_to_reviewing(${questionId}) AS id`);
   }
 
   if (attachmentOptions.length > 0) {

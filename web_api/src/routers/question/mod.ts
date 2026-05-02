@@ -10,3 +10,4 @@ import "./entity/$question_id.patch.ts";
 import "./entity/$question_id.delete.ts";
 import "./list_user.get.ts";
 import "./public_stats.get.ts";
+import "./review_get.get.ts";

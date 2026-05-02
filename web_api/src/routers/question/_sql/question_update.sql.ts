@@ -38,7 +38,7 @@ export async function updateQuestion(questionId: number, userId: number, input: 
     input,
   );
 
-  await t.execute(v.gen`SELECT review_question_set_to_reviewing(${v(questionId)})`);
+  await t.execute(v.gen`SELECT review_question_set_to_reviewing(${questionId})`);
   await t.commit();
 }
 export async function updateQuestionForReview(t: DbTransaction, questionId: number, input: UpdateQuestionParam) {

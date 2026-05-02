@@ -14,3 +14,10 @@ export function getQuestionDetail(questionId: string) {
       api["/question/entity/:question_id"].get({ params: { question_id: questionId } }).then((res) => res.item),
   } satisfies UseQueryOptions;
 }
+export function getQuestionDetailForReview(reviewId: string) {
+  return {
+    queryKey: [QUESTION_QUERY_KEY_PREFIX, "review_question_detail", reviewId],
+    queryFn: () =>
+      api["/question/review_get/:review_id"].get({ params: { review_id: reviewId } }).then((res) => res.item),
+  } satisfies UseQueryOptions;
+}

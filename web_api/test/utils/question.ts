@@ -50,6 +50,12 @@ export async function getQuestion(api: Api, questionId: string, token?: string) 
     [JWT_TOKEN_KEY]: token,
   });
 }
+export async function getQuestionForReview(api: Api, review_id: string, token?: string) {
+  return api["/question/review_get/:review_id"].get({
+    params: { review_id },
+    [JWT_TOKEN_KEY]: token,
+  });
+}
 export async function listUserQuestion(api: Api, option: { token?: string } = {}) {
   const { token } = option;
   return api["/question/list_user"].get({

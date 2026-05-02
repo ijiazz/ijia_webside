@@ -5,7 +5,6 @@ import { preprocessCanvasImage, preprocessImageFile, PreprocessImageFileOption }
 import { Modal } from "antd";
 import { useMutation } from "@tanstack/react-query";
 import { useModal } from "@/components/Modal.ts";
-import { afterTime } from "evlib";
 
 const ImageCrop = Cropper;
 
@@ -43,7 +42,7 @@ function CropImage(props: CropProps) {
         minCropBoxHeight={100}
         minCropBoxWidth={100}
         minContainerHeight={400}
-        // viewMode={1}
+        viewMode={1}
         dragMode="move"
         src={imageURL}
         style={{ width: "100%" }}
@@ -98,7 +97,7 @@ export function useCropModal() {
   const open = useCallback((image: Blob, config: CropOption): Promise<Blob> => {
     return new Promise<Blob>((resolve) => {
       const { id } = modals.open({
-        children: <CropImage ref={cropperRef} image={image!} />,
+        children: <CropImage ref={cropperRef} image={image} />,
         onOk(e) {
           modals.update(id, (prev) => ({
             ...prev,
@@ -155,7 +154,6 @@ function useCrop() {
     }) => {
       const { data, config = {} } = param;
       const { fillColor, maxHeight, maxWidth } = config ?? {};
-      await afterTime(2000);
       if (data instanceof Blob) {
         return preprocessImageFile(data, { fillColor, maxHeight, maxWidth });
       } else {

@@ -20,8 +20,8 @@ export function Option(props: OptionProps) {
   return (
     <div style={{ flex: 1 }}>
       <div style={{ display: "flex", gap: 8 }}>
-        <Controller
-          name={`options.${index}.value` as const}
+        <Controller<EditQuestionFormFields, `options.${number}.text`>
+          name={`options.${index}.text` as const}
           render={({ field, fieldState }) => (
             <Input {...field} status={getAntdErrorStatus(fieldState)} placeholder={`选项 ${index + 1}`} />
           )}
@@ -60,7 +60,7 @@ export function Option(props: OptionProps) {
                   size="small"
                   onClick={() => field.onChange(null)}
                 />
-                <Button type="dashed" danger icon={<EyeOutlined />} size="small" onClick={() => setPreviewOpen(true)} />
+                <Button type="dashed" icon={<EyeOutlined />} size="small" onClick={() => setPreviewOpen(true)} />
               </div>
             ),
           }}

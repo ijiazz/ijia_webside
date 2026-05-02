@@ -1,14 +1,14 @@
 import { ExamQuestionType } from "@/api.ts";
 import { FormItem } from "@/components/form.tsx";
 import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Radio, Tag } from "antd";
+import { Button, Checkbox, Radio, Tag, Tooltip } from "antd";
 import { useController, useFieldArray, useFormState, useWatch } from "react-hook-form";
-import { EditQuestionFormFields, FormMode, FormModeContext } from "./form.ts";
+import { EditQuestionFormInput, QuestionEditMode, FormModeContext } from "./form.ts";
 import { Option } from "./Option.tsx";
 import { useContext } from "react";
 
 export function OptionsField() {
-  const questionType = useWatch<EditQuestionFormFields, "question_type">({ name: "question_type" });
+  const questionType = useWatch<EditQuestionFormInput, "question_type">({ name: "question_type" });
   switch (questionType) {
     case ExamQuestionType.SingleChoice:
       return <SingleOptions />;
@@ -22,11 +22,19 @@ export function OptionsField() {
 }
 function MultipleOptions() {
   const mode = useContext(FormModeContext);
-  const answerIndexField = useController<EditQuestionFormFields, "answer_index">({
+  const answerIndexField = useController<EditQuestionFormInput, "answer_index">({
     name: "answer_index",
+    rules: {
+      required: "请选择正确答案",
+      validate: (value) => {
+        if (!value) return "请选择正确答案";
+        if (value.length < 2) return "多选题至少需要选择两个正确答案";
+        return true;
+      },
+    },
   });
   const { defaultValues } = useFormState();
-  const { fields, append, remove } = useFieldArray<EditQuestionFormFields>({
+  const { fields, append, remove } = useFieldArray<EditQuestionFormInput>({
     name: "options",
   });
   const maxOptionCount = 6,
@@ -47,9 +55,9 @@ function MultipleOptions() {
               <Tag>{String.fromCharCode(65 + index)}</Tag>
               <Checkbox
                 value={index}
-                checked={answerIndexField.field.value.includes(index)}
+                checked={answerIndexField.field.value?.includes(index)}
                 onChange={() => {
-                  if (mode !== "fullEdit") return;
+                  if (mode !== QuestionEditMode.FullEdit) return;
                   const current = answerIndexField.field.value || [];
                   if (current.includes(index)) {
                     answerIndexField.field.onChange(current.filter((i) => i !== index));
@@ -61,14 +69,16 @@ function MultipleOptions() {
             </div>
             <Option index={index} />
 
-            {(mode === FormMode.FullEdit || defaultOptionCount > index) && (
-              <Button
-                danger
-                disabled={fields.length <= minOptionCount}
-                type="text"
-                icon={<DeleteOutlined />}
-                onClick={() => remove(index)}
-              />
+            {(mode === QuestionEditMode.FullEdit || defaultOptionCount > index) && (
+              <Tooltip title="删除选项">
+                <Button
+                  danger
+                  disabled={fields.length <= minOptionCount}
+                  type="text"
+                  icon={<DeleteOutlined />}
+                  onClick={() => remove(index)}
+                />
+              </Tooltip>
             )}
           </div>
         ))}
@@ -85,15 +95,16 @@ function SingleOptions() {
   const mode = useContext(FormModeContext);
   const { defaultValues } = useFormState();
   const defaultOptionCount = defaultValues?.options?.length || 0;
-  const answerIndexField = useController<EditQuestionFormFields, "answer_index">({
+  const answerIndexField = useController<EditQuestionFormInput, "answer_index">({
     name: "answer_index",
-  });
-
-  const { fields, append, remove } = useFieldArray<EditQuestionFormFields, "options">({
-    name: "options",
+    rules: { required: "请选择正确答案" },
   });
   const maxOptionCount = 6,
     minOptionCount = 2;
+
+  const { fields, append, remove } = useFieldArray<EditQuestionFormInput, "options">({
+    name: "options",
+  });
 
   return (
     <FormItem
@@ -111,21 +122,23 @@ function SingleOptions() {
                 value={index}
                 checked={answerIndexField.field.value?.[0] === index}
                 onChange={() => {
-                  if (mode !== FormMode.FullEdit) return;
+                  if (mode !== QuestionEditMode.FullEdit) return;
                   answerIndexField.field.onChange([index]);
                 }}
                 style={{ margin: 0 }}
               />
             </div>
             <Option index={index} />
-            {(mode === FormMode.FullEdit || defaultOptionCount <= index) && (
-              <Button
-                danger
-                disabled={fields.length <= minOptionCount}
-                type="text"
-                icon={<DeleteOutlined />}
-                onClick={() => remove(index)}
-              />
+            {(mode === QuestionEditMode.FullEdit || defaultOptionCount <= index) && (
+              <Tooltip title="删除选项">
+                <Button
+                  danger
+                  disabled={fields.length <= minOptionCount}
+                  type="text"
+                  icon={<DeleteOutlined />}
+                  onClick={() => remove(index)}
+                />
+              </Tooltip>
             )}
           </div>
         ))}
@@ -140,7 +153,7 @@ function SingleOptions() {
 }
 function TrueFalseOptions() {
   const mode = useContext(FormModeContext);
-  const answerIndexField = useController<EditQuestionFormFields, "answer_index">({
+  const answerIndexField = useController<EditQuestionFormInput, "answer_index">({
     name: "answer_index",
   });
   const radioValue =
@@ -150,9 +163,9 @@ function TrueFalseOptions() {
       <div style={{ width: "100%", display: "flex", gap: 8 }}>
         <Radio.Group
           value={radioValue}
-          aria-readonly={mode !== FormMode.FullEdit}
+          aria-readonly={mode !== QuestionEditMode.FullEdit}
           onChange={(e) => {
-            if (mode !== FormMode.FullEdit) return;
+            if (mode !== QuestionEditMode.FullEdit) return;
             answerIndexField.field.onChange([e.target.value ? 0 : 1]);
           }}
         >
