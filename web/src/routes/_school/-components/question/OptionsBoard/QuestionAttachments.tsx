@@ -9,20 +9,28 @@ export function QuestionAttachments(props: QuestionAttachmentsProps) {
   const { data } = props;
 
   return (
-    <Image.PreviewGroup>
-      {data.map((field, index) => (
-        <div className={ImageItemCSS} key={index}>
-          {field.file ? <Base64Image data={field.file.data} type={field.file.type} /> : null}
-          <div className={ImageItemTitleRootCSS}>{field.text || `图 ${index + 1}`}</div>
-        </div>
-      ))}
-    </Image.PreviewGroup>
+    <div style={{ display: "flex", alignItems: "end", gap: 12 }}>
+      <Image.PreviewGroup>
+        {data.map((field, index) => (
+          <div className={ImageItemCSS} key={index}>
+            {field.file ? (
+              <Base64Image
+                data={field.file.data}
+                type={field.file.type}
+                style={{ width: 140, height: 140, objectFit: "contain", flex: 1 }}
+              />
+            ) : null}
+            <div className={ImageItemTitleRootCSS}>{field.text || `图 ${index + 1}`}</div>
+          </div>
+        ))}
+      </Image.PreviewGroup>
+    </div>
   );
 }
 const ImageItemCSS = css`
-  display: grid;
-  align-items: end;
-  grid-template-rows: 1fr auto;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
   width: 150px;
   height: 150px;
 `;

@@ -44,13 +44,13 @@ export async function getUserQuestionPublicList(
   };
 }
 function mapQuestion(item: PublicSelectRaw): QuestionPublic {
-  const option = genQuestionMedias(item.options);
+  const option = item.options ? genQuestionMedias(item.options) : null;
   return {
     question_text: item.question_text,
     question_text_struct: item.question_text_struct,
     question_type: item.question_type,
-    attachments: option.attachments,
-    options: option.options,
+    attachments: option?.attachments,
+    options: option?.options,
 
     difficulty_level: item.difficulty_level,
     collection_level: item.collection_level,

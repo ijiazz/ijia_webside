@@ -1,4 +1,4 @@
-import { array, ExpectType, InferExpect, optional } from "@asla/wokao";
+import { array, checkTypeCopy, ExpectType, InferExpect, optional, CheckTypeError } from "@asla/wokao";
 import { CreateQuestionParam, ExamQuestionType, QuestionAttachment, QuestionOption } from "@/dto.ts";
 import { HttpError } from "@/global/errors.ts";
 
@@ -9,13 +9,21 @@ export const ADVANCED_CONFIG_SCHEMA = {
   collection_level: optional.number,
 };
 export type QuestionAdvancedConfig = Partial<InferExpect<typeof ADVANCED_CONFIG_SCHEMA>>;
-export const QUESTION_MEDIA_UPDATE_SCHEMA = {
-  text: optional.string,
-  file: optional({
-    type: "string",
-    data: "string",
-  }),
-} satisfies ExpectType;
+export const QUESTION_MEDIA_UPDATE_SCHEMA = ((input) => {
+  const value = checkTypeCopy(input, {
+    text: optional.string,
+    file: optional({
+      data: "string",
+      type: "string",
+    }),
+  });
+  if (!value.file || value.text) {
+    if (!value.text || value.file) {
+      throw new CheckTypeError("选项必须至少有文本或文件");
+    }
+  }
+  return value;
+}) satisfies ExpectType;
 
 /**
  * 检查题目类型和选项的合法性

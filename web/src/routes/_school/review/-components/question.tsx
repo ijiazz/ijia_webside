@@ -8,14 +8,14 @@ import { FormProvider, useForm } from "react-hook-form";
 import { ResultRadioField } from "./form/ResultRadioField.tsx";
 import { ReviewItem } from "../-components/ReviewItem.tsx";
 import * as styles from "./comment.css.ts";
-import { getQuestionDetailForReview } from "@/request/question.ts";
+import { getQuestionDetailForReviewQueryOption } from "@/request/question.ts";
 import {
   EditQuestionFields,
   EditQuestionFormFields,
   QuestionEditMode,
 } from "../../-components/question/EditQuestionFields.tsx";
 import { useEffect } from "react";
-import { pruneDirty } from "./form/formValues.ts";
+import { pruneDirty } from "@/components/form/formValues.ts";
 
 type QuestionFormInput = Partial<EditQuestionFormFields>;
 type QuestionFormOutput = EditQuestionFormFields;
@@ -44,7 +44,7 @@ function useReviewData() {
 
   const reviewData = data ? data.next : initData.item;
 
-  const { data: questionDetail } = useQuery(getQuestionDetailForReview(reviewData?.id.toString() ?? ""));
+  const { data: questionDetail } = useQuery(getQuestionDetailForReviewQueryOption(reviewData?.id.toString() ?? ""));
 
   return {
     data: reviewData,

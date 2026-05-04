@@ -1,4 +1,4 @@
-import type { GetUserQuestionResult } from "./exam/result.ts";
+import type { ExamPublicQuestionStatsResult, GetUserQuestionResult } from "./exam/result.ts";
 import type {
   CreateQuestionParam,
   CreateQuestionResult,
@@ -39,10 +39,7 @@ export interface QuestionAPI {
     response: GetUserQuestionListResult;
   };
   "GET /question/public_stats": {
-    response: {
-      reviewing_count: number;
-      total_count: number;
-    };
+    response: ExamPublicQuestionStatsResult;
   };
 
   /** 审核获取题目详情，返回结果与用户获取题目详情相同 */

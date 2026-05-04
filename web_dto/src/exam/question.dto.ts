@@ -16,28 +16,30 @@ type QuestionBase = {
 
   options?: QuestionOption[];
 };
+export type ExamQuestionOwner = {
+  user_id: number;
+  nickname: string;
+  avatar_url?: string;
+};
 
+export type ExamQuestionReviewInfo = {
+  status: ReviewStatus;
+  resolved_time?: string;
+  comment?: string;
+};
 export type QuestionPublic = QuestionBase & {
   question_id: string;
   difficulty_level: number;
   collection_level: number;
 
   /** 所属用户 */
-  user?: {
-    user_id: number;
-    nickname: string;
-    avatar_url?: string;
-  } | null;
+  user?: ExamQuestionOwner | null;
 
   comment: {
     id: string;
     total: number;
   };
-  review?: {
-    status: ReviewStatus;
-    resolved_time?: string;
-    comment?: string;
-  };
+  review?: ExamQuestionReviewInfo;
 };
 
 /** 考试中返回的题目 */
@@ -52,7 +54,31 @@ export type ExamPaperPublicQuestion = QuestionPublic & {
   answer?: ExamQuestionAnswer;
 };
 
+export type ExamQuestionAnswer = {
+  /** 正确选项的索引 */
+  answer_index: number[];
+  explanation_text: string;
+  explanation_text_struct?: TextStructure[];
+};
+
+/** 用户题目列表 */
+export type ExamUserQuestion = QuestionBase & {
+  question_id: string;
+  difficulty_level: number;
+  collection_level: number;
+
+  /** 所属用户 */
+  user?: ExamQuestionOwner | null;
+  comment: {
+    id: string;
+    total: number;
+  };
+  review?: ExamQuestionReviewInfo;
+};
+
 /* 用户题目详情 */
+export type ExamUserQuestionDetail = ExamQuestionDetail;
+
 export type ExamQuestionDetail = QuestionPublic & {
   create_time: string;
   update_time: string;
@@ -63,15 +89,6 @@ export type ExamQuestionDetail = QuestionPublic & {
   answer: ExamQuestionAnswer;
 };
 
-export type ExamQuestionAnswer = {
-  /** 正确选项的索引 */
-  answer_index: number[];
-  explanation_text: string;
-  explanation_text_struct?: TextStructure[];
-};
-
-/** 用户题目 */
-export type ExamUserQuestion = QuestionPublic;
 export enum ExamQuestionType {
   SingleChoice = "single_choice",
   MultipleChoice = "multiple_choice",

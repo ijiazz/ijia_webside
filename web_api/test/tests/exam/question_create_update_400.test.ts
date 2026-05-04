@@ -45,6 +45,15 @@ test("创建单选题题时，选项符号题目类型", async function ({ api, 
     }),
     "单选题答案不能为空",
   ).responseStatus(400);
+
+  await expect(
+    createQuestion(api, alice.token, {
+      ...base,
+      options: [{}, {}, {}],
+      answer_index: [0],
+    }),
+    "选项不能为空对象",
+  ).responseStatus(400);
 });
 test("创建多选题题时，选项符号题目类型", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
@@ -74,6 +83,15 @@ test("创建多选题题时，选项符号题目类型", async function ({ api, 
       answer_index: [],
     }),
     "多选题答案不能为空",
+  ).responseStatus(400);
+
+  await expect(
+    createQuestion(api, alice.token, {
+      ...base,
+      options: [{}, {}, {}],
+      answer_index: [0, 1],
+    }),
+    "选项不能为空对象",
   ).responseStatus(400);
 });
 test("创建判断题时，选项符号题目类型", async function ({ api, publicDbPool }) {

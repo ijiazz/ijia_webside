@@ -16,12 +16,14 @@ export type PublicSelectRaw = Pick<
     id: string;
     total: number;
   };
-  options: {
-    index: number;
-    text: string | null;
-    type: string | null;
-    data: string | null;
-  }[];
+  options:
+    | {
+        index: number;
+        text: string | null;
+        type: string | null;
+        data: string | null;
+      }[]
+    | null;
   question_id: string;
   review?: {
     status: ReviewStatus;

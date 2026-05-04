@@ -1,5 +1,10 @@
-import type { ExamQuestionDetail } from "./question.dto.ts";
+import type { ExamUserQuestionDetail } from "./question.dto.ts";
 
 export type GetUserQuestionResult = {
-  item: ExamQuestionDetail;
+  item: ExamUserQuestionDetail;
+};
+
+export type ExamPublicQuestionStatsResult = {
+  reviewing_count: number;
+  passed_count: number;
 };

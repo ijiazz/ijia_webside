@@ -42,7 +42,7 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
                       form.setValue("options", [{}, {}, {}, {}]);
                       break;
                     case ExamQuestionType.TrueOrFalse:
-                      form.setValue("options", [{}, {}]);
+                      form.setValue("options", undefined);
                       break;
                     default:
                       break;

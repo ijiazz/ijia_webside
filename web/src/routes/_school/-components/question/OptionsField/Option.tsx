@@ -1,9 +1,9 @@
 import { getAntdErrorStatus } from "@/components/form.tsx";
 import { DeleteFilled, EyeOutlined, PictureOutlined } from "@ant-design/icons";
 import { Button, Input, Tooltip } from "antd";
-import { Controller, useController } from "react-hook-form";
+import { useController } from "react-hook-form";
 import { ImageOptionUpload } from "./ImageOptionUpload.tsx";
-import { EditQuestionFormFields, OptionField } from "./form.ts";
+import { EditQuestionFormFields } from "./form.ts";
 import { Base64Image } from "@/components/Base64Image.tsx";
 import { useState } from "react";
 
@@ -12,30 +12,40 @@ export type OptionProps = {
 };
 export function Option(props: OptionProps) {
   const { index } = props;
-  const { field } = useController<EditQuestionFormFields, `options.${number}.file`>({
-    name: `options.${index}.file`,
+  const { field, fieldState } = useController<EditQuestionFormFields, `options.${number}`>({
+    name: `options.${index}`,
+    rules: {
+      validate: (value) => {
+        if (!value || (!value.text && !value.file)) {
+          return "选项不能为空";
+        }
+      },
+    },
   });
+  const fieldValue = field.value;
+  const file = fieldValue?.file;
+  const text = fieldValue?.text;
   const [previewOpen, setPreviewOpen] = useState(false);
-  const fileValue: OptionField["file"] = field.value;
   return (
     <div style={{ flex: 1 }}>
       <div style={{ display: "flex", gap: 8 }}>
-        <Controller<EditQuestionFormFields, `options.${number}.text`>
-          name={`options.${index}.text` as const}
-          render={({ field, fieldState }) => (
-            <Input {...field} status={getAntdErrorStatus(fieldState)} placeholder={`选项 ${index + 1}`} />
-          )}
+        <Input
+          {...field}
+          value={text ?? ""}
+          onChange={(e) => field.onChange({ ...fieldValue, text: e.target.value })}
+          status={getAntdErrorStatus(fieldState)}
+          placeholder={`选项 ${index + 1}`}
         />
-        <Tooltip title={fileValue ? "更改选项图片" : "添加选项图片（可选）"}>
+        <Tooltip title={file ? "更改选项图片" : "添加选项图片（可选）"}>
           <ImageOptionUpload
             style={{ width: 30, height: 30 }}
-            onChange={(file) => field.onChange({ data: file.base64, type: file.type } satisfies OptionField["file"])}
+            onChange={(file) => field.onChange({ ...fieldValue, file: { data: file.base64, type: file.type } })}
           >
             <PictureOutlined />
           </ImageOptionUpload>
         </Tooltip>
       </div>
-      {fileValue && (
+      {file && (
         <Base64Image
           style={{ maxHeight: 150, marginBlock: 8, objectFit: "contain" }}
           preview={{
@@ -58,14 +68,14 @@ export function Option(props: OptionProps) {
                   danger
                   icon={<DeleteFilled />}
                   size="small"
-                  onClick={() => field.onChange(null)}
+                  onClick={() => field.onChange({ ...fieldValue, file: null })}
                 />
                 <Button type="dashed" icon={<EyeOutlined />} size="small" onClick={() => setPreviewOpen(true)} />
               </div>
             ),
           }}
-          data={fileValue.data}
-          type={fileValue.type}
+          data={file?.data}
+          type={file?.type}
         />
       )}
     </div>
