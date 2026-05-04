@@ -14,7 +14,7 @@ function RouteComponent() {
     <div className={PageCSS}>
       <Card>
         <Space size="large">
-          <Statistic title="审核通过的题库数" value={data.passed_count} />
+          <Statistic title="题库可用题目数" value={data.passed_count} />
           <Statistic title="审核中的题目数" value={data.reviewing_count} />
         </Space>
       </Card>

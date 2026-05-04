@@ -17,10 +17,8 @@ export const QUESTION_MEDIA_UPDATE_SCHEMA = ((input) => {
       type: "string",
     }),
   });
-  if (!value.file || value.text) {
-    if (!value.text || value.file) {
-      throw new CheckTypeError("选项必须至少有文本或文件");
-    }
+  if (!value.text && !value.file) {
+    throw new CheckTypeError("选项必须至少有文本或文件");
   }
   return value;
 }) satisfies ExpectType;
