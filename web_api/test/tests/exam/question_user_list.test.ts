@@ -19,7 +19,7 @@ test("审核中、和审核不通过的题目，只有自己能查看", async fu
   const rejected = await createSampleQuestion(api, alice.token, { question_text: "会被拒绝" });
 
   const rejectedReviewId = await getQuestionReviewId(rejected.question_id);
-  await commitQuestionReview(admin.id, { review_id: rejectedReviewId, is_passed: false, remark: "不通过" });
+  await commitQuestionReview(admin.id, { review_id: Number(rejectedReviewId), is_passed: false, remark: "不通过" });
   {
     const list = await listUserQuestion(api, { token: alice.token });
     expect(list.items, "alice 能查看自己审核中、和审核不通过的题目").toHaveLength(2);
@@ -36,7 +36,7 @@ test("可以或获取自己的审核通过的题目列表", async function ({ ap
   const created = await createSampleQuestion(api, alice.token, { question_text: "会通过" });
   const reviewId = await getQuestionReviewId(created.question_id);
 
-  await commitQuestionReview(admin.id, { review_id: reviewId, is_passed: true, remark: "通过" });
+  await commitQuestionReview(admin.id, { review_id: Number(reviewId), is_passed: true, remark: "通过" });
 
   const { items } = await listUserQuestion(api, { token: alice.token });
   expect(items).toHaveLength(1);
@@ -57,7 +57,7 @@ test("不能查看别人审核通过的题目详情", async function ({ api, pub
   const bob = await prepareUniqueUser("bob");
   const created = await createSampleQuestion(api, alice.token, { question_text: "aaa" });
   const reviewId = await getQuestionReviewId(created.question_id);
-  await commitQuestionReview(admin.id, { review_id: reviewId, is_passed: true, remark: "通过" });
+  await commitQuestionReview(admin.id, { review_id: Number(reviewId), is_passed: true, remark: "通过" });
 
   await expect(getQuestion(api, created.question_id, bob.token)).responseStatus(400);
 });
@@ -72,7 +72,7 @@ test("登录后可以查看题目统计", async function ({ api, publicDbPool })
   await createSampleQuestion(api, alice.token, { question_text: "待审核" });
   const passed = await createSampleQuestion(api, alice.token, { question_text: "审核通过" });
   const reviewId = await getQuestionReviewId(passed.question_id);
-  await commitQuestionReview(admin.id, { review_id: reviewId, is_passed: true, remark: "通过" });
+  await commitQuestionReview(admin.id, { review_id: Number(reviewId), is_passed: true, remark: "通过" });
 
   await expect(api["/question/public_stats"].get()).responseStatus(401);
 

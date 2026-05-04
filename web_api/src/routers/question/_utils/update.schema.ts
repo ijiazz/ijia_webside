@@ -10,8 +10,6 @@ export const UPDATE_QUESTION_PARAM_SCHEMA = {
 
   answer_index: optional(array("number")),
   event_time: optional.string,
-  long_time: optional.boolean,
-  themes: optional(array("string")),
 
   attachments: optional(array(QUESTION_MEDIA_UPDATE_SCHEMA)),
   options: optional(array(QUESTION_MEDIA_UPDATE_SCHEMA)),

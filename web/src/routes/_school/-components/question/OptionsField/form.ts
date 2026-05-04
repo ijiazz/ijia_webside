@@ -1,4 +1,4 @@
-import { ExamQuestionType, QuestionAttachment, QuestionOption } from "@/api.ts";
+import { ExamQuestionType, QuestionAdvancedConfig, QuestionAttachment, QuestionOption } from "@/api.ts";
 import { createContext } from "react";
 export type EditQuestionFormFields = {
   question_text: string;
@@ -14,6 +14,7 @@ export type EditQuestionFormFields = {
 
   /** 题目类型 */
   question_type: ExamQuestionType;
+  advanced?: QuestionAdvancedConfig;
   attachments?: AttachmentField[];
   options?: OptionField[];
 };

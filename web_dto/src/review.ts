@@ -1,6 +1,7 @@
 import type { ListResult } from "./common.ts";
 import type {
   CommitReviewParam,
+  CommitQuestionReviewParam,
   CommitReviewResult,
   GetReviewListParam,
   GetReviewNextResult,
@@ -21,7 +22,7 @@ export interface ReviewApi {
     params: { type: ReviewTargetType };
   };
   "POST /review/commit/question": {
-    body: CommitReviewParam;
+    body: CommitQuestionReviewParam;
     response: CommitReviewResult;
   };
   "POST /review/commit/:type": {

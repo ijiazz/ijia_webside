@@ -43,6 +43,9 @@ export async function commitAndUpdateQuestionReview(
   return true;
 }
 
-export function commitQuestionReview(reviewerId: number, option: BECommitReviewParam) {
+export function commitQuestionReview(reviewerId: number | string, option: BECommitReviewParam) {
+  if (typeof reviewerId === "string") {
+    reviewerId = parseInt(reviewerId, 10);
+  }
   return commitAndUpdateQuestionReview(reviewerId, option);
 }

@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { api } from "@/request/client.ts";
 import { FromValues } from "./-components/CreateForm.tsx";
 import { QuestionForm } from "./-components/QuestionForm.tsx";
+import { CreateQuestionParam } from "@/api.ts";
 
 export const Route = createLazyFileRoute("/_school/question/create")({
   component: RouteComponent,
@@ -28,14 +29,14 @@ function RouteComponent() {
     }
   };
   const { mutateAsync } = useMutation({
-    mutationFn: (data: FromValues) => api["/question/entity"].put({ body: data }),
+    mutationFn: (data: CreateQuestionParam) => api["/question/entity"].put({ body: data }),
     onSuccess: () => {
       form.reset();
       ogBack();
     },
   });
-  const onSubmit = form.handleSubmit(async (values) => {
-    await mutateAsync(values);
+  const onSubmit = form.handleSubmit(async ({ advanced, ...values }) => {
+    await mutateAsync({ ...values, advanced_config: advanced });
   });
 
   return (

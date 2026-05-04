@@ -35,9 +35,9 @@ export type QuestionAdvancedConfig = {
   /** 题目是否长期有效。（有些题目会随着时间变化答案会发生变化，如果答案永远不会发生变化，则为长期有效） */
   long_time?: boolean;
   themes?: string[];
-  /** 题目难度等级  范围 0~5.*/
+  /** 题目难度等级 默认为 0 范围 0~5.  */
   difficulty_level?: number;
-  /** 题目收藏等级  可选值为 0，1，2，3, 表示题目出得是不是很特别。刷题只能刷到 0 和 1 的题目 */
+  /** 题目收藏等级 默认为 0   可选值为 0，1，2，3,  表示题目出得是不是很特别。刷题只能刷到 0 和 1 的题目 */
   collection_level?: number;
 };
 

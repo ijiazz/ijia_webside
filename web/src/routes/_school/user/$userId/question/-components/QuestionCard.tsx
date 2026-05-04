@@ -22,7 +22,6 @@ export function QuestionCard(props: QuestionCardProps) {
         <Space wrap>
           {review?.status === ReviewStatus.pending && <Tag color="blue">审核中</Tag>}
           {review?.status === ReviewStatus.rejected && <Tag color="red">审核不通过</Tag>}
-          {review?.status === ReviewStatus.passed && <Tag color="green">审核通过</Tag>}
           {canManage && (
             <Dropdown
               menu={{

@@ -17,7 +17,7 @@ type QuestionBase = {
   options?: QuestionOption[];
 };
 export type ExamQuestionOwner = {
-  user_id: number;
+  user_id: string;
   nickname: string;
   avatar_url?: string;
 };
@@ -86,6 +86,7 @@ export type ExamQuestionDetail = QuestionPublic & {
   event_time?: string;
   /** 题目是否长期有效。（有些题目会随着时间变化答案会发生变化，如果答案永远不会发生变化，则为长期有效） */
   long_time?: boolean;
+  themes: string[];
   answer: ExamQuestionAnswer;
 };
 

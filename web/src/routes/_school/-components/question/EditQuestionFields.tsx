@@ -1,6 +1,6 @@
 import { ExamQuestionType } from "@/api.ts";
 import { FormItem, getAntdErrorStatus } from "@/components/form.tsx";
-import { Input, Radio } from "antd";
+import { DatePicker, Input, Radio } from "antd";
 import { Controller, useFormContext } from "react-hook-form";
 import { AttachmentsField } from "./OptionsField/AttachmentsField.tsx";
 import { OptionsField } from "./OptionsField/OptionsField.tsx";
@@ -88,7 +88,6 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
       <FormModeContext value={mode}>
         <OptionsField />
       </FormModeContext>
-
       <Controller
         name="explanation_text"
         rules={{
@@ -102,6 +101,14 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
               autoSize={{ minRows: 3, maxRows: 8 }}
               status={getAntdErrorStatus(fieldState)}
             />
+          </FormItem>
+        )}
+      />
+      <Controller
+        name="event_time"
+        render={({ field, fieldState }) => (
+          <FormItem label="事件时间" error={fieldState.error?.message} description="题目相关事件的发生时间">
+            <DatePicker {...field} value={field.value ?? ""} />
           </FormItem>
         )}
       />

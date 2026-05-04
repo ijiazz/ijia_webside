@@ -16,9 +16,11 @@ import {
 } from "../../-components/question/EditQuestionFields.tsx";
 import { useEffect } from "react";
 import { pruneDirty } from "@/components/form/formValues.ts";
+import { AdvancedConfigFields } from "../../-components/question/AdvancedConfigFields.tsx";
+import { QuestionAdvancedConfig, UpdateQuestionParam } from "@/api.ts";
 
-type QuestionFormInput = Partial<EditQuestionFormFields>;
-type QuestionFormOutput = EditQuestionFormFields;
+type QuestionFormOutput = EditQuestionFormFields & { advanced?: QuestionAdvancedConfig };
+type QuestionFormInput = Partial<QuestionFormOutput>;
 
 type QuestionInfo = {
   target_id: number;
@@ -60,7 +62,7 @@ export function QuestionReview() {
 
   const questionId = reviewData?.info.target_id;
 
-  const updateForm = useForm<QuestionFormInput, undefined, EditQuestionFormFields>({});
+  const updateForm = useForm<QuestionFormInput, undefined, QuestionFormOutput>({});
 
   useEffect(() => {
     if (!questionDetail) return;
@@ -68,6 +70,12 @@ export function QuestionReview() {
 
     updateForm.reset({
       ...rest,
+      advanced: {
+        long_time: questionDetail.long_time,
+        difficulty_level: questionDetail.difficulty_level,
+        collection_level: questionDetail.collection_level,
+        themes: questionDetail.themes,
+      },
       answer_index: answer.answer_index,
       explanation_text: answer.explanation_text,
     });
@@ -98,6 +106,7 @@ export function QuestionReview() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <FormProvider {...updateForm}>
           <EditQuestionFields mode={QuestionEditMode.FullEdit} />
+          <AdvancedConfigFields />
         </FormProvider>
         <ResultRadioField
           onSubmit={async (values) => {
@@ -108,11 +117,14 @@ export function QuestionReview() {
               })(),
             );
 
+            const { advanced, ...update } = questionFormValues ?? {};
+
             const body: CommitQuestionReviewParam = {
               review_id: reviewData.id.toString(),
               is_passed: values.isPass,
               remark: values.remark,
-              update: questionFormValues,
+              update: Object.keys(update).length ? (update as UpdateQuestionParam) : undefined,
+              advanced_config: advanced && Object.keys(advanced).length ? advanced : undefined,
             };
             await submitReview(body);
           }}

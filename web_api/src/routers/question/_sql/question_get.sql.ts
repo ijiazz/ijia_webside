@@ -90,6 +90,7 @@ export async function getQuestionDetailForReview(questionId: number): Promise<Ex
 
 function pruneQuestionDetail(item: QuestionDetailSelectRaw) {
   const publicQuestion = mapQuestion(item) as ExamQuestionDetail;
+  publicQuestion.themes = item.themes ?? [];
   publicQuestion.create_time = item.create_time.toISOString();
   publicQuestion.update_time = item.update_time.toISOString();
   if (item.event_time) {

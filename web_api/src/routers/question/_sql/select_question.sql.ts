@@ -8,7 +8,7 @@ export type PublicSelectRaw = Pick<
   "question_text" | "question_text_struct" | "question_type" | "difficulty_level" | "collection_level"
 > & {
   user: {
-    user_id: number;
+    user_id: string;
     nickname: string;
     avatar_url?: string;
   } | null;
@@ -42,7 +42,7 @@ const SELECT_PUBLIC = [
 
   select(
     jsonb_build_object({
-      user_id: "u.id",
+      user_id: "u.id::TEXT",
       nickname: "u.nickname",
       avatar_url: `u.avatar`,
     }),
@@ -94,6 +94,7 @@ export type QuestionDetailSelectRaw = PublicSelectRaw & {
   answer_index: number[];
   answer_text: string;
   answer_text_struct?: TextStructure[];
+  themes?: string[];
 };
 export function getQuestionDetailSelect(option: {
   /** 如果不为空，返回审核信息，否则不返回审核信息 */
@@ -109,6 +110,7 @@ export function getQuestionDetailSelect(option: {
     "q.answer_index",
     "q.answer_text",
     "q.answer_text_struct",
+    `(SELECT array_agg(theme_id) FROM exam_question_theme_bind WHERE question_id = q.id) as themes`,
     `(CASE WHEN q.user_id = ${v(requestUserId)} AND q.user_id IS NOT NULL THEN ${getReviewInfo().toSelect()} ELSE NULL END) AS review`,
   ];
 

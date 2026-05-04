@@ -119,7 +119,7 @@ export async function updateQuestionAdvanceConfig(
   }
   if (advanced_config?.themes) {
     const themes = advanced_config.themes;
-    const deleteThemeSql = v.gen`DELETE FROM exam_question_theme WHERE question_id=${questionId}`;
+    const deleteThemeSql = v.gen`DELETE FROM exam_question_theme_bind WHERE question_id=${questionId}`;
     const sqlInsertTheme = insertIntoValues(
       "exam_question_theme_bind",
       themes.map((theme) => ({ theme_id: theme, question_id: questionId })),
