@@ -1,5 +1,5 @@
 import { dbPool } from "@/db/client.ts";
-import { GetUserQuestionListResult, QuestionDetail, QuestionPublic } from "@/dto.ts";
+import { GetUserQuestionListResult, ExamQuestionDetail, QuestionPublic } from "@/dto.ts";
 import { v } from "@/sql/utils.ts";
 import { genQuestionMedias, parseCursorId, toCursor } from "../_utils/question.ts";
 import {
@@ -61,7 +61,7 @@ function mapQuestion(item: PublicSelectRaw): QuestionPublic {
   };
 }
 
-export async function getQuestionDetail(questionId: number, userId: number | null): Promise<QuestionDetail | null> {
+export async function getQuestionDetail(questionId: number, userId: number | null): Promise<ExamQuestionDetail | null> {
   const sql = getQuestionDetailSelect({ requestUserId: userId })
     .where([`q.id = ${v(questionId)}`, `q.user_id = ${v(userId)}`])
     .limit(1);
@@ -74,7 +74,7 @@ export async function getQuestionDetail(questionId: number, userId: number | nul
 
   return pruneQuestionDetail(item);
 }
-export async function getQuestionDetailForReview(questionId: number): Promise<QuestionDetail | null> {
+export async function getQuestionDetailForReview(questionId: number): Promise<ExamQuestionDetail | null> {
   const sql = getQuestionDetailSelect({ requestUserId: null })
     .where([`q.id = ${v(questionId)}`])
     .limit(1);
@@ -89,7 +89,7 @@ export async function getQuestionDetailForReview(questionId: number): Promise<Qu
 }
 
 function pruneQuestionDetail(item: QuestionDetailSelectRaw) {
-  const publicQuestion = mapQuestion(item) as QuestionDetail;
+  const publicQuestion = mapQuestion(item) as ExamQuestionDetail;
   publicQuestion.create_time = item.create_time.toISOString();
   publicQuestion.update_time = item.update_time.toISOString();
   if (item.event_time) {
@@ -97,6 +97,14 @@ function pruneQuestionDetail(item: QuestionDetailSelectRaw) {
   }
   if (item.long_time !== undefined) {
     publicQuestion.long_time = item.long_time;
+  }
+
+  if (item.answer_index) {
+    publicQuestion.answer = {
+      answer_index: item.answer_index,
+      explanation_text: item.answer_text,
+      explanation_text_struct: item.answer_text_struct ?? undefined,
+    };
   }
 
   return publicQuestion;

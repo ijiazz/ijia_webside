@@ -17,7 +17,9 @@ export function getQuestionDetail(questionId: string) {
 export function getQuestionDetailForReview(reviewId: string) {
   return {
     queryKey: [QUESTION_QUERY_KEY_PREFIX, "review_question_detail", reviewId],
-    queryFn: () =>
-      api["/question/review_get/:review_id"].get({ params: { review_id: reviewId } }).then((res) => res.item),
+    queryFn: () => {
+      if (!reviewId) return Promise.resolve(null);
+      return api["/question/review_get/:review_id"].get({ params: { review_id: reviewId } }).then((res) => res.item);
+    },
   } satisfies UseQueryOptions;
 }

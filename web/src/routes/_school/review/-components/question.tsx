@@ -1,8 +1,8 @@
 import { CommitQuestionReviewParam, CommitReviewResult, ReviewTargetType } from "@/api.ts";
 import { useMessage } from "@/provider/AntdProvider.tsx";
-import { api, queryClient } from "@/request/client.ts";
+import { api } from "@/request/client.ts";
 import { getReviewNextQueryOption } from "@/request/review.ts";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Button, Empty, Typography } from "antd";
 import { FormProvider, useForm } from "react-hook-form";
 import { ResultRadioField } from "./form/ResultRadioField.tsx";
@@ -14,6 +14,8 @@ import {
   EditQuestionFormFields,
   QuestionEditMode,
 } from "../../-components/question/EditQuestionFields.tsx";
+import { useEffect } from "react";
+import { pruneDirty } from "./form/formValues.ts";
 
 type QuestionFormInput = Partial<EditQuestionFormFields>;
 type QuestionFormOutput = EditQuestionFormFields;
@@ -22,26 +24,15 @@ type QuestionInfo = {
   target_id: number;
 };
 
-export function QuestionReview() {
-  const message = useMessage();
+function useReviewData() {
   const {
     data: initData,
     isFetching,
     refetch,
-  } = useSuspenseQuery(getReviewNextQueryOption<QuestionInfo>({ type: ReviewTargetType.exam_question }));
+  } = useSuspenseQuery({ ...getReviewNextQueryOption<QuestionInfo>({ type: ReviewTargetType.exam_question }) });
 
-  const updateForm = useForm<QuestionFormInput, undefined, EditQuestionFormFields>({
-    defaultValues: async () => {
-      const questionId = initData.item?.info.target_id;
-      if (questionId === undefined) {
-        return {};
-      }
-      const questionDetail = await queryClient.fetchQuery(getQuestionDetailForReview(questionId.toString()));
-      return questionDetail;
-    },
-  });
-
-  const { data, mutateAsync } = useMutation({
+  const message = useMessage();
+  const { data, isPending, mutateAsync } = useMutation({
     mutationFn(param: CommitQuestionReviewParam) {
       return api["/review/commit/question"].post({ body: param }) as Promise<CommitReviewResult<QuestionInfo>>;
     },
@@ -53,7 +44,35 @@ export function QuestionReview() {
 
   const reviewData = data ? data.next : initData.item;
 
+  const { data: questionDetail } = useQuery(getQuestionDetailForReview(reviewData?.id.toString() ?? ""));
+
+  return {
+    data: reviewData,
+    isFetching: isFetching || isPending,
+    refetch,
+    submitReview: mutateAsync,
+    questionDetail,
+  };
+}
+
+export function QuestionReview() {
+  const { data: reviewData, isFetching, refetch, submitReview, questionDetail } = useReviewData();
+
   const questionId = reviewData?.info.target_id;
+
+  const updateForm = useForm<QuestionFormInput, undefined, EditQuestionFormFields>({});
+
+  useEffect(() => {
+    if (!questionDetail) return;
+    const { answer, ...rest } = questionDetail;
+
+    updateForm.reset({
+      ...rest,
+      answer_index: answer.answer_index,
+      explanation_text: answer.explanation_text,
+    });
+  }, [questionDetail]);
+
   if (!reviewData || !questionId) {
     return (
       <Empty
@@ -82,9 +101,10 @@ export function QuestionReview() {
         </FormProvider>
         <ResultRadioField
           onSubmit={async (values) => {
-            const questionFormValues = await new Promise<QuestionFormOutput>((resolve) =>
-              updateForm.handleSubmit(async (formValues) => {
-                resolve(formValues);
+            const questionFormValues = await new Promise<Partial<QuestionFormOutput> | undefined>((resolve) =>
+              updateForm.handleSubmit(async (formValues, event) => {
+                const dirtyValues = pruneDirty(formValues, updateForm.formState.dirtyFields);
+                resolve(dirtyValues);
               })(),
             );
 
@@ -94,7 +114,7 @@ export function QuestionReview() {
               remark: values.remark,
               update: questionFormValues,
             };
-            await mutateAsync(body);
+            await submitReview(body);
           }}
         />
       </div>

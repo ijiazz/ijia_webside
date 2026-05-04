@@ -1,7 +1,7 @@
 import { ReviewStatus } from "@/dto.ts";
 import { jsonb_build_object } from "@/global/sql_util.ts";
 import { select, v } from "@asla/yoursql";
-import { DbExamQuestion } from "@ijia/data/db";
+import { DbExamQuestion, TextStructure } from "@ijia/data/db";
 
 export type PublicSelectRaw = Pick<
   DbExamQuestion,
@@ -89,6 +89,9 @@ export type QuestionDetailSelectRaw = PublicSelectRaw & {
   update_time: Date;
   event_time?: Date;
   long_time?: boolean;
+  answer_index: number[];
+  answer_text: string;
+  answer_text_struct?: TextStructure[];
 };
 export function getQuestionDetailSelect(option: {
   /** 如果不为空，返回审核信息，否则不返回审核信息 */
@@ -101,6 +104,9 @@ export function getQuestionDetailSelect(option: {
     "q.update_time",
     "q.event_time",
     "q.long_time",
+    "q.answer_index",
+    "q.answer_text",
+    "q.answer_text_struct",
     `(CASE WHEN q.user_id = ${v(requestUserId)} AND q.user_id IS NOT NULL THEN ${getReviewInfo().toSelect()} ELSE NULL END) AS review`,
   ];
 

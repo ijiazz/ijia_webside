@@ -79,7 +79,7 @@ async function internalUpdateQuestion(
 
   if (updateValues) {
     const sqlUpdate = update("exam_question")
-      .set(updateValues as Record<string, string>)
+      .set(updateValues)
       .where([`id=${v(questionId)}`])
       .returning<UpdateReturn>(UpdateSelect);
     SQL_LIST.push(sqlUpdate);
@@ -166,7 +166,7 @@ function genUpdateOptionSQL(
 
 function genUpdateQuestionObject(input: UpdateQuestionParam = {}) {
   let keys = 0;
-  const updateValues: { [key in keyof DbExamQuestion]?: string | String } = {};
+  const updateValues: { [key in keyof DbExamQuestion]?: string } = {};
 
   if (input.answer_index) {
     if (input.answer_index.length === 0) {
@@ -180,7 +180,7 @@ function genUpdateQuestionObject(input: UpdateQuestionParam = {}) {
     keys++;
   }
   if (input.question_text_struct !== undefined) {
-    updateValues.question_text_struct = new String(v(JSON.stringify(input.question_text_struct)));
+    updateValues.question_text_struct = v(JSON.stringify(input.question_text_struct));
     keys++;
   }
   if (input.explanation_text !== undefined) {
@@ -188,7 +188,7 @@ function genUpdateQuestionObject(input: UpdateQuestionParam = {}) {
     keys++;
   }
   if (input.explanation_text_struct !== undefined) {
-    updateValues.answer_text_struct = new String(v(JSON.stringify(input.explanation_text_struct)));
+    updateValues.answer_text_struct = v(JSON.stringify(input.explanation_text_struct));
     keys++;
   }
   if (input.event_time !== undefined) {
