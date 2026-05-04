@@ -31,6 +31,7 @@ export function Option(props: OptionProps) {
       <div style={{ display: "flex", gap: 8 }}>
         <Input
           {...field}
+          aria-label={`选项 ${String.fromCharCode(65 + index)} 内容`}
           value={text ?? ""}
           onChange={(e) => field.onChange({ ...fieldValue, text: e.target.value })}
           status={getAntdErrorStatus(fieldState)}

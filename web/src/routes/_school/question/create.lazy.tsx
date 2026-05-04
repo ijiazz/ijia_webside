@@ -39,14 +39,16 @@ function RouteComponent() {
   });
 
   return (
-    <div style={{ minHeight: "100%" }}>
+    <div style={{ minHeight: "100%" }} e2e-question-form="create">
       <QuestionForm
         form={form}
         onSubmit={onSubmit}
         footer={
           <Space>
-            <Button onClick={ogBack}>返回</Button>
-            <Button type="primary" onClick={onSubmit} loading={isSubmitting}>
+            <Button aria-label="返回题目列表" onClick={ogBack}>
+              返回
+            </Button>
+            <Button aria-label="创建题目" type="primary" onClick={onSubmit} loading={isSubmitting}>
               创建
             </Button>
           </Space>

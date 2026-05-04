@@ -13,10 +13,15 @@ export default routeGroup.create({
     const currentUserId = await ctx.get("userInfo").getUserId();
     const param = checkValue(ctx.req.query(), {
       cursor: optional.string,
+      userId: optional(queryInt),
     });
-    return { ...param, currentUserId };
+    const targetUserId = param.userId ?? currentUserId;
+    return { cursor: param.cursor, currentUserId, targetUserId };
   },
-  handler({ cursor, currentUserId }): Promise<GetUserQuestionListResult> {
-    return getUserQuestionPublicList({ isOwner: true, userId: currentUserId }, { cursorNext: cursor });
+  handler({ cursor, targetUserId, currentUserId }): Promise<GetUserQuestionListResult> {
+    return getUserQuestionPublicList(
+      { isOwner: targetUserId === currentUserId, userId: targetUserId },
+      { cursorNext: cursor },
+    );
   },
 });

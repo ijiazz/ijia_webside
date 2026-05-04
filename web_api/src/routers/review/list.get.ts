@@ -1,7 +1,7 @@
 import { requiredRoles, Role } from "@/middleware/auth.ts";
 import routeGroup from "./_route.ts";
 import { GetReviewListOption, reviewSelect } from "./-sql/get_review_list.ts";
-import { ListDto, ReviewItem } from "@/dto.ts";
+import { ListResult, ReviewItem } from "@/dto.ts";
 import { v } from "@/sql/utils.ts";
 import { dbPool } from "@/db/client.ts";
 import { MultipleQueryResult } from "@asla/pg";
@@ -11,11 +11,11 @@ export default routeGroup.create({
   method: "GET",
   routePath: "/review/list",
   middlewares: [requiredRoles(Role.Admin)],
-  async handler(): Promise<ListDto<ReviewItem<unknown>>> {
+  async handler(): Promise<ListResult<ReviewItem<unknown>>> {
     return getReviewListWithTotal({ size: 10 });
   },
 });
-async function getReviewListWithTotal(option: GetReviewListOption): Promise<ListDto<ReviewItem<unknown>>> {
+async function getReviewListWithTotal(option: GetReviewListOption): Promise<ListResult<ReviewItem<unknown>>> {
   const { size, offset, type } = option;
 
   const conditions: string[] = [];

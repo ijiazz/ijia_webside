@@ -54,6 +54,7 @@ function MultipleOptions() {
             <div style={{ marginBlock: 3 }}>
               <Tag>{String.fromCharCode(65 + index)}</Tag>
               <Checkbox
+                aria-label={`设置选项 ${String.fromCharCode(65 + index)} 为正确答案`}
                 value={index}
                 checked={answerIndexField.field.value?.includes(index)}
                 onChange={() => {
@@ -83,7 +84,12 @@ function MultipleOptions() {
           </div>
         ))}
         {fields.length < maxOptionCount && (
-          <Button onClick={() => append({})} type="default" disabled={fields.length >= maxOptionCount}>
+          <Button
+            aria-label="添加选项"
+            onClick={() => append({})}
+            type="default"
+            disabled={fields.length >= maxOptionCount}
+          >
             添加选项
           </Button>
         )}
@@ -119,6 +125,7 @@ function SingleOptions() {
             <div style={{ marginBlock: 3 }}>
               <Tag>{String.fromCharCode(65 + index)}</Tag>
               <Radio
+                aria-label={`设置选项 ${String.fromCharCode(65 + index)} 为正确答案`}
                 value={index}
                 checked={answerIndexField.field.value?.[0] === index}
                 onChange={() => {
@@ -143,7 +150,12 @@ function SingleOptions() {
           </div>
         ))}
         {fields.length < maxOptionCount && (
-          <Button onClick={() => append({})} type="default" disabled={fields.length >= maxOptionCount}>
+          <Button
+            aria-label="添加选项"
+            onClick={() => append({})}
+            type="default"
+            disabled={fields.length >= maxOptionCount}
+          >
             添加选项
           </Button>
         )}
@@ -162,6 +174,7 @@ function TrueFalseOptions() {
     <FormItem label="答案" required error={answerIndexField.fieldState.error?.message}>
       <div style={{ width: "100%", display: "flex", gap: 8 }}>
         <Radio.Group
+          aria-label="判断题答案"
           value={radioValue}
           aria-readonly={mode !== QuestionEditMode.FullEdit}
           onChange={(e) => {

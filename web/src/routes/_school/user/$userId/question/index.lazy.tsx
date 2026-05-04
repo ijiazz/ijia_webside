@@ -21,7 +21,13 @@ function RouteComponent() {
 
   return (
     <div className={cx(HomePageCSS, PostListCSS)}>
-      <Button type="primary" size="large" onClick={() => navigate({ to: "/question/create" })} disabled={!isSelf}>
+      <Button
+        type="primary"
+        size="large"
+        aria-label="发布题目"
+        onClick={() => navigate({ to: "/question/create" })}
+        disabled={!isSelf}
+      >
         发布题目
       </Button>
       <UserQuestionList canManage={isSelf} userId={userId} />

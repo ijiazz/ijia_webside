@@ -79,14 +79,14 @@ export async function commitQuestionReview(api: Api, token: string | undefined, 
   });
 }
 
-export async function getQuestionReviewId(questionId: string): Promise<number> {
+export async function getQuestionReviewId(questionId: string): Promise<string> {
   const row = await dbPool.queryFirstRow<{ review_id: number | null }>(
     select("review_id")
       .from("exam_question")
       .where(`id=${v(questionId)}`),
   );
   if (row.review_id === null) throw new Error("题目没有对应的审核项");
-  return row.review_id;
+  return row.review_id.toString();
 }
 
 export async function getQuestionCount(userId: number) {

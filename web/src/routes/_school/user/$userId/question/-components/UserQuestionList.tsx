@@ -21,7 +21,7 @@ export function UserQuestionList(props: UserQuestionListProps) {
   const { userId, canManage } = props;
   const { data, setData, reset, next, previous } = useInfiniteLoad<ExamUserQuestion[], string>({
     async load(cursor, forward) {
-      const result = await getUserQuestionListQueryOption({ cursor });
+      const result = await getUserQuestionListQueryOption({ cursor, userId });
       const items = forward ? result.items.slice().reverse() : result.items;
       return {
         items,

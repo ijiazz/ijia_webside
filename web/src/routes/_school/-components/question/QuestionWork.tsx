@@ -2,26 +2,26 @@ import { ExamQuestionType, QuestionPrivate } from "@/api.ts";
 import { QUESTION_TYPE_LABEL } from "./const.ts";
 import { OptionsBoard } from "./OptionsBoard/OptionsBoard.tsx";
 import { QuestionAttachments } from "./OptionsBoard/QuestionAttachments.tsx";
-import { Card, Space, Tag, Typography } from "antd";
+import { Card, CardProps, Space, Tag, Typography } from "antd";
 
 export type QuestionWorkData = Partial<QuestionPrivate>;
 
-export type QuestionWorkProps = {
+export type QuestionWorkProps = Omit<CardProps, "title" | "styles" | "onChange"> & {
   data: QuestionWorkData;
   correctIndexes?: number[];
   value?: number[];
   onChange?: (indexes: number[]) => void;
-  extra?: React.ReactNode;
 
   children?: React.ReactNode;
 };
 export function QuestionWork(props: QuestionWorkProps) {
-  const { data, value, onChange, correctIndexes, extra, children } = props;
+  const { data, value, onChange, correctIndexes, children, ...rest } = props;
   if (!data.question_type) {
     return <div>请选择题型</div>;
   }
   return (
     <Card
+      {...rest}
       title={
         <Space>
           {data.index !== undefined && <span>{data.index + 1}.</span>}
@@ -29,7 +29,6 @@ export function QuestionWork(props: QuestionWorkProps) {
           <Typography.Text strong>{data.question_text}</Typography.Text>
         </Space>
       }
-      extra={extra}
       styles={{
         body: {
           paddingBlockStart: 0,

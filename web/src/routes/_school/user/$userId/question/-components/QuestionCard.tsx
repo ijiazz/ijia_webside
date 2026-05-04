@@ -16,6 +16,8 @@ export function QuestionCard(props: QuestionCardProps) {
   return (
     <QuestionWork
       data={item}
+      className="e2e-question-card"
+      e2e-question-id={item.question_id}
       extra={
         <Space wrap>
           {review?.status === ReviewStatus.pending && <Tag color="blue">审核中</Tag>}
@@ -30,7 +32,12 @@ export function QuestionCard(props: QuestionCardProps) {
                 ],
               }}
             >
-              <Button className="e2e-post-item-extra-btn" type="text" icon={<MoreOutlined />}></Button>
+              <Button
+                className="e2e-post-item-extra-btn"
+                type="text"
+                aria-label="题目更多操作"
+                icon={<MoreOutlined />}
+              ></Button>
             </Dropdown>
           )}
         </Space>

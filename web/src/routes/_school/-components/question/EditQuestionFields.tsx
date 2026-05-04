@@ -15,10 +15,11 @@ export { type EditQuestionFormFields, QuestionEditMode } from "./OptionsField/fo
 
 export type EditQuestionFieldsProps = {
   mode?: QuestionEditMode;
+  readonlyQuestionType?: boolean;
 };
 
 export function EditQuestionFields(props: EditQuestionFieldsProps) {
-  const { mode = QuestionEditMode.Edit } = props;
+  const { mode = QuestionEditMode.Edit, readonlyQuestionType = false } = props;
   const form = useFormContext<EditQuestionFormInput, undefined, EditQuestionFormFields>();
 
   return (
@@ -26,11 +27,12 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
       <Controller
         name="question_type"
         render={({ field, fieldState }) => {
-          const isReadonly = mode === QuestionEditMode.Edit;
+          const isReadonly = mode === QuestionEditMode.Edit || readonlyQuestionType;
           return (
             <FormItem label="题型" error={fieldState.error?.message}>
               <Radio.Group
                 {...field}
+                aria-label="题型"
                 onChange={(e) => {
                   if (isReadonly) return;
                   const type = e.target.value as ExamQuestionType;
@@ -52,6 +54,7 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
                 }}
                 style={{
                   cursor: isReadonly ? "default" : undefined,
+                  pointerEvents: isReadonly ? "none" : undefined,
                 }}
                 optionType="button"
                 buttonStyle="solid"
@@ -72,7 +75,12 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
         }}
         render={({ field, fieldState }) => (
           <FormItem required label="题目" error={fieldState.error?.message}>
-            <Input.TextArea {...field} autoSize={{ minRows: 3, maxRows: 8 }} status={getAntdErrorStatus(fieldState)} />
+            <Input.TextArea
+              {...field}
+              aria-label="题目内容"
+              autoSize={{ minRows: 3, maxRows: 8 }}
+              status={getAntdErrorStatus(fieldState)}
+            />
           </FormItem>
         )}
       />
@@ -88,7 +96,12 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
         }}
         render={({ field, fieldState }) => (
           <FormItem required label="答案解析" error={fieldState.error?.message} description="可以添加抖音或外站链接">
-            <Input.TextArea {...field} autoSize={{ minRows: 3, maxRows: 8 }} status={getAntdErrorStatus(fieldState)} />
+            <Input.TextArea
+              {...field}
+              aria-label="答案解析"
+              autoSize={{ minRows: 3, maxRows: 8 }}
+              status={getAntdErrorStatus(fieldState)}
+            />
           </FormItem>
         )}
       />

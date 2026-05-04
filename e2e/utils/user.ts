@@ -1,5 +1,5 @@
 import { dbPool } from "@/db/client.ts";
-import { createUser } from "@ijia/data/query";
+import { createUser, addRoleToUser } from "@ijia/data/query";
 import { api } from "@/utils/fetch.ts";
 import { LoginMethod, UserIdentifierType } from "@/api.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
@@ -70,6 +70,13 @@ export function initAlice() {
 }
 export function initBob() {
   return createNewUser("Bob");
+}
+
+export async function initAdmin() {
+  const admin = await createNewUser("Admin");
+  await addRoleToUser(admin.id, "admin");
+  const token = await loginGetToken(admin.email, admin.password);
+  return { ...admin, token };
 }
 
 export async function loginGetToken(email: string, pwd: string) {
