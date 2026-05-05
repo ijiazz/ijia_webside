@@ -79,7 +79,7 @@ test("拒绝空用户题目的审核时，应直接删除题目和审核数据",
   await deleteQuestion(api, question_id, alice.token);
 
   const reviewId = await getQuestionReviewId(question_id);
-  await commitQuestionReview(alice.id, { review_id: Number(reviewId), is_passed: false, remark: "不通过" });
+  await commitQuestionReview(alice.id, { review_id: +reviewId, is_passed: false, remark: "不通过" });
 
   await expect(getQuestionByIdCount(+question_id)).resolves.toBe(0);
 

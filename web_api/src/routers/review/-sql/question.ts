@@ -44,7 +44,7 @@ export async function commitAndUpdateQuestionReview(
       v.gen`DELETE FROM exam_question WHERE id=${question_id} AND review_status='rejected' AND user_id IS NULL`,
     );
     if (count === 1) {
-      await t.queryCount(v.gen`DELETE FROM review WHERE id=${question_id}`);
+      await t.queryCount(v.gen`DELETE FROM review WHERE id=${reviewId}`);
     }
   }
   await t.commit();
