@@ -48,7 +48,7 @@ test("评论审核通过后，评论应继续保留", async function ({ api, iji
 
   const firstPost = await getSelfPost(api, post.id, alice.token);
   expect(firstPost.stat.comment_total).toBe(1);
-  const res = await commitPostCommentReviewNext(api, { is_passed: true, review_id: reviewId }, Admin.token);
+  const res = await commitPostCommentReviewNext(api, { is_passed: true, review_id: reviewId.toString() }, Admin.token);
   expect(res.success, "返回成功状态").toBe(true);
   await expect(getCommentReviewStatus(c.id)).resolves.toMatchObject({
     reviewer_id: Admin.id,
@@ -71,7 +71,7 @@ test("评论审核不通过，直接删除评论", async function ({ api, ijiaDb
 
   const firstPost = await getSelfPost(api, post.id, alice.token);
   expect(firstPost.stat.comment_total).toBe(1);
-  await commitPostCommentReviewNext(api, { is_passed: false, review_id: reviewId }, Admin.token);
+  await commitPostCommentReviewNext(api, { is_passed: false, review_id: reviewId.toString() }, Admin.token);
 
   await expect(getCommentReviewStatus(c.id)).resolves.toMatchObject({
     reviewer_id: Admin.id,
@@ -96,7 +96,7 @@ test("评论审核通过后，应更新举报用户的审核正确/错误统计"
   const commitReview = async (pass: boolean, cid: number) => {
     const reviewId = await getCommentReviewId(cid);
     if (reviewId === null) throw new Error("评论未进入审核流程");
-    return commitPostCommentReviewNext(api, { is_passed: pass, review_id: reviewId }, Admin.token);
+    return commitPostCommentReviewNext(api, { is_passed: pass, review_id: reviewId.toString() }, Admin.token);
   };
   await commitReview(true, c1.id);
   const userIdList = [other.id, users[0].id, users[1].id, users[2].id];

@@ -54,7 +54,7 @@ test("选择分组的帖子审核通过后，帖子应在公共列表可见", as
   const { alice, post } = await preparePost(api, { content_text: "测试", group_id: groupId });
   const reviewId = await getPostReviewId(post.id);
 
-  await commitPostReviewNext(api, { is_passed: true, review_id: reviewId!, remark: "123" }, Admin.token);
+  await commitPostReviewNext(api, { is_passed: true, review_id: reviewId!.toString(), remark: "123" }, Admin.token);
 
   const visitor2 = await getPublicPost(api, post.id);
   expect(visitor2, "其他人能看到审核通过的帖子").toBeTypeOf("object");
@@ -69,7 +69,7 @@ test("帖子审核通过后，帖子应在公共列表可见", async function ({
   const { alice, post } = await preparePost(api, { content_text: "测试" });
   const reviewId = await setPostToReviewing(post.id);
 
-  await commitPostReviewNext(api, { is_passed: true, review_id: reviewId, remark: "123" }, Admin.token);
+  await commitPostReviewNext(api, { is_passed: true, review_id: reviewId.toString(), remark: "123" }, Admin.token);
 
   const visitor2 = await getPublicPost(api, post.id);
   expect(visitor2, "其他人能看到审核通过的帖子").toBeTypeOf("object");
@@ -84,7 +84,7 @@ test("帖子审核不通过，帖子应该为审核不通过状态", async funct
   const { alice, post } = await preparePost(api, { content_text: "测试" });
   const reviewId = await setPostToReviewing(post.id);
 
-  await commitPostReviewNext(api, { is_passed: false, review_id: reviewId, remark: "9999" }, Admin.token);
+  await commitPostReviewNext(api, { is_passed: false, review_id: reviewId.toString(), remark: "9999" }, Admin.token);
 
   const visitor2 = await getPublicPost(api, post.id);
   const author2 = await getSelfPost(api, post.id, alice.token);
@@ -106,7 +106,7 @@ test("帖子审核通过后，应更新举报用户的审核正确/错误统计"
 
   const commitReview = async (pass: boolean, pid: number) => {
     const reviewId = await getPostReviewId(pid);
-    return commitPostReviewNext(api, { is_passed: pass, review_id: reviewId! }, Admin.token);
+    return commitPostReviewNext(api, { is_passed: pass, review_id: reviewId!.toString() }, Admin.token);
   };
   await commitReview(true, post.id);
 
