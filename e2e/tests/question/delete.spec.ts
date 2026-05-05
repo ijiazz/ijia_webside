@@ -25,10 +25,17 @@ test("用户删除题目", async function ({ page, context }) {
   await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: /确\s*定/ }).click();
 
-  await expect(page.locator(".e2e-question-card", { hasText: deletedText }), "删除后目标题目应从列表中消失").toHaveCount(0);
-  await expect(page.locator(".e2e-question-card", { hasText: remainText }), "其他题目应继续保留在列表中").toHaveCount(1);
+  await expect(
+    page.locator(".e2e-question-card", { hasText: deletedText }),
+    "删除后目标题目应从列表中消失",
+  ).toHaveCount(0);
+  await expect(page.locator(".e2e-question-card", { hasText: remainText }), "其他题目应继续保留在列表中").toHaveCount(
+    1,
+  );
 
   await page.reload();
-  await expect(page.locator(".e2e-question-card", { hasText: deletedText }), "刷新后被删除题目仍不应出现").toHaveCount(0);
+  await expect(page.locator(".e2e-question-card", { hasText: deletedText }), "刷新后被删除题目仍不应出现").toHaveCount(
+    0,
+  );
   await expect(page.locator(".e2e-question-card", { hasText: remainText }), "刷新后保留题目仍应存在").toHaveCount(1);
 });

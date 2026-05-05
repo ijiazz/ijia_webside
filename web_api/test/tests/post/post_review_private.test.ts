@@ -2,10 +2,10 @@ import { beforeEach, expect } from "vitest";
 import { Api, Context, test } from "#test/fixtures/hono.ts";
 import { postRoutes, reviewRoutes } from "@/routers/mod.ts";
 
-import { CommitReviewParam, CommitReviewResult, ReviewTargetType } from "@/dto.ts";
+import { CommitReviewParam, CommitReviewResult, ReviewStatus, ReviewTargetType } from "@/dto.ts";
 import { prepareUniqueUser } from "#test/fixtures/user.ts";
 import { Role } from "@/middleware/auth.ts";
-import { createPost, prepareCommentPost } from "#test/utils/post.ts";
+import { createPost, prepareCommentPost, preparePost } from "#test/utils/post.ts";
 import { setPostToReviewing } from "@/routers/review/mod.ts";
 import { commitReview, getReviewNext } from "../../utils/review.ts";
 import "#test/asserts/review.ts";
@@ -14,6 +14,21 @@ beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);
   reviewRoutes.apply(hono);
 });
+
+test("超级管理员可以查看帖子审核和提交审核", async function ({ api, ijiaDbPool }) {
+  const Admin = await prepareUniqueUser("Admin", { roles: new Set([Role.Admin]) });
+
+  const { alice, post } = await preparePost(api);
+  await setPostToReviewing(post.id);
+
+  const res = await getPostReviewNext(api, Admin.token);
+  const reviewId = res.item!.id;
+
+  const p: CommitReviewParam = { is_passed: true, review_id: reviewId };
+  await commitPostReviewNext(api, { ...p, remark: Admin.nickname }, Admin.token);
+  await expect(post.id).postReviewStatusIs(ReviewStatus.passed);
+});
+
 test("提交审核后，应返回下一个审核项", async function ({ api, ijiaDbPool }) {
   const { alice, action, post: p0 } = await prepareCommentPost(api);
   const p1 = await createPost(api, { content_text: "1" }, alice.token);

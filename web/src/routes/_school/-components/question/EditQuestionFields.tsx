@@ -108,7 +108,11 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
       <Controller
         name="event_time"
         render={({ field, fieldState }) => (
-          <FormItem label="事件时间" error={fieldState.error?.message} description="可选，和题目描述相关事件的发生时间，用于系统推荐题目">
+          <FormItem
+            label="事件时间"
+            error={fieldState.error?.message}
+            description="可选，和题目描述相关事件的发生时间，用于系统推荐题目"
+          >
             <DatePicker
               value={field.value ? dayjs(field.value) : null}
               onChange={(date) => {

@@ -26,7 +26,7 @@ beforeEach<Context>(async ({ hono }) => {
   reviewRoutes.apply(hono);
   commentRoutes.apply(hono);
 });
-test("只有超级管理员可以查看帖子审核和提交审核", async function ({ api, publicDbPool }) {
+test("非超级管理员不能可以查看帖子审核和提交审核", async function ({ api, publicDbPool }) {
   const Bob = await prepareUniqueUser("Bob");
   const Admin = await prepareUniqueUser("Admin", { roles: new Set([Role.Admin]) });
 
@@ -43,9 +43,6 @@ test("只有超级管理员可以查看帖子审核和提交审核", async funct
   await expect(commitPostReviewNext(api, { ...p, remark: alice.nickname })).responseStatus(401);
   await expect(commitPostReviewNext(api, { ...p, remark: alice.nickname }, alice.token)).responseStatus(403);
   await expect(commitPostReviewNext(api, { ...p, remark: Bob.nickname }, Bob.token)).responseStatus(403);
-
-  await commitPostReviewNext(api, { ...p, remark: Admin.nickname }, Admin.token);
-  await expect(post.id).postReviewStatusIs(ReviewStatus.passed);
 });
 test("选择分组的帖子审核通过后，帖子应在公共列表可见", async function ({ api, publicDbPool }) {
   const Admin = await prepareUniqueUser("Admin", { roles: new Set([Role.Admin]) });
