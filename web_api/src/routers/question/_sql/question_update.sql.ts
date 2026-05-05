@@ -126,10 +126,9 @@ export async function updateQuestionAdvanceConfig(
     );
     SQL_LIST.push(deleteThemeSql, sqlInsertTheme);
   }
-  if (SQL_LIST.length === 0) {
-    return;
+  if (SQL_LIST.length) {
+    await t.execute(SQL_LIST);
   }
-  await t.execute(SQL_LIST);
 }
 
 function genUpdateOptionSQL(

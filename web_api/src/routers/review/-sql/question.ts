@@ -39,6 +39,14 @@ export async function commitAndUpdateQuestionReview(
     await updateQuestionForReview(t, question_id, updateParam);
   }
   await updateQuestionAdvanceConfig(t, question_id, advanced_config, nextStatus);
+  if (!isPassed) {
+    const count = await t.queryCount(
+      v.gen`DELETE FROM exam_question WHERE id=${question_id} AND review_status='rejected' AND user_id IS NULL`,
+    );
+    if (count === 1) {
+      await t.queryCount(v.gen`DELETE FROM review WHERE id=${question_id}`);
+    }
+  }
   await t.commit();
   return true;
 }

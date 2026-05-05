@@ -2,7 +2,7 @@ import { beforeEach, expect } from "vitest";
 import { test, Context } from "#test/fixtures/hono.ts";
 import questionRoutes from "@/routers/question/mod.ts";
 import { prepareUniqueUser } from "#test/fixtures/user.ts";
-import { createQuestion, createSampleQuestion, getQuestion, getQuestionCount } from "#test/utils/question.ts";
+import { createQuestion, createSampleQuestion, getQuestion, getUserQuestionCount } from "#test/utils/question.ts";
 import { CreateQuestionParam, ExamQuestionType, QuestionPublic, ReviewStatus, TextStructureType } from "@/dto.ts";
 import { Role } from "@/middleware/auth.ts";
 import { v } from "@/sql/utils.ts";
@@ -96,11 +96,11 @@ test("普通用户出题后，题目应该处于待审核状态", async function
 
 test("创建题目后，应更新用户总题数", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  await expect(getQuestionCount(alice.id)).resolves.toBe(0);
+  await expect(getUserQuestionCount(alice.id)).resolves.toBe(0);
 
   await createSampleQuestion(api, alice.token);
 
-  await expect(getQuestionCount(alice.id)).resolves.toBe(1);
+  await expect(getUserQuestionCount(alice.id)).resolves.toBe(1);
 });
 
 //TODO: 超级管理员创建题目免审核

@@ -8,6 +8,7 @@ export default async function setup() {
 
   await initPublicClass();
   await initPostGroup();
+  await initRoles();
 
   console.log("setup complete");
 }
@@ -29,4 +30,17 @@ async function initPublicClass() {
       .onConflict("id")
       .doUpdate({ class_name: "EXCLUDED.class_name", parent_class_id: "EXCLUDED.parent_class_id" }),
   );
+}
+
+async function initRoles() {
+  await dbPool.execute(
+    insertIntoValues("role", [{ name: Role.Admin }, { name: Role.Root }])
+      .onConflict("id")
+      .doNotThing(),
+  );
+}
+enum Role {
+  Root = "root",
+  Admin = "admin",
+  PostReviewer = "PostReviewer",
 }

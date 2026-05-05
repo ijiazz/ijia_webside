@@ -89,7 +89,7 @@ export async function getQuestionReviewId(questionId: string): Promise<string> {
   return row.review_id.toString();
 }
 
-export async function getQuestionCount(userId: number) {
+export async function getUserQuestionCount(userId: number) {
   const row = await dbPool.queryFirstRow<{ exam_question_count: number }>(
     select("exam_question_count")
       .from("user_profile")
