@@ -21,20 +21,15 @@ type AssetMediaBase<T> = {
   origin: T;
 };
 
-export type AssetMediaUploadFile = {
-  tmp_file_id: string;
-  type: MediaType;
-};
-
-export type AssetMediaInfoDto<Meta extends {} = Record<string, any>> = {
-  size: number;
+export type AssetMediaInfoDto<Meta extends {} | void = void> = {
+  size?: number;
   url: string;
   meta: Meta;
 };
 
-export type AssetVideo = AssetMediaInfoDto<{}>; //TODO
-export type AssetImage = AssetMediaInfoDto<{}>; //TODO
-export type AssetAudio = AssetMediaInfoDto<{}>; //TODO
+export type AssetVideo = AssetMediaInfoDto<void>; //TODO
+export type AssetImage = AssetMediaInfoDto<void>; //TODO
+export type AssetAudio = AssetMediaInfoDto<void>; //TODO
 
 export type AssetVideoDetail = AssetMediaBase<AssetVideo> & {
   type: MediaType.video;

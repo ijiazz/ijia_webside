@@ -13,7 +13,7 @@ export type GetReviewListOption = {
 };
 export function reviewSelect() {
   return select<ReviewItem<unknown>>({
-    id: true,
+    id: "id::TEXT",
     create_time: true,
     resolved_time: true,
     is_passed: true,
@@ -25,7 +25,7 @@ export function reviewSelect() {
       jsonb_build_object({
         avatar: true,
         nickname: true,
-        user_id: "id",
+        user_id: "id::TEXT",
       }),
     )
       .from("public.user")
@@ -99,13 +99,4 @@ async function getReviewList(option: GetReviewListOption): Promise<ReviewItem<un
 export async function getReviewNext(type?: ReviewTargetType): Promise<ReviewItem<unknown> | undefined> {
   const next = await getReviewList({ type, size: 1, status: ReviewStatus.pending }); //TODO: 考虑给用户分配审核任务
   return next[0];
-}
-
-export async function getReviewItem(
-  reviewId: number,
-  type: ReviewTargetType,
-): Promise<ReviewItem<unknown> | undefined> {
-  const sql = reviewSelect().where([`id=${v(reviewId)}`, `target_type=${v(type)}`]);
-  const [item] = await dbPool.queryRows(sql);
-  return item;
 }

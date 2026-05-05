@@ -12,6 +12,7 @@ import {
   passportRoutes,
   liveRoutes,
   reviewRoutes,
+  questionRoutes,
   uploadRoutes,
 } from "@/routers/mod.ts";
 
@@ -35,6 +36,7 @@ export function createHonoApp() {
   liveRoutes.apply(hono, options);
   passportRoutes.apply(hono, options);
   reviewRoutes.apply(hono, options);
+  questionRoutes.apply(hono, options);
   return hono;
 }
 

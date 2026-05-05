@@ -6,18 +6,17 @@ import { prepareUniqueUser } from "#test/fixtures/user.ts";
 import {
   createPost,
   createPostGroup,
-  PostReviewInfo,
   getPublicPost,
   getSelfPost,
   updatePostConfigFormApi,
   updatePostContentFromApi,
 } from "../../utils/post.ts";
-import { getPostReviewStatus, preparePost } from "../../utils/post.ts";
+import { preparePost } from "../../utils/post.ts";
 import { DeepPartial } from "../../utils/common.ts";
 import postRoutes from "@/routers/post/mod.ts";
-import {} from "@/dto.ts";
 import { commitPostReview, setPostToReviewing } from "@/routers/review/mod.ts";
-import "#test/asserts/post.ts";
+import "#test/asserts/review.ts";
+import { getPostReviewStatus, PostReviewInfo } from "#test/utils/review.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);

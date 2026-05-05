@@ -22,7 +22,7 @@ beforeEach<Context>(async ({ hono, publicDbPool }) => {
 });
 
 test("注册用户", async function ({ api, publicDbPool }) {
-  const email = getUniqueEmail("alice");
+  const email = await getUniqueEmail("alice");
   const emailAnswer = await mockSignUpSendEmailCaptcha(api, email);
   const result = await signup(api, { email: email, password: AlicePassword, emailCaptcha: emailAnswer });
   await expect(
@@ -32,7 +32,7 @@ test("注册用户", async function ({ api, publicDbPool }) {
 test("必须传正确的邮件验证码", async function ({ api, publicDbPool }) {
   await expect(
     signup(api, {
-      email: getUniqueEmail("alice"),
+      email: await getUniqueEmail("alice"),
       password: AlicePassword,
       emailCaptcha: { code: "123", sessionId: "111" },
     }),
@@ -40,7 +40,7 @@ test("必须传正确的邮件验证码", async function ({ api, publicDbPool })
 });
 
 test("大写字母域名会被转换成小写", async function ({ api, publicDbPool }) {
-  const prefix = getUniqueName("Abc12中文");
+  const prefix = await getUniqueName("Abc12中文");
   const email = `${prefix}@IJIAZZ.中文`;
   const emailAnswer = await mockSignUpSendEmailCaptcha(api, email);
   const result = await signup(api, {
@@ -53,14 +53,14 @@ test("大写字母域名会被转换成小写", async function ({ api, publicDbP
   expect(info.email).toBe(`${prefix.toLowerCase()}@ijiazz.中文`);
 });
 test("不能使用一个用户的邮箱验证码注册另一个用户的邮箱", async function ({ api, publicDbPool }) {
-  const emailAnswer = await mockSignUpSendEmailCaptcha(api, getUniqueEmail("alice"));
+  const emailAnswer = await mockSignUpSendEmailCaptcha(api, await getUniqueEmail("alice"));
   await expect(
-    signup(api, { email: getUniqueEmail("bob"), password: AlicePassword, emailCaptcha: emailAnswer }),
+    signup(api, { email: await getUniqueEmail("bob"), password: AlicePassword, emailCaptcha: emailAnswer }),
     "试图用 alice 的邮箱验证码注册 bob 的邮箱",
   ).rejects.throwErrorMatchBody(403, { message: "验证码错误" });
 });
 test("邮箱验证码输入错，修正后可以认证通过", async function ({ api, publicDbPool }) {
-  const email = getUniqueEmail("alice");
+  const email = await getUniqueEmail("alice");
   const emailAnswer = await mockSignUpSendEmailCaptcha(api, email);
   await expect(
     signup(api, {
@@ -76,11 +76,11 @@ test("不允许传错误的邮箱", async function ({ api, publicDbPool }) {
   await expect(mockSignUpSendEmailCaptcha(api, "@qq.com"), "邮箱不正确").rejects.responseStatus(400);
 });
 test("已注册不能再注册", async function ({ api, publicDbPool }) {
-  const BobEmail = getUniqueEmail("bob");
+  const BobEmail = await getUniqueEmail("bob");
   const BobId = await createUser(BobEmail, { password: AlicePassword });
   await expect(mockSignUpSendEmailCaptcha(api, BobEmail)).responseStatus(406);
 
-  const TestEmail = getUniqueEmail("test");
+  const TestEmail = await getUniqueEmail("test");
   const emailAnswer = await mockSignUpSendEmailCaptcha(api, TestEmail);
   const TestId = await createUser(TestEmail, { password: AlicePassword }); // 立即抢注
   await expect(signup(api, { password: AlicePassword, emailCaptcha: emailAnswer, email: TestEmail })).responseStatus(

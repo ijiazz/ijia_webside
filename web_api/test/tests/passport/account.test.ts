@@ -39,7 +39,7 @@ describe("修改邮箱", async function () {
     const alice = await prepareUniqueUser("alice");
     const accountToken = await getAccountToken(api, alice.token);
 
-    const newEmail = getUniqueEmail("news");
+    const newEmail = await getUniqueEmail("news");
     const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail);
     await api["/passport/change_email"].post({
       body: { newEmail: newEmail, emailCaptcha: emailCaptchaAnswer, accountToken },
@@ -50,8 +50,8 @@ describe("修改邮箱", async function () {
   test("不能使用 news 的验证码来验证 bob 的邮箱", async function ({ api }) {
     const alice = await prepareUniqueUser("alice");
     const accountToken = await getAccountToken(api, alice.token);
-    const newEmail = getUniqueEmail("news");
-    const bobEmail = getUniqueEmail("bob");
+    const newEmail = await getUniqueEmail("news");
+    const bobEmail = await getUniqueEmail("bob");
     const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail);
     const promise = api["/passport/change_email"].post({
       body: { newEmail: bobEmail, emailCaptcha: emailCaptchaAnswer, accountToken },
@@ -85,7 +85,7 @@ describe("修改邮箱", async function () {
     const alice = await prepareUniqueUser("alice");
     const accountToken = await getAccountToken(api, alice.token);
 
-    const prefix = getUniqueName("Abc1");
+    const prefix = await getUniqueName("Abc1");
     const newEmail = `${prefix}@IJIAzz.中文`;
 
     const emailCaptchaAnswer = await mockChangeEmailSendEmailCaptcha(api, newEmail);

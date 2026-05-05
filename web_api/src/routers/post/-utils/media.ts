@@ -8,6 +8,6 @@ export function assetMediaToDto(item: { filename?: string }): AssetMediaDto["ori
   return {
     url: item.filename ? prefix + item.filename : "",
     size: 0,
-    meta: {},
+    meta: undefined,
   };
 }

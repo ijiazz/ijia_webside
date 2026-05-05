@@ -18,7 +18,7 @@ import { dbPool } from "@/db/client.ts";
 import postRoutes from "@/routers/post/mod.ts";
 import { ReviewStatus } from "@ijia/data/db";
 import { commitPostReview, setPostToReviewing } from "@/routers/review/mod.ts";
-import "#test/asserts/post.ts";
+import "#test/asserts/review.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);

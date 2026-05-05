@@ -2,4 +2,5 @@
   "deno.enablePaths": ["./deps/ijia-data", "./web_ssr"],
   "files.eol": "\n",
   "vitest.runtime": "node",
+  "vitest.debugExclude": ["<node_internals>/**"],
 }

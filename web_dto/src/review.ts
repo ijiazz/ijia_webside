@@ -1,6 +1,7 @@
-import type { ListDto } from "./common.ts";
+import type { ListResult } from "./common.ts";
 import type {
   CommitReviewParam,
+  CommitQuestionReviewParam,
   CommitReviewResult,
   GetReviewListParam,
   GetReviewNextResult,
@@ -13,12 +14,16 @@ export * from "./review/db.ts";
 
 export interface ReviewApi {
   "GET /review/list": {
-    response: ListDto<ReviewItem<unknown>>;
+    response: ListResult<ReviewItem<unknown>>;
     query?: GetReviewListParam;
   };
   "GET /review/next/:type": {
     response: GetReviewNextResult;
     params: { type: ReviewTargetType };
+  };
+  "POST /review/commit/question": {
+    body: CommitQuestionReviewParam;
+    response: CommitReviewResult;
   };
   "POST /review/commit/:type": {
     body: CommitReviewParam;

@@ -10,8 +10,9 @@ function RouteComponent() {
   const { type } = Route.useParams();
   const navigate = Route.useNavigate();
   const menus = [
-    { label: "帖子审核", key: ReviewTargetType.post },
-    { label: "评论审核", key: ReviewTargetType.post_comment },
+    { label: "帖子", key: ReviewTargetType.post },
+    { label: "评论", key: ReviewTargetType.post_comment },
+    { label: "题目", key: ReviewTargetType.exam_question },
   ];
   return (
     <AdaptiveMenuLayout

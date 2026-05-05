@@ -1,7 +1,8 @@
+import type { QuestionAdvancedConfig, UpdateQuestionParam } from "../exam.ts";
 import type { ReviewDisplayItem, ReviewTargetType } from "./db.ts";
 
 type ReviewItemBase = {
-  id: number;
+  id: string;
   create_time: number;
   resolved_time?: number;
   review_display?: ReviewDisplayItem[];
@@ -13,7 +14,7 @@ type ReviewItemBase = {
   reviewer: {
     avatar?: string;
     nickname?: string;
-    user_id: number;
+    user_id: string;
   };
 };
 
@@ -26,18 +27,24 @@ export type GetReviewListParam = {
   target_type?: ReviewTargetType;
   is_reviewing?: boolean;
   is_passed?: boolean;
-  reviewer_id?: number;
+  reviewer_id?: string;
 };
 
 export type CommitReviewParam = {
-  review_id: number;
+  review_id: string;
   is_passed: boolean;
   remark?: string;
 };
-export type CommitReviewResult = {
-  next?: ReviewItem<unknown>;
+
+export type CommitQuestionReviewParam = CommitReviewParam & {
+  update?: UpdateQuestionParam;
+  advanced_config?: QuestionAdvancedConfig;
+};
+
+export type CommitReviewResult<T = unknown> = {
+  next?: ReviewItem<T>;
   success: boolean;
 };
-export type GetReviewNextResult = {
-  item?: ReviewItem<unknown>;
+export type GetReviewNextResult<T = unknown> = {
+  item?: ReviewItem<T>;
 };

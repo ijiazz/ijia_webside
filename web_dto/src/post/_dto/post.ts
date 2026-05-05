@@ -1,4 +1,4 @@
-import type { CursorListDto, TextStructure, AssetMediaUploadFile, ReviewStatus } from "../../common.ts";
+import type { CursorListDto, TextStructure, ReviewStatus } from "../../common.ts";
 import type { PostGroupInfo } from "./post_group.ts";
 import type { PostBase, PostUserInfo } from "./common.ts";
 export type GetPostResponse = {
@@ -28,7 +28,7 @@ export type GetUserPostListParam = GetPostListBaseParam;
 export type CreatePostParam = {
   content_text?: string | null;
   content_text_structure?: TextStructure[] | null;
-  media_file?: AssetMediaUploadFile[] | null;
+  media_file?: null;
   group_id?: number;
   /** 是否仅自己可见 */
   is_hide?: boolean;

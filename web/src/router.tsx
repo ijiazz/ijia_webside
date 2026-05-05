@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { getPathByRoute } from "./app.ts";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen.ts";
-import { ErrorPage, NotFoundPage } from "@/components/page_state.tsx";
+import { ErrorPage, NotFoundPage, PageLoading } from "@/components/page_state.tsx";
 
 export function genRouter() {
   return createRouter({
@@ -10,9 +10,11 @@ export function genRouter() {
     defaultErrorComponent: ({ error, reset, info }) => (
       <ErrorPage error={error} reset={reset} info={info?.componentStack} />
     ),
+    defaultPendingComponent: PageLoading,
     defaultNotFoundComponent: NotFoundPage,
     defaultViewTransition: true,
     basepath: getPathByRoute("/"),
+    defaultGcTime: 0,
   });
 }
 declare module "@tanstack/react-router" {

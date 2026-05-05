@@ -34,30 +34,6 @@ export async function markReviewed(
       .where([`id=${postId}`]),
   );
 }
-export type PostReviewInfo = {
-  status: ReviewStatus;
-  is_review_pass: boolean | null;
-  reviewed_time: string | null;
-  remark: string | null;
-  reviewer_id: number | null;
-  review_id: number;
-};
-export async function getPostReviewStatus(postId: number): Promise<PostReviewInfo | null> {
-  const review = await dbPool.queryFirstRow<PostReviewInfo>(
-    select({
-      status: "p.review_status",
-      reviewed_time: "r.resolved_time",
-      reviewer_id: "r.reviewer_id",
-      is_review_pass: "r.is_passed",
-      review_id: "r.id",
-      remark: "r.comment",
-    })
-      .from("public.post", { as: "p" })
-      .leftJoin("review", { as: "r", on: "r.id=p.review_id" })
-      .where(`p.id=${postId}`),
-  );
-  return review;
-}
 
 export async function createPost(api: Api, body: CreatePostParam, token: string) {
   return api["/post/entity"].put({ body: body, [JWT_TOKEN_KEY]: token });
