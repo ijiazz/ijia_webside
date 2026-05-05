@@ -103,7 +103,8 @@ test("创建题目后，应更新用户总题数", async function ({ api, public
   await expect(getQuestionCount(alice.id)).resolves.toBe(1);
 });
 
-test("Admin 角色创建题目后，题目应直接通过审核", async function ({ api, publicDbPool }) {
+//TODO: 超级管理员创建题目免审核
+test.skip("Admin 角色创建题目后，题目应直接通过审核", async function ({ api, publicDbPool }) {
   const admin = await prepareUniqueUser("admin", { roles: [Role.Admin] });
   const { question_id } = await createSampleQuestion(api, admin.token);
 
@@ -133,8 +134,8 @@ test("非 Admin 角色不能设置题目的高级配置", async function ({ api,
     }),
   ).responseStatus(400);
 });
-
-test("Admin 角色创建题目时，可以设置题目的高级配置", async function ({ api, publicDbPool }) {
+//TODO: 超级管理员创建题目免审核
+test.skip("Admin 角色创建题目时，可以设置题目的高级配置", async function ({ api, publicDbPool }) {
   const admin = await prepareUniqueUser("admin", { roles: [Role.Admin] });
   const createParam: CreateQuestionParam = {
     question_text: "新题目",

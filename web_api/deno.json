@@ -2,6 +2,7 @@
   "nodeModulesDir": "manual",
   "tasks": {
     "start": "deno run -A --no-lock -c deno.json --env src/main.ts",
+    "start:e2e": "MODE=E2E deno run -A --no-lock -c deno.json --env src/main.ts",
     "cmd": "deno run -A --env scripts/get.ts",
     "check-type": "deno check src test",
     "gen-buildMeta": {

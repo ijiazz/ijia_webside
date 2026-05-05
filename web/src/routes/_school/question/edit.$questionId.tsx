@@ -6,6 +6,8 @@ export const Route = createFileRoute("/_school/question/edit/$questionId")({
   loader: async ({ params }) => {
     const { questionId } = params;
     const { item } = await api["/question/entity/:question_id"].get({ params: { question_id: questionId } });
+
+    //TODO: 允许编辑审核通过的题目
     if (!item.review || ![ReviewStatus.pending, ReviewStatus.rejected].includes(item.review.status)) {
       throw "当前状态无法编辑";
     }

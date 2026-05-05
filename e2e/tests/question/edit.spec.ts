@@ -1,13 +1,36 @@
 import { vioServerTest as test } from "@/fixtures/test.ts";
 import { setContextLogin } from "@/utils/browser.ts";
 import { ReviewStatus } from "@/api.ts";
-import { createQuestion, getUserQuestionURL, setQuestionReviewStatus } from "@/utils/question.ts";
+import { createQuestion, getQuestionEditURL, getUserQuestionURL, setQuestionReviewStatus } from "@/utils/question.ts";
 import { Page } from "@playwright/test";
 import { initAdmin, initAlice, loginGetToken } from "@/utils/user.ts";
 
 const { expect } = test;
+test("审核通过的题目不能直接通过 URL 进入编辑页", async function ({ page, context }) {
+  const alice = await initAlice();
+  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const admin = await initAdmin();
 
-test("编辑审核通过的题目时，只能修改部分字段", async function ({ page, context }) {
+  const text = "e2e-edit-passed-before";
+  const { question_id } = await createQuestion(aliceToken, {
+    question_text: text,
+    explanation_text: "审核通过前解析",
+  });
+  await setQuestionReviewStatus(question_id, admin.token, ReviewStatus.passed, "通过");
+  await setContextLogin(context, aliceToken);
+
+  await page.goto(getUserQuestionURL(alice.id));
+
+  const targetCard = page.locator(".e2e-question-card", { hasText: text });
+  await targetCard.getByRole("button", { name: "题目更多操作" }).click();
+  await expect(page.getByRole("menuitem", { name: "编辑" }), "编辑按钮应被禁用").toBeDisabled();
+
+  await page.goto(getQuestionEditURL(question_id));
+  await expect(page.getByText('"当前状态无法编辑"'), "应显示错误页面").toBeVisible();
+});
+
+//TODO: 允许编辑审核通过的题目
+test.skip("审核通过的题目时，只能修改部分字段", async function ({ page, context }) {
   const alice = await initAlice();
   const aliceToken = await loginGetToken(alice.email, alice.password);
   const admin = await initAdmin();
@@ -36,7 +59,10 @@ test("编辑审核通过的题目时，只能修改部分字段", async function
   await page.getByRole("button", { name: "保存题目" }).click();
 
   await expect(page).toHaveURL(getUserQuestionURL(alice.id));
-  await expect(page.locator(".e2e-question-card", { hasText: updatedText }), "审核通过题目应允许更新题目和解析").toHaveCount(1);
+  await expect(
+    page.locator(".e2e-question-card", { hasText: updatedText }),
+    "审核通过题目应允许更新题目和解析",
+  ).toHaveCount(1);
 
   await openQuestionEditor(page, updatedText);
   await expect(page.getByRole("textbox", { name: "答案解析" })).toHaveValue("审核通过后更新解析");

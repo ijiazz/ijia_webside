@@ -26,7 +26,13 @@ export function QuestionCard(props: QuestionCardProps) {
             <Dropdown
               menu={{
                 items: [
-                  { icon: <EditOutlined />, label: "编辑", key: "edit", onClick: onEdit },
+                  {
+                    icon: <EditOutlined />,
+                    label: "编辑",
+                    key: "edit",
+                    onClick: onEdit,
+                    disabled: review?.status === ReviewStatus.passed,
+                  },
                   { icon: <DeleteOutlined />, label: "删除", key: "delete", onClick: onDelete },
                 ],
               }}

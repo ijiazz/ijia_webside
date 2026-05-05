@@ -38,8 +38,9 @@ export default routeGroup.create({
     return { userId, body };
   },
   async handler({ userId, body }, ctx): Promise<{ question_id: string }> {
-    const userInfo = await ctx.get("userInfo");
-    const isAdmin = await userInfo.hasRolePermission(Role.Admin);
+    // const userInfo = await ctx.get("userInfo");
+    // const isAdmin = await userInfo.hasRolePermission(Role.Admin);
+    const isAdmin = false; //TODO: 超级管理员创建题目免审核
     if (body.advanced_config && !isAdmin) {
       throw new HttpError(400, "只有管理员才能设置高级配置");
     }

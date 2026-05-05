@@ -1,6 +1,7 @@
 import { ExamQuestionType } from "@/api.ts";
 import { FormItem, getAntdErrorStatus } from "@/components/form.tsx";
 import { DatePicker, Input, Radio } from "antd";
+import dayjs from "dayjs";
 import { Controller, useFormContext } from "react-hook-form";
 import { AttachmentsField } from "./OptionsField/AttachmentsField.tsx";
 import { OptionsField } from "./OptionsField/OptionsField.tsx";
@@ -107,8 +108,14 @@ export function EditQuestionFields(props: EditQuestionFieldsProps) {
       <Controller
         name="event_time"
         render={({ field, fieldState }) => (
-          <FormItem label="事件时间" error={fieldState.error?.message} description="题目相关事件的发生时间">
-            <DatePicker {...field} value={field.value ?? ""} />
+          <FormItem label="事件时间" error={fieldState.error?.message} description="可选，和题目描述相关事件的发生时间，用于系统推荐题目">
+            <DatePicker
+              value={field.value ? dayjs(field.value) : null}
+              onChange={(date) => {
+                field.onChange(date?.toISOString());
+              }}
+              onBlur={field.onBlur}
+            />
           </FormItem>
         )}
       />

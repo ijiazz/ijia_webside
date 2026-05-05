@@ -24,6 +24,15 @@ export async function createQuestion(token: string, body: Partial<CreateQuestion
 export function getUserQuestionURL(userId: number, search?: Record<string, string | number | boolean | undefined>) {
   return getAppURLFromRoute(`/user/${userId}/question`, search);
 }
+export function getQuestionEditURL(questionId: string) {
+  return getAppURLFromRoute(`/question/edit/${questionId}`);
+}
+
+export function getQuestionDetail(questionId: string) {
+  return api["/question/entity/:question_id"].get({
+    params: { question_id: questionId },
+  });
+}
 
 export async function getQuestionReviewId(questionId: string | number) {
   const row = await dbPool.queryFirstRow<{ review_id: number | null }>(
