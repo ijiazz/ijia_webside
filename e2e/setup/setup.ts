@@ -32,15 +32,11 @@ async function initPublicClass() {
   );
 }
 
-async function initRoles() {
-  await dbPool.execute(
-    insertIntoValues("role", [{ name: Role.Admin }, { name: Role.Root }])
-      .onConflict("id")
-      .doNotThing(),
-  );
-}
-enum Role {
-  Root = "root",
-  Admin = "admin",
-  PostReviewer = "PostReviewer",
+export async function initRoles() {
+  const sql = insertIntoValues("role", [
+    { id: "root", role_name: "超级管理员", description: "超级管理员" },
+    { id: "admin", role_name: "管理员", description: "管理员" },
+  ]);
+
+  await dbPool.execute(sql);
 }
