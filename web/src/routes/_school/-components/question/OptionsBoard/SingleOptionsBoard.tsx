@@ -22,7 +22,6 @@ export function SingleOptionsBoard(props: SingleOptionsBoardProps) {
         onChange?.(e.target.value);
       }}
       style={{ display: "flex", flexDirection: "column", gap: 12 }}
-      aria-errormessage="sd"
     >
       {data.map(({ file, text }, index) => {
         const status = hasResult ? getStatus(correctIndex, index, value) : undefined;

@@ -17,12 +17,7 @@ export function MultipleOptionsBoard(props: MultipleOptionsBoardProps) {
   const correctSet = new Set(correctIndexes);
 
   return (
-    <Checkbox.Group<number>
-      {...rest}
-      value={value}
-      style={{ display: "flex", flexDirection: "column", gap: 12 }}
-      aria-errormessage="sd"
-    >
+    <Checkbox.Group<number> {...rest} value={value} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {data.map(({ file, text }, index) => {
         const status = hasResult ? getStatus(correctSet, index, selectedSet) : undefined;
         const color = status === true ? theme.colorSuccess : status === false ? theme.colorError : undefined;

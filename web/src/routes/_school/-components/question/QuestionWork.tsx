@@ -71,7 +71,7 @@ function toAnswer(indexes: number[], type: ExamQuestionType) {
     return indexes[0] === 0 ? "❌" : "✅";
   }
   return indexes
-    .sort((a, b) => a - b)
+    .toSorted((a, b) => a - b)
     .map((index) => String.fromCharCode(65 + index))
     .join(", ");
 }

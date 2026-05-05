@@ -169,7 +169,7 @@ function TrueFalseOptions() {
     name: "answer_index",
   });
   const radioValue =
-    answerIndexField.field.value?.[0] === 0 ? true : answerIndexField.field.value?.[0] === 1 ? false : undefined;
+    answerIndexField.field.value?.[0] === 1 ? true : answerIndexField.field.value?.[0] === 0 ? false : undefined;
   return (
     <FormItem label="答案" required error={answerIndexField.fieldState.error?.message}>
       <div style={{ width: "100%", display: "flex", gap: 8 }}>
@@ -179,7 +179,7 @@ function TrueFalseOptions() {
           aria-readonly={mode !== QuestionEditMode.FullEdit}
           onChange={(e) => {
             if (mode !== QuestionEditMode.FullEdit) return;
-            answerIndexField.field.onChange([e.target.value ? 0 : 1]);
+            answerIndexField.field.onChange([e.target.value ? 1 : 0]);
           }}
         >
           <Radio value={true}>✅ 正确</Radio>

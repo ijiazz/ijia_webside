@@ -38,10 +38,10 @@ export function checkQuestionTypeOption(questionType: ExamQuestionType, optionsL
   switch (questionType) {
     case ExamQuestionType.MultipleChoice: {
       if (optionsLength < 3) {
-        throw new HttpError(400, "多选题至少要有3个选项");
+        throw new HttpError(400, "多选题至少要有 3 个选项");
       }
       if (answerLength <= 1) {
-        throw new HttpError(400, "多选题至少要有1个正确选项");
+        throw new HttpError(400, "多选题至少要有 2 个正确选项");
       }
       break;
     }
@@ -60,6 +60,9 @@ export function checkQuestionTypeOption(questionType: ExamQuestionType, optionsL
       }
       if (answerLength !== 1) {
         throw new HttpError(400, "判断题有且仅有一个正确选项");
+      }
+      if (answerIndex[0] !== 0 && answerIndex[0] !== 1) {
+        throw new HttpError(400, "判断题正确选项索引必须是 0 或 1");
       }
       break;
     }

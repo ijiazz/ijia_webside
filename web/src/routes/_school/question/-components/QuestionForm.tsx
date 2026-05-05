@@ -2,7 +2,7 @@ import { EditQuestionFields, QuestionEditMode } from "@/routes/_school/-componen
 import { FormProvider, UseFormReturn } from "react-hook-form";
 import { css } from "@emotion/css";
 import { FromValues } from "./CreateForm.tsx";
-import { CratePreview } from "./CreatePreview.tsx";
+import { CreatePreview } from "./CreatePreview.tsx";
 import { Alert } from "antd";
 
 export type QuestionFormProps = {
@@ -27,7 +27,7 @@ export function QuestionForm(props: QuestionFormProps) {
             </form>
           </FormProvider>
         </div>
-        <CratePreview form={form} />
+        <CreatePreview form={form} />
       </div>
       <div
         style={{

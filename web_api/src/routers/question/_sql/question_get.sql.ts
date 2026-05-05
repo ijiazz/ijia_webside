@@ -46,8 +46,8 @@ export async function getUserQuestionPublicList(
 function mapQuestion(item: PublicSelectRaw): QuestionPublic {
   const option = item.options ? genQuestionMedias(item.options) : null;
   return {
-    question_text: item.question_text,
-    question_text_struct: item.question_text_struct,
+    question_text: item.question_text ?? "",
+    question_text_struct: item.question_text_struct ?? undefined,
     question_type: item.question_type,
     attachments: option?.attachments,
     options: option?.options,
