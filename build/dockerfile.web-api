@@ -2,7 +2,7 @@ FROM node:24-alpine AS prepare
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
-RUN corepack enable && corepack prepare pnpm@10.4.0 --activate
+RUN corepack enable && corepack prepare pnpm@10.33.3 --activate
 WORKDIR /build
 ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.base.json ./
 

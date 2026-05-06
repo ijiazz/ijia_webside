@@ -14,7 +14,7 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-typescript": "^12.3.0",
-    "@typescript/native-preview": "7.0.0-dev.20260314.1",
+    "@typescript/native-preview": "7.0.0-dev.20260421.2",
     "oxfmt": "^0.40.0",
     "prettier": "^3.8.1",
     "rollup": "^4.59.0",
@@ -28,5 +28,5 @@
       "onFail": "error"
     }
   },
-  "packageManager": "pnpm@10.27.0"
+  "packageManager": "pnpm@10.33.3"
 }

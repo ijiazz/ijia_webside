@@ -4,6 +4,9 @@ packages:
   - web_dto
   - deps/*
   - e2e
+allowBuilds:
+  core-js: set this to true or false
+  esbuild: set this to true or false
 catalog:
   "@asla/pg": "npm:@jsr/asla__pg@^0.2.3"
   "@asla/yoursql": "npm:@jsr/asla__yoursql@0.13.1"
