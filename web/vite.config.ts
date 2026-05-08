@@ -36,7 +36,7 @@ export default defineConfig({
       addExtensions: true,
     }),
     react(),
-    buildTimePlugin({ buildTime }),
+    buildTimePlugin({ nextVersion: buildTime }),
     legacy({
       renderLegacyChunks: false,
       polyfills: false,

@@ -2,9 +2,9 @@ import { Plugin } from "vite";
 import path from "node:path";
 import { PnpmNodeModulesParser, getPnpmNodeModulesDir } from "./vite-tool.ts";
 
-export function buildTimePlugin(option: { buildTime: number }): Plugin {
-  const { buildTime } = option;
-  const buildTimeStr = new Date(buildTime).toISOString();
+export function buildTimePlugin(option: { nextVersion: number }): Plugin {
+  const { nextVersion } = option;
+  const buildTimeStr = new Date(nextVersion).toISOString();
   return {
     name: "build-time-plugin",
     buildEnd() {
@@ -12,9 +12,9 @@ export function buildTimePlugin(option: { buildTime: number }): Plugin {
         type: "asset",
         fileName: "version.json",
         name: "version.json",
-        source: JSON.stringify({ buildTime: buildTimeStr }),
+        source: JSON.stringify({ nextVersion: buildTimeStr }),
       });
-      this.info("build version: " + buildTimeStr);
+      this.info("build nextVersion: " + buildTimeStr);
     },
   };
 }
