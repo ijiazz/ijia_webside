@@ -15,10 +15,14 @@ export function getCurrentUserInfoQueryOption(option: GetCurrentUserInfoOption =
     queryKey: [USER_QUERY_KEY_PREFIX, "currentUser"],
     queryFn: async (): Promise<User> => {
       const res = await api["/user"].get({ [IGNORE_UNAUTHORIZED_REDIRECT]: option.ignoreUnAuthorizeRedirect });
-      if (ijiaLocalStorage.unverifiedUserId !== res.user_id.toString()) {
-        ijiaLocalStorage.unverifiedUserId = res.user_id.toString();
+      try {
+        if (ijiaLocalStorage.unverifiedUserId !== res.user_id.toString()) {
+          ijiaLocalStorage.unverifiedUserId = res.user_id.toString();
+        }
         setIdentify(res.user_id.toString());
         setSentryUser(res);
+      } catch (e) {
+        console.error("设置用户信息失败", e);
       }
       return res;
     },
