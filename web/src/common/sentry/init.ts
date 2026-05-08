@@ -6,8 +6,14 @@ import { User } from "@/api.ts";
 
 export function initSentry() {
   const dsn = import.meta.env.VITE_SENTRY_DSN;
+  const enabled = !!dsn;
+  if (enabled) {
+    console.log("Sentry enabled:", enabled);
+  } else {
+    console.log("Sentry disabled: Missing DSN");
+  }
   sentry.init({
-    enabled: !!dsn,
+    enabled: enabled,
     dsn: dsn,
     environment: import.meta.env.MODE,
     release: RELEASE_VERSION,
