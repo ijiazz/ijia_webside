@@ -1,3 +1,4 @@
+/* @__NO_SIDE_EFFECTS__ */
 export function dateToString(date: Date | string | number, precision: "day" | "hour" | "minute" | "second" = "second") {
   if (typeof date === "string" || typeof date === "number") {
     date = new Date(date);
@@ -22,4 +23,13 @@ export function dateToString(date: Date | string | number, precision: "day" | "h
     result += `:${s}`;
   }
   return result;
+}
+
+/* @__NO_SIDE_EFFECTS__ */
+export function parseISODate(input: string = "") {
+  const IS_ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/.test(input);
+  if (!IS_ISO) {
+    return undefined;
+  }
+  return new Date(input);
 }

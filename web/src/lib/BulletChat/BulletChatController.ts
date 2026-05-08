@@ -18,7 +18,6 @@ export class BulletChatController<T extends { text: string }> {
         }
         const randomY = Math.round(Math.random() * (availableYSet.length - 1));
         y = availableYSet[randomY];
-        if (y === undefined) debugger;
         break;
       }
     } else {

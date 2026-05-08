@@ -4,3 +4,7 @@ declare module "react" {
     [index: `--${string}`]: any;
   }
 }
+declare global {
+  /** The build time of the application */
+  const __APP_BUILD_TIME: number | undefined;
+}

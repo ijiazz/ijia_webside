@@ -1,6 +1,9 @@
 import { QueryOptions } from "@tanstack/react-query";
 import { api, IGNORE_UNAUTHORIZED_REDIRECT } from "./client.ts";
 import { User, UserConfig } from "@/api.ts";
+import { setIdentify } from "@/common/clarity.ts";
+import { ijiaLocalStorage } from "@/stores/local_store.ts";
+import { setSentryUser } from "@/common/sentry.ts";
 
 export const USER_QUERY_KEY_PREFIX = "user";
 
@@ -10,8 +13,14 @@ export type GetCurrentUserInfoOption = {
 export function getCurrentUserInfoQueryOption(option: GetCurrentUserInfoOption = {}) {
   return {
     queryKey: [USER_QUERY_KEY_PREFIX, "currentUser"],
-    queryFn: (): Promise<User> => {
-      return api["/user"].get({ [IGNORE_UNAUTHORIZED_REDIRECT]: option.ignoreUnAuthorizeRedirect });
+    queryFn: async (): Promise<User> => {
+      const res = await api["/user"].get({ [IGNORE_UNAUTHORIZED_REDIRECT]: option.ignoreUnAuthorizeRedirect });
+      if (ijiaLocalStorage.unverifiedUserId !== res.user_id.toString()) {
+        ijiaLocalStorage.unverifiedUserId = res.user_id.toString();
+        setIdentify(res.user_id.toString());
+        setSentryUser(res);
+      }
+      return res;
     },
   } satisfies QueryOptions;
 }

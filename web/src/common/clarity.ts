@@ -6,7 +6,8 @@ const Clarity: typeof import("@microsoft/clarity").default = clarity as any;
 export { Clarity };
 
 const projectId = "r86thpb6rm";
-if (import.meta.env.PROD) {
+
+export function initClarity() {
   if (typeof window !== "undefined" && location.hostname === "ijiazz.cn") {
     try {
       enabledTrack();
@@ -22,5 +23,7 @@ export function setIdentify(userId: string | null) {
 function enabledTrack() {
   Clarity.init(projectId);
   const userId = ijiaLocalStorage.unverifiedUserId;
-  setIdentify(userId);
+  if (userId !== null) {
+    setIdentify(userId);
+  }
 }

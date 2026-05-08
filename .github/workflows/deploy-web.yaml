@@ -38,6 +38,12 @@ jobs:
       - name: Build
         if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
         run: pnpm build
+        env:
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+
         working-directory: ./web
       - name: Upload artifacts
         if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
