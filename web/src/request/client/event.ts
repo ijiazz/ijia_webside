@@ -1,5 +1,6 @@
 import { goRedirectLoginPath } from "@/app.ts";
 import { getResponseErrorInfo } from "./util.ts";
+import { parseISODate } from "@/common/date.ts";
 
 export const IGNORE_ERROR_MSG = Symbol("ignore error message");
 export const IGNORE_UNAUTHORIZED_REDIRECT = Symbol("ignore unauthorized redirect");
@@ -9,6 +10,7 @@ export const apiEvent = new EventTarget();
 export enum ApiEvent {
   error = "error",
   alert = "alert",
+  versionUpdate = "versionUpdate",
 }
 
 export type ApiErrorEventOption = {
@@ -82,16 +84,16 @@ export class MaintenanceEvent extends Event {
   }
   /**
    * range格式：两个已“/”分隔的 ISO 时间
-   *
-   * : */
+   */
   static #parseMaintenanceRange(range?: string | null): { from?: Date; to: Date } | null {
     if (!range) return null;
     const res = range.split("/");
     if (res.length > 2) return null;
     const [from, to] = res;
-    const fromDate = from ? new Date(from) : undefined;
-    const toDate = new Date(to);
-    if ((fromDate && isNaN(fromDate.getTime())) || isNaN(toDate.getTime())) return null;
+    const fromDate = parseISODate(from);
+    const toDate = parseISODate(to);
+
+    if (!toDate) return null;
 
     return {
       from: fromDate,
@@ -101,5 +103,12 @@ export class MaintenanceEvent extends Event {
 
   constructor(readonly message: string) {
     super(ApiEvent.alert);
+  }
+}
+
+export class VersionUpdateEvent extends Event {
+  static version: string | null;
+  constructor(readonly version: string) {
+    super(ApiEvent.versionUpdate);
   }
 }

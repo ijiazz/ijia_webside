@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
-import { getPathByRoute } from "./app.ts";
-import { createRouter, RouterProvider } from "@tanstack/react-router";
-import { routeTree } from "./routeTree.gen.ts";
+import React from "react";
+import { getPathByRoute } from "../app.ts";
+import { createRouter } from "@tanstack/react-router";
+import { routeTree } from "../routeTree.gen.ts";
 import { ErrorPage, NotFoundPage, PageLoading } from "@/components/page_state.tsx";
 
 export function genRouter() {
@@ -17,16 +17,13 @@ export function genRouter() {
     defaultGcTime: 0,
   });
 }
+
 declare module "@tanstack/react-router" {
   interface Register {
     router: ReturnType<typeof genRouter>;
   }
 }
-
-export function SpaRoot(props: {}) {
-  const router = useMemo(() => genRouter(), []);
-  return <RouterProvider router={router} />;
-}
+export const router = genRouter();
 
 export function SsrRootWarp(props: React.PropsWithChildren) {
   return (

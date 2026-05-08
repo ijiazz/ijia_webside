@@ -18,6 +18,7 @@
     "@emotion/css": "^11.13.5",
     "@ijia/api-types": "workspace:^",
     "@microsoft/clarity": "^1.0.0",
+    "@sentry/react": "^10.51.0",
     "@tanstack/react-query": "^5.90.20",
     "@tanstack/react-router": "1.157.7",
     "@uifx/infinite-wall": "^0.0.2",
@@ -35,6 +36,7 @@
     "react-hook-form": "^7.71.1"
   },
   "devDependencies": {
+    "@sentry/vite-plugin": "^5.2.1",
     "@tanstack/router-plugin": "1.157.7",
     "@types/canvas-confetti": "^1.9.0",
     "@types/js-cookie": "^3.0.6",
