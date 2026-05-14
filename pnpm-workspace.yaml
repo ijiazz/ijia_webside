@@ -4,6 +4,7 @@ packages:
   - web_dto
   - e2e
 allowBuilds:
+  "@sentry/cli": true
   core-js: true
   esbuild: true
 catalog:
