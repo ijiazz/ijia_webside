@@ -1,7 +1,7 @@
 import { dbPool } from "@/db/client.ts";
 import { insertIntoValues } from "./utils.ts";
 import { CommentGroup } from "@ijia/data/db";
-import { ExecutableSQL } from "@asla/yoursql/client";
+import { ExecutableSQL } from "@asla/pg";
 
 export function createCommentTree(group: CommentGroup | null): ExecutableSQL<number> {
   return dbPool.createQueryableSQL<{ id: number }, number>(

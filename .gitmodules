@@ -1,3 +1,0 @@
- [submodule "deps/ijia-data"]
-	path = deps/ijia-data
-	url = git@github.com:ijiazz/school_db.git

@@ -27,11 +27,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set found_artifact output
         run: echo ${{ steps.fetch_artifact.outputs.artifacts }}
-
-      - uses: actions/checkout@v4
-        if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
-        with:
-          submodules: true
+      - uses: actions/checkout@v6
       - name: Setup project
         if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
         uses: ./.github/actions/setup-project
@@ -48,7 +44,7 @@ jobs:
       - name: Upload artifacts
         if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
         id: upload_artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.WEB_ARTIFACT_NAME }}
           path: ./web/dist

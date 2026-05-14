@@ -1,7 +1,7 @@
 import { dbPool } from "@/db/client.ts";
 import { HttpError } from "@/global/errors.ts";
 import { v } from "@/sql/utils.ts";
-import { QueryableDataSQL } from "@asla/yoursql/client";
+import { QueryableDataSQL } from "@asla/pg";
 
 export function setPostToReviewing(postId: number): QueryableDataSQL<{ review_id: number }, number> {
   return dbPool.createQueryableSQL<{ review_id: number }, number>(
