@@ -11,6 +11,6 @@ runs:
         node-version: 26
         cache: pnpm
     - run: pnpm install
-      shell: bash    
+      shell: bash
     - run: pnpm run init-api-types
       shell: bash
