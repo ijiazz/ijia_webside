@@ -7,9 +7,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
+      - uses: actions/checkout@v6
       - name: Setup project
         uses: ./.github/actions/setup-project
       - run: pnpm check-type
@@ -38,9 +36,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
+      - uses: actions/checkout@v6
       - name: Setup project
         uses: ./.github/actions/setup-project
       - name: Test

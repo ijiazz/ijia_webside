@@ -3,4 +3,5 @@
   "files.eol": "\n",
   "vitest.runtime": "node",
   "vitest.debugExclude": ["<node_internals>/**"],
+  "editor.defaultFormatter": "oxc.oxc-vscode",
 }

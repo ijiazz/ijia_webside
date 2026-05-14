@@ -2,13 +2,14 @@ packages:
   - web_api
   - web
   - web_dto
-  - deps/*
   - e2e
 allowBuilds:
-  core-js: set this to true or false
-  esbuild: set this to true or false
+  "@sentry/cli": true
+  core-js: true
+  esbuild: true
 catalog:
-  "@asla/pg": "npm:@jsr/asla__pg@^0.2.3"
-  "@asla/yoursql": "npm:@jsr/asla__yoursql@0.13.1"
+  "@asla/pg": "npm:@jsr/asla__pg@^0.2.4"
+  "@ijia/data": "npm:@jsr/ijia__school-db@^0.0.1"
+  "@asla/yoursql": "npm:@jsr/asla__yoursql@0.14.0"
   "@types/node": "^25.5.0"
   "evlib": "^3.1.3"

@@ -1,8 +1,7 @@
-FROM node:24-alpine AS prepare
+FROM node:26-alpine AS prepare
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
-RUN corepack enable && corepack prepare pnpm@10.33.3 --activate
+RUN npm install -g pnpm@11.1.2
 WORKDIR /build
 ADD package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.base.json tsconfig.node.json ./
 

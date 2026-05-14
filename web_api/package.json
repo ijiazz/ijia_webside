@@ -25,7 +25,7 @@
     "@asla/yoursql": "catalog:",
     "@hono/node-server": "^1.19.11",
     "@ijia/api-types": "workspace:^",
-    "@ijia/data": "workspace:^",
+    "@ijia/data": "catalog:",
     "@redis/client": "^5.11.0",
     "@std/jsonc": "jsr:^1.0.2",
     "@std/media-types": "jsr:^1.1.0",

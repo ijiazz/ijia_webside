@@ -11,9 +11,7 @@ jobs:
   build-images:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
+      - uses: actions/checkout@v6
 
       - name: Build web images
         run: docker compose build web-nginx web-api
@@ -21,7 +19,7 @@ jobs:
       - name: Export web-nginx image
         run: docker save -o web-nginx.tar ijia/web-nginx
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: web-nginx-image-${{ github.sha }}
           path: web-nginx.tar
@@ -30,7 +28,7 @@ jobs:
       - name: Export web-api image
         run: docker save -o web-api.tar ijia/web-api
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: web-api-image-${{ github.sha }}
           path: web-api.tar
@@ -40,9 +38,16 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build-images
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+      - uses: actions/cache@v4 #https://playwright.dev/docs/browsers#managing-browser-binaries
         with:
-          submodules: true
+          path: /home/runner/.cache/ms-playwright
+          key: playwright-browser-${{ hashFiles('e2e/package.json') }}
+      - name: Install browser
+        run: pnpm playwright install chromium webkit firefox --with-deps
+        working-directory: ./e2e
 
       - uses: actions/download-artifact@v4
         with:
@@ -61,17 +66,6 @@ jobs:
       - name: Build remaining local services
         run: docker compose build database
 
-      - name: Setup project
-        uses: ./.github/actions/setup-project
-
-      - uses: actions/cache@v4 #https://playwright.dev/docs/browsers#managing-browser-binaries
-        with:
-          path: /home/runner/.cache/ms-playwright
-          key: ${{ hashFiles('e2e/package.json') }}
-      - name: Install browser
-        run: pnpm playwright install chromium webkit firefox --with-deps
-        working-directory: ./e2e
-
       - name: Start services
         run: docker compose up -d
       - name: E2E test
@@ -83,7 +77,7 @@ jobs:
         id: e2e
         working-directory: ./e2e
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{steps.e2e.outcome=='failure'}}
         with:
           name: playwright-report
