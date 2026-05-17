@@ -1,6 +1,6 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { prepareUniqueUser } from "../../fixtures/user.ts";
+import { prepareUniqueUser } from "../../utils/user.ts";
 import { preparePost, deletePost, getUserStatFromDb, UserStat, setPostLike, createPost } from "../../utils/post.ts";
 import postRoutes from "@/routers/post/mod.ts";
 beforeEach<Context>(async ({ hono }) => {

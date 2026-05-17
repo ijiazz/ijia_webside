@@ -2,7 +2,7 @@ import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 import questionRoutes from "@/routers/question/mod.ts";
 import { ExamQuestionType } from "@/dto.ts";
-import { prepareUniqueUser } from "#test/fixtures/user.ts";
+import { prepareUniqueUser } from "#test/utils/user.ts";
 import { createQuestion, updateQuestion } from "#test/utils/question.ts";
 
 beforeEach<Context>(async ({ hono }) => {

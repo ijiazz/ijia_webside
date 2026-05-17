@@ -11,7 +11,7 @@ import {
   GetUserPostListParam,
 } from "@/dto.ts";
 import { dbPool } from "@/db/client.ts";
-import { prepareUniqueUser } from "#test/fixtures/user.ts";
+import { prepareUniqueUser } from "#test/utils/user.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { select, update } from "@asla/yoursql";
 import { DbQueryPool } from "@asla/pg";

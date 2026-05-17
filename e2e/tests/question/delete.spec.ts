@@ -1,9 +1,7 @@
-import { vioServerTest as test } from "@/fixtures/test.ts";
+import { test, expect } from "@playwright/test";
 import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 import { createQuestion, getUserQuestionURL } from "@/utils/question.ts";
 import { initAlice, loginGetToken } from "@/utils/user.ts";
-
-const { expect } = test;
 
 test("用户删除题目", async function ({ page, context }) {
   const alice = await initAlice();

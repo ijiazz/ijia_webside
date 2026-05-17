@@ -1,7 +1,6 @@
-import { vioServerTest as test } from "@/fixtures/test.ts";
 import { createDouyinUser, initContextLogged, ProfileCenterURL } from "@/utils/user.ts";
-import { Page } from "@playwright/test";
-const { expect } = test;
+import { test, expect, Page } from "@playwright/test";
+
 const classOptionClassName = ".e2e-class-option";
 test("账号绑定与解除关联", async function ({ page, context }) {
   const Alice = await initContextLogged(context);

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect } from "vitest";
 import { test, Context } from "#test/fixtures/hono.ts";
 import { prepareCommentPost, prepareCommentToDb, deletePost, updatePostConfigFormApi } from "#test/utils/post.ts";
 import { DeepPartial } from "#test/utils/common.ts";
-import { prepareUniqueUser } from "#test/fixtures/user.ts";
+import { prepareUniqueUser } from "#test/utils/user.ts";
 import commentRoutes from "@/routers/post/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
 import { PostCommentDto } from "@/dto.ts";

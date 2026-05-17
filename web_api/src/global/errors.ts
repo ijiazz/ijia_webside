@@ -17,11 +17,7 @@ export class HttpError extends HTTPException {
   }
   code?: string | number;
 }
-export class HttpCaptchaError extends HttpError {
-  constructor() {
-    super(418, { message: "验证码错误", code: "CAPTCHA_ERROR" });
-  }
-}
+
 export class HttpParamsCheckError extends HttpError {
   constructor(cause: any) {
     if (cause instanceof CheckTypeError) {

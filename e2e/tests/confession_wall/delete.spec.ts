@@ -1,9 +1,7 @@
-import { vioServerTest as test } from "@/fixtures/test.ts";
+import { test, expect } from "@playwright/test";
 import { initAlice, initBob, loginGetToken } from "@/utils/user.ts";
 import { createPost, getUserPostURL } from "@/utils/post.ts";
 import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
-
-const { expect } = test;
 
 test("删除", async function ({ page, context }) {
   test.setTimeout(30000);

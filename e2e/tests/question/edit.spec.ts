@@ -1,11 +1,9 @@
-import { vioServerTest as test } from "@/fixtures/test.ts";
+import { test, expect, Page } from "@playwright/test";
 import { setContextLogin } from "@/utils/browser.ts";
 import { ReviewStatus } from "@/api.ts";
 import { createQuestion, getQuestionEditURL, getUserQuestionURL, setQuestionReviewStatus } from "@/utils/question.ts";
-import { Page } from "@playwright/test";
 import { initAdmin, initAlice, loginGetToken } from "@/utils/user.ts";
 
-const { expect } = test;
 test("审核通过的题目不能直接通过 URL 进入编辑页", async function ({ page, context }) {
   const alice = await initAlice();
   const aliceToken = await loginGetToken(alice.email, alice.password);

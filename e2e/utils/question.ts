@@ -1,6 +1,6 @@
 import { CommitQuestionReviewParam, CreateQuestionParam, ExamQuestionType, ReviewStatus } from "@/api.ts";
 import { dbPool } from "@/db/client.ts";
-import { getAppURLFromRoute } from "@/fixtures/test.ts";
+import { getAppURLFromRoute } from "@/utils/app.ts";
 import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";
 import { select, v } from "@asla/yoursql";
 

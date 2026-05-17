@@ -1,4 +1,4 @@
-import { vioServerTest as test } from "@/fixtures/test.ts";
+import { test } from "@playwright/test";
 import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
 import { createPost, getUserPostURL } from "@/utils/post.ts";
 import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";

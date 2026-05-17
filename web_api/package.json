@@ -9,9 +9,6 @@
     "./config.jsonc"
   ],
   "type": "module",
-  "exports": {
-    "dto": "./dist/dto.js"
-  },
   "scripts": {
     "test": "vitest run",
     "build": "rollup -c build/rollup.config.js",

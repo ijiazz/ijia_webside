@@ -1,10 +1,9 @@
 import { dbPool } from "@/db/client.ts";
 import { createUser, addRoleToUser } from "@ijia/data/query";
 import { api } from "@/utils/fetch.ts";
-import { LoginMethod, UserIdentifierType } from "@/api.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { DbPlaUserCreate, Platform } from "@ijia/data/db";
-import { getAppURLFromRoute } from "@/fixtures/test.ts";
+import { getAppURLFromRoute } from "@/utils/app.ts";
 import { BrowserContext } from "@playwright/test";
 import { setContextLogin } from "./browser.ts";
 import { getSeqIntId } from "./seq.ts";
@@ -79,16 +78,10 @@ export async function initAdmin() {
   return { ...admin, token };
 }
 
-export async function loginGetToken(email: string, pwd: string) {
-  const { sessionId } = await api["/captcha/image"].post();
-  const { token } = await api["/passport/login"].post({
-    body: {
-      method: LoginMethod.password,
-      user: { email: email, type: UserIdentifierType.email },
-      password: pwd,
-      passwordNoHash: true,
-      captcha: { selectedIndex: [0, 1, 2], sessionId },
-    },
+export async function loginGetToken(email: string, password?: string) {
+  const { token, ...rest } = await api["/passport/login"].fetchResult<{ token: string }>({
+    body: { email: email },
+    method: "POST",
   });
   return token;
 }

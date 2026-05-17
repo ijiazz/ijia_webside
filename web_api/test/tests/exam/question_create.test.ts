@@ -1,7 +1,7 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "#test/fixtures/hono.ts";
 import questionRoutes from "@/routers/question/mod.ts";
-import { prepareUniqueUser } from "#test/fixtures/user.ts";
+import { prepareUniqueUser } from "#test/utils/user.ts";
 import { createQuestion, createSampleQuestion, getQuestion, getUserQuestionCount } from "#test/utils/question.ts";
 import { CreateQuestionParam, ExamQuestionType, QuestionPublic, ReviewStatus, TextStructureType } from "@/dto.ts";
 import { Role } from "@/middleware/auth.ts";

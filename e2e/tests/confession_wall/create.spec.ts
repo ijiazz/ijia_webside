@@ -1,4 +1,5 @@
-import { getAppURLFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
+import { getAppURLFromRoute } from "@/utils/app.ts";
+import { test } from "@playwright/test";
 import { initAlice, loginGetToken } from "@/utils/user.ts";
 import { changePageToMobile, setContextLogin } from "@/utils/browser.ts";
 import { PostGroupResponse } from "@/api.ts";

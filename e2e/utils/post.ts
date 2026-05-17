@@ -1,6 +1,6 @@
 import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";
 import { CreatePostParam, GetPostListParam } from "@api/dto.ts";
-import { getAppURLFromRoute } from "@/fixtures/test.ts";
+import { getAppURLFromRoute } from "@/utils/app.ts";
 import { dbPool } from "@/db/client.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 

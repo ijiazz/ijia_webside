@@ -15,37 +15,28 @@ type MenuItemCommon = {
   /**指定外链打开形式，同a标签 */
   target?: string;
 };
-export type MenuItem = MenuItemCommon &
-  (
-    | {
-        /**用于标定选中的值，默认是 path */
-        key: string;
-        path?: string;
-      }
-    | {
-        key?: undefined;
-        /**路径,可以设定为网页链接 */
-        path: string;
-      }
-  ) & {
-    /**子菜单 */
-    children?: MenuItem[];
-    /**菜单的icon */
-    hidden?: boolean;
-  };
-type ChangeEvent = {
+export type MenuItem<T = unknown> = MenuItemCommon & {
+  key: string;
+  /**子菜单 */
+  children?: MenuItem<T>[];
+  /**菜单的icon */
+  hidden?: boolean;
+} & ({} extends T ? T : {});
+
+type ChangeEvent<T> = {
   keys: string[];
-  path: string;
+  menuPath: MenuItem<T>[];
+  target: MenuItem<T>;
 };
-export type RootLayoutProps<T extends MenuItem = MenuItem> = {
-  menus?: T[];
-  /** 根据路经解析 selectedKeys */
-  pathname?: string;
+export type RootLayoutProps<T> = {
+  menus?: MenuItem<T>[];
+
   selectedKeys?: string[];
   defaultSelectedKeys?: string[];
-  onSelectedKeysChange?: (e: ChangeEvent) => void;
+  onSelectedKeysChange?: (e: ChangeEvent<T>) => void;
 
-  renderLink: (item: T) => ReactNode;
+  /** 顶部 tab render */
+  renderLink: (item: MenuItem<T>) => ReactNode;
 
   leftExtra?: ReactNode;
   rightExtra?: ReactNode;
@@ -53,18 +44,17 @@ export type RootLayoutProps<T extends MenuItem = MenuItem> = {
   children?: ReactNode;
 };
 
-export function RootLayout(props: RootLayoutProps) {
-  const { children, onSelectedKeysChange, renderLink, leftExtra, rightExtra } = props;
-  const { map, tabItems, menus, submenus } = useMemo(() => {
-    const menus = props.menus;
-    const internalMenus = menuItemsToInternalItem(menus || []);
+export function RootLayout<T>(props: RootLayoutProps<T>) {
+  const { children, onSelectedKeysChange, renderLink, leftExtra, rightExtra, selectedKeys } = props;
+  const { map, tabItems, submenus } = useMemo(() => {
+    const menus = props.menus ?? [];
 
-    const map: MenuTree = createMenuTree(internalMenus);
+    const map: MenuTree<T> = createMenuTree(menus);
     const submenus: Record<string, ItemType<MenuItemType>[]> = {};
-    const tabItems: TabPane[] = new Array(internalMenus.length);
+    const tabItems: TabPane[] = new Array(menus.length);
 
-    for (let i = 0; i < internalMenus.length; i++) {
-      const item = internalMenus[i];
+    for (let i = 0; i < menus.length; i++) {
+      const item = menus[i];
       const key = item.key;
       const children = item.children;
       if (children) submenus[key] = menuItemToAntd(children);
@@ -75,17 +65,14 @@ export function RootLayout(props: RootLayoutProps) {
       };
     }
 
-    return { map, tabItems, menus: internalMenus, submenus };
+    return { map, tabItems, submenus };
   }, [props.menus]);
-  const inputSelectedKeys = useMemo(() => {
-    return props.selectedKeys || (props.pathname ? pathToKeys(menus, props.pathname, 0, []) : undefined);
-  }, [props.selectedKeys, props.pathname]);
   const selectedKey = useMemo(() => {
     return {
-      root: inputSelectedKeys?.[0],
-      sub: inputSelectedKeys?.slice(1),
+      root: selectedKeys?.[0],
+      sub: selectedKeys?.slice(1),
     };
-  }, [inputSelectedKeys]);
+  }, [selectedKeys]);
 
   const defaultSelectedKey = useMemo(() => {
     const defaultActiveKey = props.defaultSelectedKeys;
@@ -114,7 +101,9 @@ export function RootLayout(props: RootLayoutProps) {
         defaultActiveKey={defaultSelectedKey.root}
         activeKey={selectedKey.root}
         onChange={(key) => {
-          onSelectedKeysChange?.({ keys: [key], path: map[key]?.internal.path || "" });
+          if (!map[key]) return;
+          const menu = map[key].internal;
+          onSelectedKeysChange?.({ keys: [key], target: menu, menuPath: [menu] });
         }}
         items={tabItems}
       />
@@ -126,7 +115,9 @@ export function RootLayout(props: RootLayoutProps) {
         onSelect={(e) => {
           if (onSelectedKeysChange) {
             const keys = [selectedKey.root!, ...e.selectedKeys];
-            onSelectedKeysChange?.({ keys, path: getPath(keys, map).join("/") });
+            const menu = getMenuByPath(keys, map);
+            const lastMenu = menu[menu.length - 1];
+            onSelectedKeysChange?.({ keys, target: lastMenu, menuPath: menu });
           }
         }}
         styles={{
@@ -139,59 +130,28 @@ export function RootLayout(props: RootLayoutProps) {
   );
 }
 
-/**
- * 可继续优化算法效率
- */
-function pathToKeys(menus: InternalMenuItem[] | undefined, path: string, pathIndex: number, match: string[]): string[] {
-  if (!menus || menus.length === 0) return match;
-  if (path[0] === "/") pathIndex++;
-  for (let i = 0; i < menus.length; i++) {
-    const curr = menus[i].path;
-
-    if (!curr) continue;
-    if (curr === path.substring(pathIndex, pathIndex + curr.length)) {
-      match.push(menus[i].key);
-      return pathToKeys(menus[i].children, path, pathIndex + curr.length, match);
-    }
+function getMenuByPath<T>(path: string[], menuTree: MenuTree<T>): MenuItem<T>[] {
+  let curr: MenuTree<T> | undefined = menuTree;
+  const res: MenuItem<T>[] = [];
+  let i = 0;
+  for (; i < path.length && curr; i++) {
+    const node: MenuTreeNode<T> | undefined = curr[path[i]];
+    if (!node) break;
+    res.push(node.internal);
+    curr = node.subMap;
   }
-  return match;
+  return res;
 }
-function getPath(keys: string[], menuTree: MenuTree): string[] {
-  const path: string[] = new Array<string>(keys.length);
 
-  let node = menuTree[keys[0]];
-  if (node) path[0] = node.internal.key;
-  for (let i = 1; node && i < keys.length; i++) {
-    node = node.subMap?.[keys[i]];
-    if (node) path[i] = node.internal.key;
-  }
-  return path;
-}
-type InternalMenuItem = MenuItemCommon & {
-  key: string;
-  path?: string;
-  /**子菜单 */
-  children?: InternalMenuItem[];
-};
-type MenuTree = Record<string, MenuTreeNode | undefined>;
+type MenuTree<T> = Record<string, MenuTreeNode<T> | undefined>;
 
-type MenuTreeNode = {
-  internal: InternalMenuItem;
-  subMap?: MenuTree;
+type MenuTreeNode<T> = {
+  internal: MenuItem<T>;
+  subMap?: MenuTree<T>;
 };
-function menuItemsToInternalItem(items: MenuItem[]): InternalMenuItem[] {
-  return items
-    .filter((item) => !item.hidden)
-    .map((item, i) => {
-      return {
-        ...item,
-        key: item.key || item.path || i.toString(),
-        children: item.children ? menuItemsToInternalItem(item.children) : undefined,
-      };
-    });
-}
-function createMenuTree(items: InternalMenuItem[]): MenuTree {
-  const tree: MenuTree = {};
+
+function createMenuTree<T>(items: MenuItem<T>[]): MenuTree<T> {
+  const tree: MenuTree<T> = {};
 
   for (const item of items) {
     tree[item.key] = {
@@ -201,7 +161,7 @@ function createMenuTree(items: InternalMenuItem[]): MenuTree {
   }
   return tree;
 }
-function menuItemToAntd(items: InternalMenuItem[]): ItemType<MenuItemType>[] {
+function menuItemToAntd<T>(items: MenuItem<T>[]): ItemType<MenuItemType>[] {
   return items.map((item) => ({
     key: item.key,
     label: item.label,

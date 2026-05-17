@@ -1,7 +1,7 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
 import questionRoutes from "@/routers/question/mod.ts";
-import { prepareUniqueUser } from "#test/fixtures/user.ts";
+import { prepareUniqueUser } from "#test/utils/user.ts";
 import { Role } from "@/middleware/auth.ts";
 import { createSampleQuestion, getQuestion, getQuestionReviewId, listUserQuestion } from "#test/utils/question.ts";
 import { ReviewStatus } from "@/dto.ts";

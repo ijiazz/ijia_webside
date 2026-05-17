@@ -13,6 +13,7 @@ import { ExportOutlined } from "@ant-design/icons";
 import { ROUTES } from "@/app.ts";
 import { api } from "@/request/client.ts";
 import { CardLayout } from "@/lib/components/card/card.tsx";
+import { getLoginURL } from "@/common/host.ts";
 
 export const Route = createLazyFileRoute("/_school/live/")({
   component: RouteComponent,
@@ -54,7 +55,7 @@ function RouteComponent() {
       <div style={{ backgroundColor: theme.colorBgLayout }} className={cx(PostListCSS)}>
         {data?.needLogin && (
           <div style={{ display: "flex", justifyContent: "center", paddingTop: 48 }}>
-            <Link to={ROUTES.Login} viewTransition>
+            <Link to={getLoginURL(globalThis.location.href)} viewTransition>
               登录后查看更多
             </Link>
           </div>
