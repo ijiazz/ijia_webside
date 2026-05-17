@@ -9,28 +9,19 @@ on:
       - main
 jobs:
   build-images:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
       - name: Build web images
-        run: docker compose build web-nginx web-api
-
-      - name: Export web-nginx image
-        run: docker save -o web-nginx.tar ijia/web-nginx
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: web-nginx-image-${{ github.sha }}
-          path: web-nginx.tar
-          overwrite: true
+        run: docker compose build web-api
 
       - name: Export web-api image
         run: docker save -o web-api.tar ijia/web-api
 
       - uses: actions/upload-artifact@v7
         with:
-          name: web-api-image-${{ github.sha }}
+          name: web-api-image
           path: web-api.tar
           overwrite: true
 
@@ -51,20 +42,20 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: web-nginx-image-${{ github.sha }}
+          name: web-nginx-image
 
       - name: Load web-nginx image
         run: docker load -i web-nginx.tar
 
       - uses: actions/download-artifact@v4
         with:
-          name: web-api-image-${{ github.sha }}
+          name: web-api-image
 
       - name: Load web-api image
         run: docker load -i web-api.tar
 
       - name: Build remaining local services
-        run: docker compose build database
+        run: docker compose build web-nginx database
 
       - name: Start services
         run: docker compose up -d

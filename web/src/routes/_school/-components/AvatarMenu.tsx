@@ -58,7 +58,7 @@ export function AvatarMenu(props: { user: User | null }) {
             key: "logout",
             icon: <LogoutOutlined />,
             label: "退出登录",
-            onClick: () => getLoginURL(globalThis.location.origin),
+            onClick: () => navigate({ href: getLoginURL(globalThis.location.origin), viewTransition: true }),
           },
         ],
       }}
