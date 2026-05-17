@@ -42,13 +42,6 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: web-nginx-image
-
-      - name: Load web-nginx image
-        run: docker load -i web-nginx.tar
-
-      - uses: actions/download-artifact@v4
-        with:
           name: web-api-image
 
       - name: Load web-api image
