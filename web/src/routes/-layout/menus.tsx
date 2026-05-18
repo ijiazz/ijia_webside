@@ -1,44 +1,45 @@
 import { UserOutlined, SecurityScanOutlined } from "@ant-design/icons";
-import React from "react";
 import { MenuItem } from "./RootLayout.tsx";
+import { SECURITY_SETTING_URL } from "@/common/host.ts";
 
 // 二菜单需要考虑图标，否则菜单收起后不是很好看
 
-export const menus: MenuItem[] = [
+export const menus: MenuItem<{ href?: string }>[] = [
   {
-    path: "wall",
+    key: "wall",
     label: "表白墙",
   },
   {
-    path: "live",
+    key: "live",
     label: "动态",
   },
   {
-    path: "examination",
+    key: "examination",
     label: "考试",
     children: [
       {
-        path: "simulate",
+        key: "simulate",
         label: "模拟考试",
       },
       {
-        path: "final_exam",
+        key: "final_exam",
         label: "期末考试",
       },
     ],
   },
   {
-    path: "profile",
+    key: "profile",
     children: [
       {
-        path: "center",
+        key: "center",
         label: "个人中心",
         icon: <UserOutlined />,
       },
       {
-        path: "security",
+        key: "security",
         label: "安全设置",
         icon: <SecurityScanOutlined />,
+        href: SECURITY_SETTING_URL,
       },
     ],
   },

@@ -14,7 +14,7 @@ import {
   useThemeController,
 } from "@/provider/mod.tsx";
 import { css } from "@emotion/css";
-import { RootLayout } from "../-layout/RootLayout.tsx";
+import { MenuItem, RootLayout } from "../-layout/RootLayout.tsx";
 import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
 import { BasicUserContext } from "./-context/UserContext.tsx";
 import { LoaderData } from "./route.tsx";
@@ -52,6 +52,11 @@ function UserLayout(props: PropsWithChildren<{}>) {
     message.success("已复制个人访问 Token");
   };
   const pathname = useLayoutPathname();
+
+  const selectedKeys = useMemo(() => {
+    return pathToKeys(menus, pathname, 0, []);
+  }, [pathname]);
+
   const match = Route.useMatch();
   const navigate = Route.useNavigate();
 
@@ -72,16 +77,29 @@ function UserLayout(props: PropsWithChildren<{}>) {
           style={{ color: "inherit" }}
           //@ts-ignore
           from={match.pathname}
-          to={item.path}
+          to={item.key}
         >
           {item.label}
         </Link>
       )}
       menus={menus}
-      pathname={pathname}
-      onSelectedKeysChange={({ keys, path }) => {
+      selectedKeys={selectedKeys}
+      onSelectedKeysChange={({ keys, target }) => {
         if (keys.length === 1) return; // 已经通过 anchor 标签跳转了
-        if (path) navigate({ from: "/", to: path, viewTransition: true });
+        if (target.href) {
+          globalThis.open(target.href, "_blank");
+          return;
+        }
+        if (target) {
+          const path = target.key;
+          if (path) {
+            if (path.startsWith("https://") || path.startsWith("http://")) {
+              globalThis.open(path, "_blank");
+            } else {
+              navigate({ from: "/", to: path, viewTransition: true });
+            }
+          }
+        }
       }}
       rightExtra={
         <div style={{ display: "flex", gap: 8, marginRight: 8, alignItems: "center" }}>
@@ -107,7 +125,23 @@ function UserLayout(props: PropsWithChildren<{}>) {
     </RootLayout>
   );
 }
+/**
+ * 可继续优化算法效率
+ */
+function pathToKeys(menus: MenuItem[] | undefined, path: string, pathIndex: number, match: string[]): string[] {
+  if (!menus || menus.length === 0) return match;
+  if (path[0] === "/") pathIndex++;
+  for (let i = 0; i < menus.length; i++) {
+    const curr = menus[i].key;
 
+    if (!curr) continue;
+    if (curr === path.substring(pathIndex, pathIndex + curr.length)) {
+      match.push(menus[i].key);
+      return pathToKeys(menus[i].children, path, pathIndex + curr.length, match);
+    }
+  }
+  return match;
+}
 function useLayoutPathname() {
   const pendingMatch = useRouterState({
     select(state) {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect } from "vitest";
-import { test, Context } from "../../fixtures/hono.ts";
+import { test, Context } from "#test/fixtures/hono.ts";
 import {
   getPublicPost,
   deletePost,
@@ -9,9 +9,9 @@ import {
   prepareCommentPost,
   getPostCommentTotal,
 } from "#test/utils/post.ts";
-import { prepareUniqueUser } from "../../fixtures/user.ts";
+import { prepareUniqueUser } from "#test/utils/user.ts";
 import { DbPostComment } from "@ijia/data/db";
-import { DeepPartial } from "../../utils/common.ts";
+import { DeepPartial } from "#test/utils/common.ts";
 import { getUserCanCreateCommentLimit } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 import { afterTime } from "evlib";
 import commentRoutes from "@/routers/post/comment/mod.ts";

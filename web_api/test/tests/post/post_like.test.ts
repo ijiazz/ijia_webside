@@ -1,6 +1,6 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import { prepareUniqueUser } from "../../fixtures/user.ts";
+import { prepareUniqueUser } from "../../utils/user.ts";
 
 import {
   cancelPostLike,

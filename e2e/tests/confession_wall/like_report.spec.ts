@@ -1,8 +1,9 @@
-import { getAppUrlFromRoute, vioServerTest as test } from "@/fixtures/test.ts";
+import { test } from "@playwright/test";
 import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
 import { createPost } from "@/utils/post.ts";
 import { Locator } from "@playwright/test";
-import { DROPDOWN_ACTION_WAIT_TIME } from "@/utils/browser.ts";
+import { DROPDOWN_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
+import { getAppURLFromRoute } from "@/utils/app.ts";
 
 const { expect, beforeAll } = test;
 
@@ -23,8 +24,8 @@ beforeAll(async function () {
 });
 
 test("点赞自己和别人的帖子", async function ({ page, context, browser }) {
-  const url = "/wall/list?userId=" + bob.id;
-  await page.goto(getAppUrlFromRoute(url, alice.token));
+  await setContextLogin(context, alice.token);
+  await page.goto(getAppURLFromRoute("/wall/list", { userId: bob.id }));
 
   {
     //alice 点赞
@@ -40,7 +41,8 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
   {
     //bob 点赞
     const page = bobPage;
-    await page.goto(getAppUrlFromRoute(url, bob.token));
+    await setContextLogin(bobContext, bob.token);
+    await page.goto(getAppURLFromRoute("/wall/list", { userId: bob.id }));
 
     const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
 
@@ -62,13 +64,14 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
 });
 
 test("游客禁止点赞", async function ({ page }) {
-  await page.goto(getAppUrlFromRoute("/wall/list?userId=" + bob.id));
+  await page.goto(getAppURLFromRoute("/wall/list", { userId: bob.id }));
   const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
   await expect(firstBtn).toBeDisabled();
 });
 
 test("举报帖子", async function ({ page }) {
-  await page.goto(getAppUrlFromRoute("/wall/list?userId=" + bob.id, alice.token));
+  await setContextLogin(page.context(), alice.token);
+  await page.goto(getAppURLFromRoute("/wall/list", { userId: bob.id }));
   await page.getByRole("button", { name: "more" }).first().click();
   await page.getByText("举报", { exact: true }).click();
   await page.getByRole("combobox", { name: "* 举报理由 :" }).click();

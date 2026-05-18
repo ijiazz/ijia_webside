@@ -2,7 +2,7 @@ import { beforeEach, expect } from "vitest";
 import { test, Context, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
 import { DbPostCreate } from "@ijia/data/db";
 
-import { prepareUser } from "../../fixtures/user.ts";
+import { prepareUniqueUser } from "#test/utils/user.ts";
 import { getPublicPostList } from "@/routers/post/-sql/post_list.sql.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 import postRoutes from "@/routers/post/mod.ts";
@@ -12,7 +12,7 @@ beforeEach<Context>(async ({ hono }) => {
 });
 
 test("分页获取帖子列表", async function ({ api, ijiaDbPool }) {
-  const alice = await prepareUser("alice");
+  const alice = await prepareUniqueUser("alice");
 
   const values: DbPostCreate[] = new Array(101);
   let baseDate = new Date("2023-01-01T00:00:00Z").getTime();
@@ -55,7 +55,7 @@ test("分页获取帖子列表", async function ({ api, ijiaDbPool }) {
   }
 });
 test("向前分页", async function ({ api, ijiaDbPool }) {
-  const alice = await prepareUser("alice");
+  const alice = await prepareUniqueUser("alice");
 
   const values: DbPostCreate[] = new Array(101);
   let baseDate = new Date("2023-01-01T00:00:00Z").getTime();

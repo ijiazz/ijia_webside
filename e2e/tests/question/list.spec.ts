@@ -1,10 +1,8 @@
 import { ReviewStatus } from "@/api.ts";
-import { vioServerTest as test } from "@/fixtures/test.ts";
+import { test, expect } from "@playwright/test";
 import { setContextLogin } from "@/utils/browser.ts";
 import { createQuestion, getUserQuestionURL, setQuestionReviewStatus } from "@/utils/question.ts";
 import { initAdmin, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
-
-const { expect } = test;
 
 test("可以访问其他用户题目列表时，只能看到审核通过的题目列表", async function ({ page, context }) {
   const alice = await initAlice();

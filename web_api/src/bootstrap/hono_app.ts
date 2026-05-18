@@ -6,18 +6,18 @@ import {
   commentRoutes,
   postRoutes,
   appRoutes,
-  captchaRoutes,
   classRoutes,
   userRoutes,
-  passportRoutes,
   liveRoutes,
   reviewRoutes,
   questionRoutes,
   uploadRoutes,
 } from "@/routers/mod.ts";
+import passportRoutes from "@/routers/passport/mod.ts";
 
 import { setUserInfo } from "@/middleware/auth.ts";
 import { addServeStatic } from "@/routers/file/mod.ts";
+import { ENV, RunMode } from "@/config.ts";
 
 export function createHonoApp() {
   const hono = createHono();
@@ -30,13 +30,14 @@ export function createHonoApp() {
   postRoutes.apply(hono, options);
   commentRoutes.apply(hono, options);
   appRoutes.apply(hono, options);
-  captchaRoutes.apply(hono, options);
   classRoutes.apply(hono, options);
   userRoutes.apply(hono, options);
   liveRoutes.apply(hono, options);
-  passportRoutes.apply(hono, options);
   reviewRoutes.apply(hono, options);
   questionRoutes.apply(hono, options);
+  if (ENV.MODE === RunMode.E2E) {
+    passportRoutes.apply(hono, options);
+  }
   return hono;
 }
 

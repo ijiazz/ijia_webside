@@ -1,7 +1,7 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
 
-import { prepareUniqueUser } from "../../fixtures/user.ts";
+import { prepareUniqueUser } from "../../utils/user.ts";
 import { createPost, preparePost, getPublicPost, getSelfPost } from "../../utils/post.ts";
 import postRoutes from "@/routers/post/mod.ts";
 import { ReviewStatus, Post } from "@/dto.ts";

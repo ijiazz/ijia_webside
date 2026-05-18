@@ -1,7 +1,7 @@
-import { vioServerTest as test } from "@/fixtures/test.ts";
+import { test, expect, Page } from "@playwright/test";
 import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
 import { createPost, createCommentUseApi, getPostCommentURL, getUserPostURL } from "@/utils/post.ts";
-import { expect, Page } from "@playwright/test";
+
 import { afterTime } from "evlib";
 import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 const { beforeEach } = test;

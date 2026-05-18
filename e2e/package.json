@@ -14,6 +14,7 @@
     "@asla/hofetch": "jsr:@asla/hofetch@^0.0.1",
     "@asla/pg": "catalog:",
     "@asla/yoursql": "catalog:",
+    "@ijia/api-types": "workspace:^",
     "@ijia/data": "catalog:",
     "@playwright/test": "^1.55.0",
     "@types/node": "catalog:",

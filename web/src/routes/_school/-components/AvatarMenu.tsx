@@ -1,25 +1,17 @@
 import { Avatar, Button, Dropdown } from "antd";
-import { LoadingOutlined, LogoutOutlined, UserOutlined, HomeOutlined } from "@ant-design/icons";
+import { LogoutOutlined, UserOutlined, HomeOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { css, cx } from "@emotion/css";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { IS_MOBILE_LAYOUT, useThemeToken } from "@/provider/mod.tsx";
 import { User } from "@/api.ts";
-import { useMutation } from "@tanstack/react-query";
-import { api } from "@/request/client.ts";
-import { clearUserCache } from "@/common/user.ts";
 import { ROUTES } from "@/app.ts";
 import { useMemo } from "react";
+import { getLoginURL } from "@/common/host.ts";
 
 export function AvatarMenu(props: { user: User | null }) {
   const { user } = props;
-  const { mutate, isPending: isLogoutLoading } = useMutation({
-    mutationFn: () => api["/passport/logout"].post(),
-    onSuccess: () => {
-      clearUserCache();
-      navigate({ to: ROUTES.Login });
-    },
-  });
+
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const theme = useThemeToken();
@@ -64,9 +56,9 @@ export function AvatarMenu(props: { user: User | null }) {
           },
           {
             key: "logout",
-            icon: isLogoutLoading ? <LoadingOutlined /> : <LogoutOutlined />,
+            icon: <LogoutOutlined />,
             label: "退出登录",
-            onClick: () => mutate(),
+            onClick: () => navigate({ href: getLoginURL(globalThis.location.origin), viewTransition: true }),
           },
         ],
       }}

@@ -1,7 +1,6 @@
 import { checkType, ExpectType, InferExpect, optional, TypeCheckFn, CheckTypeError, integer, array } from "@asla/wokao";
 
 const optionalString = nullishOptional("string");
-const optionalBoolean = nullishOptional("boolean");
 
 export function checkConfig(value: any): AppConfig {
   return checkType(value, appConfigChecker, { policy: "pass" });
@@ -72,16 +71,8 @@ const homeSchema = {
 type HomeConfig = InferExpect<typeof homeSchema>;
 
 const appConfigChecker = {
-  appName: nullishOptional("string", "IJIA 学院"),
   emailSender: optional(emailConfigCheck),
-  passport: nullishOptional({
-    emailVerifyDisabled: optionalBoolean,
-    signupTip: optionalString,
-    signupEnabled: optionalBoolean,
-    loginCaptchaDisabled: optionalBoolean,
-    loginTip: optionalString,
-    host: optionalString,
-  }),
+
   post: nullishOptional({
     maximumDailyCount: nullishOptional(integer(0), 50), // 每日最大发布数量。如果为 0 则禁止发帖
     allowAddComment: nullishOptional("boolean", false), // 是否允许添加评论

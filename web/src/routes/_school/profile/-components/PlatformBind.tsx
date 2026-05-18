@@ -1,8 +1,8 @@
 import { useAsync } from "@/hooks/async.ts";
 import { Avatar, Button, Input, Divider, Popover, Typography, Tag } from "antd";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAntdStatic, useThemeToken } from "@/provider/mod.tsx";
-import { css, cx } from "@emotion/css";
+import { css } from "@emotion/css";
 import { BindPlatformCheckDto, Platform } from "@/api.ts";
 import step1Path from "./PlatformBind/douyin-step-1.webp";
 import step2Path from "./PlatformBind/douyin-step-2.jpg";
