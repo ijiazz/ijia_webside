@@ -45,7 +45,7 @@ export class ApiErrorEvent extends Event {
     const isUnauthorized = this.#response.status === 401 && this.#getError()?.code === "REQUIRED_LOGIN";
     if (isUnauthorized) {
       if (!this.#response.ignoreUnauthorizedRedirect) {
-        return { url: getLoginURL(globalThis.location.origin) };
+        return { url: getLoginURL(globalThis.location.href) };
       } else {
         return {
           isIgnore: true,

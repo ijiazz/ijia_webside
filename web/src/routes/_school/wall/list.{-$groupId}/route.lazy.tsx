@@ -130,7 +130,7 @@ function PublishBtn(props: Omit<ButtonProps, "onClick" | "icon"> & { isLoggedIn?
         if (isLoggedIn) {
           navigate({ to: "/wall/publish", viewTransition: true });
         } else {
-          navigate({ href: getLoginURL(globalThis.location.origin), viewTransition: true });
+          navigate({ href: getLoginURL(globalThis.location.href), viewTransition: true });
         }
       }}
     />

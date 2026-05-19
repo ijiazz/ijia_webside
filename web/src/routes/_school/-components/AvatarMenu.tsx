@@ -15,7 +15,7 @@ export function AvatarMenu(props: { user: User | null }) {
 
   if (!user)
     return (
-      <VLink to={getLoginURL(globalThis.location.origin)}>
+      <VLink to={getLoginURL(globalThis.location.href)}>
         <Button type="text" style={{ color: theme.colorTextSecondary }}>
           登录
         </Button>
@@ -48,7 +48,7 @@ export function AvatarMenu(props: { user: User | null }) {
             key: "logout",
             icon: <LogoutOutlined />,
             label: "退出登录",
-            onClick: () => navigate({ href: getLogoutURL(globalThis.location.origin), viewTransition: true }),
+            onClick: () => navigate({ href: getLogoutURL(globalThis.location.href), viewTransition: true }),
           },
         ],
       }}
