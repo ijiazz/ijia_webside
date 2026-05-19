@@ -1,5 +1,5 @@
-import { enumPlatform } from "@ijia/data/db";
-import { checkValue } from "@/global/check.ts";
+import { enumPlatform } from "@ijia/school-db/db";
+import { checkValue } from "@/common/check.ts";
 import { enumType, integer, optional } from "@asla/wokao";
 import { requiredRoles, Role } from "@/middleware/auth.ts";
 import { getCheckerServer } from "@/services/douyin.ts";

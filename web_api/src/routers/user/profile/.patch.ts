@@ -1,8 +1,8 @@
-import { DbUserProfileCreate } from "@ijia/data/db";
+import { DbUserProfileCreate } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 import { optional } from "@asla/wokao";
-import { checkValue, checkValueAsync, date } from "@/global/check.ts";
-import { HttpError } from "@/global/errors.ts";
+import { checkValue, checkValueAsync, date } from "@/common/check.ts";
+import { HttpError } from "@/common/errors.ts";
 import { deletePublicClassOfUser, setUserPublicClass } from "../-sql/user.service.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import routeGroup from "../_route.ts";

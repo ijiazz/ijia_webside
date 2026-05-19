@@ -8,9 +8,9 @@ import {
   AccessUserData,
   AuthTokenType,
   AccessJwtPayload,
-} from "@ijia/data/auth";
+} from "@ijia/school-db/auth";
 
-export type { SignInfo, SignAccessTokenOption, AccessToken, AccessUserData, AuthTokenType } from "@ijia/data/auth";
+export type { SignInfo, SignAccessTokenOption, AccessToken, AccessUserData, AuthTokenType } from "@ijia/school-db/auth";
 
 const authToken = new AuthToken<AccessJwtPayload>({
   parseSysJWT,

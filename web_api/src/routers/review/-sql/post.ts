@@ -1,5 +1,5 @@
 import { dbPool } from "@/db/client.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { v } from "@/sql/utils.ts";
 import { QueryableDataSQL } from "@asla/pg";
 

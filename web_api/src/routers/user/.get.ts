@@ -1,4 +1,4 @@
-import { checkValue, optionalInt } from "@/global/check.ts";
+import { checkValue, optionalInt } from "@/common/check.ts";
 import { getUserInfo } from "./-sql/user.service.ts";
 import routeGroup from "./_route.ts";
 

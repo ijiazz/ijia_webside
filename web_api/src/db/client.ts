@@ -1,6 +1,6 @@
 import { PgDbQueryPool } from "@asla/pg";
 import { ENV } from "@/config.ts";
-import { setDbPoolConnect } from "@ijia/data/query";
+import { setDbPoolConnect } from "@ijia/school-db/query";
 
 export const dbPool = new PgDbQueryPool(() => {
   let url = ENV.DATABASE_URL;

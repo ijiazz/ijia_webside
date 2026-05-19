@@ -1,6 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context } from "../fixtures/hono.ts";
-import { PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID } from "@ijia/school-db/db";
 
 import classRoutes from "@/routers/class/mod.ts";
 import { insertIntoValues } from "@/sql/utils.ts";

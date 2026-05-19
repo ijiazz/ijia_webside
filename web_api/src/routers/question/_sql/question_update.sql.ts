@@ -2,9 +2,9 @@ import { ExamQuestionType, QuestionAttachment, UpdateQuestionParam } from "@/dto
 import { QuestionAdvancedConfig, checkQuestionTypeOption, parserCreateQuestionInput } from "../_utils/create.schema.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { select, update } from "@asla/yoursql";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { DbTransaction, SqlLike } from "@asla/pg";
-import { DbExamQuestion, ReviewStatus } from "@ijia/data/db";
+import { DbExamQuestion, ReviewStatus } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 type UpdateReturn = {
   id: number;

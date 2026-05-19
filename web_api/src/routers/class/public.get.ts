@@ -1,5 +1,5 @@
 import routeGroup from "./_route.ts";
-import { PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID } from "@ijia/school-db/db";
 import { select } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
 

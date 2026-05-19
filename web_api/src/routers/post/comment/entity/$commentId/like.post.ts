@@ -1,4 +1,4 @@
-import { checkValue, queryInt } from "@/global/check.ts";
+import { checkValue, queryInt } from "@/common/check.ts";
 import routeGroup from "../../_route.ts";
 import { cancelCommentLike, setCommentLike } from "../../../-sql/post_like.sql.ts";
 

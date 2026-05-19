@@ -1,12 +1,12 @@
 import routeGroup from "../_route.ts";
 import { createQuestion } from "../_sql/question_create.sql.ts";
-import { checkValueAsync } from "@/global/check.ts";
+import { checkValueAsync } from "@/common/check.ts";
 import { ADVANCED_CONFIG_SCHEMA, QUESTION_MEDIA_UPDATE_SCHEMA } from "../_utils/create.schema.ts";
 import { array, enumType, ExpectType, optional } from "@asla/wokao";
-import { TEXT_STRUCT_SCHEMA } from "@/global/schema.ts";
+import { TEXT_STRUCT_SCHEMA } from "@/common/schema.ts";
 import { ExamQuestionType } from "@/dto.ts";
 import { Role } from "@/middleware/auth.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 
 const CREATE_QUESTION_PARAM_SCHEMA = {
   question_text: "string",

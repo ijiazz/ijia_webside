@@ -1,7 +1,7 @@
 import { dbPool } from "@/db/client.ts";
 import { GetPostCommentListOption, PostCommentDto, PostCommentResponse } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
-import { jsonb_build_object } from "@/global/sql_util.ts";
+import { HttpError } from "@/common/errors.ts";
+import { jsonb_build_object } from "@/common/sql_util.ts";
 import { parserTimestampCursor, toTimestampCursor } from "../../-utils/_util.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";

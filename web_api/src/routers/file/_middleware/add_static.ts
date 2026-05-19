@@ -4,7 +4,7 @@ import path from "node:path";
 import { HTTPException } from "hono/http-exception";
 import { Role, UserInfo } from "@/middleware/auth.ts";
 import { getCookie } from "hono/cookie";
-import { getBucket } from "@ijia/data/oss";
+import { getBucket } from "@ijia/school-db/oss";
 import { REQUEST_AUTH_KEY } from "@/dto.ts";
 import { createRuntimeServeStatic } from "./serve_static.ts";
 

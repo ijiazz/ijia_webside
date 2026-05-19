@@ -1,5 +1,5 @@
 import { insertIntoValues } from "@/sql/utils.ts";
-import { DbPlaAssetCreate, Platform } from "@ijia/data/db";
+import { DbPlaAssetCreate, Platform } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 
 export async function insertPosts(size: number, platform: Platform, pla_uid: string) {

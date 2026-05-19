@@ -1,6 +1,6 @@
 import { array, checkTypeCopy, ExpectType, InferExpect, optional, CheckTypeError } from "@asla/wokao";
 import { CreateQuestionParam, ExamQuestionType, QuestionAttachment, QuestionOption } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 
 export const ADVANCED_CONFIG_SCHEMA = {
   long_time: optional.boolean,

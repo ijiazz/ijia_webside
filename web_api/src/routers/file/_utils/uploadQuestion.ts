@@ -1,9 +1,9 @@
 import { MediaType, UploadFileResult, UploadImageFileResult, UploadMethod } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { FileTooLargeError, uploadToTemp, tempKeyToURI } from "./upload.ts";
 import * as mimeType from "@std/media-types";
 import { createHash } from "node:crypto";
-import { getOSS } from "@ijia/data/oss";
+import { getOSS } from "@ijia/school-db/oss";
 
 const MB = 1024 * 1024;
 const SIZE_LIMIT: Record<string, number | undefined> = {

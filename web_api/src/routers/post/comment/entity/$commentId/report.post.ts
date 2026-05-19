@@ -1,4 +1,4 @@
-import { checkValue, queryInt } from "@/global/check.ts";
+import { checkValue, queryInt } from "@/common/check.ts";
 import routeGroup from "../../_route.ts";
 import { reportComment } from "../../../-sql/report.sql.ts";
 

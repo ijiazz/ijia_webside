@@ -1,9 +1,9 @@
 import { dbPool } from "@/db/client.ts";
 import { ReviewItem, ReviewTargetType } from "@/dto.ts";
-import { jsonb_build_object } from "@/global/sql_util.ts";
+import { jsonb_build_object } from "@/common/sql_util.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
-import { ReviewStatus } from "@ijia/data/db";
+import { ReviewStatus } from "@ijia/school-db/db";
 
 export type GetReviewListOption = {
   offset?: number;

@@ -1,5 +1,5 @@
 import { cancelPostLike, setPostLike } from "../../-sql/post_like.sql.ts";
-import { checkValue } from "@/global/check.ts";
+import { checkValue } from "@/common/check.ts";
 import { integer } from "@asla/wokao";
 import routeGroup from "../../_route.ts";
 

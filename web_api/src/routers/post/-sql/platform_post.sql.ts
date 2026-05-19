@@ -1,6 +1,6 @@
 import { dbPool } from "@/db/client.ts";
-import { Platform, DbPlaAssetMedia, MediaLevel, TextStructure, USER_LEVEL, MediaType } from "@ijia/data/db";
-import { createSearch, jsonb_build_object } from "@/global/sql_util.ts";
+import { Platform, DbPlaAssetMedia, MediaLevel, TextStructure, USER_LEVEL, MediaType } from "@ijia/school-db/db";
+import { createSearch, jsonb_build_object } from "@/common/sql_util.ts";
 import { GetListOption, PostUserInfo, PlatformPostItemDto, AssetMediaDto, MulFormat, AssetImage } from "@/dto.ts";
 import { assetMediaToDto } from "../-utils/media.ts";
 import { select } from "@asla/yoursql";

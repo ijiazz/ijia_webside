@@ -1,6 +1,6 @@
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
-import { PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 
 export function getUserPublicClassId(user_id: number): Promise<number[]> {

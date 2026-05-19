@@ -3,9 +3,9 @@ import { CheckTypeError, getBasicType, integer, optional } from "@asla/wokao";
 import { getUserDateCount } from "../-sql/post_create.sql.ts";
 
 import routeGroup from "../_route.ts";
-import { checkValueAsync } from "@/global/check.ts";
+import { checkValueAsync } from "@/common/check.ts";
 import { appConfig } from "@/config.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 
 export default routeGroup.create({
   method: "PUT",

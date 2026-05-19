@@ -1,11 +1,11 @@
-import { PUBLIC_CLASS_ROOT_ID, Platform } from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID, Platform } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 import { User, UserConfig } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { deleteFrom, insertInto, select } from "@asla/yoursql";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { ExecutableSQL } from "@asla/pg";
-import { jsonb_build_object } from "@/global/sql_util.ts";
+import { jsonb_build_object } from "@/common/sql_util.ts";
 
 export function setUserPublicClass(userId: number, classId: number | null): ExecutableSQL {
   return dbPool.createExecutableSQL(

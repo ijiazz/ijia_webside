@@ -1,10 +1,10 @@
 import { dbPool } from "@/db/client.ts";
 import { DEFAULT_REPORT_WEIGHT, REPORT_THRESHOLD } from "../-utils/const.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { select, update } from "@asla/yoursql";
 import { setPostCommentToReviewing, setPostToReviewing } from "@/routers/review/mod.ts";
-import { ReviewStatus } from "@ijia/data/db";
+import { ReviewStatus } from "@ijia/school-db/db";
 
 export async function reportPost(postId: number, userId: number, reason?: string): Promise<number> {
   const oldWeight = select(["weight"])

@@ -1,5 +1,5 @@
 import routeGroup from "./_route.ts";
-import { checkValue, queryInt } from "@/global/check.ts";
+import { checkValue, queryInt } from "@/common/check.ts";
 import { getUserQuestionPublicList } from "./_sql/question_get.sql.ts";
 import { optional } from "@asla/wokao";
 import { GetUserQuestionListResult } from "@/dto.ts";

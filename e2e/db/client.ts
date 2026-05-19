@@ -1,6 +1,6 @@
 import { env } from "@/playwright.config.ts";
 import { PgDbQueryPool } from "@asla/pg";
-import { setDbPoolConnect } from "@ijia/data/query";
+import { setDbPoolConnect } from "@ijia/school-db/query";
 
 export const dbPool = new PgDbQueryPool(() => {
   let url = env.DATABASE_URL;

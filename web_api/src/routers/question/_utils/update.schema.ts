@@ -1,6 +1,6 @@
 import { QUESTION_MEDIA_UPDATE_SCHEMA } from "../_utils/create.schema.ts";
 import { array, ExpectType, optional } from "@asla/wokao";
-import { TEXT_STRUCT_SCHEMA } from "@/global/schema.ts";
+import { TEXT_STRUCT_SCHEMA } from "@/common/schema.ts";
 
 export const UPDATE_QUESTION_PARAM_SCHEMA = {
   question_text: optional.string,

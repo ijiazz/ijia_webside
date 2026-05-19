@@ -1,5 +1,5 @@
 import { BulletChat } from "@/dto.ts";
-import { jsonb_build_object } from "@/global/sql_util.ts";
+import { jsonb_build_object } from "@/common/sql_util.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import { dbPool } from "@/db/client.ts";

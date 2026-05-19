@@ -1,6 +1,6 @@
 import { Role } from "@/middleware/auth.ts";
-import { signAccessToken } from "@/global/jwt.ts";
-import { newTestUser } from "@ijia/data/testlib";
+import { signAccessToken } from "@/common/jwt.ts";
+import { newTestUser } from "@ijia/school-db/testlib";
 
 export async function prepareUniqueUser(nickname: string, option: PrepareUserOption = {}): Promise<UserToken> {
   const info = await newTestUser(nickname, option);

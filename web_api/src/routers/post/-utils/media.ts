@@ -1,4 +1,4 @@
-import { getBucket } from "@ijia/data/oss";
+import { getBucket } from "@ijia/school-db/oss";
 import { AssetMediaDto } from "@/dto.ts";
 
 const prefix = "/file/" + getBucket().PLA_POST_MEDIA + "/";

@@ -1,5 +1,5 @@
 import { JWT_TOKEN_KEY, Api } from "#test/fixtures/hono.ts";
-import { DbUserProfile } from "@ijia/data/db";
+import { DbUserProfile } from "@ijia/school-db/db";
 
 import {
   CreatePostParam,

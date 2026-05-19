@@ -1,7 +1,7 @@
 import { deletePost } from "../-sql/post_delete.sql.ts";
-import { checkValue } from "@/global/check.ts";
+import { checkValue } from "@/common/check.ts";
 import { integer } from "@asla/wokao";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 
 import routeGroup from "../_route.ts";
 

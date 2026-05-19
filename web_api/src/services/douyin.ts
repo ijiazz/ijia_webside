@@ -1,10 +1,10 @@
 import { ENV } from "@/config.ts";
-import { Platform } from "@ijia/data/db";
+import { Platform } from "@ijia/school-db/db";
 import { HoFetch, HoFetchStatusError } from "@asla/hofetch";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { toErrorStr } from "evlib";
 import { HTTPException } from "hono/http-exception";
-import { INTERNAL_MESSAGE_TOKEN } from "@/global/jwt.ts";
+import { INTERNAL_MESSAGE_TOKEN } from "@/common/jwt.ts";
 
 const REQUEST_AUTH_KEY = "access_token";
 export async function getUerSecIdFromShareUrl(urlStr: string) {

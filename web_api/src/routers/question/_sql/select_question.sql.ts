@@ -1,7 +1,7 @@
 import { ReviewStatus } from "@/dto.ts";
-import { jsonb_build_object } from "@/global/sql_util.ts";
+import { jsonb_build_object } from "@/common/sql_util.ts";
 import { select, v } from "@asla/yoursql";
-import { DbExamQuestion, TextStructure } from "@ijia/data/db";
+import { DbExamQuestion, TextStructure } from "@ijia/school-db/db";
 
 export type PublicSelectRaw = Pick<
   DbExamQuestion,

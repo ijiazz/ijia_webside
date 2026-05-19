@@ -1,6 +1,6 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "../../fixtures/hono.ts";
-import { ReviewStatus, TextStructureType, TextStructureUser } from "@ijia/data/db";
+import { ReviewStatus, TextStructureType, TextStructureUser } from "@ijia/school-db/db";
 
 import { prepareUniqueUser } from "../../utils/user.ts";
 import { createPostGroup, getPublicPost, getSelfPost } from "../../utils/post.ts";

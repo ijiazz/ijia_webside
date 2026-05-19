@@ -1,8 +1,8 @@
-import { checkValue, queryInt } from "@/global/check.ts";
+import { checkValue, queryInt } from "@/common/check.ts";
 import routeGroup from "../_route.ts";
 import { requiredLogin } from "@/middleware/auth.ts";
 import { GetUserQuestionResult } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { getQuestionDetail } from "../_sql/question_get.sql.ts";
 
 export default routeGroup.create({

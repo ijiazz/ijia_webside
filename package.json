@@ -10,7 +10,7 @@
     "fmt": "oxfmt web_api web e2e"
   },
   "devDependencies": {
-    "@ijia/data": "catalog:",
+    "@ijia/school-db": "catalog:",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-typescript": "^12.3.0",
     "@typescript/native-preview": "7.0.0-dev.20260421.2",

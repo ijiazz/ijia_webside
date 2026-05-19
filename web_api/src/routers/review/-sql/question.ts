@@ -1,6 +1,6 @@
 import { dbPool } from "@/db/client.ts";
 import { QuestionAdvancedConfig, ReviewStatus, UpdateQuestionParam } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
 import { BECommitReviewParam } from "../-utils/commit.schema.ts";

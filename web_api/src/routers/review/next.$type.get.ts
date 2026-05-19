@@ -1,7 +1,7 @@
 import routeGroup from "./_route.ts";
 import { getReviewNext } from "./-sql/get_review_list.ts";
 import { GetReviewNextResult, ReviewTargetType } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { checkPermission } from "./-utils/permission.ts";
 
 export default routeGroup.create({

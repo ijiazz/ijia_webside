@@ -10,7 +10,7 @@ import {
   getPostCommentTotal,
 } from "#test/utils/post.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
-import { DbPostComment } from "@ijia/data/db";
+import { DbPostComment } from "@ijia/school-db/db";
 import { DeepPartial } from "#test/utils/common.ts";
 import { getUserCanCreateCommentLimit } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 import { afterTime } from "evlib";

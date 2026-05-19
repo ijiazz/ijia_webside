@@ -1,5 +1,5 @@
 import { expect } from "vitest";
-import { ReviewStatus } from "@ijia/data/db";
+import { ReviewStatus } from "@ijia/school-db/db";
 import { getPostReviewStatus, getCommentReviewStatus, getQuestionReviewStatus } from "#test/utils/review.ts";
 
 expect.extend({

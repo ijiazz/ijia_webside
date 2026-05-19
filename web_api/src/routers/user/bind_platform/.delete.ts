@@ -1,7 +1,7 @@
-import { PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
-import { checkValueAsync } from "@/global/check.ts";
-import { HttpError } from "@/global/errors.ts";
+import { checkValueAsync } from "@/common/check.ts";
+import { HttpError } from "@/common/errors.ts";
 import { deleteFrom, select, update } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import routeGroup from "../_route.ts";

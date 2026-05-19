@@ -1,6 +1,6 @@
-import { Platform } from "@ijia/data/db";
+import { Platform } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { select, update } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 

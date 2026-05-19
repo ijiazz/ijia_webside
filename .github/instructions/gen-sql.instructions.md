@@ -11,7 +11,7 @@
 **安全转换值，避免 SQL 注入**
 
 ```ts
-import { PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { PUBLIC_CLASS_ROOT_ID } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 import { v } from "@/sql/utils.ts";
 // 如果 PUBLIC_CLASS_ROOT_ID 是用户参数，需要用 v 函数转换，这会将 JavaScript 值转换成 SQL 值
@@ -55,10 +55,9 @@ const sqlStr = select("class_id AS id, class_name")
 
 ## 数据库相关文件定义
 
-数据库相关常数在 `@ijia/data/db` 包中。
+数据库相关常数在 `@ijia/school-db/db` 包中。
 
 - 这个包导出了项目在数据库中需要用到的一些表结构类型、枚举常量
-- 这个包在 `deps/ijia-data/src/db` 目录下，通过 git submodule 引入在项目中。
 
 ### 数据库表的定义说明
 

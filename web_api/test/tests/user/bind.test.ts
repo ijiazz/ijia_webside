@@ -1,6 +1,6 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, Api, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { Platform, PUBLIC_CLASS_ROOT_ID } from "@ijia/school-db/db";
 import userRoutes from "@/routers/user/mod.ts";
 import { bindPlatformAccount } from "@/routers/user/mod.ts";
 

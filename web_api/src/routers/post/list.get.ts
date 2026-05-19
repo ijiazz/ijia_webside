@@ -1,5 +1,5 @@
 import { PostListResponse } from "@/dto.ts";
-import { checkValue } from "@/global/check.ts";
+import { checkValue } from "@/common/check.ts";
 import { ListParamSchema } from "./-schema/listParam.ts";
 import { getPublicPostList } from "./-sql/post_list.sql.ts";
 import routeGroup from "./_route.ts";

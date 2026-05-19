@@ -1,6 +1,6 @@
 import { getCheckerServer } from "@/services/douyin.ts";
 import { getSubscribeLiveEmails, sendEmailMany } from "./notice_user_email.ts";
-import { LogLevel } from "@ijia/data/db";
+import { LogLevel } from "@ijia/school-db/db";
 import { appConfig } from "@/config.ts";
 import { getEmailSender } from "../email.ts";
 import { toErrorStr } from "evlib";

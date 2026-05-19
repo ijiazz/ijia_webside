@@ -1,5 +1,5 @@
 import { GetBulletChatListRes, GetBulletChatParam } from "@/dto.ts";
-import { checkValue, optionalInt } from "@/global/check.ts";
+import { checkValue, optionalInt } from "@/common/check.ts";
 import { genGetBulletChart } from "../-sql/bullet.sql.ts";
 import { appConfig } from "@/config.ts";
 import routeGroup from "../_route.ts";

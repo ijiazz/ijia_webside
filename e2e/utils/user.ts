@@ -1,8 +1,8 @@
 import { dbPool } from "@/db/client.ts";
-import { createUser, addRoleToUser } from "@ijia/data/query";
+import { createUser, addRoleToUser } from "@ijia/school-db/query";
 import { api } from "@/utils/fetch.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
-import { DbPlaUserCreate, Platform } from "@ijia/data/db";
+import { DbPlaUserCreate, Platform } from "@ijia/school-db/db";
 import { getAppURLFromRoute } from "@/utils/app.ts";
 import { BrowserContext } from "@playwright/test";
 import { setContextLogin } from "./browser.ts";

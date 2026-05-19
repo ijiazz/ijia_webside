@@ -1,5 +1,5 @@
 import { HomePageRes, GodPlatformDto } from "@/dto.ts";
-import { optionalPositiveInt, checkValue } from "@/global/check.ts";
+import { optionalPositiveInt, checkValue } from "@/common/check.ts";
 import { dbPool } from "@/db/client.ts";
 import { select } from "@asla/yoursql";
 

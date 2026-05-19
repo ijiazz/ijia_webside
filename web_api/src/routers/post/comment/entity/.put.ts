@@ -1,8 +1,8 @@
 import { CreatePostCommentResponse } from "@/dto.ts";
 import routeGroup from "../_route.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { createComment, getUserCanCreateCommentLimit } from "../-sql/post_comment.sql.ts";
-import { checkValueAsync, optionalInt } from "@/global/check.ts";
+import { checkValueAsync, optionalInt } from "@/common/check.ts";
 import { appConfig, ENV } from "@/config.ts";
 import { integer } from "@asla/wokao";
 

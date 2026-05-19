@@ -1,8 +1,8 @@
-import { HonoContext } from "@/global/context.ts";
+import { HonoContext } from "@/common/context.ts";
 import { HTTPException } from "hono/http-exception";
 import { getCookie, setCookie } from "hono/cookie";
 import { UserInfo } from "./userInfo.ts";
-import { RequiredLoginError } from "@/global/errors.ts";
+import { RequiredLoginError } from "@/common/errors.ts";
 import { getValidUserSampleInfoByUserId } from "@/sql/user.ts";
 import { REQUEST_AUTH_KEY } from "@/dto.ts";
 import { Role } from "./roles.ts";

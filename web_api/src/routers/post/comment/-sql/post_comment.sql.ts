@@ -1,6 +1,6 @@
 import { dbPool } from "@/db/client.ts";
 import { CreateCommentData, CreateCommentItemData } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
 

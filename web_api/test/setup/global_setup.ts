@@ -1,6 +1,6 @@
 import { TestProject } from "vitest/node";
 
-import { createInitIjiaDb } from "@ijia/data/testlib";
+import { createInitIjiaDb } from "@ijia/school-db/testlib";
 import { DB_CONNECT_INFO } from "#test/utils/db.ts";
 
 const PUBLIC_DB_NAME = "test_ijia_public";

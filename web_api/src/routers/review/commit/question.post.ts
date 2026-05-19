@@ -1,4 +1,4 @@
-import { checkValue } from "@/global/check.ts";
+import { checkValue } from "@/common/check.ts";
 import routeGroup from "../_route.ts";
 import { COMMIT_REVIEW_PARAM_SCHEMA } from "../-utils/commit.schema.ts";
 import { requiredRoles, Role } from "@/middleware/auth.ts";

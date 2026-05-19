@@ -2,7 +2,7 @@ import { beforeEach, expect } from "vitest";
 import { test, Context } from "../fixtures/hono.ts";
 import userRoutes from "@/routers/user/mod.ts";
 import { HoFetch } from "@asla/hofetch";
-import { signAccessToken } from "@/global/jwt.ts";
+import { signAccessToken } from "@/common/jwt.ts";
 import { afterTime } from "evlib";
 
 import { insertIntoValues } from "@/sql/utils.ts";

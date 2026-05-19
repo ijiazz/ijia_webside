@@ -1,4 +1,4 @@
-import { checkValue, optionalInt } from "@/global/check.ts";
+import { checkValue, optionalInt } from "@/common/check.ts";
 import routeGroup from "./_route.ts";
 import { ExpectType, optional } from "@asla/wokao";
 import { GetPostCommentListParam, PostCommentResponse } from "@/dto.ts";

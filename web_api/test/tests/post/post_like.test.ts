@@ -16,7 +16,7 @@ import {
 import { select } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
 import postRoutes from "@/routers/post/mod.ts";
-import { ReviewStatus } from "@ijia/data/db";
+import { ReviewStatus } from "@ijia/school-db/db";
 import { commitPostReview, setPostToReviewing } from "@/routers/review/mod.ts";
 import "#test/asserts/review.ts";
 

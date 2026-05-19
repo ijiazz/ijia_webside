@@ -1,9 +1,9 @@
 import { expect, beforeEach } from "vitest";
 import { test, Context, JWT_TOKEN_KEY, Api } from "../../fixtures/hono.ts";
-import { USER_LEVEL, Platform, DbPlaUserCreate } from "@ijia/data/db";
+import { USER_LEVEL, Platform, DbPlaUserCreate } from "@ijia/school-db/db";
 
 import { insertPosts } from "../../__mocks__/posts.ts";
-import { signAccessToken } from "@/global/jwt.ts";
+import { signAccessToken } from "@/common/jwt.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 import { dbPool } from "@/db/client.ts";
 import godListRoute from "@/routers/post/god_list.get.ts";

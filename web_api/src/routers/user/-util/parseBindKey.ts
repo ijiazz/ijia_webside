@@ -1,4 +1,4 @@
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 
 export function parserBinKey(bindKey: string) {
   const idx = bindKey.indexOf("-");

@@ -1,5 +1,5 @@
 import { CreateCommentItemData, GetPostCommentListOption } from "@/dto.ts";
-import { DbPostComment } from "@ijia/data/db";
+import { DbPostComment } from "@ijia/school-db/db";
 import { Api, JWT_TOKEN_KEY } from "#test/fixtures/hono.ts";
 import { preparePost } from "./prepare_post.ts";
 import { createComment } from "@/routers/post/comment/-sql/post_comment.sql.ts";

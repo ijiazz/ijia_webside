@@ -1,9 +1,9 @@
 import routeGroup from "../_route.ts";
-import { enumPlatform, Platform } from "@ijia/data/db";
+import { enumPlatform, Platform } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 import { enumType } from "@asla/wokao";
-import { checkValueAsync } from "@/global/check.ts";
-import { HttpError } from "@/global/errors.ts";
+import { checkValueAsync } from "@/common/check.ts";
+import { HttpError } from "@/common/errors.ts";
 import { bindPlatformAccount } from "../-sql/user.service.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";

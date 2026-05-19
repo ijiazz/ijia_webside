@@ -1,7 +1,7 @@
-import { Platform } from "@ijia/data/db";
+import { Platform } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
-import { checkValueAsync } from "@/global/check.ts";
-import { HttpError } from "@/global/errors.ts";
+import { checkValueAsync } from "@/common/check.ts";
+import { HttpError } from "@/common/errors.ts";
 import { getCheckerServer } from "@/services/douyin.ts";
 import { ENV } from "@/config.ts";
 import { select } from "@asla/yoursql";

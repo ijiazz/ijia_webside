@@ -1,6 +1,6 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context, JWT_TOKEN_KEY } from "../../fixtures/hono.ts";
-import { DbPostCreate } from "@ijia/data/db";
+import { DbPostCreate } from "@ijia/school-db/db";
 
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import { getPublicPostList } from "@/routers/post/-sql/post_list.sql.ts";

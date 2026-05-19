@@ -1,13 +1,13 @@
-import { ReviewStatus } from "@ijia/data/db";
+import { ReviewStatus } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { deleteFrom, update } from "@asla/yoursql";
 import { CreatePostParam, UpdatePostConfigParam, UpdatePostContentParam, TextStructure } from "@/dto.ts";
 import { QueryRowsResult } from "@asla/pg";
 import { setPostToReviewing } from "@/routers/review/mod.ts";
-import { TEXT_STRUCT_SCHEMA } from "@/global/schema.ts";
+import { TEXT_STRUCT_SCHEMA } from "@/common/schema.ts";
 
 export async function createPost(userId: number, param: CreatePostParam): Promise<{ id: number }> {
   param.content_text_structure = checkTypeCopy(param.content_text_structure, optional(TEXT_STRUCT_SCHEMA));

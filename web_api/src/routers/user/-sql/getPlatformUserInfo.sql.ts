@@ -1,8 +1,8 @@
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { PlatformUserBasicInfoCheckResult } from "@/services/douyin.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
-import { Platform } from "@ijia/data/db";
+import { Platform } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 import { checkSignatureStudentId } from "./user.service.ts";
 

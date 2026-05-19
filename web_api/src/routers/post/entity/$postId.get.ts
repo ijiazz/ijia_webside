@@ -1,8 +1,8 @@
 import { GetPostResponse } from "@/dto.ts";
-import { checkValue, queryInt } from "@/global/check.ts";
+import { checkValue, queryInt } from "@/common/check.ts";
 import { getPost } from "../-sql/post_list.sql.ts";
 import routeGroup from "../_route.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 
 export default routeGroup.create({
   method: "GET",

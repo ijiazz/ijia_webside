@@ -2,7 +2,7 @@ import { Context, MiddlewareHandler, Next } from "hono";
 import { ServeStaticOptions } from "hono/serve-static";
 import path from "node:path";
 import { HTTPException } from "hono/http-exception";
-import { createFileStream } from "@ijia/data/oss";
+import { createFileStream } from "@ijia/school-db/oss";
 import fs from "node:fs/promises";
 import { Stats } from "node:fs";
 import { contentType } from "@std/media-types";

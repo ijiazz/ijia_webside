@@ -1,6 +1,6 @@
 import { Role, UserInfo } from "@/middleware/auth.ts";
 import { ReviewTargetType } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 
 export function checkPermission(type: string, userInfo: UserInfo): Promise<boolean> {
   switch (type) {

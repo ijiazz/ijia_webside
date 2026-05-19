@@ -1,7 +1,7 @@
-import { checkValue, queryInt } from "@/global/check.ts";
+import { checkValue, queryInt } from "@/common/check.ts";
 import routeGroup from "../_route.ts";
 import { updateQuestion } from "../_sql/question_update.sql.ts";
-import { checkValueAsync } from "@/global/schema.ts";
+import { checkValueAsync } from "@/common/schema.ts";
 import { UPDATE_QUESTION_PARAM_SCHEMA } from "../_utils/update.schema.ts";
 
 export default routeGroup.create({

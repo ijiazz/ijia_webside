@@ -7,7 +7,7 @@
 - Hono: 后端框架，类似于 Express，但更轻量，支持 Deno 和 Node。
 - @asla/yoursql(https://github.com/asnowc/yoursql): SQL 生成工具库，提供链式调用来构建 SQL 语句，支持参数化查询。
 - @asla/wokao(https://github.com/asnowc/wokao): 参数校验库
-- @ijia/data：项目内部的数据库相关封装，提供连接池、常量、类型定义等。
+- @ijia/school-db：项目内部的数据库相关封装，提供连接池、常量、类型定义等。
 
 ## 添加 API 语句的约定
 
@@ -43,7 +43,7 @@ export * from "./profile.get.ts";
 \_route.ts 文件示例：
 
 ```ts
-import { HonoContext } from "@/global/context.ts";
+import { HonoContext } from "@/common/context.ts";
 import { RouteGroup } from "@/lib/route.ts";
 
 const routeGroup = new RouteGroup<HonoContext>();
@@ -53,7 +53,7 @@ export default routeGroup;
 profile.get.ts 文件示例：
 
 ```ts
-import { checkValue, optionalInt } from "@/global/check.ts";
+import { checkValue, optionalInt } from "@/common/check.ts";
 import { getUserInfo } from "./-sql/user.service.ts";
 import routeGroup from "./_route.ts";
 

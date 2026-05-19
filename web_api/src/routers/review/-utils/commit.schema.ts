@@ -1,4 +1,4 @@
-import { queryInt } from "@/global/check.ts";
+import { queryInt } from "@/common/check.ts";
 import { ExpectType, InferExpect, optional } from "@asla/wokao";
 
 export const COMMIT_REVIEW_PARAM_SCHEMA = {

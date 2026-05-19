@@ -1,7 +1,7 @@
 import routeGroup from "./_route.ts";
 import { requiredLogin } from "@/middleware/auth.ts";
 import { UploadFileResult, UploadMethod } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 import { uploadQuestion } from "./_utils/uploadQuestion.ts";
 
 type Param = {

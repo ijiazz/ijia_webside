@@ -1,6 +1,6 @@
 import { ENV, RunMode } from "@/config.ts";
-import { HttpError } from "@/global/errors.ts";
-import { getOSS, SaveResult } from "@ijia/data/oss";
+import { HttpError } from "@/common/errors.ts";
+import { getOSS, SaveResult } from "@ijia/school-db/oss";
 
 export async function uploadToTemp(
   stream: ReadableStream<Uint8Array>,

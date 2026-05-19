@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect } from "vitest";
 import { Context, test } from "../../fixtures/hono.ts";
-import { ReviewStatus, TextStructureType } from "@ijia/data/db";
+import { ReviewStatus, TextStructureType } from "@ijia/school-db/db";
 
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import {

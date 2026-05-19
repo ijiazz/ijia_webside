@@ -1,8 +1,8 @@
-import { enumPlatform, Platform } from "@ijia/data/db";
+import { enumPlatform, Platform } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 import { array, enumType, optional, stringMatch } from "@asla/wokao";
-import { checkValueAsync } from "@/global/check.ts";
-import { HttpError } from "@/global/errors.ts";
+import { checkValueAsync } from "@/common/check.ts";
+import { HttpError } from "@/common/errors.ts";
 import { getCheckerServer, getUerSecIdFromShareUrl, PlatformUserBasicInfoCheckResult } from "@/services/douyin.ts";
 import { toErrorStr } from "evlib";
 import { ENV } from "@/config.ts";

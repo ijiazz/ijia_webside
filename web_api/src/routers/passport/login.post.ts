@@ -1,12 +1,12 @@
 import { dbPool } from "@/db/client.ts";
 import routeGroup from "./_route.ts";
-import { signAccessToken } from "@/global/jwt.ts";
+import { signAccessToken } from "@/common/jwt.ts";
 import { REQUEST_AUTH_KEY } from "@ijia/api-types";
 import { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import { v } from "@/sql/utils.ts";
-import { HttpError } from "@/global/errors.ts";
-import { checkValueAsync } from "@/global/check.ts";
+import { HttpError } from "@/common/errors.ts";
+import { checkValueAsync } from "@/common/check.ts";
 
 // 仅用于 e2e 测试，实际登录逻辑会更复杂
 export default routeGroup.create({

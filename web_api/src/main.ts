@@ -4,7 +4,7 @@ import { dbPool } from "@/db/client.ts";
 import { listenHttpServer, ListenOption } from "@/bootstrap/listen.ts";
 import { redisPool } from "@/services/redis.ts";
 import { watchIjia } from "@/services/waitch_live/user_live.service.ts";
-import { getOSS } from "@ijia/data/oss";
+import { getOSS } from "@ijia/school-db/oss";
 import { unrefTimer } from "./lib/timer.ts";
 
 async function bootstrap() {

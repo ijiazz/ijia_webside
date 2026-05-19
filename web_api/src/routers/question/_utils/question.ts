@@ -1,5 +1,5 @@
 import { QuestionPublic, QuestionAttachment, QuestionOption } from "@/dto.ts";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 
 export function parseCursorId(cursor: string) {
   const idNumber = Number.parseInt(cursor);

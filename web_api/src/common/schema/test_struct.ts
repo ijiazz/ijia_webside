@@ -1,5 +1,5 @@
 import { integer, TypeCheckFn, CheckTypeError, getBasicType, checkTypeCopy } from "@asla/wokao";
-import { TextStructure, TextStructureType } from "@ijia/data/db";
+import { TextStructure, TextStructureType } from "@ijia/school-db/db";
 
 export const TEXT_STRUCT_SCHEMA: TypeCheckFn<TextStructure[] | null> = (input, option) => {
   if (!(input instanceof Array)) {

@@ -1,7 +1,7 @@
-import { verifyAccessToken, AccessUserData, AccessToken } from "@/global/jwt.ts";
-import { HttpError, RequiredLoginError } from "@/global/errors.ts";
+import { verifyAccessToken, AccessUserData, AccessToken } from "@/common/jwt.ts";
+import { HttpError, RequiredLoginError } from "@/common/errors.ts";
 import { getValidUserSampleInfoByUserId, SampleUserInfo } from "@/sql/user.ts";
-import { getUserRoleNameList, UserWithRole } from "@ijia/data/query";
+import { getUserRoleNameList, UserWithRole } from "@ijia/school-db/query";
 import { Role } from "./roles.ts";
 import { setTimeoutUnRef } from "@/lib/timer.ts";
 

@@ -1,6 +1,6 @@
-import { HttpError, RequiredLoginError } from "@/global/errors.ts";
+import { HttpError, RequiredLoginError } from "@/common/errors.ts";
 
-import { getValidUserSampleInfoByUserId as getUserById, SampleUserInfo } from "@ijia/data/query";
+import { getValidUserSampleInfoByUserId as getUserById, SampleUserInfo } from "@ijia/school-db/query";
 
 /** 从数据库获取有效用户信息 */
 export async function getValidUserSampleInfoByUserId(userId: number): Promise<SampleUserInfo> {

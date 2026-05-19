@@ -1,4 +1,4 @@
-import { checkValue, queryInt } from "@/global/check.ts";
+import { checkValue, queryInt } from "@/common/check.ts";
 import routeGroup from "../_route.ts";
 import { deleteComment } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 

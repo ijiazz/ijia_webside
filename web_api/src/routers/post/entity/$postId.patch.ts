@@ -1,6 +1,6 @@
-import { checkValue } from "@/global/check.ts";
+import { checkValue } from "@/common/check.ts";
 import { CheckTypeError, getBasicType, integer, optional, TypeCheckFn } from "@asla/wokao";
-import { HttpError } from "@/global/errors.ts";
+import { HttpError } from "@/common/errors.ts";
 
 import routeGroup from "../_route.ts";
 import { UpdatePostConfigParam, UpdatePostContentParam } from "@/dto.ts";
