@@ -1,4 +1,4 @@
-import { Role, UserInfo } from "@/middleware/auth.ts";
+import { Role, UserInfo } from "@/common/userInfo.ts";
 import { ReviewTargetType } from "@/dto.ts";
 import { HttpError } from "@/common/errors.ts";
 

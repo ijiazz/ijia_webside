@@ -2,7 +2,7 @@ import { Context, Hono } from "hono";
 import { ENV } from "@/config.ts";
 import path from "node:path";
 import { HTTPException } from "hono/http-exception";
-import { Role, UserInfo } from "@/middleware/auth.ts";
+import { Role, UserInfo, createUserInfo } from "@/common/userInfo.ts";
 import { getCookie } from "hono/cookie";
 import { getBucket } from "@ijia/school-db/oss";
 import { REQUEST_AUTH_KEY } from "@/dto.ts";
@@ -26,7 +26,7 @@ export async function addServeStatic(hono: Hono) {
     "/file/*",
     async (context, next) => {
       const ctx = context as unknown as FileContext;
-      const userInfo = new UserInfo(getCookie(context, REQUEST_AUTH_KEY));
+      const userInfo = createUserInfo(getCookie(context, REQUEST_AUTH_KEY));
       ctx.set("userInfo", userInfo);
 
       const pathname = ctx.req.path;

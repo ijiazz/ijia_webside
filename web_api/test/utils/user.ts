@@ -1,4 +1,4 @@
-import { Role } from "@/middleware/auth.ts";
+import { Role } from "@/common/userInfo.ts";
 import { signAccessToken } from "@/common/jwt.ts";
 import { newTestUser } from "@ijia/school-db/testlib";
 

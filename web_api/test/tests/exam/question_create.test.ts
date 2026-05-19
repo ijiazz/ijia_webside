@@ -4,7 +4,7 @@ import questionRoutes from "@/routers/question/mod.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import { createQuestion, createSampleQuestion, getQuestion, getUserQuestionCount } from "#test/utils/question.ts";
 import { CreateQuestionParam, ExamQuestionType, QuestionPublic, ReviewStatus, TextStructureType } from "@/dto.ts";
-import { Role } from "@/middleware/auth.ts";
+import { Role } from "@/common/userInfo.ts";
 import { v } from "@/sql/utils.ts";
 import "#test/asserts/review.ts";
 

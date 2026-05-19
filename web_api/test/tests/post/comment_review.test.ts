@@ -2,7 +2,7 @@ import { beforeEach, expect } from "vitest";
 import { Api, Context, test } from "../../fixtures/hono.ts";
 import { CommitReviewParam, CommitReviewResult, ReviewTargetType } from "@/dto.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
-import { Role } from "@/middleware/auth.ts";
+import { Role } from "@/common/userInfo.ts";
 import { setPostCommentToReviewing } from "@/routers/review/mod.ts";
 import { prepareCommentPost, reportComment, setCommentLike, getSelfPost } from "#test/utils/post.ts";
 import { commentRoutes, postRoutes, reviewRoutes } from "@/routers/mod.ts";

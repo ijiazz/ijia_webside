@@ -1,5 +1,5 @@
-import { UserInfo } from "@/middleware/auth.ts";
 import { Context } from "hono";
+import { UserInfo } from "./userInfo.ts";
 
 type HonoVariables = {
   userInfo: UserInfo;

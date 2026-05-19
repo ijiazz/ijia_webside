@@ -1,10 +1,11 @@
 import { checkValue, queryInt } from "@/common/check.ts";
 import routeGroup from "./_route.ts";
-import { requiredLogin, requiredRoles, Role } from "@/middleware/auth.ts";
+import { requiredLogin, requiredRoles } from "@/middleware/auth.ts";
 import { GetUserQuestionResult } from "@/dto.ts";
 import { HttpError } from "@/common/errors.ts";
 import { getQuestionDetailForReview } from "./_sql/question_get.sql.ts";
 import { getQuestionIdFromReviewId } from "./_sql/review_get.sql.ts";
+import { Role } from "@/common/userInfo.ts";
 
 export default routeGroup.create({
   method: "GET",

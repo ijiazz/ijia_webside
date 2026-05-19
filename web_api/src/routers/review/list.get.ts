@@ -1,4 +1,4 @@
-import { requiredRoles, Role } from "@/middleware/auth.ts";
+import { requiredRoles } from "@/middleware/auth.ts";
 import routeGroup from "./_route.ts";
 import { GetReviewListOption, reviewSelect } from "./-sql/get_review_list.ts";
 import { ListResult, ReviewItem } from "@/dto.ts";
@@ -6,6 +6,7 @@ import { v } from "@/sql/utils.ts";
 import { dbPool } from "@/db/client.ts";
 import { MultipleQueryResult } from "@asla/pg";
 import { select } from "@asla/yoursql";
+import { Role } from "@/common/userInfo.ts";
 
 export default routeGroup.create({
   method: "GET",

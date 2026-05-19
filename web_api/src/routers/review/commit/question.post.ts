@@ -1,12 +1,13 @@
 import { checkValue } from "@/common/check.ts";
 import routeGroup from "../_route.ts";
 import { COMMIT_REVIEW_PARAM_SCHEMA } from "../-utils/commit.schema.ts";
-import { requiredRoles, Role } from "@/middleware/auth.ts";
+import { requiredRoles,   } from "@/middleware/auth.ts";
 import { CommitReviewResult, ReviewTargetType } from "@/dto.ts";
 import { commitAndUpdateQuestionReview } from "../-sql/question.ts";
 import { getReviewNext } from "../-sql/get_review_list.ts";
 import { optional } from "@asla/wokao";
 import { ADVANCED_CONFIG_SCHEMA, UPDATE_QUESTION_PARAM_SCHEMA } from "@/routers/question/mod.ts";
+import { Role } from "@/common/userInfo.ts";
 
 export default routeGroup.create({
   method: "POST",

@@ -4,7 +4,7 @@ import { postRoutes, reviewRoutes } from "@/routers/mod.ts";
 
 import { CommitReviewParam, CommitReviewResult, ReviewStatus, ReviewTargetType } from "@/dto.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
-import { Role } from "@/middleware/auth.ts";
+import { Role } from "@/common/userInfo.ts";
 import { createPost, prepareCommentPost, preparePost } from "#test/utils/post.ts";
 import { setPostToReviewing } from "@/routers/review/mod.ts";
 import { commitReview, getReviewNext } from "../../utils/review.ts";
