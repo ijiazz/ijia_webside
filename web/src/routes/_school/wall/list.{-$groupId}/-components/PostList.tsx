@@ -1,11 +1,11 @@
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 import { GetPostListParam, PublicPost } from "@/api.ts";
 import { css } from "@emotion/css";
 import { useContext, useEffect, useRef } from "react";
 import { EditOutlined } from "@ant-design/icons";
 import { useLayoutDirection, LayoutDirection, useThemeToken } from "@/provider/mod.tsx";
-import { ROUTES } from "@/app.ts";
+
 import wallCoverSrc from "../../-img/wall_cover.webp";
 import { CreatePostBtn } from "../../-components/PublishBtn.tsx";
 import { ImageFitCover } from "@/lib/components/ImgFitCover.tsx";
@@ -18,6 +18,7 @@ import { api } from "@/request/client.ts";
 import { dateToString } from "@/common/date.ts";
 import { LoaderIndicator, LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
 import { useElementOverScreen } from "@/lib/hook/observer.ts";
+import { getLoginURL } from "@/common/host.ts";
 type PostListProps = {
   userId?: number;
   onOpenComment?: (postId: number) => void;
@@ -27,7 +28,6 @@ export function PublicPostList(props: PostListProps) {
   const filter = useContext(PostQueryFilterContext);
   const group = filter.group;
   const navigate = useNavigate();
-  const location = useLocation();
 
   const itemsCtrl = useRef<PostListHandle>(null);
 
@@ -57,7 +57,7 @@ export function PublicPostList(props: PostListProps) {
     if (currentUser) {
       navigate({ to: "/wall/publish", viewTransition: true });
     } else {
-      navigate({ href: ROUTES.Login + `?redirect=${location.pathname}`, viewTransition: true });
+      navigate({ href: getLoginURL(globalThis.location.origin), viewTransition: true });
     }
   };
 

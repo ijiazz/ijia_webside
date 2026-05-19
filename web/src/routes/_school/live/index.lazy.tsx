@@ -10,7 +10,6 @@ import { VLink } from "@/lib/components/VLink.tsx";
 import { PostContent, PostHeader } from "../-components/post.tsx";
 import { useEffect, useRef } from "react";
 import { ExportOutlined } from "@ant-design/icons";
-import { ROUTES } from "@/app.ts";
 import { api } from "@/request/client.ts";
 import { CardLayout } from "@/lib/components/card/card.tsx";
 import { getLoginURL } from "@/common/host.ts";

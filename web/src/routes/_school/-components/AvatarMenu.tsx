@@ -1,31 +1,21 @@
 import { Avatar, Button, Dropdown } from "antd";
 import { LogoutOutlined, UserOutlined, HomeOutlined } from "@ant-design/icons";
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { css, cx } from "@emotion/css";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { IS_MOBILE_LAYOUT, useThemeToken } from "@/provider/mod.tsx";
 import { User } from "@/api.ts";
-import { ROUTES } from "@/app.ts";
-import { useMemo } from "react";
-import { getLogoutURL } from "@/common/host.ts";
+import { getLoginURL, getLogoutURL } from "@/common/host.ts";
 
 export function AvatarMenu(props: { user: User | null }) {
   const { user } = props;
 
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const theme = useThemeToken();
-
-  const nav = useMemo(() => {
-    const url = new URL(ROUTES.Login, window.location.origin);
-    url.searchParams.set("redirect", pathname);
-
-    return url.pathname + url.search;
-  }, [pathname]);
 
   if (!user)
     return (
-      <VLink to={nav}>
+      <VLink to={getLoginURL(globalThis.location.origin)}>
         <Button type="text" style={{ color: theme.colorTextSecondary }}>
           登录
         </Button>

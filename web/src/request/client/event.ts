@@ -1,6 +1,6 @@
-import { goRedirectLoginPath } from "@/app.ts";
 import { getResponseErrorInfo } from "./util.ts";
 import { parseISODate } from "@/common/date.ts";
+import { getLoginURL } from "@/common/host.ts";
 
 export const IGNORE_ERROR_MSG = Symbol("ignore error message");
 export const IGNORE_UNAUTHORIZED_REDIRECT = Symbol("ignore unauthorized redirect");
@@ -45,7 +45,7 @@ export class ApiErrorEvent extends Event {
     const isUnauthorized = this.#response.status === 401 && this.#getError()?.code === "REQUIRED_LOGIN";
     if (isUnauthorized) {
       if (!this.#response.ignoreUnauthorizedRedirect) {
-        return { url: goRedirectLoginPath() };
+        return { url: getLoginURL(globalThis.location.origin) };
       } else {
         return {
           isIgnore: true,

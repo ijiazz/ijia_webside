@@ -1,13 +1,13 @@
-import { createLazyFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { createLazyFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { PostGroupResponse } from "@/api.ts";
 import { Button, ButtonProps, ConfigProvider, ConfigProviderProps, MenuProps, Result } from "antd";
 import { useContext, useMemo } from "react";
 import { PlusOutlined } from "@ant-design/icons";
-import { ROUTES } from "@/app.ts";
 import { AdaptiveMenuLayout } from "@/routes/-layout/AdaptiveMenuLayout.tsx";
 import { AntdStaticProvider, LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
 import { PostQueryFilter, PostQueryFilterContext } from "./-components/PostQueryFilterContext.tsx";
 import { BasicUserContext } from "../../-context/UserContext.tsx";
+import { getLoginURL } from "@/common/host.ts";
 
 export const Route = createLazyFileRoute("/_school/wall/list/{-$groupId}")({
   component: PostLayout,
@@ -121,7 +121,6 @@ function PostLayout() {
 function PublishBtn(props: Omit<ButtonProps, "onClick" | "icon"> & { isLoggedIn?: boolean }) {
   const { isLoggedIn, ...rest } = props;
   const navigate = useNavigate();
-  const location = useLocation();
   return (
     <Button
       {...rest}
@@ -131,7 +130,7 @@ function PublishBtn(props: Omit<ButtonProps, "onClick" | "icon"> & { isLoggedIn?
         if (isLoggedIn) {
           navigate({ to: "/wall/publish", viewTransition: true });
         } else {
-          navigate({ href: ROUTES.Login + `?redirect=${location.pathname}`, viewTransition: true });
+          navigate({ href: getLoginURL(globalThis.location.origin), viewTransition: true });
         }
       }}
     />
