@@ -7,7 +7,7 @@ import { IS_MOBILE_LAYOUT, useThemeToken } from "@/provider/mod.tsx";
 import { User } from "@/api.ts";
 import { ROUTES } from "@/app.ts";
 import { useMemo } from "react";
-import { getLoginURL } from "@/common/host.ts";
+import { getLogoutURL } from "@/common/host.ts";
 
 export function AvatarMenu(props: { user: User | null }) {
   const { user } = props;
@@ -58,7 +58,7 @@ export function AvatarMenu(props: { user: User | null }) {
             key: "logout",
             icon: <LogoutOutlined />,
             label: "退出登录",
-            onClick: () => navigate({ href: getLoginURL(globalThis.location.origin), viewTransition: true }),
+            onClick: () => navigate({ href: getLogoutURL(globalThis.location.origin), viewTransition: true }),
           },
         ],
       }}

@@ -13,4 +13,9 @@ export const getLoginURL = (redirect?: string) => {
   return url.toString();
 };
 
+export const getLogoutURL = (redirect?: string) => {
+  const url = new URL(ACCOUNT_CENTER_URL + "/logout");
+  if (redirect) url.searchParams.set("redirect", redirect);
+  return url.toString();
+};
 export const SECURITY_SETTING_URL = `${ACCOUNT_CENTER_URL}/security`;
