@@ -1,5 +1,5 @@
 import { HoFetch, createFetchSuite, InferFetchSuite, FetchSuiteBase, HoFetchStatusError } from "@asla/hofetch";
-import { ApiDefined } from "@/api.ts";
+import { ApiDefined, REQUEST_AUTH_KEY } from "@/api.ts";
 import { env } from "@/playwright.config.ts";
 export type Api = {
   [x: string]: FetchSuiteBase;
@@ -44,7 +44,7 @@ export function getResponseErrorInfo(body: unknown): { message?: string; code?: 
 export const JWT_TOKEN_KEY = Symbol("jwt_token");
 http.use(async function (ctx, next) {
   if (ctx[JWT_TOKEN_KEY]) {
-    ctx.headers.set("cookie", "access_token=" + ctx[JWT_TOKEN_KEY]);
+    ctx.headers.set("cookie", `${REQUEST_AUTH_KEY}=` + ctx[JWT_TOKEN_KEY]);
   }
   return next();
 });

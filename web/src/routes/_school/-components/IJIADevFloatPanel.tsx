@@ -11,26 +11,23 @@ export function IJIADevFloatMenu() {
 
   const user = useContext(BasicUserContext);
   return (
-    <div className={FloatButtonCSS}>
-      <Popover
-        content={<IJIADevFloatMenuContent />}
-        title="IJIA Dev"
-        trigger="click"
-        placement="bottomLeft"
-        open={open}
-        onOpenChange={setOpen}
-      >
-        <Button type="primary" shape="round" icon={<BugOutlined />}>
-          {user ? <Typography.Text type="secondary">{`UID ${user.user_id}`}</Typography.Text> : "当前没有用户会话"}
-        </Button>
-      </Popover>
-    </div>
+    <Popover
+      content={<IJIADevFloatMenuContent />}
+      title="IJIA Dev"
+      trigger="click"
+      placement="bottomLeft"
+      open={open}
+      onOpenChange={setOpen}
+    >
+      <Button shape="round" icon={<BugOutlined />}>
+        {user ? <Typography.Text type="secondary">{`UID：${user.user_id}`}</Typography.Text> : "当前没有用户会话"}
+      </Button>
+    </Popover>
   );
 }
 type IJIADevFloatMenuContentProps = {};
 
 function IJIADevFloatMenuContent(props: IJIADevFloatMenuContentProps) {
-  const user = useContext(BasicUserContext);
   const [email, setEmail] = useState<string>("");
   const { message } = useAntdStatic();
   const { mutate, isPending } = useMutation({
@@ -69,13 +66,6 @@ function IJIADevFloatMenuContent(props: IJIADevFloatMenuContentProps) {
     </div>
   );
 }
-
-const FloatButtonCSS = css`
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 1200;
-`;
 
 const PanelCSS = css`
   width: min(320px, calc(100vw - 48px));

@@ -1,11 +1,10 @@
-import { resolve } from "node:path/posix";
 import { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { ENV } from "@/config.ts";
 import { HTTPException } from "hono/http-exception";
+import path from "node:path";
 
-const pkgRoot = new URL(import.meta.url);
-pkgRoot.pathname = resolve(pkgRoot.pathname, "../../../..");
+const pkgRoot = path.resolve(import.meta.dirname!, "..");
 const baseDir = pkgRoot.toString();
 
 export function errorHandler(error: unknown, ctx: Context): Response | Promise<Response> {
@@ -24,9 +23,10 @@ type StackOption = {
 };
 function createErrorJson(error: any, stackOption: StackOption = {}): ErrorJson {
   if (error instanceof Error) {
-    let stack = error.stack;
-    if (stack && stackOption.showStack) {
-      if (stackOption.baseDir) stack = stack.replaceAll(stackOption.baseDir, "");
+    let stack: string | undefined;
+    if (error.stack && stackOption.showStack) {
+      if (stackOption.baseDir) stack = error.stack.replaceAll(stackOption.baseDir, "");
+      else stack = error.stack;
     }
 
     return {

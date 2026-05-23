@@ -12,7 +12,7 @@ import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
 import { BasicUserContext } from "./-context/UserContext.tsx";
 import { LoaderData } from "./route.tsx";
 import { GlobalAlert } from "@/components/page_state/Alert.tsx";
-import { IJIADevFloatMenu } from "@/routes/_school/-components/IJIADevFloatPanel.tsx";
+import { IJIADevFloatMenu } from "./-components/IJIADevFloatPanel.tsx";
 
 export const Route = createLazyFileRoute("/_school")({
   component: () => {
@@ -22,7 +22,6 @@ export const Route = createLazyFileRoute("/_school")({
         <HoFetchProvider>
           <GlobalAlert>
             <BasicUserContext value={userInfo}>
-              {import.meta.env.DEV && <IJIADevFloatMenu />}
               <UserLayout />
             </BasicUserContext>
           </GlobalAlert>
@@ -87,6 +86,7 @@ function UserLayout(props: PropsWithChildren<{}>) {
       }}
       rightExtra={
         <div style={{ display: "flex", gap: 8, marginRight: 8, alignItems: "center" }}>
+          {import.meta.env.DEV && <IJIADevFloatMenu />}
           <Tooltip title={themeCtrl.mode === "dark" ? "切换到亮色主题" : "切换到暗色主题"}>
             <DayNightSwitch
               checked={themeCtrl.mode === "dark"}

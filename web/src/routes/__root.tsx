@@ -52,19 +52,24 @@ export const Route = createRootRoute({
   pendingComponent: PageLoading,
 });
 
-type VersionResponse = {
-  nextVersion: string;
-};
-async function checkVersion() {
+async function checkVersion(): Promise<string | null> {
   const VERSION_QUERY_OPTION = {
     queryKey: ["app", "version"],
-    queryFn: (): Promise<VersionResponse> => fetch("/version.json").then((res) => res.json()),
+    queryFn: async (): Promise<Date | null> => {
+      const res = await fetch("/");
+      const lastModified = res.headers.get("last-modified");
+      if (lastModified) {
+        return new Date(lastModified);
+      } else {
+        return null;
+      }
+    },
     staleTime: 10 * 60 * 1000, // 10分钟
   } satisfies FetchQueryOptions;
 
   const result = await queryClient.fetchQuery(VERSION_QUERY_OPTION);
-
-  const newest = new Date(result.nextVersion).getTime();
-
-  return BUILD_TIME.getTime() < newest ? result.nextVersion : null;
+  if (!result) {
+    return null;
+  }
+  return BUILD_TIME.getTime() < result.getTime() ? result.toISOString() : null;
 }
