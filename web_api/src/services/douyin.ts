@@ -5,8 +5,8 @@ import { HttpError } from "@/common/errors.ts";
 import { toErrorStr } from "evlib";
 import { HTTPException } from "hono/http-exception";
 import { INTERNAL_MESSAGE_TOKEN } from "@/common/jwt.ts";
+import { REQUEST_AUTH_KEY } from "@ijia/api-types";
 
-const REQUEST_AUTH_KEY = "access_token";
 export async function getUerSecIdFromShareUrl(urlStr: string) {
   const checkUrl = new URL(urlStr);
   let url: URL;

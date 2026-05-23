@@ -1,24 +1,18 @@
 import { createLazyFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import { PropsWithChildren, useContext, useMemo, useRef } from "react";
 import { IjiaLogo } from "../../components/IjiaLogo.tsx";
-import { Button, Tooltip } from "antd";
+import { Tooltip } from "antd";
 import { Outlet, useLocation } from "@tanstack/react-router";
 import { menus } from "../-layout/menus.tsx";
-import { getUserToken } from "@/common/user.ts";
 import { AvatarMenu } from "./-components/AvatarMenu.tsx";
-import {
-  AntdThemeProvider,
-  HoFetchProvider,
-  IS_MOBILE_LAYOUT,
-  useAntdStatic,
-  useThemeController,
-} from "@/provider/mod.tsx";
+import { AntdThemeProvider, HoFetchProvider, IS_MOBILE_LAYOUT, useThemeController } from "@/provider/mod.tsx";
 import { css } from "@emotion/css";
 import { MenuItem, RootLayout } from "../-layout/RootLayout.tsx";
 import { DayNightSwitch } from "@/lib/components/switch/DayNightSwitch.tsx";
 import { BasicUserContext } from "./-context/UserContext.tsx";
 import { LoaderData } from "./route.tsx";
 import { GlobalAlert } from "@/components/page_state/Alert.tsx";
+import { IJIADevFloatMenu } from "./-components/IJIADevFloatPanel.tsx";
 
 export const Route = createLazyFileRoute("/_school")({
   component: () => {
@@ -37,20 +31,9 @@ export const Route = createLazyFileRoute("/_school")({
   },
 });
 
-const IS_DEV = import.meta.env?.DEV;
-
 function UserLayout(props: PropsWithChildren<{}>) {
-  const { message } = useAntdStatic();
   const user = useContext(BasicUserContext);
 
-  const userToken = useMemo(() => getUserToken(), [user]);
-  const copyToken = (token: string) => {
-    const url = new URL(location.href);
-    url.searchParams.set("access_token", token);
-    const tokenUrl = url.toString();
-    navigator.clipboard.writeText(tokenUrl);
-    message.success("已复制个人访问 Token");
-  };
   const pathname = useLayoutPathname();
 
   const selectedKeys = useMemo(() => {
@@ -103,11 +86,7 @@ function UserLayout(props: PropsWithChildren<{}>) {
       }}
       rightExtra={
         <div style={{ display: "flex", gap: 8, marginRight: 8, alignItems: "center" }}>
-          {IS_DEV && userToken ? (
-            <Button type="dashed" onClick={() => copyToken(userToken)}>
-              Dev Mode
-            </Button>
-          ) : undefined}
+          {import.meta.env.DEV && <IJIADevFloatMenu />}
           <Tooltip title={themeCtrl.mode === "dark" ? "切换到亮色主题" : "切换到暗色主题"}>
             <DayNightSwitch
               checked={themeCtrl.mode === "dark"}

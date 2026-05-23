@@ -1,7 +1,9 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createFetchSuite, FetchSuiteBase, HoFetch, InferFetchSuite } from "@asla/hofetch";
 import { ApiDefined, FileAPI } from "@/api.ts";
-import { alert, errorHandler, versionHandler } from "./client/_middleware.ts";
+import { errorHandler } from "./client/middleware/errorHandler.ts";
+import { alert } from "./client/middleware/alert.ts";
+import { authRefresh } from "./client/middleware/auth_refresh.ts";
 
 export * from "./client/event.ts";
 export * from "./client/util.ts";
@@ -37,5 +39,5 @@ export const api: API = createFetchSuite<ApiDefined>(http, {
 export const fileAPI: FileAPISuite = createFetchSuite<FileAPI>(http);
 
 http.use(errorHandler);
+http.use(authRefresh);
 http.use(alert);
-http.use(versionHandler);
