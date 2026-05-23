@@ -68,9 +68,10 @@ test("游客禁止点赞", async function ({ page }) {
   await expect(firstBtn).toBeDisabled();
 });
 
-test("举报评论", async function ({ page }) {
+test("举报评论", async function ({ page, context }) {
   await createRootComment(postId, "comment", alice.token);
-  await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId, access_token: alice.token }));
+  await setContextLogin(context, alice.token);
+  await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId }));
   await page.getByRole("dialog").getByRole("button", { name: "more" }).click();
   await page.getByText("举报", { exact: true }).click();
   await page.getByRole("combobox", { name: "* 举报理由 :" }).click();
