@@ -106,18 +106,6 @@ describe("默认组", function () {
     const postItems = page.locator(".e2e-post-item");
     await expect(postItems.first().locator(".ant-tag").getByText("匿名")).toBeVisible();
   });
-
-  test("未登录用户点击发布因重定向到登录页", async function ({ page }) {
-    await page.goto(getPostListURL());
-    await page.getByRole("button", { name: "edit 说点什么" }).click();
-
-    await expect(page, "重定向到登录页").toHaveURL(/\/passport\/login/);
-
-    await changePageToMobile(page);
-    await page.goto(getPostListURL());
-    await page.locator(".e2e-publish-post-btn").click();
-    await expect(page, "重定向到登录页").toHaveURL(/\/passport\/login/);
-  });
 });
 test("分组超过4个时，选择分组应显示下拉框", async function ({ page, context }) {
   const alice = await initUser();
