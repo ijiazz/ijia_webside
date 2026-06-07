@@ -1,4 +1,13 @@
-import type { ReviewStatus, TextStructure } from "../common.ts";
+import type { ReviewStatus, TextStructure } from "../../common.ts";
+
+export type GetUserQuestionResult = {
+  item: ExamUserQuestionDetail;
+};
+
+export type ExamPublicQuestionStatsResult = {
+  reviewing_count: number;
+  passed_count: number;
+};
 
 export type QuestionAttachment = {
   text?: string;
@@ -40,18 +49,6 @@ export type QuestionPublic = QuestionBase & {
     total: number;
   };
   review?: ExamQuestionReviewInfo;
-};
-
-/** 考试中返回的题目 */
-export type QuestionPrivate = QuestionBase & {
-  index: number /** 返回索引，确保题库被记录 */;
-};
-
-/** 交卷后，查看作答记录的题目 */
-export type ExamPaperPublicQuestion = QuestionPublic & {
-  index: number;
-  selected: number[];
-  answer?: ExamQuestionAnswer;
 };
 
 export type ExamQuestionAnswer = {
