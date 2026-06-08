@@ -12,8 +12,8 @@ export interface ExaminationAPI {
   "GET /examination/:exam_id/info": {
     response: ExaminationInfoResult;
   };
-  /** 获取下一题 */
-  "GET /examination/:exam_id/next": {
+  /** 开始作答下一题 */
+  "POST /examination/:exam_id/next": {
     response: ExaminationQuestionResult;
   };
   /** 提交答案 */
