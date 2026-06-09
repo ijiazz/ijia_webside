@@ -7,33 +7,16 @@ import type {
   ExamQuestionOwner,
 } from "../question.ts";
 
-export type ExaminationAnswerParam = {
+export type ExaminationAnswerInput = {
   /** 题目序号 */
   index: number;
   /** 选择的选项索引列表 */
   answer: number[];
 };
 
-export type ExaminationQuestionResult = {
+export type ExaminationQuestionOutput = {
   /** 如果为空，表示全部做完 */
   question: QuestionPrivate | null;
-};
-
-export type ExaminationInfoResult = {
-  /** 考试名称 */
-  title: string;
-  /** 出题人信息 */
-  owner?: {
-    id: string;
-    nickname: string;
-    avatar_url?: string;
-  };
-  /** 允许开始时间 */
-  allow_time_start: string | null;
-  /** 允许结束时间 */
-  allow_time_end: string | null;
-  /** 题目数量 */
-  question_number: number;
 };
 
 /** 考试中返回的题目 */
@@ -69,11 +52,11 @@ export type ExaminationRecordQuestion = QuestionPrivate & {
   answer?: ExamQuestionAnswer;
 };
 
-export type ExaminationRecordResult = {
+export type ExaminationRecordOutput = {
   questions: ExaminationRecordQuestion[];
 };
 
-export type ExaminationResultResult = {
+export type ExaminationResultOutput = {
   /** 总用时（单位毫秒） */
   use_time_total: number;
   /** 正确题目数量 */
@@ -83,3 +66,16 @@ export type ExaminationResultResult = {
   /** 未答题目数量 */
   unanswered_number: number;
 };
+export type ExaminationCreateInput =
+  | {
+      template_id: string;
+    }
+  | {
+      /** 题目总数 */
+      question_total: number;
+    };
+export type ExaminationCreateOutput = {
+  examination_id: string;
+};
+
+export type ExaminationDeleteInput = {};
