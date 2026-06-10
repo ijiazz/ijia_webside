@@ -38,7 +38,10 @@ export interface ExaminationAPI {
     params: { exam_id: string };
     body: ExaminationDeleteInput;
   };
-
+  /** 开始考试 */
+  "POST /examination/:exam_id/start": {
+    params: { exam_id: string };
+  };
   /** 开始作答下一题 */
   "POST /examination/:exam_id/next": {
     params: { exam_id: string };
@@ -49,8 +52,8 @@ export interface ExaminationAPI {
     params: { exam_id: string };
     body: ExaminationAnswerInput;
   };
-  /** 交卷 */
-  "POST /examination/:exam_id/submit": {
+  /** 交卷(结束考试) */
+  "POST /examination/:exam_id/end": {
     params: { exam_id: string };
   };
 
