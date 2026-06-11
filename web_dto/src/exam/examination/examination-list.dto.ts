@@ -36,5 +36,5 @@ export type ExaminationInfoResult = {
   /** 允许结束时间 */
   allow_time_end: string | null;
   /** 题目数量 */
-  question_number: number;
+  question_number?: number;
 };

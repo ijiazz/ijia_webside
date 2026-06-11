@@ -45,7 +45,7 @@ export type ExaminationRecordQuestion = QuestionPrivate & {
   /** 所属用户 */
   user?: ExamQuestionOwner | null;
 
-  comment: {
+  comment?: {
     id: string;
     total: number;
   };
@@ -57,6 +57,8 @@ export type ExaminationRecordOutput = {
 };
 
 export type ExaminationResultOutput = {
+  /** 最终成绩 */
+  grade: number;
   /** 总用时（单位毫秒） */
   use_time_total: number;
   /** 正确题目数量 */
