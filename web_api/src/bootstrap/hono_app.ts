@@ -11,6 +11,7 @@ import {
   liveRoutes,
   reviewRoutes,
   questionRoutes,
+  examinationRoutes,
   uploadRoutes,
 } from "@/routers/mod.ts";
 import passportRoutes from "@/routers/passport/mod.ts";
@@ -35,6 +36,7 @@ export function createHonoApp() {
   liveRoutes.apply(hono, options);
   reviewRoutes.apply(hono, options);
   questionRoutes.apply(hono, options);
+  examinationRoutes.apply(hono, options);
   if (ENV.MODE === RunMode.E2E) {
     passportRoutes.apply(hono, options);
   }

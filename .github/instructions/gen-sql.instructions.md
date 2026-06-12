@@ -18,6 +18,18 @@ import { v } from "@/sql/utils.ts";
 const rows = await dbPool.queryRows(`SELECT * FROM class WHERE id=${v(PUBLIC_CLASS_ROOT_ID)}`);
 ```
 
+
+**v.gen`` 函数**
+
+使用 v.gen`` 函数可以将模板字符串的插槽自动用 v函数转换，避免 SQL 注入风险
+
+```ts
+import { v } from "@/sql/utils.ts";
+
+v.gen`SELECT * from class WHERE id=${PUBLIC_CLASS_ROOT_ID}`; // SELECT * from class WHERE id='some_value'
+v.gen`SELECT * from class WHERE id=${new String("'1'")}`; // SELECT * from class WHERE id='1'. 如果需要避免被 v 函数转换，可以使用 new String() 包装值
+```
+
 **直接使用 SQL 文本查询**
 
 ```ts
@@ -52,6 +64,7 @@ const sqlStr = select("class_id AS id, class_name")
   .where(`parent_class_id=${v(PUBLIC_CLASS_ROOT_ID)}`)
   .genSql();
 ```
+
 
 ## 数据库相关文件定义
 

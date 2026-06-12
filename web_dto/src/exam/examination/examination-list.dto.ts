@@ -3,7 +3,7 @@ import type { CursorListResult } from "../../common.ts";
 /** 考试状态 */
 export enum ExaminationStatus {
   /** 待开始 */
-  upcoming = "upcoming", 
+  upcoming = "upcoming",
   /** 可开始 */
   ready = "ready",
   /** 进行中 */
@@ -21,6 +21,7 @@ export type ExaminationListParam = {
 export type ExaminationListResult = CursorListResult<ExaminationInfoResult, string>;
 
 export type ExaminationInfoResult = {
+  id: string;
   /** 考试名称 */
   title: string;
   /** 出题人信息 */
@@ -28,7 +29,7 @@ export type ExaminationInfoResult = {
     id: string;
     nickname: string;
     avatar_url?: string;
-  };
+  } | null;
   /** 考试状态 */
   status: ExaminationStatus;
   /** 允许开始时间 */
@@ -36,5 +37,5 @@ export type ExaminationInfoResult = {
   /** 允许结束时间 */
   allow_time_end: string | null;
   /** 题目数量 */
-  question_number?: number;
+  question_number?: number | null;
 };

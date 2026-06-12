@@ -68,14 +68,15 @@ export type ExaminationResultOutput = {
   /** 未答题目数量 */
   unanswered_number: number;
 };
-export type ExaminationCreateInput =
-  | {
-      template_id: string;
-    }
-  | {
-      /** 题目总数 */
-      question_total: number;
-    };
+
+export type ExaminationCreateByTemplate = {
+  template_id: string;
+};
+export type ExaminationCreateByNewTemplate = {
+  template_id?: undefined;
+  question_total: number;
+};
+export type ExaminationCreateInput = ExaminationCreateByTemplate | ExaminationCreateByNewTemplate;
 export type ExaminationCreateOutput = {
   examination_id: string;
 };

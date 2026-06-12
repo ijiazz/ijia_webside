@@ -3,9 +3,9 @@ import type { ClassApi } from "./class.ts";
 import type { LiveApi } from "./live.ts";
 import type { PostApi } from "./post.ts";
 import type { ReviewApi } from "./review.ts";
-import type { QuestionAPI } from "./exam.ts";
+import type { QuestionAPI, ExaminationAPI } from "./exam.ts";
 
-export interface ApiDefined extends PostApi, ClassApi, LiveApi, UserApi, ReviewApi, QuestionAPI {}
+export interface ApiDefined extends PostApi, ClassApi, LiveApi, UserApi, ReviewApi, QuestionAPI, ExaminationAPI {}
 export * from "./common.ts";
 export * from "./file.ts";
 export * from "./post.ts";
