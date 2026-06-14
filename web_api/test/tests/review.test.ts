@@ -1,5 +1,5 @@
 import { beforeEach, expect } from "vitest";
-import { test, Context } from "../../fixtures/hono.ts";
+import { test, Context } from "#test/fixtures/hono.ts";
 import questionRoutes from "@/routers/question/mod.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import { Role } from "@/common/userInfo.ts";

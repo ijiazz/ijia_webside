@@ -4,3 +4,10 @@ import { RouteGroup } from "@/lib/route.ts";
 
 const routeGroup = new RouteGroup<HonoContext>({ middlewares: [requiredLogin] });
 export default routeGroup;
+
+export {
+  createEmptyExamination,
+  createExaminationByQuestionTotal,
+  createExaminationByTemplate,
+  type CreateExaminationOption,
+} from "./_sql/examination_create.sql.ts";

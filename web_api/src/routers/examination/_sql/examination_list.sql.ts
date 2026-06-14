@@ -1,9 +1,9 @@
 import { dbPool } from "@/db/client.ts";
 import { ExaminationInfoResult, ExaminationListParam, ExaminationListResult, ExaminationStatus } from "@/dto.ts";
 import { v } from "@/sql/utils.ts";
+import { select } from "@asla/yoursql";
 import { DbExamination } from "@ijia/school-db/db";
 import { HttpError } from "@/common/errors.ts";
-import { select } from "@asla/yoursql";
 
 export async function getExaminationList(
   userId: number,
@@ -19,11 +19,11 @@ export async function getExaminationList(
     "e.allow_time_end",
     "e.start_time",
     "e.end_time",
+    "e.result_allow_view_date",
     "e.grade",
-    "t.question_total AS question_number",
+    "e.question_total AS question_number",
   ])
     .from("examination", { as: "e" })
-    .leftJoin("exam_paper_template", { as: "t", on: "t.id=e.template_id" })
     .where(() => {
       const conditions = [`e.user_id=${v(userId)}`];
       if (id !== undefined) {
@@ -111,4 +111,13 @@ function getExaminationStatus(item: ExaminationBaseRow, now = new Date()): Exami
     return ExaminationStatus.upcoming;
   }
   return ExaminationStatus.ready;
+}
+function examinationStatus(table: string) {
+  return `CASE
+    WHEN ${table}.end_time IS NOT NULL AND ${table}.grade IS NULL THEN 'ended'
+    WHEN ${table}.end_time IS NOT NULL AND ${table}.grade IS NOT NULL THEN 'result'
+    WHEN ${table}.allow_time_end IS NOT NULL AND ${table}.allow_time_end < now() THEN 'ended'
+    WHEN ${table}.allow_time_start IS NOT NULL AND ${table}.allow_time_start > now() THEN 'upcoming'
+    ELSE 'ready'
+  END`;
 }

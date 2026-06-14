@@ -16,7 +16,14 @@ export type ExaminationAnswerInput = {
 
 export type ExaminationQuestionOutput = {
   /** 如果为空，表示全部做完 */
-  question: QuestionPrivate | null;
+  question:
+    | (QuestionPrivate & {
+        /** 返回索引，确保题库被记录 */
+        index: number;
+        /** 开始做题的时间 */
+        start_time: string;
+      })
+    | null;
 };
 
 /** 考试中返回的题目 */
@@ -29,27 +36,29 @@ export type QuestionPrivate = {
 
   options?: QuestionOption[];
 
-  index: number /** 返回索引，确保题库被记录 */;
-  /** 开始时间 */
-  start_time: string;
   /** 时间限制（单位毫秒），null表示无时间限制 */
-  time_limit: number | null;
+  time_limit?: number | null;
 };
-/** 交卷后，查看作答记录的题目 */
-export type ExaminationRecordQuestion = QuestionPrivate & {
-  selected: number[];
 
+export type QuestionRecordItem = QuestionPrivate & {
   question_id: string;
   difficulty_level: number;
-
   /** 所属用户 */
   user?: ExamQuestionOwner | null;
 
   comment?: {
     id: string;
     total: number;
-  };
+  } | null;
   answer?: ExamQuestionAnswer;
+};
+/** 交卷后，查看作答记录的题目 */
+export type ExaminationRecordQuestion = {
+  index: number;
+  selected: number[] | null;
+  score: number | null;
+  use_time: number | null;
+  question: QuestionRecordItem | null;
 };
 
 export type ExaminationRecordOutput = {

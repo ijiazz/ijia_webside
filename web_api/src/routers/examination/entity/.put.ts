@@ -1,8 +1,8 @@
-import { checkValueAsync } from "@/common/check.ts";
+import { checkValueAsync, queryInt } from "@/common/check.ts";
 import routeGroup from "../_route.ts";
-import { createExamination } from "../_sql/examination_create.sql.ts";
-import { ExaminationCreateInput } from "@ijia/api-types";
+import { createExaminationByQuestionTotal } from "../_sql/examination_create.sql.ts";
 import { optional } from "@asla/wokao";
+import { HttpError } from "@/common/errors.ts";
 
 export default routeGroup.create({
   method: "PUT",
@@ -11,7 +11,7 @@ export default routeGroup.create({
     const userId = await ctx.get("userInfo").getUserId();
     const body = await checkValueAsync(ctx.req.json(), [
       {
-        template_id: "string",
+        template_id: queryInt,
         question_total: optional("undefined"),
       },
       { template_id: optional("undefined"), question_total: "number" },
@@ -19,14 +19,15 @@ export default routeGroup.create({
 
     return { userId, body };
   },
-  async handler({
-    userId,
-    body,
-  }: {
-    userId: number;
-    body: ExaminationCreateInput;
-  }): Promise<{ examination_id: string }> {
-    const examinationId = await createExamination(body, { title: "模拟考试", userId });
+  async handler({ userId, body }): Promise<{ examination_id: string }> {
+    let examinationId: number;
+    const title = "模拟考试";
+    if (typeof body.template_id === "number") {
+      throw new HttpError(400, "自定义考试模板未开放");
+      // examinationId = await createExaminationByTemplate(body.template_id, { title, userId });
+    } else {
+      examinationId = await createExaminationByQuestionTotal(body.question_total, { title, userId });
+    }
     return { examination_id: examinationId.toString() };
   },
 });

@@ -1,0 +1,27 @@
+import { beforeEach, expect } from "vitest";
+import { test, Context } from "#test/fixtures/hono.ts";
+import examinationRoutes from "@/routers/examination/mod.ts";
+import { prepareUniqueUser } from "#test/utils/user.ts";
+import {
+  createPracticeExamination,
+  getExaminationRealQuestionTotal,
+  preparePassedQuestions,
+  startExamination,
+} from "#test/utils/examination.ts";
+
+beforeEach<Context>(async ({ hono }) => {
+  examinationRoutes.apply(hono);
+});
+
+test("开始模拟考试时，会生成模板题绑定并初始化首题作答记录", async function ({ api, publicDbPool }) {
+  const alice = await prepareUniqueUser("alice");
+  await preparePassedQuestions(2, alice.id);
+
+  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 2 });
+
+  await expect(getExaminationRealQuestionTotal(+examination_id)).resolves.toBe(0);
+
+  await startExamination(api, alice.token, examination_id);
+
+  await expect(getExaminationRealQuestionTotal(+examination_id)).resolves.toBe(2);
+});
