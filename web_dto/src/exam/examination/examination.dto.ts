@@ -72,6 +72,8 @@ export type ExaminationResultOutput = {
   use_time_total: number;
   /** 正确题目数量 */
   correct_number: number;
+  /** 部分正确题目数量 */
+  partially_correct_number: number;
   /** 错误题目数量 */
   wrong_number: number;
   /** 未答题目数量 */

@@ -29,9 +29,7 @@ export async function endExamination(examId: number, userId: number) {
         INNER JOIN exam_paper_template_question_view AS q ON q.paper_template_id=${v(templateId)} AND a.index=q.index
         WHERE a.exam_id=${v(examId)} AND a.user_answer_select IS NOT NULL
      ), total AS (
-      SELECT SUM(q.score) AS grade, SUM(COALESCE(q.use_time, 0)) AS use_time_total,
-        SUM(CASE WHEN q.score>0 THEN 1 ELSE 0 END) AS correct_count,
-        SUM(CASE WHEN q.score=0 THEN 1 ELSE 0 END) AS wrong_count
+      SELECT SUM(q.score) AS grade, SUM(COALESCE(q.use_time, 0)) AS use_time_total
       FROM q
      ), updateQuestion AS (
       UPDATE examination_user_answer
@@ -39,9 +37,7 @@ export async function endExamination(examId: number, userId: number) {
      )
      UPDATE examination
       SET end_time=now(), grade=total.grade,
-      use_time_total=COALESCE(total.use_time_total, 0),
-      correct_count=COALESCE(total.correct_count, 0),
-      wrong_count=COALESCE(total.wrong_count, 0)
+      use_time_total=COALESCE(total.use_time_total, 0)
      FROM total
      WHERE id=${v(examId)} AND user_id=${v(userId)} AND end_time IS NULL
     `;
@@ -49,7 +45,7 @@ export async function endExamination(examId: number, userId: number) {
   } else {
     await t.execute(v.gen`
       UPDATE examination
-      SET end_time=now(), grade=0, use_time_total=0, correct_count=0, wrong_count=0
+      SET end_time=now(), grade=0, use_time_total=0
       WHERE id=${examId} AND user_id=${userId}
     `);
     return;

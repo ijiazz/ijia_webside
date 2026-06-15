@@ -1,5 +1,5 @@
 import { beforeEach, expect } from "vitest";
-import { test, Context, JWT_TOKEN_KEY } from "#test/fixtures/hono.ts";
+import { test, Context } from "#test/fixtures/hono.ts";
 import examinationRoutes from "@/routers/examination/mod.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import {
@@ -13,34 +13,14 @@ import {
   prepareExaminationTemplate,
   getExamination,
 } from "#test/utils/examination.ts";
-import { ExaminationStatus } from "@ijia/api-types";
+import { ExaminationStatus, ExamQuestionType } from "@ijia/api-types";
+import { ExamPlan } from "#test/utils/examination/ExamPlan.ts";
+import { afterTime } from "evlib";
 
 beforeEach<Context>(async ({ hono }) => {
   examinationRoutes.apply(hono);
 });
-class CommitByNextPlan {
-  constructor(
-    private api: Context["api"],
-    private token: string,
-    private examinationId: string | number,
-  ) {
-    this.api = api;
-    this.token = token;
-    this.examinationId = examinationId;
-  }
-  async commitGetNext(index: number, answer: number[]) {
-    await this.api["/examination/:exam_id/answer"].post({
-      body: { index, answer },
-      params: { exam_id: this.examinationId.toString() },
-      [JWT_TOKEN_KEY]: this.token,
-    });
-    const result = await this.api["/examination/:exam_id/next"].post({
-      params: { exam_id: this.examinationId.toString() },
-      [JWT_TOKEN_KEY]: this.token,
-    });
-    return result;
-  }
-}
+
 async function answerByPlan(
   api: Context["api"],
   token: string,
@@ -122,7 +102,7 @@ test("没有题目的考试可以交卷，并查看考试结果、作答记录",
   const record = await getExaminationRecord(api, alice.token, examination_id);
   expect(record.questions).toHaveLength(0);
 });
-test("考试状态", async function ({ api, publicDbPool }) {
+test("正常流程的考试状态", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   const examId = await prepareExamination({
     userId: alice.id,
@@ -133,6 +113,60 @@ test("考试状态", async function ({ api, publicDbPool }) {
   await startExamination(api, alice.token, examId);
   await expect(getExamStatus(), "进行中").resolves.toBe(ExaminationStatus.ongoing);
   await endExamination(api, alice.token, examId);
-  await expect(getExamStatus(), "已结束").resolves.toBe(ExaminationStatus.ended);
   await expect(getExamStatus(), "已出结果").resolves.toBe(ExaminationStatus.result);
+});
+test("缺考的考试状态", async function ({ api, publicDbPool }) {
+  const alice = await prepareUniqueUser("alice");
+  const examId = await prepareExamination({
+    userId: alice.id,
+    allowTimeEnd: new Date(Date.now() + 1000),
+  });
+  const getExamStatus = () => getExamination(api, alice.token, examId).then((detail) => detail.status);
+  await expect(getExamStatus(), "可开考").resolves.toBe(ExaminationStatus.ready);
+  await afterTime(1000);
+  await expect(getExamStatus(), "已结束").resolves.toBe(ExaminationStatus.result);
+});
+test("终止考试的状态", async function ({ api, publicDbPool }) {
+  const alice = await prepareUniqueUser("alice");
+  const examId = await prepareExamination({
+    userId: alice.id,
+    allowTimeEnd: new Date(Date.now() + 1000),
+  });
+  const getExamStatus = () => getExamination(api, alice.token, examId).then((detail) => detail.status);
+  await expect(getExamStatus(), "可开考").resolves.toBe(ExaminationStatus.ready);
+  await startExamination(api, alice.token, examId);
+  await expect(getExamStatus(), "进行中").resolves.toBe(ExaminationStatus.ongoing);
+  await afterTime(1000);
+  await expect(getExamStatus(), "进行中").resolves.toBe(ExaminationStatus.ended);
+  await endExamination(api, alice.token, examId);
+  await expect(getExamStatus(), "已出结果").resolves.toBe(ExaminationStatus.result);
+});
+
+test("多选题全部正确，获得满分，部分正确，获得一般，存在错误，获得零分", async function ({ api, publicDbPool }) {
+  const { templateId } = await prepareExaminationTemplate([
+    { question_type: ExamQuestionType.MultipleChoice, answer_index: [1, 2], score: 3 }, // 这题作答完全正确，测试完全正确的情况
+    { question_type: ExamQuestionType.MultipleChoice, answer_index: [1, 2], score: 1 }, // 这题作答部分正确，测试部分正确的情况
+    { question_type: ExamQuestionType.MultipleChoice, answer_index: [1, 2], score: 1 }, // 这题作答错误，测试错误题的情况
+    { question_type: ExamQuestionType.MultipleChoice, answer_index: [1, 2], score: 1 }, // 这题提交空选项
+    { question_type: ExamQuestionType.MultipleChoice, answer_index: [1, 2], score: 1 }, // 这题不作答，测试未答题的情况
+  ]);
+  const alice = await prepareUniqueUser("alice");
+  const examination_id = await prepareExamination({ userId: alice.id, templateId });
+  const plan = new ExamPlan(api, alice.token, examination_id);
+
+  await plan.start();
+  await plan.commitGetNext([1, 2]);
+  await plan.commitGetNext([1]);
+  await plan.commitGetNext([1, 3]);
+  await plan.commitGetNext([]);
+  await plan.commitGetNext([]);
+  await plan.end();
+  const result = await plan.getResult();
+  expect(result.grade).toBe(3.5);
+  expect(result).toMatchObject({
+    correct_number: 1,
+    partially_correct_number: 1,
+    wrong_number: 2,
+    unanswered_number: 1,
+  } satisfies Partial<typeof result>);
 });

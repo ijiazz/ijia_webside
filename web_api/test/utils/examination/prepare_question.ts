@@ -56,7 +56,7 @@ export async function preparePassedQuestions(count: number, userId: number) {
 
   return crateReviewedQuestions(questions);
 }
-export type TemplateQuestionInput = Pick<DbExamQuestion, "answer_index" | "question_type">;
+export type TemplateQuestionInput = Pick<DbExamQuestion, "answer_index" | "question_type"> & { score?: number };
 
 export async function prepareExaminationTemplate(inputQuestions?: TemplateQuestionInput[]) {
   const questions: TemplateQuestionInput[] = inputQuestions ?? [
@@ -84,7 +84,7 @@ export async function prepareExaminationTemplate(inputQuestions?: TemplateQuesti
           index,
           paper_template_id: templateId,
           question_id: id,
-          score: 1,
+          score: questions[index].score ?? 1,
         }),
       ),
     ),
