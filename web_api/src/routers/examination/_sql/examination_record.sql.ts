@@ -1,4 +1,4 @@
-import { ExaminationRecordQuestion, ExamQuestionOwner, QuestionRecordItem } from "@/dto.ts";
+import { ExaminationRecordQuestion, QuestionRecordItem } from "@/dto.ts";
 import { dbPool } from "@/db/client.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
@@ -37,7 +37,7 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
     throw new HttpError(404, "考试不存在");
   }
   const now = new Date();
-  if (!exam.end_time || exam.end_time.getTime() < now.getTime()) {
+  if (!exam.end_time) {
     throw new HttpError(409, "考试未结束，不能查看考试记录");
   }
   const allowsViewResult = !exam.result_allow_view_date || exam.result_allow_view_date.getTime() <= now.getTime();

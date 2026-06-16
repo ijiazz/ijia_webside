@@ -60,18 +60,14 @@ export async function startExamination(examId: number, userId: number) {
     .where([`id=${v(examId)}`, `user_id=${v(userId)}`]);
 
   const [row] = await t.queryRows(statusQuery);
-  if (!row) {
-    throw new HttpError(404, "考试不存在");
-  }
-  if (row.start_time) {
-    throw new HttpError(409, "考试已开始");
-  }
-  const templateId = row.template_id;
-  if (typeof templateId !== "number" || !row.question_total) {
-    return;
-  }
+  if (!row) throw new HttpError(404, "考试不存在");
+  if (row.start_time) throw new HttpError(409, "考试已开始");
 
-  await ensureTemplateQuestions(t, templateId, row.question_total);
+  const templateId = row.template_id;
+
+  if (typeof templateId === "number" && row.question_total) {
+    await ensureTemplateQuestions(t, templateId, row.question_total);
+  }
 
   await t.execute(v.gen`UPDATE examination SET start_time=now() WHERE id=${examId}`);
   await t.commit();

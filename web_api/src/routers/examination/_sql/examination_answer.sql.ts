@@ -36,8 +36,9 @@ export async function submitExaminationAnswer(examId: number, userId: number, in
   const count = await t.queryCount(v.gen`
     UPDATE examination_user_answer AS a
     SET user_answer_select=${answer}, use_time=(EXTRACT(EPOCH FROM now() - a.start_time) * 1000)::INT
-    WHERE exam_id=${examId} AND index=${input.index} AND a.start_time IS NOT NULL AND user_answer_select IS NULL
+    WHERE exam_id=${examId} AND index=${input.index} AND user_answer_select IS NULL
   `);
+
   if (count === 0) {
     throw new HttpError(409, "题目已提交作答");
   }

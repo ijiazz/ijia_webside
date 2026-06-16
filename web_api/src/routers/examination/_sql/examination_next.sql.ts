@@ -43,6 +43,8 @@ function checkAllowGetNext(exam: SelectRaw) {
   if (exam.end_time || (exam.allow_time_end && new Date() > exam.allow_time_end))
     throw new HttpError(409, "考试已结束");
   if (!exam.start_time) throw new HttpError(409, "考试未开始");
+  if (!exam.template_id) throw new HttpError(409, "试卷不存在");
+  return exam.template_id;
 }
 type SelectRaw = Pick<DbExamination, "start_time" | "end_time" | "allow_time_end" | "template_id" | "question_total">;
 export async function getNextExaminationQuestion(
@@ -53,10 +55,7 @@ export async function getNextExaminationQuestion(
     .from("examination")
     .where([`id=${v(examId)}`, `user_id=${v(userId)}`]);
   const [exam] = await dbPool.queryRows(statusQuery);
-  checkAllowGetNext(exam);
-
-  const templateId = exam.template_id;
-  if (typeof templateId !== "number") throw new HttpError(409, "试卷不存在");
+  const templateId = checkAllowGetNext(exam);
 
   if (!exam.question_total) {
     return null;
