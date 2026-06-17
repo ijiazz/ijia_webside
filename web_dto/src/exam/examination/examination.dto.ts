@@ -68,8 +68,8 @@ export type ExaminationRecordOutput = {
 export type ExaminationResultOutput = {
   /** 最终成绩 */
   grade: number;
-  /** 总用时（单位毫秒） */
-  use_time_total: number;
+  /** 有效时间消耗（单位毫秒） */
+  effective_time_consumption: number;
   /** 正确题目数量 */
   correct_number: number;
   /** 部分正确题目数量 */

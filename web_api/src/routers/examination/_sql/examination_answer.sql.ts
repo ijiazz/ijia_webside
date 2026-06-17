@@ -35,7 +35,7 @@ export async function submitExaminationAnswer(examId: number, userId: number, in
 
   const count = await t.queryCount(v.gen`
     UPDATE examination_user_answer AS a
-    SET user_answer_select=${answer}, use_time=(EXTRACT(EPOCH FROM now() - a.start_time) * 1000)::INT
+    SET user_answer_select=${answer}, question_commit_time=now()
     WHERE exam_id=${examId} AND index=${input.index} AND user_answer_select IS NULL
   `);
 

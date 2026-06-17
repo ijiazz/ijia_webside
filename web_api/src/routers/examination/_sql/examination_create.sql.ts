@@ -9,6 +9,9 @@ export type CreateExaminationOption = {
   allowTimeEnd?: Date;
   useTimeTotalLimit?: number;
 };
+/**
+ * 创建一个空的，未绑定试卷的的考试
+ */
 export async function createEmptyExamination(option: CreateExaminationOption) {
   const sql = insertIntoValues("examination", {
     user_id: option.userId,
@@ -25,8 +28,8 @@ export async function createExaminationByQuestionTotal(total: number, option: Cr
 
   const sql = v.gen`
     WITH update AS (
-      INSERT INTO exam_paper_template (question_total)
-      VALUES (${total})
+      INSERT INTO exam_paper_template (exam_number)
+      VALUES (1)
       RETURNING id
     )
     INSERT INTO examination (template_id, question_total, user_id, title, allow_time_start, allow_time_end, use_time_total_limit)
@@ -44,21 +47,26 @@ export async function createExaminationByQuestionTotal(total: number, option: Cr
   return examResult?.id;
 }
 export async function createExaminationByTemplate(templateId: number, option: CreateExaminationOption) {
-  const insertQuery = v.gen`
-    INSERT INTO examination (template_id, question_total, user_id, title, allow_time_start, allow_time_end, use_time_total_limit)
-      SELECT 
-        ${templateId} template_id,
-        (SELECT question_total FROM exam_paper_template WHERE id=${templateId}) question_total,
-        ${option.userId} user_id,
-        ${option.title} title,
-        ${option.allowTimeStart ?? null} allow_time_start,
-        ${option.allowTimeEnd ?? null} allow_time_end,
-        ${option.useTimeTotalLimit ?? 0} use_time_total_limit
-      FROM exam_paper_template
-      WHERE id=${templateId}
-      LIMIT 1
+  const q = v.gen`
+  WITH tb AS(
+    UPDATE exam_paper_template
+    SET exam_number = exam_number + 1
+    WHERE id=${templateId}
+    RETURNING id, question_total
+  )
+  INSERT INTO examination (template_id, question_total, user_id, title, allow_time_start, allow_time_end, use_time_total_limit)
+    SELECT 
+      id AS template_id,
+      question_total,
+      ${option.userId} user_id,
+      ${option.title} title,
+      ${option.allowTimeStart ?? null} allow_time_start,
+      ${option.allowTimeEnd ?? null} allow_time_end,
+      ${option.useTimeTotalLimit ?? 0} use_time_total_limit
+    FROM tb
     RETURNING id
   `;
-  const [examResult] = await dbPool.queryRows<{ id: number }>(insertQuery);
-  return examResult?.id;
+
+  const [result] = await dbPool.queryRows<{ id: number }>(q);
+  return result?.id;
 }

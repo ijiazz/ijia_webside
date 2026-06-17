@@ -11,7 +11,7 @@ export async function endExamination(examId: number, userId: number) {
     WITH exam AS (
       SELECT end_time, start_time, template_id, id
       FROM examination
-      WHERE id=${v(examId)} AND user_id=${v(userId)}
+      WHERE id=${examId} AND user_id=${userId}
       FOR UPDATE
     ), update AS (
       UPDATE examination SET end_time=now()
@@ -26,9 +26,9 @@ export async function endExamination(examId: number, userId: number) {
 
   const templateId = exam.template_id;
   if (typeof templateId === "number") {
-    const questionScore = `WITH q AS (
+    const questionScore = v.gen`WITH q AS (
       SELECT
-        a.index, a.user_answer_select, a.use_time,
+        a.index, a.user_answer_select, (EXTRACT(EPOCH FROM a.question_commit_time - a.question_start_time) * 1000)::INT AS use_time,
         (CASE WHEN q.answer_index=a.user_answer_select THEN q.score
           WHEN q.question_type='multiple_choice' AND q.answer_index @> a.user_answer_select THEN 
             q.score::REAL / 2
@@ -36,19 +36,19 @@ export async function endExamination(examId: number, userId: number) {
           END
         ) AS score
         FROM examination_user_answer AS a
-        INNER JOIN exam_paper_template_question_view AS q ON q.paper_template_id=${v(templateId)} AND a.index=q.index
-        WHERE a.exam_id=${v(examId)} AND a.user_answer_select IS NOT NULL
+        INNER JOIN exam_paper_template_question_view AS q ON q.paper_template_id=${templateId} AND a.index=q.index
+        WHERE a.exam_id=${examId} AND a.user_answer_select IS NOT NULL
      ), total AS (
-      SELECT SUM(q.score) AS grade, SUM(COALESCE(q.use_time, 0)) AS use_time_total
+      SELECT SUM(q.score) AS grade, SUM(COALESCE(q.use_time, 0)) AS effective_time_consumption
       FROM q
      ), updateQuestion AS (
       UPDATE examination_user_answer AS a
-      SET score=q.score FROM q WHERE a.exam_id=${v(examId)} AND a.index=q.index
+      SET score=q.score FROM q WHERE a.exam_id=${examId} AND a.index=q.index
      )
      UPDATE examination
-      SET grade=total.grade, use_time_total=COALESCE(total.use_time_total, 0)
+      SET grade=total.grade, effective_time_consumption=COALESCE(total.effective_time_consumption, 0)
      FROM total
-     WHERE id=${v(examId)} AND user_id=${v(userId)} AND end_time IS NULL
+     WHERE id=${examId} AND user_id=${userId} AND end_time IS NULL
     `;
     await t.execute(questionScore);
   }

@@ -4,6 +4,7 @@ import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
 import { DbExamination } from "@ijia/school-db/db";
 import { HttpError } from "@/common/errors.ts";
+import { jsonb_build_object } from "@/common/sql_util.ts";
 
 type RecordRow = {
   index: number;
@@ -25,11 +26,9 @@ type RecordRow = {
 };
 
 export async function getExaminationRecord(examId: number, userId: number): Promise<ExaminationRecordQuestion[]> {
-  const examRawSql = select<Pick<DbExamination, "template_id" | "end_time" | "result_allow_view_date">>([
-    "e.template_id",
-    "e.end_time",
-    "e.result_allow_view_date",
-  ])
+  const examRawSql = select<
+    Pick<DbExamination, "template_id" | "end_time" | "result_allow_view_date" | "question_total">
+  >(["e.template_id", "e.end_time", "e.result_allow_view_date", "e.question_total"])
     .from("examination", { as: "e" })
     .where([`e.id=${v(examId)}`, `e.user_id=${v(userId)}`]);
   const [exam] = await dbPool.queryRows(examRawSql);
@@ -50,28 +49,30 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
     "t.index",
     "a.user_answer_select AS selected",
     "a.score",
-    "a.use_time",
-    "a.start_time",
-    select([
-      "q.id AS question_id",
-      "q.difficulty_level",
+    "(EXTRACT(EPOCH FROM a.question_commit_time - a.question_start_time) * 1000)::INT AS use_time",
+    "a.question_start_time AS start_time",
+    select(
+      jsonb_build_object({
+        question_id: "q.id",
+        difficulty_level: "q.difficulty_level",
 
-      "q.question_text",
-      "q.question_text_struct",
-      "q.question_type",
-      "NULL AS options", //TODO
-      "NULL AS attachments", //TODO
-      "NULL AS comment", //TODO
-      "NULL AS user", //TODO
-      // "qb.time_limit", //TODO
-      "NULL AS answer", //TODO
-    ])
+        question_text: "q.question_text",
+        question_text_struct: "q.question_text_struct",
+        question_type: "q.question_type",
+        options: "null", //TODO
+        attachments: "null", //TODO
+        comment: "null", //TODO
+        user: "null", //TODO
+        time_limit: "null", //TODO
+        answer: allowsViewResult ? "q.answer_text" : "null", //TODO
+      }),
+    )
       .from("exam_paper_template_question", { as: "qb" })
       .leftJoin("exam_question", { as: "q", on: "q.id=qb.question_id" })
       .where([`qb.paper_template_id=${v(templateId)}`, `qb.index=t.index`])
       .toSelect("question"),
   ])
-    .from("(SELECT generate_series(0, 10) AS index)", { as: "t" })
+    .from(`(SELECT generate_series(0, ${exam.question_total - 1}) AS index)`, { as: "t" })
     .leftJoin("examination_user_answer", {
       as: "a",
       on: `a.exam_id=${v(examId)} AND a.index=t.index`,

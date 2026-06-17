@@ -8,7 +8,7 @@ import { DbExamination } from "@ijia/school-db/db";
 import { select } from "@asla/yoursql";
 type NextQuestionRow = {
   index: number;
-  start_time: Date | null;
+  question_start_time: Date | null;
   question_id: number | null;
   question_text: string | null;
   question_text_struct: QuestionPrivate["question_text_struct"] | null;
@@ -23,13 +23,13 @@ type NextQuestionRow = {
     | null;
 };
 function toQuestionOutput(row: NextQuestionRow): ExaminationQuestionOutput["question"] {
-  if (!row.question_id || !row.question_text || !row.start_time) {
+  if (!row.question_id || !row.question_text || !row.question_start_time) {
     throw new HttpError(409, "考试题目不存在");
   }
   const medias = row.options ? genQuestionMedias(row.options) : null;
   return {
     index: row.index,
-    start_time: row.start_time.toISOString(),
+    start_time: row.question_start_time.toISOString(),
     time_limit: null,
     question_text: row.question_text,
     question_text_struct: row.question_text_struct ?? undefined,
@@ -61,21 +61,21 @@ export async function getNextExaminationQuestion(
     return null;
   }
   const c = `WITH update AS(${v.gen`
-    INSERT INTO examination_user_answer (exam_id, start_time, index)
+    INSERT INTO examination_user_answer (exam_id, question_start_time, index)
     SELECT 
       ${examId}, now(),
       COALESCE(
         (SELECT MAX(index) + 1 FROM examination_user_answer
-          WHERE exam_id=${examId} AND use_time IS NOT NULL
+          WHERE exam_id=${examId} AND user_answer_select IS NOT NULL
         ),
         0
       ) AS index
     ON CONFLICT (exam_id, index) DO UPDATE
-      SET start_time=EXCLUDED.start_time
-    RETURNING start_time, index, exam_id`}
+      SET question_start_time=EXCLUDED.question_start_time
+    RETURNING question_start_time, index, exam_id`}
   ) ${select([
     "u.index",
-    "u.start_time",
+    "u.question_start_time",
     "q.id AS question_id",
     "q.question_text",
     "q.question_text_struct",
