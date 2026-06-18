@@ -26,16 +26,15 @@ export async function submitExaminationAnswer(examId: number, userId: number, in
     throw new HttpError(409, "题目不存在");
   }
 
-  const answer = input.answer.sort((a, b) => a - b);
-  checkQuestionAnswer(question.question_type, answer);
-  if (answer.length) {
-    if (answer[0] < 0) throw new HttpError(400, "选择的答案索引必须大于或等于0");
-    if (answer[answer.length - 1] >= question.option_total) throw new HttpError(400, `选择答案不能超过选项数量`);
+  const selected = input.answer.sort((a, b) => a - b);
+  checkQuestionAnswer(question.question_type, selected);
+  if (selected.length) {
+    if (selected[0] < 0) throw new HttpError(400, "选择的答案索引必须大于或等于0");
+    if (selected[selected.length - 1] >= question.option_total) throw new HttpError(400, `选择答案不能超过选项数量`);
   }
-
   const count = await t.queryCount(v.gen`
     UPDATE examination_user_answer AS a
-    SET user_answer_select=${answer}, question_commit_time=now()
+    SET user_answer_select=${selected}, question_commit_time=now()
     WHERE exam_id=${examId} AND index=${input.index} AND user_answer_select IS NULL
   `);
 
@@ -58,24 +57,17 @@ function checkExamStatus(exam?: SelectRaw) {
   }
   return templateId;
 }
-function checkQuestionAnswer(questionType: ExamQuestionType, answer: number[]) {
+function checkQuestionAnswer(questionType: ExamQuestionType, selected: number[]) {
   switch (questionType) {
     case ExamQuestionType.SingleChoice:
-      if (answer.length !== 1) {
-        throw new HttpError(400, "单选题只能选择一个答案");
-      }
-      break;
-    case ExamQuestionType.MultipleChoice:
-      if (answer.length === 0) {
-        throw new HttpError(400, "多选题至少选择一个答案");
-      }
+      if (selected.length > 1) throw new HttpError(400, "单选题最多只能选择一个答案");
       break;
     case ExamQuestionType.TrueOrFalse:
-      if (answer.length !== 1 || (answer[0] !== 0 && answer[0] !== 1)) {
-        throw new HttpError(400, "判断题只能选择 0 或 1");
-      }
+      if (selected.length > 1) throw new HttpError(400, "判断题最多只能选择一个答案");
+      if (selected[0] !== 0 && selected[0] !== 1) throw new HttpError(400, "判断题只能选择 0 或 1");
       break;
-
+    case ExamQuestionType.MultipleChoice:
+      break;
     default:
       break;
   }

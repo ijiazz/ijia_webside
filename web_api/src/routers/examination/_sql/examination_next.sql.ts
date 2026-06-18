@@ -8,11 +8,13 @@ import { DbExamination } from "@ijia/school-db/db";
 import { select } from "@asla/yoursql";
 type NextQuestionRow = {
   index: number;
-  question_start_time: Date | null;
-  question_id: number | null;
-  question_text: string | null;
-  question_text_struct: QuestionPrivate["question_text_struct"] | null;
-  question_type: QuestionPrivate["question_type"];
+  question: {
+    question_id: number;
+    question_text: string;
+    question_text_struct: QuestionPrivate["question_text_struct"] | null;
+    question_type: QuestionPrivate["question_type"];
+  } | null;
+  question_start_time: Date;
   options:
     | {
         index: number;
@@ -23,7 +25,7 @@ type NextQuestionRow = {
     | null;
 };
 function toQuestionOutput(row: NextQuestionRow): ExaminationQuestionOutput["question"] {
-  if (!row.question_id || !row.question_text || !row.question_start_time) {
+  if (!row.question) {
     throw new HttpError(409, "考试题目不存在");
   }
   const medias = row.options ? genQuestionMedias(row.options) : null;
@@ -31,9 +33,8 @@ function toQuestionOutput(row: NextQuestionRow): ExaminationQuestionOutput["ques
     index: row.index,
     start_time: row.question_start_time.toISOString(),
     time_limit: null,
-    question_text: row.question_text,
-    question_text_struct: row.question_text_struct ?? undefined,
-    question_type: row.question_type,
+    ...row.question,
+    question_text_struct: row.question.question_text_struct ?? undefined,
     attachments: medias?.attachments,
     options: medias?.options,
   };
@@ -62,24 +63,26 @@ export async function getNextExaminationQuestion(
   }
   const c = `WITH update AS(${v.gen`
     INSERT INTO examination_user_answer (exam_id, question_start_time, index)
-    SELECT 
-      ${examId}, now(),
-      COALESCE(
-        (SELECT MAX(index) + 1 FROM examination_user_answer
-          WHERE exam_id=${examId} AND user_answer_select IS NOT NULL
-        ),
-        0
-      ) AS index
-    ON CONFLICT (exam_id, index) DO UPDATE
-      SET question_start_time=EXCLUDED.question_start_time
-    RETURNING question_start_time, index, exam_id`}
+      SELECT 
+        ${examId}, now(),
+        COALESCE(
+          (SELECT MAX(index) + 1 FROM examination_user_answer
+            WHERE exam_id=${examId} AND user_answer_select IS NOT NULL
+          ),
+          0
+        ) AS index
+      ON CONFLICT (exam_id, index) DO UPDATE
+        SET question_start_time=EXCLUDED.question_start_time
+      RETURNING question_start_time, index, exam_id`}
   ) ${select([
     "u.index",
     "u.question_start_time",
-    "q.id AS question_id",
-    "q.question_text",
-    "q.question_text_struct",
-    "q.question_type",
+    `${jsonb_build_object({
+      question_id: "q.id",
+      question_text: "q.question_text",
+      question_text_struct: "q.question_text_struct",
+      question_type: "q.question_type",
+    })} AS question`,
     select(
       `ARRAY_AGG(${jsonb_build_object({
         index: "m.index",
@@ -88,7 +91,7 @@ export async function getNextExaminationQuestion(
         data: "encode(m.media, 'base64')",
       })})`,
     )
-      .from("exam_question_real_option", { as: "m" })
+      .from("exam_question_option", { as: "m" })
       .where(`m.question_id=q.id`)
       .toSelect("options"),
   ])

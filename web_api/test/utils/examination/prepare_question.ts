@@ -57,38 +57,42 @@ export async function preparePassedQuestions(count: number, userId: number) {
   return crateReviewedQuestions(questions);
 }
 export type TemplateQuestionInput = Pick<DbExamQuestion, "answer_index" | "question_type"> & { score?: number };
+export const DEFAULT_QUESTIONS: TemplateQuestionInput[] = [
+  { answer_index: [1], question_type: ExamQuestionType.SingleChoice },
+  { answer_index: [0], question_type: ExamQuestionType.SingleChoice },
+  { answer_index: [2], question_type: ExamQuestionType.SingleChoice },
+];
+export async function prepareExaminationTemplate(questions: TemplateQuestionInput[] = DEFAULT_QUESTIONS) {
+  let questionIds: number[] = [];
+  if (questions.length) {
+    questionIds = await crateReviewedQuestions(
+      questions.map(({ score, ...item }, index) => ({
+        question_text: `考试题目-${index}`,
+        ...item,
+      })),
+    );
+  }
 
-export async function prepareExaminationTemplate(inputQuestions?: TemplateQuestionInput[]) {
-  const questions: TemplateQuestionInput[] = inputQuestions ?? [
-    { answer_index: [1], question_type: ExamQuestionType.SingleChoice },
-    { answer_index: [0], question_type: ExamQuestionType.SingleChoice },
-    { answer_index: [2], question_type: ExamQuestionType.SingleChoice },
-  ];
-
-  const questionIds: number[] = await crateReviewedQuestions(
-    questions.map((item, index) => ({
-      question_text: `考试题目-${index}`,
-      ...item,
-    })),
-  );
   const { id: templateId } = await dbPool.queryFirstRow<{ id: number }>(
     insertIntoValues("exam_paper_template", {
       question_total: questions.length,
     }).returning(["id"]),
   );
-  await dbPool.execute(
-    insertIntoValues(
-      "exam_paper_template_question",
-      questionIds.map(
-        (id, index): Partial<DbExamPaperTemplateQuestion> => ({
-          index,
-          paper_template_id: templateId,
-          question_id: id,
-          score: questions[index].score ?? 1,
-        }),
+  if (questionIds.length) {
+    await dbPool.execute(
+      insertIntoValues(
+        "exam_paper_template_question",
+        questionIds.map(
+          (id, index): Partial<DbExamPaperTemplateQuestion> => ({
+            index,
+            paper_template_id: templateId,
+            question_id: id,
+            score: questions[index].score ?? 1,
+          }),
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   return { templateId, questionIds };
 }

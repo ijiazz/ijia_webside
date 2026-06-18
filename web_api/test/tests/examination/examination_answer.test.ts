@@ -9,6 +9,7 @@ import {
   nextExaminationQuestion,
   startExamination,
   prepareExaminationTemplate,
+  ExamPlan,
 } from "#test/utils/examination.ts";
 import { ExamQuestionType } from "@ijia/api-types";
 
@@ -62,6 +63,20 @@ test("交卷后，不能继续作答", async function ({ api, publicDbPool }) {
     answerExaminationQuestion(api, alice.token, examinationId, { index: question.question!.index, answer: [0] }),
   ).responseStatus(409);
 });
+test("答案可以为空", async function ({ api, publicDbPool }) {
+  const alice = await prepareUniqueUser("alice");
+  const { templateId } = await prepareExaminationTemplate([
+    { question_type: ExamQuestionType.MultipleChoice, answer_index: [0, 1] },
+    { question_type: ExamQuestionType.SingleChoice, answer_index: [0] },
+    { question_type: ExamQuestionType.TrueOrFalse, answer_index: [0] },
+  ]);
+  const examinationId = await prepareExamination({ userId: alice.id, templateId: templateId });
+  const plan = new ExamPlan(api, alice.token, examinationId);
+  await plan.start();
+  await plan.commitGetNext([]);
+  await plan.commitGetNext([]);
+  await plan.commitGetNext([]);
+});
 
 test("单选题答案超不符合要求应返回 400", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
@@ -73,7 +88,6 @@ test("单选题答案超不符合要求应返回 400", async function ({ api, pu
   const answer = (answer: number[]) => answerExaminationQuestion(api, alice.token, examinationId, { index: 0, answer });
   await expect(answer([0, 1]), "单选题只能选择一个答案").responseStatus(400);
   await expect(answer([20]), "单选题不能选择超过选项数量").responseStatus(400);
-  await expect(answer([]), "答案不能为空").responseStatus(400);
 });
 test("多选题答案超不符合要求应返回 400", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
@@ -84,7 +98,6 @@ test("多选题答案超不符合要求应返回 400", async function ({ api, pu
   const answer = (answer: number[]) => answerExaminationQuestion(api, alice.token, examinationId, { index: 0, answer });
   await expect(answer([0, 1, 2, 3, 4]), "多选题不能选择超过选项数量").responseStatus(400);
   await expect(answer([5, 6]), "多选题不能选择超过选项数量").responseStatus(400);
-  await expect(answer([]), "答案不能为空").responseStatus(400);
 });
 test("判断题答案超不符合要求应返回 400", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");

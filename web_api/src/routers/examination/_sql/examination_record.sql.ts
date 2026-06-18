@@ -5,25 +5,7 @@ import { select } from "@asla/yoursql";
 import { DbExamination } from "@ijia/school-db/db";
 import { HttpError } from "@/common/errors.ts";
 import { jsonb_build_object } from "@/common/sql_util.ts";
-
-type RecordRow = {
-  index: number;
-  selected: number[] | null;
-  score: number | null;
-  use_time: number | null;
-  question: Pick<
-    QuestionRecordItem,
-    | "question_id"
-    | "difficulty_level"
-    | "question_text"
-    | "question_text_struct"
-    | "question_type"
-    | "options"
-    | "attachments"
-    | "comment"
-    | "user"
-  > | null;
-};
+import { genQuestionMedias } from "@/routers/question/_utils/question.ts";
 
 export async function getExaminationRecord(examId: number, userId: number): Promise<ExaminationRecordQuestion[]> {
   const examRawSql = select<
@@ -59,12 +41,42 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
         question_text: "q.question_text",
         question_text_struct: "q.question_text_struct",
         question_type: "q.question_type",
-        options: "null", //TODO
-        attachments: "null", //TODO
-        comment: "null", //TODO
-        user: "null", //TODO
-        time_limit: "null", //TODO
-        answer: allowsViewResult ? "q.answer_text" : "null", //TODO
+        comment: select(
+          jsonb_build_object({
+            id: "q.comment_id",
+            total: "c.comment_total",
+          }),
+        )
+          .from("comment_tree", { as: "c" })
+          .where("c.id=q.comment_id")
+          .toSelect(),
+        user: select(
+          jsonb_build_object({
+            user_id: "u.id",
+            nickname: "u.nickname",
+            avatar_url: "u.avatar",
+          }),
+        )
+          .from("public.user", { as: "u" })
+          .where("u.id=q.user_id")
+          .toSelect(),
+        // time_limit: "qb.time_limit", //TODO: 题目时间限制
+        answer: jsonb_build_object({
+          answer_index: "q.answer_index",
+          explanation_text: "q.answer_text",
+          explanation_text_struct: "q.answer_text_struct",
+        }),
+        options: select(
+          `ARRAY_AGG(${jsonb_build_object({
+            index: "m.index",
+            text: "m.text",
+            type: "m.media_type",
+            data: "encode(m.media, 'base64')",
+          })})`,
+        )
+          .from("exam_question_option", { as: "m" })
+          .where(`m.question_id=qb.question_id`)
+          .toSelect(),
       }),
     )
       .from("exam_paper_template_question", { as: "qb" })
@@ -80,5 +92,72 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
     .where([`a.exam_id=${v(examId)}`])
     .orderBy("t.index ASC");
   const raw = await dbPool.queryRows<RecordRow>(sql);
-  return raw;
+  return mapResult(raw, allowsViewResult);
 }
+function mapResult(input: RecordRow[], allowViewResult: boolean): ExaminationRecordQuestion[] {
+  return input.map((row) => {
+    let question: QuestionRecordItem | null = null;
+    if (row.question) {
+      question = {
+        question_id: row.question.question_id,
+        difficulty_level: row.question.difficulty_level,
+        question_text: row.question.question_text,
+        question_text_struct: row.question.question_text_struct ?? undefined,
+        question_type: row.question.question_type,
+        comment: row.question.comment,
+        user: row.question.user,
+      };
+      if (row.question.options) {
+        const medias = genQuestionMedias(row.question.options);
+        question.attachments = medias.attachments;
+        question.options = medias.options;
+      }
+
+      if (allowViewResult) {
+        question.answer = {
+          answer_index: row.question.answer.answer_index,
+          explanation_text: row.question.answer.explanation_text,
+          explanation_text_struct: row.question.answer.explanation_text_struct ?? undefined,
+        };
+      }
+    }
+
+    return {
+      index: row.index,
+      selected: row.selected,
+      score: row.score,
+      use_time: row.use_time,
+      question,
+    };
+  });
+}
+type RecordRow = {
+  index: number;
+  selected: number[] | null;
+  score: number | null;
+  use_time: number | null;
+  question:
+    | (Pick<
+        QuestionRecordItem,
+        | "question_id"
+        | "difficulty_level"
+        | "question_text"
+        | "question_text_struct"
+        | "question_type"
+        | "comment"
+        | "user"
+      > & {
+        answer: {
+          answer_index: number[];
+          explanation_text: string;
+          explanation_text_struct: QuestionRecordItem["question_text_struct"] | null;
+        };
+        options: {
+          index: number;
+          text: string | null;
+          type: string | null;
+          data: string | null;
+        }[];
+      })
+    | null;
+};
