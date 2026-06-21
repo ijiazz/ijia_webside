@@ -112,7 +112,9 @@ const SchoolExaminationIndexRoute = SchoolExaminationIndexRouteImport.update({
   id: '/examination/',
   path: '/examination/',
   getParentRoute: () => SchoolRouteRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_school/examination/index.lazy.tsx').then((d) => d.Route),
+)
 const ThemeTestPageUploadLazyRoute = ThemeTestPageUploadLazyRouteImport.update({
   id: '/test-page/upload',
   path: '/test-page/upload',

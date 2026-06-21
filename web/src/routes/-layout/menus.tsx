@@ -16,16 +16,6 @@ export const menus: MenuItem<{ href?: string }>[] = [
   {
     key: "examination",
     label: "考试",
-    children: [
-      {
-        key: "simulate",
-        label: "模拟考试",
-      },
-      {
-        key: "final_exam",
-        label: "期末考试",
-      },
-    ],
   },
   {
     key: "profile",
