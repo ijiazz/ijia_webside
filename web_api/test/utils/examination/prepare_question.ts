@@ -56,17 +56,25 @@ export async function preparePassedQuestions(count: number, userId: number) {
 
   return crateReviewedQuestions(questions);
 }
-export type TemplateQuestionInput = Pick<DbExamQuestion, "answer_index" | "question_type"> & { score?: number };
+export type TemplateQuestionInput = Pick<DbExamQuestion, "answer_index" | "question_type"> & {
+  score?: number;
+  option_map?: number[];
+  options?: Partial<DbExamQuestionOption>[];
+  time_limit?: number;
+};
+/**
+ * 答案为 0、1、2
+ */
 export const DEFAULT_QUESTIONS: TemplateQuestionInput[] = [
-  { answer_index: [1], question_type: ExamQuestionType.SingleChoice },
   { answer_index: [0], question_type: ExamQuestionType.SingleChoice },
+  { answer_index: [1], question_type: ExamQuestionType.SingleChoice },
   { answer_index: [2], question_type: ExamQuestionType.SingleChoice },
 ];
-export async function prepareExaminationTemplate(questions: TemplateQuestionInput[] = DEFAULT_QUESTIONS) {
+export async function prepareExaminationTemplate(questions: TemplateQuestionInput[]) {
   let questionIds: number[] = [];
   if (questions.length) {
     questionIds = await crateReviewedQuestions(
-      questions.map(({ score, ...item }, index) => ({
+      questions.map(({ score, option_map, time_limit, options, ...item }, index) => ({
         question_text: `考试题目-${index}`,
         ...item,
       })),
@@ -87,7 +95,9 @@ export async function prepareExaminationTemplate(questions: TemplateQuestionInpu
             index,
             paper_template_id: templateId,
             question_id: id,
+            time_limit: questions[index].time_limit,
             score: questions[index].score ?? 1,
+            option_map: questions[index].option_map,
           }),
         ),
       ),

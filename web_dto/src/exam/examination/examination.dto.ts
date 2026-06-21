@@ -36,7 +36,7 @@ export type QuestionPrivate = {
 
   options?: QuestionOption[];
 
-  /** 时间限制（单位毫秒），null表示无时间限制 */
+  /** 时间限制（单位秒），null表示无时间限制 */
   time_limit?: number | null;
 };
 
@@ -57,6 +57,7 @@ export type ExaminationRecordQuestion = {
   index: number;
   selected: number[] | null;
   score: number | null;
+  isTimeout: boolean;
   use_time: number | null;
   question: QuestionRecordItem | null;
 };

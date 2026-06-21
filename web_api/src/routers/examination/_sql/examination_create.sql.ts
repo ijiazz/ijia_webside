@@ -7,6 +7,7 @@ export type CreateExaminationOption = {
   userId: number;
   allowTimeStart?: Date;
   allowTimeEnd?: Date;
+  resultAllowViewDate?: Date;
   useTimeTotalLimit?: number;
 };
 /**
@@ -18,6 +19,7 @@ export async function createEmptyExamination(option: CreateExaminationOption) {
     title: option.title,
     allow_time_start: option.allowTimeStart,
     allow_time_end: option.allowTimeEnd,
+    allow_result_view_date: option.resultAllowViewDate,
     use_time_total_limit: option.useTimeTotalLimit,
   }).returning<{ id: number }>(["id"]);
   const [examResult] = await dbPool.queryRows<{ id: number }>(sql);
@@ -32,7 +34,7 @@ export async function createExaminationByQuestionTotal(total: number, option: Cr
       VALUES (1)
       RETURNING id
     )
-    INSERT INTO examination (template_id, question_total, user_id, title, allow_time_start, allow_time_end, use_time_total_limit)
+    INSERT INTO examination (template_id, question_total, user_id, title, allow_time_start, allow_time_end, result_allow_view_date, use_time_total_limit)
     SELECT 
       (SELECT id FROM update) template_id,
       ${total} question_total,
@@ -40,6 +42,7 @@ export async function createExaminationByQuestionTotal(total: number, option: Cr
       ${option.title} title,
       ${option.allowTimeStart ?? null} allow_time_start,
       ${option.allowTimeEnd ?? null} allow_time_end,
+      ${option.resultAllowViewDate ?? null} result_allow_view_date,
       ${option.useTimeTotalLimit ?? 0} use_time_total_limit
     RETURNING id
   `;
@@ -54,7 +57,7 @@ export async function createExaminationByTemplate(templateId: number, option: Cr
     WHERE id=${templateId}
     RETURNING id, question_total
   )
-  INSERT INTO examination (template_id, question_total, user_id, title, allow_time_start, allow_time_end, use_time_total_limit)
+  INSERT INTO examination (template_id, question_total, user_id, title, allow_time_start, allow_time_end, result_allow_view_date, use_time_total_limit)
     SELECT 
       id AS template_id,
       question_total,
@@ -62,6 +65,7 @@ export async function createExaminationByTemplate(templateId: number, option: Cr
       ${option.title} title,
       ${option.allowTimeStart ?? null} allow_time_start,
       ${option.allowTimeEnd ?? null} allow_time_end,
+      ${option.resultAllowViewDate ?? null} result_allow_view_date,
       ${option.useTimeTotalLimit ?? 0} use_time_total_limit
     FROM tb
     RETURNING id

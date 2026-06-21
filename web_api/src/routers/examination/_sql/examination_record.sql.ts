@@ -5,7 +5,7 @@ import { select } from "@asla/yoursql";
 import { DbExamination } from "@ijia/school-db/db";
 import { HttpError } from "@/common/errors.ts";
 import { jsonb_build_object } from "@/common/sql_util.ts";
-import { genQuestionMedias } from "@/routers/question/_utils/question.ts";
+import { initQuestionOptions, QuestionMediaRaw } from "@/routers/question/_utils/question.ts";
 
 export async function getExaminationRecord(examId: number, userId: number): Promise<ExaminationRecordQuestion[]> {
   const examRawSql = select<
@@ -37,7 +37,6 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
       jsonb_build_object({
         question_id: "q.id",
         difficulty_level: "q.difficulty_level",
-
         question_text: "q.question_text",
         question_text_struct: "q.question_text_struct",
         question_type: "q.question_type",
@@ -60,7 +59,8 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
           .from("public.user", { as: "u" })
           .where("u.id=q.user_id")
           .toSelect(),
-        // time_limit: "qb.time_limit", //TODO: 题目时间限制
+        is_timeout: `COALESCE(qb.time_limit IS NOT NULL AND (EXTRACT(EPOCH FROM a.question_commit_time - a.question_start_time))::SMALLINT > qb.time_limit, false)`,
+        time_limit: "qb.time_limit",
         answer: jsonb_build_object({
           answer_index: "q.answer_index",
           explanation_text: "q.answer_text",
@@ -68,13 +68,24 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
         }),
         options: select(
           `ARRAY_AGG(${jsonb_build_object({
+            index: "COALESCE(qb.option_map[m.index+1], m.index)",
+            text: "m.text",
+            type: "m.media_type",
+            data: "encode(m.media, 'base64')",
+          })})`,
+        )
+          .from("exam_question_real_option", { as: "m" })
+          .where(`m.question_id=qb.question_id`)
+          .toSelect(),
+        attachments: select(
+          `ARRAY_AGG(${jsonb_build_object({
             index: "m.index",
             text: "m.text",
             type: "m.media_type",
             data: "encode(m.media, 'base64')",
           })})`,
         )
-          .from("exam_question_option", { as: "m" })
+          .from("exam_question_attachment", { as: "m" })
           .where(`m.question_id=qb.question_id`)
           .toSelect(),
       }),
@@ -105,13 +116,11 @@ function mapResult(input: RecordRow[], allowViewResult: boolean): ExaminationRec
         question_text_struct: row.question.question_text_struct ?? undefined,
         question_type: row.question.question_type,
         comment: row.question.comment,
+        time_limit: row.question.time_limit,
         user: row.question.user,
+        attachments: row.question.attachments ? initQuestionOptions(row.question.attachments) : undefined,
+        options: row.question.options ? initQuestionOptions(row.question.options) : undefined,
       };
-      if (row.question.options) {
-        const medias = genQuestionMedias(row.question.options);
-        question.attachments = medias.attachments;
-        question.options = medias.options;
-      }
 
       if (allowViewResult) {
         question.answer = {
@@ -124,6 +133,7 @@ function mapResult(input: RecordRow[], allowViewResult: boolean): ExaminationRec
 
     return {
       index: row.index,
+      isTimeout: row.question ? row.question.is_timeout : false,
       selected: row.selected,
       score: row.score,
       use_time: row.use_time,
@@ -145,19 +155,17 @@ type RecordRow = {
         | "question_text_struct"
         | "question_type"
         | "comment"
+        | "time_limit"
         | "user"
       > & {
+        is_timeout: boolean;
         answer: {
           answer_index: number[];
           explanation_text: string;
           explanation_text_struct: QuestionRecordItem["question_text_struct"] | null;
         };
-        options: {
-          index: number;
-          text: string | null;
-          type: string | null;
-          data: string | null;
-        }[];
+        options: QuestionMediaRaw[] | null;
+        attachments: QuestionMediaRaw[] | null;
       })
     | null;
 };

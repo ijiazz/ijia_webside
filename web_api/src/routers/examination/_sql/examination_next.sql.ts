@@ -2,7 +2,7 @@ import { HttpError } from "@/common/errors.ts";
 import { jsonb_build_object } from "@/common/sql_util.ts";
 import { dbPool } from "@/db/client.ts";
 import { ExaminationQuestionOutput, QuestionPrivate } from "@/dto.ts";
-import { genQuestionMedias } from "@/routers/question/_utils/question.ts";
+import { initQuestionOptions, QuestionMediaRaw } from "@/routers/question/_utils/question.ts";
 import { v } from "@/sql/utils.ts";
 import { DbExamination } from "@ijia/school-db/db";
 import { select } from "@asla/yoursql";
@@ -15,28 +15,22 @@ type NextQuestionRow = {
     question_type: QuestionPrivate["question_type"];
   } | null;
   question_start_time: Date;
-  options:
-    | {
-        index: number;
-        text: string | null;
-        type: string | null;
-        data: string | null;
-      }[]
-    | null;
+  time_limit: number | null;
+  options: QuestionMediaRaw[] | null;
+  attachments: QuestionMediaRaw[] | null;
 };
 function toQuestionOutput(row: NextQuestionRow): ExaminationQuestionOutput["question"] {
   if (!row.question) {
     throw new HttpError(409, "考试题目不存在");
   }
-  const medias = row.options ? genQuestionMedias(row.options) : null;
   return {
     index: row.index,
     start_time: row.question_start_time.toISOString(),
-    time_limit: null,
+    time_limit: row.time_limit,
     ...row.question,
     question_text_struct: row.question.question_text_struct ?? undefined,
-    attachments: medias?.attachments,
-    options: medias?.options,
+    attachments: row.attachments ? initQuestionOptions(row.attachments) : undefined,
+    options: row.options ? initQuestionOptions(row.options) : undefined,
   };
 }
 function checkAllowGetNext(exam: SelectRaw) {
@@ -67,7 +61,7 @@ export async function getNextExaminationQuestion(
         ${examId}, now(),
         COALESCE(
           (SELECT MAX(index) + 1 FROM examination_user_answer
-            WHERE exam_id=${examId} AND user_answer_select IS NOT NULL
+            WHERE exam_id=${examId} AND question_commit_time IS NOT NULL
           ),
           0
         ) AS index
@@ -77,6 +71,7 @@ export async function getNextExaminationQuestion(
   ) ${select([
     "u.index",
     "u.question_start_time",
+    "qb.time_limit",
     `${jsonb_build_object({
       question_id: "q.id",
       question_text: "q.question_text",
@@ -85,22 +80,33 @@ export async function getNextExaminationQuestion(
     })} AS question`,
     select(
       `ARRAY_AGG(${jsonb_build_object({
-        index: "m.index",
-        text: "m.text",
-        type: "m.media_type",
-        data: "encode(m.media, 'base64')",
+        index: "COALESCE(qb.option_map[option.index+1], option.index)",
+        text: "option.text",
+        type: "option.media_type",
+        data: "encode(option.media, 'base64')",
       })})`,
     )
-      .from("exam_question_option", { as: "m" })
-      .where(`m.question_id=q.id`)
+      .from("exam_question_real_option", { as: "option" })
+      .where(`option.question_id=qb.question_id`)
       .toSelect("options"),
+    select(
+      `ARRAY_AGG(${jsonb_build_object({
+        index: "attachment.index",
+        text: "attachment.text",
+        type: "attachment.media_type",
+        data: "encode(attachment.media, 'base64')",
+      })})`,
+    )
+      .from("exam_question_attachment", { as: "attachment" })
+      .where(`attachment.question_id=qb.question_id`)
+      .toSelect("attachments"),
   ])
     .from("update", { as: "u" })
     .innerJoin("exam_paper_template_question", {
-      as: "t",
-      on: `t.paper_template_id=${v(templateId)} AND t.index=u.index`,
+      as: "qb",
+      on: `qb.paper_template_id=${v(templateId)} AND qb.index=u.index`,
     })
-    .innerJoin("exam_question", { as: "q", on: "q.id=t.question_id" })
+    .innerJoin("exam_question", { as: "q", on: "q.id=qb.question_id" })
     .genSql()}    
 `;
   const [row] = await dbPool.queryRows<NextQuestionRow>(c);

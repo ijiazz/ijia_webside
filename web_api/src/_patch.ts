@@ -2,4 +2,5 @@
 
 declare module "@asla/pg" {
   export interface DbCursor<T> extends AsyncDisposable, AsyncIterable<any> {}
+  export interface DbManage extends AsyncDisposable {}
 }

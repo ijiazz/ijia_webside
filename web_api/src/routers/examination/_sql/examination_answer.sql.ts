@@ -64,7 +64,9 @@ function checkQuestionAnswer(questionType: ExamQuestionType, selected: number[])
       break;
     case ExamQuestionType.TrueOrFalse:
       if (selected.length > 1) throw new HttpError(400, "判断题最多只能选择一个答案");
-      if (selected[0] !== 0 && selected[0] !== 1) throw new HttpError(400, "判断题只能选择 0 或 1");
+      if (selected.length) {
+        if (selected[0] !== 0 && selected[0] !== 1) throw new HttpError(400, "判断题只能选择 0 或 1");
+      }
       break;
     case ExamQuestionType.MultipleChoice:
       break;

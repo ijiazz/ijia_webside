@@ -1,7 +1,7 @@
 import { dbPool } from "@/db/client.ts";
 import { GetUserQuestionListResult, ExamQuestionDetail, QuestionPublic } from "@/dto.ts";
 import { v } from "@/sql/utils.ts";
-import { genQuestionMedias, parseCursorId, toCursor } from "../_utils/question.ts";
+import { initQuestionOptions, parseCursorId, toCursor } from "../_utils/question.ts";
 import {
   getQuestionDetailSelect,
   getQuestionPublicSelect,
@@ -44,13 +44,12 @@ export async function getUserQuestionPublicList(
   };
 }
 function mapQuestion(item: PublicSelectRaw): QuestionPublic {
-  const option = item.options ? genQuestionMedias(item.options) : null;
   return {
     question_text: item.question_text ?? "",
     question_text_struct: item.question_text_struct ?? undefined,
     question_type: item.question_type,
-    attachments: option?.attachments,
-    options: option?.options,
+    attachments: initQuestionOptions(item.attachments),
+    options: initQuestionOptions(item.options),
 
     difficulty_level: item.difficulty_level,
     collection_level: item.collection_level,

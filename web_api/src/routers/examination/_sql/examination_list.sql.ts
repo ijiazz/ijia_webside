@@ -22,6 +22,7 @@ export async function getExaminationList(
     "e.result_allow_view_date",
     "e.grade",
     "e.question_total AS question_number",
+    `${examinationStatus("e")} AS status`,
   ])
     .from("examination", { as: "e" })
     .where(() => {
@@ -79,45 +80,38 @@ function getStatusWhere(status: ExaminationStatus) {
         `((e.end_time IS NOT NULL AND e.grade IS NULL) OR (e.end_time IS NULL AND e.allow_time_end IS NOT NULL AND e.allow_time_end < now()))`,
       ];
     case ExaminationStatus.result:
-      return ["e.end_time IS NOT NULL", "e.grade IS NOT NULL"];
+      return [
+        "e.end_time IS NOT NULL",
+        "e.grade IS NOT NULL",
+        "e.result_allow_view_date IS NULL OR e.result_allow_view_date <= now()",
+      ];
   }
 }
 
-type ExaminationBaseRow = Pick<
-  DbExamination,
-  "grade" | "allow_time_end" | "allow_time_start" | "start_time" | "end_time"
-> & {
+type ExaminationBaseRow = Pick<DbExamination, "grade" | "allow_time_end" | "allow_time_start"> & {
   title: string;
   id: string;
   question_number: number | null;
+  status: ExaminationStatus;
 };
 function toExaminationInfo(row: ExaminationBaseRow): ExaminationInfoResult {
-  const { start_time, end_time, ...rest } = row;
   return {
-    ...rest,
+    ...row,
     allow_time_end: row.allow_time_end ? row.allow_time_end.toISOString() : null,
     allow_time_start: row.allow_time_start ? row.allow_time_start.toISOString() : null,
-    status: getExaminationStatus(row),
   };
 }
-function getExaminationStatus(item: ExaminationBaseRow, now = new Date()): ExaminationStatus {
-  if (item.end_time) {
-    return item.grade === null ? ExaminationStatus.ended : ExaminationStatus.result;
-  }
-  if (item.allow_time_end && item.allow_time_end.getTime() < now.getTime()) {
-    return ExaminationStatus.ended;
-  }
-  if (item.allow_time_start && item.allow_time_start.getTime() > now.getTime()) {
-    return ExaminationStatus.upcoming;
-  }
-  return ExaminationStatus.ready;
-}
+
 function examinationStatus(table: string) {
   return `CASE
-    WHEN ${table}.end_time IS NOT NULL AND ${table}.grade IS NULL THEN 'ended'
-    WHEN ${table}.end_time IS NOT NULL AND ${table}.grade IS NOT NULL THEN 'result'
+    WHEN ${table}.end_time IS NOT NULL THEN
+        CASE
+          WHEN ${table}.grade IS NULL THEN 'ended'
+          WHEN ${table}.result_allow_view_date IS NULL OR ${table}.result_allow_view_date <= now() THEN 'result'
+          ELSE 'ended' END
     WHEN ${table}.allow_time_end IS NOT NULL AND ${table}.allow_time_end < now() THEN 'ended'
     WHEN ${table}.allow_time_start IS NOT NULL AND ${table}.allow_time_start > now() THEN 'upcoming'
+    WHEN ${table}.start_time IS NOT NULL AND ${table}.end_time IS NULL THEN 'ongoing'
     ELSE 'ready'
   END`;
 }

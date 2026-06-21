@@ -2,6 +2,7 @@ import { ReviewStatus } from "@/dto.ts";
 import { jsonb_build_object } from "@/common/sql_util.ts";
 import { select, v } from "@asla/yoursql";
 import { DbExamQuestion, TextStructure } from "@ijia/school-db/db";
+import { QuestionMediaRaw } from "../_utils/question.ts";
 
 export type PublicSelectRaw = Pick<
   DbExamQuestion,
@@ -16,14 +17,8 @@ export type PublicSelectRaw = Pick<
     id: string;
     total: number;
   };
-  options:
-    | {
-        index: number;
-        text: string | null;
-        type: string | null;
-        data: string | null;
-      }[]
-    | null;
+  options: QuestionMediaRaw[] | null;
+  attachments: QuestionMediaRaw[] | null;
   question_id: string;
   review?: {
     status: ReviewStatus;
@@ -62,9 +57,20 @@ const SELECT_PUBLIC = [
       data: "encode(m.media, 'base64')",
     })})`,
   )
-    .from("exam_question_option", { as: "m" })
+    .from("exam_question_real_option", { as: "m" })
     .where("m.question_id = q.id")
     .toSelect("options"),
+  select(
+    `array_agg(${jsonb_build_object({
+      index: "m.index",
+      text: "m.text",
+      type: "m.media_type",
+      data: "encode(m.media, 'base64')",
+    })})`,
+  )
+    .from("exam_question_attachment", { as: "m" })
+    .where("m.question_id = q.id")
+    .toSelect("attachments"),
   "q.id::TEXT AS question_id",
 ];
 function getReviewInfo() {

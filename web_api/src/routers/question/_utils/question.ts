@@ -1,4 +1,3 @@
-import { QuestionPublic, QuestionAttachment, QuestionOption } from "@/dto.ts";
 import { HttpError } from "@/common/errors.ts";
 
 export function parseCursorId(cursor: string) {
@@ -18,22 +17,13 @@ export type QuestionMediaRaw = {
   type: string | null;
 };
 
-export function genQuestionMedias(mediasRaw: QuestionMediaRaw[]) {
-  const attachments: QuestionPublic["attachments"] = [];
-  const options: QuestionPublic["options"] = [];
-
-  let option: QuestionAttachment | QuestionOption;
-
-  for (const t of mediasRaw) {
-    option = {
-      file: t.data && t.type ? { data: t.data, type: t.type } : undefined,
-      text: t.text ?? undefined,
-    };
-    if (t.index >= 0) {
-      options[t.index] = option;
-    } else {
-      attachments[-t.index - 1] = option;
-    }
-  }
-  return { attachments, options };
+function initQuestionOption(raw: QuestionMediaRaw) {
+  return {
+    text: raw.text ?? undefined,
+    file: raw.data && raw.type ? { data: raw.data, type: raw.type } : undefined,
+  };
+}
+export function initQuestionOptions(raws?: QuestionMediaRaw[] | null) {
+  if (!raws) return undefined;
+  return raws.sort((a, b) => a.index - b.index).map(initQuestionOption);
 }

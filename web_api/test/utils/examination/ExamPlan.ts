@@ -27,6 +27,7 @@ export class ExamPlan {
       params: { exam_id: this.examinationId.toString() },
       [JWT_TOKEN_KEY]: this.token,
     });
+    return question;
   }
   async end() {
     await this.api["/examination/:exam_id/end"].post({

@@ -1,4 +1,3 @@
-import { Context } from "#test/fixtures/hono.ts";
 import { v } from "@/sql/utils.ts";
 import { dbPool } from "@/db/client.ts";
 
@@ -10,14 +9,8 @@ export async function setExaminationAllowDate(examId: number, option: { from?: D
     WHERE id=${examId}
   `);
 }
-export async function setExaminationResultAllowViewDate(
-  publicDbPool: Context["publicDbPool"],
-  examinationId: string,
-  sqlExpr: string,
-) {
-  await publicDbPool.execute(
-    v.gen`UPDATE examination SET result_allow_view_date = ${new String(sqlExpr)} WHERE id=${examinationId}`,
-  );
+export async function setExaminationResultAllowViewDate(examinationId: number, date: Date) {
+  await dbPool.execute(v.gen`UPDATE examination SET result_allow_view_date = ${date} WHERE id=${examinationId}`);
 }
 export async function getExaminationRealQuestionTotal(examId: number): Promise<number | undefined> {
   const sql = v.gen`SELECT count(*)::INT as total  FROM exam_paper_template_question
