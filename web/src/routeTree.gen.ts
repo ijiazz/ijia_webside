@@ -15,6 +15,7 @@ import { Route as ThemeRouteRouteImport } from './routes/_theme/route.tsx'
 import { Route as SchoolRouteRouteImport } from './routes/_school/route.tsx'
 import { Route as StoryIndexRouteImport } from './routes/story/index.tsx'
 import { Route as homeIndexRouteImport } from './routes/(home)/index.tsx'
+import { Route as SchoolExaminationRouteRouteImport } from './routes/_school/examination/route.tsx'
 import { Route as ThemeAboutIndexRouteImport } from './routes/_theme/about/index.tsx'
 import { Route as SchoolWallIndexRouteImport } from './routes/_school/wall/index.tsx'
 import { Route as SchoolUserIndexRouteImport } from './routes/_school/user/index.tsx'
@@ -72,6 +73,13 @@ const homeIndexRoute = homeIndexRouteImport
     getParentRoute: () => rootRouteImport,
   } as any)
   .lazy(() => import('./routes/(home)/index.lazy.tsx').then((d) => d.Route))
+const SchoolExaminationRouteRoute = SchoolExaminationRouteRouteImport.update({
+  id: '/examination',
+  path: '/examination',
+  getParentRoute: () => SchoolRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_school/examination/route.lazy.tsx').then((d) => d.Route),
+)
 const ThemeTestPageIndexLazyRoute = ThemeTestPageIndexLazyRouteImport.update({
   id: '/test-page/',
   path: '/test-page/',
@@ -109,9 +117,9 @@ const SchoolLiveIndexRoute = SchoolLiveIndexRouteImport.update({
   import('./routes/_school/live/index.lazy.tsx').then((d) => d.Route),
 )
 const SchoolExaminationIndexRoute = SchoolExaminationIndexRouteImport.update({
-  id: '/examination/',
-  path: '/examination/',
-  getParentRoute: () => SchoolRouteRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => SchoolExaminationRouteRoute,
 } as any).lazy(() =>
   import('./routes/_school/examination/index.lazy.tsx').then((d) => d.Route),
 )
@@ -124,9 +132,9 @@ const ThemeTestPageUploadLazyRoute = ThemeTestPageUploadLazyRouteImport.update({
 )
 const SchoolExaminationSimulateLazyRoute =
   SchoolExaminationSimulateLazyRouteImport.update({
-    id: '/examination/simulate',
-    path: '/examination/simulate',
-    getParentRoute: () => SchoolRouteRoute,
+    id: '/simulate',
+    path: '/simulate',
+    getParentRoute: () => SchoolExaminationRouteRoute,
   } as any).lazy(() =>
     import('./routes/_school/examination/simulate.lazy.tsx').then(
       (d) => d.Route,
@@ -168,9 +176,9 @@ const SchoolProfileCenterRoute = SchoolProfileCenterRouteImport.update({
   import('./routes/_school/profile/center.lazy.tsx').then((d) => d.Route),
 )
 const SchoolExaminationSplatRoute = SchoolExaminationSplatRouteImport.update({
-  id: '/examination/$',
-  path: '/examination/$',
-  getParentRoute: () => SchoolRouteRoute,
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => SchoolExaminationRouteRoute,
 } as any)
 const SchoolUserUserIdRouteRoute = SchoolUserUserIdRouteRouteImport.update({
   id: '/user/$userId',
@@ -247,6 +255,7 @@ const SchoolUserUserIdPostIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof homeIndexRoute
+  '/examination': typeof SchoolExaminationRouteRouteWithChildren
   '/story/': typeof StoryIndexRoute
   '/review/$type': typeof SchoolReviewTypeRouteRouteWithChildren
   '/user/$userId': typeof SchoolUserUserIdRouteRouteWithChildren
@@ -302,6 +311,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_school': typeof SchoolRouteRouteWithChildren
   '/_theme': typeof ThemeRouteRouteWithChildren
+  '/_school/examination': typeof SchoolExaminationRouteRouteWithChildren
   '/(home)/': typeof homeIndexRoute
   '/story/': typeof StoryIndexRoute
   '/_school/review/$type': typeof SchoolReviewTypeRouteRouteWithChildren
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/examination'
     | '/story/'
     | '/review/$type'
     | '/user/$userId'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_school'
     | '/_theme'
+    | '/_school/examination'
     | '/(home)/'
     | '/story/'
     | '/_school/review/$type'
@@ -452,6 +464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof homeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_school/examination': {
+      id: '/_school/examination'
+      path: '/examination'
+      fullPath: '/examination'
+      preLoaderRoute: typeof SchoolExaminationRouteRouteImport
+      parentRoute: typeof SchoolRouteRoute
+    }
     '/_theme/test-page/': {
       id: '/_theme/test-page/'
       path: '/test-page'
@@ -496,10 +515,10 @@ declare module '@tanstack/react-router' {
     }
     '/_school/examination/': {
       id: '/_school/examination/'
-      path: '/examination'
+      path: '/'
       fullPath: '/examination/'
       preLoaderRoute: typeof SchoolExaminationIndexRouteImport
-      parentRoute: typeof SchoolRouteRoute
+      parentRoute: typeof SchoolExaminationRouteRoute
     }
     '/_theme/test-page/upload': {
       id: '/_theme/test-page/upload'
@@ -510,10 +529,10 @@ declare module '@tanstack/react-router' {
     }
     '/_school/examination/simulate': {
       id: '/_school/examination/simulate'
-      path: '/examination/simulate'
+      path: '/simulate'
       fullPath: '/examination/simulate'
       preLoaderRoute: typeof SchoolExaminationSimulateLazyRouteImport
-      parentRoute: typeof SchoolRouteRoute
+      parentRoute: typeof SchoolExaminationRouteRoute
     }
     '/_theme/about/introduction': {
       id: '/_theme/about/introduction'
@@ -552,10 +571,10 @@ declare module '@tanstack/react-router' {
     }
     '/_school/examination/$': {
       id: '/_school/examination/$'
-      path: '/examination/$'
+      path: '/$'
       fullPath: '/examination/$'
       preLoaderRoute: typeof SchoolExaminationSplatRouteImport
-      parentRoute: typeof SchoolRouteRoute
+      parentRoute: typeof SchoolExaminationRouteRoute
     }
     '/_school/user/$userId': {
       id: '/_school/user/$userId'
@@ -623,6 +642,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SchoolExaminationRouteRouteChildren {
+  SchoolExaminationSplatRoute: typeof SchoolExaminationSplatRoute
+  SchoolExaminationSimulateLazyRoute: typeof SchoolExaminationSimulateLazyRoute
+  SchoolExaminationIndexRoute: typeof SchoolExaminationIndexRoute
+}
+
+const SchoolExaminationRouteRouteChildren: SchoolExaminationRouteRouteChildren =
+  {
+    SchoolExaminationSplatRoute: SchoolExaminationSplatRoute,
+    SchoolExaminationSimulateLazyRoute: SchoolExaminationSimulateLazyRoute,
+    SchoolExaminationIndexRoute: SchoolExaminationIndexRoute,
+  }
+
+const SchoolExaminationRouteRouteWithChildren =
+  SchoolExaminationRouteRoute._addFileChildren(
+    SchoolExaminationRouteRouteChildren,
+  )
+
 interface SchoolReviewTypeRouteRouteChildren {
   SchoolReviewTypeIndexRoute: typeof SchoolReviewTypeIndexRoute
 }
@@ -669,14 +706,12 @@ const SchoolWallListChar123GroupIdChar125RouteRouteWithChildren =
   )
 
 interface SchoolRouteRouteChildren {
+  SchoolExaminationRouteRoute: typeof SchoolExaminationRouteRouteWithChildren
   SchoolReviewTypeRouteRoute: typeof SchoolReviewTypeRouteRouteWithChildren
   SchoolUserUserIdRouteRoute: typeof SchoolUserUserIdRouteRouteWithChildren
-  SchoolExaminationSplatRoute: typeof SchoolExaminationSplatRoute
   SchoolProfileCenterRoute: typeof SchoolProfileCenterRoute
   SchoolQuestionCreateRoute: typeof SchoolQuestionCreateRoute
   SchoolWallPublishRoute: typeof SchoolWallPublishRoute
-  SchoolExaminationSimulateLazyRoute: typeof SchoolExaminationSimulateLazyRoute
-  SchoolExaminationIndexRoute: typeof SchoolExaminationIndexRoute
   SchoolLiveIndexRoute: typeof SchoolLiveIndexRoute
   SchoolReviewIndexRoute: typeof SchoolReviewIndexRoute
   SchoolUserIndexRoute: typeof SchoolUserIndexRoute
@@ -686,14 +721,12 @@ interface SchoolRouteRouteChildren {
 }
 
 const SchoolRouteRouteChildren: SchoolRouteRouteChildren = {
+  SchoolExaminationRouteRoute: SchoolExaminationRouteRouteWithChildren,
   SchoolReviewTypeRouteRoute: SchoolReviewTypeRouteRouteWithChildren,
   SchoolUserUserIdRouteRoute: SchoolUserUserIdRouteRouteWithChildren,
-  SchoolExaminationSplatRoute: SchoolExaminationSplatRoute,
   SchoolProfileCenterRoute: SchoolProfileCenterRoute,
   SchoolQuestionCreateRoute: SchoolQuestionCreateRoute,
   SchoolWallPublishRoute: SchoolWallPublishRoute,
-  SchoolExaminationSimulateLazyRoute: SchoolExaminationSimulateLazyRoute,
-  SchoolExaminationIndexRoute: SchoolExaminationIndexRoute,
   SchoolLiveIndexRoute: SchoolLiveIndexRoute,
   SchoolReviewIndexRoute: SchoolReviewIndexRoute,
   SchoolUserIndexRoute: SchoolUserIndexRoute,
