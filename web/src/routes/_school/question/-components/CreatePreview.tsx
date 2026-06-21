@@ -20,7 +20,13 @@ export function CreatePreview(props: { form: ReturnType<typeof useForm<FromValue
     <div style={{ padding: "12px 16px", width: 500 }}>
       <h3>作答预览</h3>
       <span>作答时看到的题目界面</span>
-      <QuestionWork data={previewData} correctIndexes={formValues.answer_index} value={select} onChange={setSelect} />
+      <QuestionWork
+        data={previewData}
+        index={1}
+        correctIndexes={formValues.answer_index}
+        value={select}
+        onChange={setSelect}
+      />
     </div>
   );
 }

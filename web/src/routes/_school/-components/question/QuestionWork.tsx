@@ -10,12 +10,13 @@ export type QuestionWorkProps = Omit<CardProps, "title" | "styles" | "onChange">
   data: QuestionWorkData;
   correctIndexes?: number[];
   value?: number[];
+  index?: number;
   onChange?: (indexes: number[]) => void;
 
   children?: React.ReactNode;
 };
 export function QuestionWork(props: QuestionWorkProps) {
-  const { data, value, onChange, correctIndexes, children, ...rest } = props;
+  const { data, index, value, onChange, correctIndexes, children, ...rest } = props;
   if (!data.question_type) {
     return <div>请选择题型</div>;
   }
@@ -24,7 +25,7 @@ export function QuestionWork(props: QuestionWorkProps) {
       {...rest}
       title={
         <Space>
-          {data.index !== undefined && <span>{data.index + 1}.</span>}
+          {index !== undefined && <span>{index + 1}.</span>}
           <Tag color="geekblue">{QUESTION_TYPE_LABEL[data.question_type]}</Tag>
           <Typography.Text strong>{data.question_text}</Typography.Text>
         </Space>
