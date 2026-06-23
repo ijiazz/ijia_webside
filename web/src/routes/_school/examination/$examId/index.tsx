@@ -8,10 +8,10 @@ import {
   startExamination,
 } from "@/request/examination.ts";
 import { queryClient } from "@/request/client.ts";
-import { getRecordAnchorId } from "./-components/ExaminationDisplay.ts";
-import { ExaminationOngoingPanel } from "./-components/ExaminationOngoingPanel.tsx";
-import { ExaminationPageHeader } from "./-components/ExaminationPageHeader.tsx";
-import { ExaminationRecordSection } from "./-components/ExaminationRecordSection.tsx";
+import { getRecordAnchorId } from "../-components/ExaminationDisplay.ts";
+import { ExaminationOngoingPanel } from "../-components/ExaminationOngoingPanel.tsx";
+import { ExaminationPageHeader } from "../-components/ExaminationPageHeader.tsx";
+import { ExaminationRecordSection } from "../-components/ExaminationRecordSection.tsx";
 import { css } from "@emotion/css";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
@@ -19,12 +19,12 @@ import { Alert, Card, Flex, Spin, message } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { ExaminationQuestionOutput, ExaminationStatus } from "@/api.ts";
 
-export const Route = createFileRoute("/_school/examination/$")({
+export const Route = createFileRoute("/_school/examination/$examId/")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const examId = Route.useParams()._splat ?? "";
+  const { examId } = Route.useParams();
   const navigate = Route.useNavigate();
   const router = useRouter();
   const detail = useQuery(getExaminationDetailQueryOption(examId));
@@ -135,7 +135,8 @@ function RouteComponent() {
   }
 
   const exam = detail.data;
-  const loading = startMutation.isPending || answerMutation.isPending || endMutation.isPending || loadNextMutation.isPending;
+  const loading =
+    startMutation.isPending || answerMutation.isPending || endMutation.isPending || loadNextMutation.isPending;
   const recordQuestions = record.data?.questions ?? [];
   const answeredCount = recordQuestions.filter((item) => (item.selected?.length ?? 0) > 0).length;
   const progressPercent = exam.question_number ? Math.round((answeredCount / exam.question_number) * 100) : 0;

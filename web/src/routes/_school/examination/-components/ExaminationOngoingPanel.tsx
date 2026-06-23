@@ -52,9 +52,13 @@ export function ExaminationOngoingPanel(props: ExaminationOngoingPanelProps) {
             <Space direction="vertical" size={6}>
               <Space wrap>
                 <Tag color="processing">第 {currentQuestion.index + 1} 题</Tag>
-                {remainingSeconds !== null && <Tag color={remainingSeconds === 0 ? "red" : "gold"}>剩余 {remainingSeconds} 秒</Tag>}
+                {remainingSeconds !== null && (
+                  <Tag color={remainingSeconds === 0 ? "red" : "gold"}>剩余 {remainingSeconds} 秒</Tag>
+                )}
               </Space>
-              <Typography.Text type="secondary">开始作答时间：{new Date(currentQuestion.start_time).toLocaleString()}</Typography.Text>
+              <Typography.Text type="secondary">
+                开始作答时间：{new Date(currentQuestion.start_time).toLocaleString()}
+              </Typography.Text>
             </Space>
             <Space direction="vertical" size={6} align="end">
               <Typography.Text strong>当前题目用时：{currentElapsedSeconds} 秒</Typography.Text>
@@ -63,7 +67,11 @@ export function ExaminationOngoingPanel(props: ExaminationOngoingPanelProps) {
               </Checkbox>
             </Space>
           </Flex>
-          <QuestionWork data={currentQuestion} value={selectedAnswer} onChange={currentAnswered ? undefined : onSelectAnswer} />
+          <QuestionWork
+            data={currentQuestion}
+            value={selectedAnswer}
+            onChange={currentAnswered ? undefined : onSelectAnswer}
+          />
           <Space wrap>
             {!currentAnswered ? (
               <>

@@ -1,20 +1,7 @@
-import type {
-  ExaminationAnswerInput,
-  ExaminationCreateInput,
-  ExaminationDeleteInput,
-  ExaminationListParam,
-} from "@/api.ts";
+import type { ExaminationAnswerInput, ExaminationCreateInput, ExaminationDeleteInput } from "@/api.ts";
 import { api } from "./client.ts";
 
 export const EXAMINATION_QUERY_KEY_PREFIX = "examination";
-
-export function getExaminationListQueryOption(query?: ExaminationListParam) {
-  const normalizedQuery: ExaminationListParam = query ?? {};
-  return {
-    queryKey: [EXAMINATION_QUERY_KEY_PREFIX, "list", normalizedQuery],
-    queryFn: () => api["/examination"].get({ query: normalizedQuery }),
-  };
-}
 
 export function getExaminationDetailQueryOption(examId: string) {
   return {

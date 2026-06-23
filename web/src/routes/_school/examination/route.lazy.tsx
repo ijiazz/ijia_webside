@@ -1,5 +1,5 @@
-import { AdaptiveMenuLayout } from "@/routes/-layout/AdaptiveMenuLayout.tsx";
-import { createLazyFileRoute, Outlet } from "@tanstack/react-router";
+import { AdaptiveMenuLayout, AdaptiveMenuLayoutProps } from "@/routes/-layout/AdaptiveMenuLayout.tsx";
+import { createLazyFileRoute, Outlet, type RouteTypes } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/_school/examination")({
   component: RouteComponent,
@@ -7,8 +7,14 @@ export const Route = createLazyFileRoute("/_school/examination")({
 
 function RouteComponent() {
   return (
-    <AdaptiveMenuLayout items={[{ label: "我的考试", key: "my-exams" }]}>
+    <AdaptiveMenuLayout items={items} style={{ height: "100%" }}>
       <Outlet />
     </AdaptiveMenuLayout>
   );
 }
+const items: AdaptiveMenuLayoutProps["items"] = [
+  {
+    label: "我的考试",
+    key: "my-exams",
+  },
+];
