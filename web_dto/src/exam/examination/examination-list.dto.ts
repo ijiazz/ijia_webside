@@ -14,7 +14,7 @@ export enum ExaminationStatus {
   result = "result",
 }
 export type ExaminationListParam = {
-  status?: ExaminationStatus;
+  status?: ExaminationStatus | ExaminationStatus[];
   cursor?: string;
   limit?: number;
 };

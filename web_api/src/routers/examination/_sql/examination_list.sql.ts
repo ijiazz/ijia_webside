@@ -34,7 +34,12 @@ export async function getExaminationList(
         conditions.push(`e.id < ${v(cursorId)}`);
       }
       if (status) {
-        conditions.push(...getStatusWhere(status));
+        if (status instanceof Array) {
+          const condition = status.map((status) => "(" + getStatusWhere(status).join(" AND ") + ")").join(" OR ");
+          conditions.push("(" + condition + ")");
+        } else {
+          conditions.push(...getStatusWhere(status));
+        }
       }
       return conditions;
     })

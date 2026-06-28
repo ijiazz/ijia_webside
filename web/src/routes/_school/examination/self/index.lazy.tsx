@@ -50,7 +50,7 @@ export function RouteComponent() {
   );
 }
 const statusOptionInfo: { label: string; key: ExaminationStatus[] }[] = [
-  { label: "进行中", key: [ExaminationStatus.upcoming, ExaminationStatus.ongoing] },
+  { label: "进行中", key: [ExaminationStatus.upcoming, ExaminationStatus.ongoing, ExaminationStatus.ready] },
   { label: "待出成绩", key: [ExaminationStatus.ended] },
   { label: "已结束", key: [ExaminationStatus.result] },
 ];
