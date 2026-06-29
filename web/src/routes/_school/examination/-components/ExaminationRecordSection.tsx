@@ -11,26 +11,29 @@ import {
   getRecordStatusText,
   getRecordTagColor,
 } from "./ExaminationDisplay.ts";
+import { useQuery } from "@tanstack/react-query";
+import { getExaminationRecordQueryOption } from "@/request/examination.ts";
 
 type ExaminationRecordSectionProps = {
   status: ExaminationStatus.ended | ExaminationStatus.result;
-  recordQuestions: ExaminationRecordQuestion[];
-  recordLoading: boolean;
-  recordError: unknown;
-  resultData?: ExaminationResultOutput;
   onScrollToRecord: (index: number) => void;
+  examId: string;
+  resultData?: ExaminationResultOutput;
 };
 
 export function ExaminationRecordSection(props: ExaminationRecordSectionProps) {
-  const { status, recordQuestions, recordLoading, recordError, resultData, onScrollToRecord } = props;
-
+  const { status, examId, resultData, onScrollToRecord } = props;
+  const { data, isFetching } = useQuery({
+    ...getExaminationRecordQueryOption(examId),
+  });
+  const recordQuestions = data?.questions ?? [];
   return (
-    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={16} style={{ width: "100%" }}>
       {status === ExaminationStatus.ended && (
         <Alert
           type="warning"
           showIcon
-          message="考试已结束，等待结果开放"
+          title="考试已结束，等待结果开放"
           description="当前可以查看作答记录，但正确答案与成绩会在结果开放后展示。"
         />
       )}
@@ -67,12 +70,10 @@ export function ExaminationRecordSection(props: ExaminationRecordSectionProps) {
       )}
 
       <Card title="作答记录">
-        {recordLoading ? (
+        {isFetching ? (
           <Flex justify="center" align="center" style={{ minHeight: 160 }}>
             <Spin />
           </Flex>
-        ) : recordError ? (
-          <Alert type="error" showIcon message="作答记录加载失败" description={String(recordError)} />
         ) : recordQuestions.length > 0 ? (
           <List
             dataSource={recordQuestions}
@@ -108,7 +109,7 @@ function RecordQuestionCard({ item }: { item: ExaminationRecordQuestion }) {
       correctIndexes={item.question.answer?.answer_index}
       className={RecordCardCSS}
     >
-      <Space direction="vertical" size={8} style={{ width: "100%" }}>
+      <Space orientation="vertical" size={8} style={{ width: "100%" }}>
         <Space wrap>
           <Tag color={getRecordTagColor(item)}>{getRecordStatusText(item)}</Tag>
           <Tag color={item.isTimeout ? "red" : "default"}>{item.isTimeout ? "已超时" : "未超时"}</Tag>

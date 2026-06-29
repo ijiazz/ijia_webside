@@ -1,10 +1,10 @@
-import { ExaminationInfoResult, ExaminationStatus } from "@/api.ts";
+import { ExaminationInfoOutput, ExaminationStatus } from "@/api.ts";
 import { css } from "@emotion/css";
 import { Button, Card, Descriptions, Flex, Space, Tag, Typography } from "antd";
 import { STATUS_COLORS, STATUS_LABELS, formatDateTime } from "./ExaminationDisplay.ts";
 
 type ExaminationPageHeaderProps = {
-  exam: ExaminationInfoResult;
+  exam: ExaminationInfoOutput;
   loading: boolean;
   onBack: () => void;
   onStart: () => void;

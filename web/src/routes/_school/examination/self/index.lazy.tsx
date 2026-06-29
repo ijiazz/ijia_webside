@@ -2,10 +2,12 @@ import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { ExaminationList } from "./-components/ExaminationList.tsx";
 import { css } from "@emotion/css";
 import { Button, Segmented, Space } from "antd";
-import { ExaminationInfoResult, ExaminationStatus } from "@ijia/api-types";
+import { ExaminationInfoOutput, ExaminationStatus } from "@ijia/api-types";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteLoad } from "@/lib/hook/infiniteLoad.ts";
 import { api } from "@/request/client.ts";
+import { LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
+import { useElementOverScreen } from "@/lib/hook/observer.ts";
 
 export const Route = createLazyFileRoute("/_school/examination/self/")({
   component: RouteComponent,
@@ -13,8 +15,13 @@ export const Route = createLazyFileRoute("/_school/examination/self/")({
 export function RouteComponent() {
   const [statusFilter, setStatusFilter] = useState(statusOptions[0].value);
   const status = useMemo(() => statusFilter.split(",").map((item) => item as ExaminationStatus), [statusFilter]);
-
-  const { data, setData, reset, next, error, loading } = useInfiniteLoad<ExaminationInfoResult[], string>({
+  const { ref } = useElementOverScreen({
+    onChange: (visible) => {
+      if (visible) next.loadMore();
+    },
+    defaultVisible: true,
+  });
+  const { data, setData, reset, next } = useInfiniteLoad<ExaminationInfoOutput[], string>({
     async load(cursor, forward) {
       const result = await api["/examination"].get({ query: { cursor, limit: 15, status } });
       const items = forward ? result.items.slice().reverse() : result.items;
@@ -45,6 +52,14 @@ export function RouteComponent() {
       <ExaminationList
         data={data}
         onDeleted={(examId) => setData((prev) => prev.filter((item) => item.id !== examId))}
+      />
+      <LoadMoreIndicator
+        error={!!next.error}
+        hasMore={next.hasMore}
+        loading={next.loading}
+        isEmpty={data.length === 0}
+        onLoad={() => next.loadMore()}
+        ref={ref}
       />
     </div>
   );

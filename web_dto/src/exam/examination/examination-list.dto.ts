@@ -18,12 +18,19 @@ export type ExaminationListParam = {
   cursor?: string;
   limit?: number;
 };
-export type ExaminationListResult = CursorListResult<ExaminationInfoResult, string>;
+export type ExaminationListOutput = CursorListResult<ExaminationInfoOutput, string>;
 
-export type ExaminationInfoResult = {
+export type ExaminationInfoOutput = {
   id: string;
   /** 考试名称 */
   title: string;
+  /** 成绩 */
+  grade?: number | null;
+  /** 允许查看成绩的时间 */
+  result_allow_view_date?: string | null;
+  /** 总使用时间限制，单位秒。0 为无限制 */
+  use_time_total_limit: number;
+
   /** 出题人信息 */
   owner?: {
     id: string;

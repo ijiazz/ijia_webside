@@ -7,8 +7,8 @@ import type {
   ExaminationResultOutput,
 } from "./examination/examination.dto.ts";
 import type {
-  ExaminationListResult,
-  ExaminationInfoResult,
+  ExaminationListOutput,
+  ExaminationInfoOutput,
   ExaminationListParam,
 } from "./examination/examination-list.dto.ts";
 
@@ -26,12 +26,12 @@ export interface ExaminationAPI {
   /** 获取自己的考试列表 */
   "GET /examination": {
     query: ExaminationListParam;
-    response: ExaminationListResult;
+    response: ExaminationListOutput;
   };
   /** 获取考试信息 */
   "GET /examination/:exam_id": {
     params: { exam_id: string };
-    response: ExaminationInfoResult;
+    response: ExaminationInfoOutput;
   };
   /** 删除考试 */
   "DELETE /examination/:exam_id": {

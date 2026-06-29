@@ -1,5 +1,5 @@
 import { dbPool } from "@/db/client.ts";
-import { ExaminationInfoResult, ExaminationListParam, ExaminationListResult, ExaminationStatus } from "@/dto.ts";
+import { ExaminationInfoOutput, ExaminationListParam, ExaminationListOutput, ExaminationStatus } from "@/dto.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
 import { DbExamination } from "@ijia/school-db/db";
@@ -8,7 +8,7 @@ import { HttpError } from "@/common/errors.ts";
 export async function getExaminationList(
   userId: number,
   param: ExaminationListParam & { id?: number },
-): Promise<ExaminationListResult> {
+): Promise<ExaminationListOutput> {
   const { cursor, limit = 15, status, id } = param;
   const cursorId = cursor ? parseCursor(cursor) : undefined;
 
@@ -20,6 +20,7 @@ export async function getExaminationList(
     "e.start_time",
     "e.end_time",
     "e.result_allow_view_date",
+    "e.use_time_total_limit / 1000 AS use_time_total_limit",
     "e.grade",
     "e.question_total AS question_number",
     `${examinationStatus("e")} AS status`,
@@ -93,13 +94,16 @@ function getStatusWhere(status: ExaminationStatus) {
   }
 }
 
-type ExaminationBaseRow = Pick<DbExamination, "grade" | "allow_time_end" | "allow_time_start"> & {
+type ExaminationBaseRow = Pick<
+  DbExamination,
+  "grade" | "allow_time_end" | "allow_time_start" | "use_time_total_limit"
+> & {
   title: string;
   id: string;
   question_number: number | null;
   status: ExaminationStatus;
 };
-function toExaminationInfo(row: ExaminationBaseRow): ExaminationInfoResult {
+function toExaminationInfo(row: ExaminationBaseRow): ExaminationInfoOutput {
   return {
     ...row,
     allow_time_end: row.allow_time_end ? row.allow_time_end.toISOString() : null,

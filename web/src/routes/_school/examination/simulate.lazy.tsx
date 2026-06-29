@@ -10,13 +10,14 @@ export const Route = createLazyFileRoute("/_school/examination/simulate")({
   component: RouteComponent,
 });
 
+const MAX_QUESTION_COUNT = 65535;
+
 function RouteComponent() {
   const navigate = Route.useNavigate();
   const { stat } = Route.useLoaderData();
   const form = useForm<CreateFormValues>({});
   const message = useMessage();
   const { isSubmitting } = form.formState;
-  const maxQuestionCount = 65535;
   const handleSubmit = form.handleSubmit(async (values) => {
     const result = await createExamination({ question_total: values.question_total });
     message.success("模拟考试已创建");
@@ -36,7 +37,7 @@ function RouteComponent() {
             创建考试
           </Typography.Title>
           <Typography.Text type="secondary">
-            当前会在开始考试时，从已审核题目中按数量生成本次考试的题目绑定。
+            创建模拟考试，一部分题目会从已审核通过的题目随机抽取题目，另一部分会通过机器生成随机题目。
           </Typography.Text>
         </div>
         <FormProvider {...form}>
@@ -46,7 +47,7 @@ function RouteComponent() {
               rules={{
                 required: "请输入题目数量",
                 min: { value: 0, message: "题目数量不能小于 0" },
-                max: { value: maxQuestionCount, message: `题目数量不能大于 ${maxQuestionCount}` },
+                max: { value: MAX_QUESTION_COUNT, message: `题目数量不能大于 ${MAX_QUESTION_COUNT}` },
               }}
               render={({ field, fieldState }) => {
                 return (
@@ -55,7 +56,7 @@ function RouteComponent() {
                       {...field}
                       status={getAntdErrorStatus(fieldState)}
                       min={0}
-                      max={maxQuestionCount}
+                      max={MAX_QUESTION_COUNT}
                       precision={0}
                       style={{ width: "100%" }}
                     />
