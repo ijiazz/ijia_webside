@@ -11,12 +11,14 @@ export type QuestionWorkProps = Omit<CardProps, "title" | "styles" | "onChange">
   correctIndexes?: number[];
   value?: number[];
   index?: number;
+  useTime?: number;
+  isTimeout?: number;
   onChange?: (indexes: number[]) => void;
 
   children?: React.ReactNode;
 };
 export function QuestionWork(props: QuestionWorkProps) {
-  const { data, index, value, onChange, correctIndexes, children, ...rest } = props;
+  const { data, index, value, onChange, correctIndexes, children, useTime, isTimeout, ...rest } = props;
   if (!data.question_type) {
     return <div>请选择题型</div>;
   }

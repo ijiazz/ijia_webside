@@ -21,7 +21,7 @@ function RouteComponent() {
   const handleSubmit = form.handleSubmit(async (values) => {
     const result = await createExamination({ question_total: values.question_total });
     message.success("模拟考试已创建");
-    navigate({ to: `/examination/$examId`, params: { examId: result.examination_id } });
+    navigate({ to: `/examination/$examId`, params: { examId: result.examination_id }, replace: true });
   });
   return (
     <div className={PageCSS}>

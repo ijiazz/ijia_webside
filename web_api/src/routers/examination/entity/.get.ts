@@ -1,4 +1,4 @@
-import { checkValue, queryInt } from "@/common/check.ts";
+import { checkValue, optionalInt } from "@/common/check.ts";
 import routeGroup from "../_route.ts";
 import { getExaminationList } from "../_sql/examination_list.sql.ts";
 import { ExaminationStatus } from "@/dto.ts";
@@ -21,7 +21,7 @@ export default routeGroup.create({
     const status = checkValue(req.queries("status"), optional(StatusSchema));
     const query = checkValue(ctx.req.query(), {
       cursor: optional.string,
-      limit: queryInt,
+      limit: optionalInt,
     });
     return { userId, query: { ...query, status } };
   },

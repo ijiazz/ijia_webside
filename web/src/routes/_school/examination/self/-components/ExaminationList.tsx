@@ -1,10 +1,10 @@
 import { deleteExamination } from "@/request/examination.ts";
 import { useMessage } from "@/provider/AntdProvider.tsx";
 import { useModal } from "@/components/Modal/static.tsx";
-import { ExaminationInfoOutput, ExaminationStatus } from "@ijia/api-types";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { ExaminationInfoOutput } from "@ijia/api-types";
+import { Link } from "@tanstack/react-router";
 import { Button, Card, Empty, Divider, Space, Tag, Typography } from "antd";
-import { dateToString } from "@/common/date.ts";
+import { getTimeRange, STATUS_LABELS } from "../../-utils/const.ts";
 
 export type ExaminationListProps = {
   data?: ExaminationInfoOutput[];
@@ -51,15 +51,17 @@ export function ExaminationList(props: ExaminationListProps) {
                 </div>
                 <Space>
                   <span>
-                    总分：<b>100</b>
+                    总分：<b>{}</b>
                   </span>
                   &nbsp;&nbsp;
                   <span>
-                    得分：<b>100</b>
+                    得分：<b>{item.score}</b>
                   </span>
                 </Space>
                 <div>
-                  <Typography.Text type="secondary">允许考试时间：{getTimeRange(item)}</Typography.Text>
+                  <Typography.Text type="secondary">
+                    允许考试时间：{getTimeRange(item.allow_time_start, item.allow_time_end)}
+                  </Typography.Text>
                 </div>
               </div>
               <Divider size="small" />
@@ -71,21 +73,3 @@ export function ExaminationList(props: ExaminationListProps) {
     </Card>
   );
 }
-function getTimeRange(item: ExaminationInfoOutput): string {
-  if (item.allow_time_start && item.allow_time_end) {
-    return `${dateToString(item.allow_time_start, "minute")} - ${dateToString(item.allow_time_end, "minute")}`;
-  } else if (item.allow_time_start) {
-    return `${dateToString(item.allow_time_start, "minute")} - 不限`;
-  } else if (item.allow_time_end) {
-    return `不限 - ${dateToString(item.allow_time_end, "minute")}`;
-  } else {
-    return "不限";
-  }
-}
-export const STATUS_LABELS: Record<ExaminationStatus, { label: string; color: string }> = {
-  [ExaminationStatus.upcoming]: { label: "未开始", color: "default" },
-  [ExaminationStatus.ready]: { label: "可开始", color: "blue" },
-  [ExaminationStatus.ongoing]: { label: "进行中", color: "processing" },
-  [ExaminationStatus.ended]: { label: "待出成绩", color: "orange" },
-  [ExaminationStatus.result]: { label: "已出结果", color: "green" },
-};

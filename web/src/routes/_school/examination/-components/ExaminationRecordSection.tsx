@@ -1,34 +1,39 @@
 import { QuestionWork } from "@/routes/_school/-components/question/QuestionWork.tsx";
-import { ExaminationRecordQuestion, ExaminationResultOutput, ExaminationStatus } from "@/api.ts";
+import { ExaminationRecordQuestion, ExaminationStatus, ExamQuestionType } from "@ijia/api-types";
 import { css } from "@emotion/css";
 import { Link } from "@tanstack/react-router";
-import { Alert, Button, Card, Empty, Flex, List, Rate, Space, Spin, Statistic, Tag, Typography } from "antd";
-import {
-  clampDifficulty,
-  formatUseTime,
-  getRecordAnchorId,
-  getRecordStatusColor,
-  getRecordStatusText,
-  getRecordTagColor,
-} from "./ExaminationDisplay.ts";
+import { Alert, Avatar, Button, Card, Empty, Rate, Space, Statistic, Tag, Typography } from "antd";
+import { clampDifficulty, getRecordStatus } from "../-utils/status_color.ts";
 import { useQuery } from "@tanstack/react-query";
-import { getExaminationRecordQueryOption } from "@/request/examination.ts";
+import { getExaminationRecordQueryOption, getExaminationResultQueryOption } from "@/request/examination.ts";
+import { useRef } from "react";
 
 type ExaminationRecordSectionProps = {
   status: ExaminationStatus.ended | ExaminationStatus.result;
-  onScrollToRecord: (index: number) => void;
   examId: string;
-  resultData?: ExaminationResultOutput;
 };
 
 export function ExaminationRecordSection(props: ExaminationRecordSectionProps) {
-  const { status, examId, resultData, onScrollToRecord } = props;
-  const { data, isFetching } = useQuery({
-    ...getExaminationRecordQueryOption(examId),
+  const { status, examId } = props;
+  const { data: resultData } = useQuery({
+    ...getExaminationResultQueryOption(examId),
+    enabled: status === ExaminationStatus.result,
   });
+  const { data } = useQuery(getExaminationRecordQueryOption(examId));
+  const recordAnchorRefs = useRef<HTMLDivElement>(null);
+  const onScrollToRecord = (index: number) => {
+    const container = recordAnchorRefs.current;
+    if (container) {
+      const targetElement = container.children.item(index);
+
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  };
   const recordQuestions = data?.questions ?? [];
   return (
-    <Space orientation="vertical" size={16} style={{ width: "100%" }}>
+    <>
       {status === ExaminationStatus.ended && (
         <Alert
           type="warning"
@@ -42,11 +47,11 @@ export function ExaminationRecordSection(props: ExaminationRecordSectionProps) {
         <Card>
           <Space size="large" wrap>
             <Statistic title="总成绩" value={resultData.grade} />
+            <Statistic title="总用时(秒)" value={Math.round(resultData.effective_time_consumption / 1000)} />
             <Statistic title="正确" value={resultData.correct_number} />
             <Statistic title="部分正确" value={resultData.partially_correct_number} />
             <Statistic title="错误" value={resultData.wrong_number} />
             <Statistic title="未作答" value={resultData.unanswered_number} />
-            <Statistic title="总用时(秒)" value={Math.round(resultData.effective_time_consumption / 1000)} />
           </Space>
         </Card>
       )}
@@ -54,7 +59,7 @@ export function ExaminationRecordSection(props: ExaminationRecordSectionProps) {
       {recordQuestions.length > 0 && (
         <div className={IndexBarCSS}>
           {recordQuestions.map((item) => {
-            const color = getRecordStatusColor(item);
+            const { color } = getRecordStatus(item);
             return (
               <Button
                 key={item.index}
@@ -69,66 +74,90 @@ export function ExaminationRecordSection(props: ExaminationRecordSectionProps) {
         </div>
       )}
 
-      <Card title="作答记录">
-        {isFetching ? (
-          <Flex justify="center" align="center" style={{ minHeight: 160 }}>
-            <Spin />
-          </Flex>
-        ) : recordQuestions.length > 0 ? (
-          <List
-            dataSource={recordQuestions}
-            renderItem={(item) => (
-              <List.Item id={getRecordAnchorId(item.index)}>
-                <RecordQuestionCard item={item} />
-              </List.Item>
-            )}
-          />
-        ) : (
-          <Empty description="暂无作答记录" />
-        )}
+      <Card title="作答记录" ref={recordAnchorRefs}>
+        {recordQuestions.map((item) => {
+          return <RecordQuestionCard key={item.index} item={mock} />;
+        })}
+        {!recordQuestions.length && <Empty description="暂无作答记录" />}
       </Card>
-    </Space>
+    </>
   );
 }
+const mock: ExaminationRecordQuestion = {
+  index: 0,
+  selected: [0],
+  score: 1,
+  isTimeout: false,
+  use_time: 10000,
+  question: {
+    question_id: "1",
+    question_text: "这是一个测试题目",
+    difficulty_level: 3,
+    question_type: ExamQuestionType.SingleChoice,
+    answer: {
+      answer_index: [0],
+      explanation_text: "这是一个测试题目的解析",
+    },
+    options: [{ text: "选项A" }, { text: "选项B" }, { text: "选项C" }],
+    time_limit: 60,
+    user: {
+      user_id: "1",
+      nickname: "测试用户",
+      avatar_url: "https://example.com/avatar.png",
+    },
+    comment: {
+      id: "1",
+      total: 0,
+    },
+  },
+};
 
 function RecordQuestionCard({ item }: { item: ExaminationRecordQuestion }) {
-  if (!item.question) {
+  const { index, question } = item;
+  if (!question) {
     return (
-      <Card style={{ width: "100%" }}>
-        <Typography.Text type="secondary">第 {item.index + 1} 题已无可展示题面。</Typography.Text>
+      <Card>
+        <Typography.Text type="secondary">第 {item.index + 1} 题目不存在。</Typography.Text>
       </Card>
     );
   }
-
+  const status = getRecordStatus(item);
   return (
     <QuestionWork
-      style={{ width: "100%" }}
-      data={item.question}
+      data={question}
       index={item.index}
-      value={item.selected ?? []}
-      correctIndexes={item.question.answer?.answer_index}
-      className={RecordCardCSS}
+      value={item.selected ?? undefined}
+      correctIndexes={question.answer?.answer_index}
     >
-      <Space orientation="vertical" size={8} style={{ width: "100%" }}>
+      <div>
         <Space wrap>
-          <Tag color={getRecordTagColor(item)}>{getRecordStatusText(item)}</Tag>
-          <Tag color={item.isTimeout ? "red" : "default"}>{item.isTimeout ? "已超时" : "未超时"}</Tag>
-          <Typography.Text type="secondary">得分：{item.score ?? "未评分"}</Typography.Text>
-          <Typography.Text type="secondary">耗时：{formatUseTime(item.use_time)}</Typography.Text>
+          <Typography.Text type="secondary">得分：{item.score}</Typography.Text>
+          <Tag color={status.color}>{status.text}</Tag>
+          <Typography.Text type="secondary">
+            耗时：{item.use_time && Math.floor(item.use_time / 1000)}秒
+          </Typography.Text>
+          {item.isTimeout && <Tag color="red">超时</Tag>}
         </Space>
-        <Space wrap>
+      </div>
+      <div>
+        <Space wrap align="center">
           <Typography.Text type="secondary">难度：</Typography.Text>
-          <Rate disabled count={5} value={clampDifficulty(item.question.difficulty_level)} />
-          {item.question.user && (
-            <Typography.Text type="secondary">
-              出题人：
-              <Link to="/user/$userId/post" params={{ userId: item.question.user.user_id }}>
-                {item.question.user.nickname}
-              </Link>
-            </Typography.Text>
+          <Rate disabled count={5} value={clampDifficulty(question.difficulty_level)} />
+          <Typography.Text type="secondary">出题人：</Typography.Text>
+          {question.user ? (
+            <Link to="/user/$userId/post" params={{ userId: question.user.user_id }} target="_blank">
+              <Space size="small" align="center">
+                <Avatar size="small" src={question.user.avatar_url}>
+                  {question.user.nickname}
+                </Avatar>
+                {question.user.nickname}
+              </Space>
+            </Link>
+          ) : (
+            <Avatar size="small">无</Avatar>
           )}
         </Space>
-      </Space>
+      </div>
     </QuestionWork>
   );
 }
@@ -152,8 +181,4 @@ const IndexButtonCSS = css`
   color: #fff;
   border: none;
   box-shadow: none;
-`;
-
-const RecordCardCSS = css`
-  border-left: 4px solid var(--ant-colorBorderSecondary);
 `;

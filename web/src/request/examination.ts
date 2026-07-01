@@ -23,6 +23,12 @@ export function getExaminationResultQueryOption(examId: string) {
     queryFn: () => api["/examination/:exam_id/result"].get({ params: { exam_id: examId } }),
   };
 }
+export function nextExaminationQuestionQueryOption(examId: string) {
+  return {
+    queryKey: [EXAMINATION_QUERY_KEY_PREFIX, "next", examId],
+    queryFn: () => api["/examination/:exam_id/next"].post({ params: { exam_id: examId } }),
+  };
+}
 
 export function createExamination(input: ExaminationCreateInput) {
   return api["/examination"].put({ body: input });
@@ -34,10 +40,6 @@ export function deleteExamination(examId: string, body: ExaminationDeleteInput =
 
 export function startExamination(examId: string) {
   return api["/examination/:exam_id/start"].post({ params: { exam_id: examId } });
-}
-
-export function nextExaminationQuestion(examId: string) {
-  return api["/examination/:exam_id/next"].post({ params: { exam_id: examId } });
 }
 
 export function answerExaminationQuestion(examId: string, body: ExaminationAnswerInput) {

@@ -21,7 +21,8 @@ export async function getExaminationList(
     "e.end_time",
     "e.result_allow_view_date",
     "e.use_time_total_limit / 1000 AS use_time_total_limit",
-    "e.grade",
+    "e.grade AS score",
+    "e.grade_total AS total_score",
     "e.question_total AS question_number",
     `${examinationStatus("e")} AS status`,
   ])
@@ -94,10 +95,9 @@ function getStatusWhere(status: ExaminationStatus) {
   }
 }
 
-type ExaminationBaseRow = Pick<
-  DbExamination,
-  "grade" | "allow_time_end" | "allow_time_start" | "use_time_total_limit"
-> & {
+type ExaminationBaseRow = Pick<DbExamination, "allow_time_end" | "allow_time_start" | "use_time_total_limit"> & {
+  score: number | null;
+  total_score: number;
   title: string;
   id: string;
   question_number: number | null;

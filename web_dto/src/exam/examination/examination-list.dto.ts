@@ -24,8 +24,10 @@ export type ExaminationInfoOutput = {
   id: string;
   /** 考试名称 */
   title: string;
-  /** 成绩 */
-  grade?: number | null;
+  /** 总分 */
+  total_score: number;
+  /** 得分 */
+  score?: number | null;
   /** 允许查看成绩的时间 */
   result_allow_view_date?: string | null;
   /** 总使用时间限制，单位秒。0 为无限制 */
