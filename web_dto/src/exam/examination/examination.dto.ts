@@ -38,6 +38,8 @@ export type QuestionPrivate = {
 
   /** 时间限制（单位秒），null表示无时间限制 */
   time_limit?: number | null;
+  /** 题目总分 */
+  score_total: number;
 };
 
 export type QuestionRecordItem = QuestionPrivate & {

@@ -16,6 +16,7 @@ type NextQuestionRow = {
   } | null;
   question_start_time: Date;
   time_limit: number | null;
+  score_total: number;
   options: QuestionMediaRaw[] | null;
   attachments: QuestionMediaRaw[] | null;
 };
@@ -27,6 +28,7 @@ function toQuestionOutput(row: NextQuestionRow): ExaminationQuestionOutput["ques
     index: row.index,
     start_time: row.question_start_time.toISOString(),
     time_limit: row.time_limit,
+    score_total: row.score_total,
     ...row.question,
     question_text_struct: row.question.question_text_struct ?? undefined,
     attachments: row.attachments ? initQuestionOptions(row.attachments) : undefined,
@@ -72,6 +74,7 @@ export async function getNextExaminationQuestion(
     "u.index",
     "u.question_start_time",
     "qb.time_limit",
+    "qb.score AS score_total",
     `${jsonb_build_object({
       question_id: "q.id",
       question_text: "q.question_text",

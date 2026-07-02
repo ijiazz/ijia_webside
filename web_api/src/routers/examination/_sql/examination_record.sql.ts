@@ -61,6 +61,7 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
           .toSelect(),
         is_timeout: `COALESCE(qb.time_limit IS NOT NULL AND (EXTRACT(EPOCH FROM a.question_commit_time - a.question_start_time))::SMALLINT > qb.time_limit, false)`,
         time_limit: "qb.time_limit",
+        score_total: "qb.score",
         answer: jsonb_build_object({
           answer_index: "q.answer_index",
           explanation_text: "q.answer_text",
@@ -117,6 +118,7 @@ function mapResult(input: RecordRow[], allowViewResult: boolean): ExaminationRec
         question_type: row.question.question_type,
         comment: row.question.comment,
         time_limit: row.question.time_limit,
+        score_total: row.question.score_total,
         user: row.question.user,
         attachments: row.question.attachments ? initQuestionOptions(row.question.attachments) : undefined,
         options: row.question.options ? initQuestionOptions(row.question.options) : undefined,
@@ -156,6 +158,7 @@ type RecordRow = {
         | "question_type"
         | "comment"
         | "time_limit"
+        | "score_total"
         | "user"
       > & {
         is_timeout: boolean;

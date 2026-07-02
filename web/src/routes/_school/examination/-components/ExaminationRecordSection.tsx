@@ -2,7 +2,7 @@ import { QuestionWork } from "@/routes/_school/-components/question/QuestionWork
 import { ExaminationRecordQuestion, ExaminationStatus, ExamQuestionType } from "@ijia/api-types";
 import { css } from "@emotion/css";
 import { Link } from "@tanstack/react-router";
-import { Alert, Avatar, Button, Card, Empty, Rate, Space, Statistic, Tag, Typography } from "antd";
+import { Alert, Avatar, Button, Card, Empty, Rate, Space, Statistic, Typography } from "antd";
 import { clampDifficulty, getRecordStatus } from "../-utils/status_color.ts";
 import { useQuery } from "@tanstack/react-query";
 import { getExaminationRecordQueryOption, getExaminationResultQueryOption } from "@/request/examination.ts";
@@ -109,55 +109,46 @@ const mock: ExaminationRecordQuestion = {
       id: "1",
       total: 0,
     },
+    score_total: 2,
   },
 };
 
 function RecordQuestionCard({ item }: { item: ExaminationRecordQuestion }) {
-  const { index, question } = item;
-  if (!question) {
-    return (
-      <Card>
-        <Typography.Text type="secondary">第 {item.index + 1} 题目不存在。</Typography.Text>
-      </Card>
-    );
-  }
-  const status = getRecordStatus(item);
+  const { question } = item;
+
   return (
     <QuestionWork
-      data={question}
+      data={question ?? {}}
       index={item.index}
-      value={item.selected ?? undefined}
-      correctIndexes={question.answer?.answer_index}
+      value={item.selected}
+      correctIndexes={question?.answer?.answer_index}
+      isTimeout={item.isTimeout}
+      score={item.score}
+      useTime={item.use_time}
     >
-      <div>
-        <Space wrap>
-          <Typography.Text type="secondary">得分：{item.score}</Typography.Text>
-          <Tag color={status.color}>{status.text}</Tag>
-          <Typography.Text type="secondary">
-            耗时：{item.use_time && Math.floor(item.use_time / 1000)}秒
-          </Typography.Text>
-          {item.isTimeout && <Tag color="red">超时</Tag>}
-        </Space>
-      </div>
-      <div>
-        <Space wrap align="center">
-          <Typography.Text type="secondary">难度：</Typography.Text>
-          <Rate disabled count={5} value={clampDifficulty(question.difficulty_level)} />
-          <Typography.Text type="secondary">出题人：</Typography.Text>
-          {question.user ? (
-            <Link to="/user/$userId/post" params={{ userId: question.user.user_id }} target="_blank">
-              <Space size="small" align="center">
-                <Avatar size="small" src={question.user.avatar_url}>
+      {question && (
+        <div style={{ display: "flex", gap: 24, marginBlockStart: 18 }}>
+          <div>
+            <Typography.Text type="secondary">难度：</Typography.Text>
+            <Rate style={{ lineHeight: 1 }} disabled count={5} value={clampDifficulty(question.difficulty_level)} />
+          </div>
+          <div>
+            <Typography.Text type="secondary">出题人：</Typography.Text>
+            {question.user ? (
+              <Link to="/user/$userId/post" params={{ userId: question.user.user_id }} target="_blank">
+                <Space size="small" align="center">
+                  <Avatar size="small" src={question.user.avatar_url}>
+                    {question.user.nickname}
+                  </Avatar>
                   {question.user.nickname}
-                </Avatar>
-                {question.user.nickname}
-              </Space>
-            </Link>
-          ) : (
-            <Avatar size="small">无</Avatar>
-          )}
-        </Space>
-      </div>
+                </Space>
+              </Link>
+            ) : (
+              <Avatar size="small">无</Avatar>
+            )}
+          </div>
+        </div>
+      )}
     </QuestionWork>
   );
 }

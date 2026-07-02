@@ -8,17 +8,25 @@ export type QuestionWorkData = Partial<QuestionPrivate>;
 
 export type QuestionWorkProps = Omit<CardProps, "title" | "styles" | "onChange"> & {
   data: QuestionWorkData;
+  /** 正确答案选项索引 */
   correctIndexes?: number[];
-  value?: number[];
+  /** 当前选择的选项索引 */
+  value?: number[] | null;
+  /** 题号 */
   index?: number;
-  useTime?: number;
-  isTimeout?: number;
+  /** 题目做题用时。单位毫秒 */
+  useTime?: number | null;
+  /** 做题是否超时 */
+  isTimeout?: boolean;
+  /** 得分 */
+  score?: number | null;
+  /** 选择选项时触发 */
   onChange?: (indexes: number[]) => void;
 
   children?: React.ReactNode;
 };
 export function QuestionWork(props: QuestionWorkProps) {
-  const { data, index, value, onChange, correctIndexes, children, useTime, isTimeout, ...rest } = props;
+  const { data, index, value, onChange, correctIndexes, children, useTime, isTimeout, score, ...rest } = props;
   if (!data.question_type) {
     return <div>请选择题型</div>;
   }
@@ -27,8 +35,13 @@ export function QuestionWork(props: QuestionWorkProps) {
       {...rest}
       title={
         <Space>
-          {index !== undefined && <span>{index + 1}.</span>}
-          <Tag color="geekblue">{QUESTION_TYPE_LABEL[data.question_type]}</Tag>
+          <span>
+            {index !== undefined && <span>{index + 1}.</span>}
+            {typeof data.score_total === "number" && (
+              <Typography.Text type="secondary">【{data.score_total}分】</Typography.Text>
+            )}
+            <Tag color="geekblue">{QUESTION_TYPE_LABEL[data.question_type]}</Tag>
+          </span>
           <Typography.Text strong>{data.question_text}</Typography.Text>
         </Space>
       }
@@ -45,15 +58,24 @@ export function QuestionWork(props: QuestionWorkProps) {
             type={data.question_type}
             data={data.options}
             correctIndexes={correctIndexes}
-            value={value}
+            value={value ?? undefined}
             onChange={onChange}
           />
         )}
         {value && value.length > 0 && (
           <div>
-            <div>
-              你的答案：
-              {toAnswer(value, data.question_type)}
+            <div style={{ display: "flex", gap: 16 }}>
+              <div style={{ marginRight: 24 }}>
+                你的答案：
+                {toAnswer(value, data.question_type)}
+              </div>
+              {typeof score === "number" && (
+                <Typography.Text type={score === 0 ? "danger" : "success"}>得分：{score}</Typography.Text>
+              )}
+              {typeof useTime === "number" && (
+                <Typography.Text type="secondary">耗时：{(useTime / 1000).toFixed(2)}秒</Typography.Text>
+              )}
+              {isTimeout && <Tag color="red">超时</Tag>}
             </div>
             {correctIndexes && (
               <div>
