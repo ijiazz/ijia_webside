@@ -22,13 +22,15 @@ export type QuestionWorkProps = Omit<CardProps, "title" | "styles" | "onChange">
   score?: number | null;
   /** 选择选项时触发 */
   onChange?: (indexes: number[]) => void;
-
+  readOnly?: boolean;
   children?: React.ReactNode;
 };
 export function QuestionWork(props: QuestionWorkProps) {
-  const { data, index, value, onChange, correctIndexes, children, useTime, isTimeout, score, ...rest } = props;
+  const { data, index, value, onChange, correctIndexes, children, useTime, isTimeout, score, readOnly, ...rest } =
+    props;
+
   if (!data.question_type) {
-    return <div>请选择题型</div>;
+    return <Typography.Text type="secondary">题目不存在</Typography.Text>;
   }
   return (
     <Card
@@ -40,7 +42,7 @@ export function QuestionWork(props: QuestionWorkProps) {
             {typeof data.score_total === "number" && (
               <Typography.Text type="secondary">【{data.score_total}分】</Typography.Text>
             )}
-            <Tag color="geekblue">{QUESTION_TYPE_LABEL[data.question_type]}</Tag>
+            {data.question_type && <Tag color="geekblue">{QUESTION_TYPE_LABEL[data.question_type]}</Tag>}
           </span>
           <Typography.Text strong>{data.question_text}</Typography.Text>
         </Space>
@@ -60,10 +62,11 @@ export function QuestionWork(props: QuestionWorkProps) {
             correctIndexes={correctIndexes}
             value={value ?? undefined}
             onChange={onChange}
+            readOnly={readOnly}
           />
         )}
-        {value && value.length > 0 && (
-          <div>
+        <div>
+          {value && value.length > 0 && (
             <div style={{ display: "flex", gap: 16 }}>
               <div style={{ marginRight: 24 }}>
                 你的答案：
@@ -77,14 +80,14 @@ export function QuestionWork(props: QuestionWorkProps) {
               )}
               {isTimeout && <Tag color="red">超时</Tag>}
             </div>
-            {correctIndexes && (
-              <div>
-                正确答案：
-                {toAnswer(correctIndexes, data.question_type)}
-              </div>
-            )}
-          </div>
-        )}
+          )}
+          {correctIndexes && (
+            <div>
+              正确答案：
+              {toAnswer(correctIndexes, data.question_type)}
+            </div>
+          )}
+        </div>
       </div>
       {children}
     </Card>

@@ -1,12 +1,13 @@
 import { QuestionWork } from "@/routes/_school/-components/question/QuestionWork.tsx";
-import { ExaminationRecordQuestion, ExaminationStatus, ExamQuestionType } from "@ijia/api-types";
+import { ExaminationRecordQuestion, ExaminationStatus } from "@ijia/api-types";
 import { css } from "@emotion/css";
 import { Link } from "@tanstack/react-router";
-import { Alert, Avatar, Button, Card, Empty, Rate, Space, Statistic, Typography } from "antd";
+import { Alert, Avatar, Button, Card, Collapse, Empty, Rate, Space, Statistic, Typography } from "antd";
 import { clampDifficulty, getRecordStatus } from "../-utils/status_color.ts";
 import { useQuery } from "@tanstack/react-query";
 import { getExaminationRecordQueryOption, getExaminationResultQueryOption } from "@/request/examination.ts";
 import { useRef } from "react";
+import { TextStruct } from "@/components/TextStructure.tsx";
 
 type ExaminationRecordSectionProps = {
   status: ExaminationStatus.ended | ExaminationStatus.result;
@@ -76,42 +77,13 @@ export function ExaminationRecordSection(props: ExaminationRecordSectionProps) {
 
       <Card title="作答记录" ref={recordAnchorRefs}>
         {recordQuestions.map((item) => {
-          return <RecordQuestionCard key={item.index} item={mock} />;
+          return <RecordQuestionCard key={item.index} item={item} />;
         })}
         {!recordQuestions.length && <Empty description="暂无作答记录" />}
       </Card>
     </>
   );
 }
-const mock: ExaminationRecordQuestion = {
-  index: 0,
-  selected: [0],
-  score: 1,
-  isTimeout: false,
-  use_time: 10000,
-  question: {
-    question_id: "1",
-    question_text: "这是一个测试题目",
-    difficulty_level: 3,
-    question_type: ExamQuestionType.SingleChoice,
-    answer: {
-      answer_index: [0],
-      explanation_text: "这是一个测试题目的解析",
-    },
-    options: [{ text: "选项A" }, { text: "选项B" }, { text: "选项C" }],
-    time_limit: 60,
-    user: {
-      user_id: "1",
-      nickname: "测试用户",
-      avatar_url: "https://example.com/avatar.png",
-    },
-    comment: {
-      id: "1",
-      total: 0,
-    },
-    score_total: 2,
-  },
-};
 
 function RecordQuestionCard({ item }: { item: ExaminationRecordQuestion }) {
   const { question } = item;
@@ -125,29 +97,42 @@ function RecordQuestionCard({ item }: { item: ExaminationRecordQuestion }) {
       isTimeout={item.isTimeout}
       score={item.score}
       useTime={item.use_time}
+      readOnly
     >
       {question && (
-        <div style={{ display: "flex", gap: 24, marginBlockStart: 18 }}>
-          <div>
-            <Typography.Text type="secondary">难度：</Typography.Text>
-            <Rate style={{ lineHeight: 1 }} disabled count={5} value={clampDifficulty(question.difficulty_level)} />
-          </div>
-          <div>
-            <Typography.Text type="secondary">出题人：</Typography.Text>
-            {question.user ? (
-              <Link to="/user/$userId/post" params={{ userId: question.user.user_id }} target="_blank">
-                <Space size="small" align="center">
-                  <Avatar size="small" src={question.user.avatar_url}>
+        <>
+          <div style={{ display: "flex", gap: 24, marginBlockStart: 18 }}>
+            <div>
+              <Typography.Text type="secondary">难度：</Typography.Text>
+              <Rate style={{ lineHeight: 1 }} disabled count={5} value={clampDifficulty(question.difficulty_level)} />
+            </div>
+            <div>
+              <Typography.Text type="secondary">出题人：</Typography.Text>
+              {question.user ? (
+                <Link to="/user/$userId/post" params={{ userId: question.user.user_id }} target="_blank">
+                  <Space size="small" align="center">
+                    <Avatar size="small" src={question.user.avatar_url}>
+                      {question.user.nickname}
+                    </Avatar>
                     {question.user.nickname}
-                  </Avatar>
-                  {question.user.nickname}
-                </Space>
-              </Link>
-            ) : (
-              <Avatar size="small">无</Avatar>
-            )}
+                  </Space>
+                </Link>
+              ) : (
+                <Avatar size="small">无</Avatar>
+              )}
+            </div>
           </div>
-        </div>
+          {question.answer && (
+            <Collapse size="small" ghost style={{ marginBlockStart: 12 }} styles={{ header: { padding: 0 } }}>
+              <Collapse.Panel header="答案解析" key="answer">
+                <TextStruct
+                  text={question.answer.explanation_text}
+                  structure={question.answer.explanation_text_struct}
+                />
+              </Collapse.Panel>
+            </Collapse>
+          )}
+        </>
       )}
     </QuestionWork>
   );
@@ -155,7 +140,7 @@ function RecordQuestionCard({ item }: { item: ExaminationRecordQuestion }) {
 
 const IndexBarCSS = css`
   position: sticky;
-  top: 8px;
+  top: 0;
   z-index: 2;
   display: flex;
   flex-wrap: wrap;

@@ -8,16 +8,18 @@ type OptionsBoardProps = {
   data: QuestionOption[];
   correctIndexes?: number[]; // 可选，正确选项的索引列表
   value?: number[];
+  readOnly?: boolean;
   onChange?: (indexes: number[]) => void;
 };
 
 export function OptionsBoard(props: OptionsBoardProps) {
-  const { type, data, correctIndexes, onChange, value } = props;
+  const { type, data, correctIndexes, onChange, readOnly, value } = props;
 
   switch (type) {
     case ExamQuestionType.SingleChoice:
       return (
         <SingleOptionsBoard
+          readOnly={readOnly}
           data={data}
           correctIndex={correctIndexes?.[0]}
           value={value?.[0]}
@@ -25,10 +27,19 @@ export function OptionsBoard(props: OptionsBoardProps) {
         />
       );
     case ExamQuestionType.MultipleChoice:
-      return <MultipleOptionsBoard data={data} correctIndexes={correctIndexes} value={value} onChange={onChange} />;
+      return (
+        <MultipleOptionsBoard
+          readOnly={readOnly}
+          data={data}
+          correctIndexes={correctIndexes}
+          value={value}
+          onChange={onChange}
+        />
+      );
     case ExamQuestionType.TrueOrFalse:
       return (
         <TrueFalseOptionsBoard
+          readOnly={readOnly}
           data={data}
           correct={correctIndexes?.[0] === 0}
           value={value?.[0]}

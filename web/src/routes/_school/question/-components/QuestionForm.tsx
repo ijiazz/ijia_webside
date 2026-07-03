@@ -3,7 +3,6 @@ import { FormProvider, UseFormReturn } from "react-hook-form";
 import { css } from "@emotion/css";
 import { FromValues } from "./CreateForm.tsx";
 import { CreatePreview } from "./CreatePreview.tsx";
-import { Alert } from "antd";
 
 export type QuestionFormProps = {
   form: UseFormReturn<FromValues>;
