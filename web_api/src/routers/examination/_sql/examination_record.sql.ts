@@ -35,7 +35,7 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
     "a.question_start_time AS start_time",
     select(
       jsonb_build_object({
-        question_id: "q.id",
+        question_id: "q.question_id",
         difficulty_level: "q.difficulty_level",
         question_text: "q.question_text",
         question_text_struct: "q.question_text_struct",
@@ -59,9 +59,9 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
           .from("public.user", { as: "u" })
           .where("u.id=q.user_id")
           .toSelect(),
-        is_timeout: `COALESCE(qb.time_limit IS NOT NULL AND (EXTRACT(EPOCH FROM a.question_commit_time - a.question_start_time))::SMALLINT > qb.time_limit, false)`,
-        time_limit: "qb.time_limit",
-        score_total: "qb.score",
+        is_timeout: `COALESCE(q.time_limit IS NOT NULL AND (EXTRACT(EPOCH FROM a.question_commit_time - a.question_start_time))::SMALLINT > q.time_limit, false)`,
+        time_limit: "q.time_limit",
+        score_total: "q.score",
         answer: jsonb_build_object({
           answer_index: "q.answer_index",
           explanation_text: "q.answer_text",
@@ -69,14 +69,14 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
         }),
         options: select(
           `ARRAY_AGG(${jsonb_build_object({
-            index: "COALESCE(qb.option_map[m.index+1], m.index)",
+            index: "COALESCE(q.option_map[m.index+1], m.index)",
             text: "m.text",
             type: "m.media_type",
             data: "encode(m.media, 'base64')",
           })})`,
         )
           .from("exam_question_real_option", { as: "m" })
-          .where(`m.question_id=qb.question_id`)
+          .where(`m.question_id=q.question_id`)
           .toSelect(),
         attachments: select(
           `ARRAY_AGG(${jsonb_build_object({
@@ -87,13 +87,12 @@ export async function getExaminationRecord(examId: number, userId: number): Prom
           })})`,
         )
           .from("exam_question_attachment", { as: "m" })
-          .where(`m.question_id=qb.question_id`)
+          .where(`m.question_id=q.question_id`)
           .toSelect(),
       }),
     )
-      .from("exam_paper_template_question", { as: "qb" })
-      .leftJoin("exam_question", { as: "q", on: "q.id=qb.question_id" })
-      .where([`qb.paper_template_id=${v(templateId)}`, `qb.index=t.index`])
+      .from("exam_paper_template_question_view", { as: "q" })
+      .where([`q.paper_template_id=${v(templateId)}`, `q.index=t.index`])
       .toSelect("question"),
   ])
     .from(`(SELECT generate_series(0, ${exam.question_total - 1}) AS index)`, { as: "t" })

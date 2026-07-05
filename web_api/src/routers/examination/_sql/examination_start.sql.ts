@@ -23,12 +23,13 @@ async function ensureTemplateQuestions(t: DbTransaction, templateId: number, que
   await t.queryCount(v.gen`
   INSERT INTO exam_paper_template_question (index, paper_template_id, question_id, score, option_map)
     SELECT 
-      (row_number() OVER (ORDER BY random()) - 1) AS index,
+      (row_number() OVER () - 1) AS index,
       ${templateId} template_id, q.id question_id, 1 score,
       (SELECT ARRAY_AGG(index_map) FROM 
-        (SELECT (row_number() OVER (ORDER BY random()) - 1) AS index_map
+        (SELECT (row_number() OVER () - 1) AS index_map
           FROM exam_question_option AS qo
           WHERE qo.question_id = q.id AND q.question_type !='true_false'
+          ORDER BY random()
         )
       AS option_map) option_map
     FROM (
