@@ -19,7 +19,7 @@ export function SingleOptionsBoard(props: SingleOptionsBoardProps) {
     <Radio.Group
       {...rest}
       value={value}
-      aria-readonly={true}
+      aria-readonly={readOnly}
       onChange={(e) => {
         onChange?.(e.target.value);
       }}

@@ -1,7 +1,7 @@
-import { ExaminationPageHeader } from "../-components/ExaminationPageHeader.tsx";
-import { ExaminationRecordSection } from "../-components/ExaminationRecordSection.tsx";
+import { ExaminationPageHeader } from "./-components/ExaminationPageHeader.tsx";
+import { ExaminationRecordSection } from "./-components/ExaminationRecordSection.tsx";
 import { css } from "@emotion/css";
-import { useRouter, createLazyFileRoute, useLoaderData, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, useLoaderData, Link } from "@tanstack/react-router";
 import { Alert, Button } from "antd";
 import { ExaminationStatus } from "@/api.ts";
 import { useMessage } from "@/provider/AntdProvider.tsx";
@@ -18,14 +18,9 @@ function RouteComponent() {
   const { examId } = Route.useParams();
   const navigate = Route.useNavigate();
   const message = useMessage();
-  const router = useRouter();
   const modal = useModal();
 
   const onBack = () => {
-    if (router.history.canGoBack()) {
-      router.history.back();
-      return;
-    }
     navigate({ to: "/examination" });
   };
   const onStart = () => {

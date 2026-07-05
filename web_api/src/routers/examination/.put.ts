@@ -1,6 +1,6 @@
 import { checkValueAsync, queryInt } from "@/common/check.ts";
-import routeGroup from "../_route.ts";
-import { createExaminationByQuestionTotal } from "../_sql/examination_create.sql.ts";
+import routeGroup from "./_route.ts";
+import { createExaminationByQuestionTotal } from "./_sql/examination_create.sql.ts";
 import { optional } from "@asla/wokao";
 import { HttpError } from "@/common/errors.ts";
 

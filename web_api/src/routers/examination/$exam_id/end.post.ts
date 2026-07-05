@@ -1,6 +1,6 @@
 import { checkValue, queryInt } from "@/common/check.ts";
-import routeGroup from "../../_route.ts";
-import { endExamination } from "../../_sql/examination_end.sql.ts";
+import routeGroup from "../_route.ts";
+import { endExamination } from "../_sql/examination_end.sql.ts";
 
 export default routeGroup.create({
   method: "POST",

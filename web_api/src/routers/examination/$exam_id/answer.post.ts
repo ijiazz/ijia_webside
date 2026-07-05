@@ -1,7 +1,7 @@
 import { checkValue, checkValueAsync, queryInt } from "@/common/check.ts";
-import routeGroup from "../../_route.ts";
+import routeGroup from "../_route.ts";
 import { array } from "@asla/wokao";
-import { submitExaminationAnswer } from "../../_sql/examination_answer.sql.ts";
+import { submitExaminationAnswer } from "../_sql/examination_answer.sql.ts";
 
 export default routeGroup.create({
   method: "POST",

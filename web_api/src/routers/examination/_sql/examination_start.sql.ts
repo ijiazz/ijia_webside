@@ -27,12 +27,12 @@ async function ensureTemplateQuestions(t: DbTransaction, templateId: number, que
       ${templateId} template_id, q.id question_id, 1 score,
       (SELECT ARRAY_AGG(index_map) FROM 
         (SELECT (row_number() OVER (ORDER BY random()) - 1) AS index_map
-          FROM exam_question
-          WHERE id = q.id AND question_type !='true_false'
+          FROM exam_question_option AS qo
+          WHERE qo.question_id = q.id AND q.question_type !='true_false'
         )
       AS option_map) option_map
     FROM (
-      SELECT id
+      SELECT id, question_type
       FROM exam_question
       WHERE review_status=${ReviewStatus.passed}
         AND is_system_gen=FALSE

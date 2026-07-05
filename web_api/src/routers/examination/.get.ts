@@ -1,6 +1,6 @@
 import { checkValue, optionalInt } from "@/common/check.ts";
-import routeGroup from "../_route.ts";
-import { getExaminationList } from "../_sql/examination_list.sql.ts";
+import routeGroup from "./_route.ts";
+import { getExaminationList } from "./_sql/examination_list.sql.ts";
 import { ExaminationStatus } from "@/dto.ts";
 import { array, enumType, optional } from "@asla/wokao";
 const StatusSchema = array(

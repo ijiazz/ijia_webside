@@ -94,7 +94,7 @@ test("多选题全部正确，获得满分，部分正确，获得一半，存�
   await plan.start();
   await plan.commitGetNext([1, 2]);
   await plan.commitGetNext([1]);
-  await plan.commitGetNext([]);
+  await plan.commitGetNext([]); //跳过
   await plan.commitGetNext([1, 3]);
   await plan.end();
   const record = await plan.getRecord();
@@ -109,8 +109,8 @@ test("多选题全部正确，获得满分，部分正确，获得一半，存�
   expect(result).toMatchObject({
     correct_number: 1,
     partially_correct_number: 1,
-    wrong_number: 2,
-    unanswered_number: 1,
+    wrong_number: 1,
+    unanswered_number: 2,
   } satisfies Partial<typeof result>);
 });
 test("打乱题目顺序", async function ({ api, publicDbPool }) {
@@ -166,13 +166,14 @@ test("三个题目：全部作答正确并交卷，然后查看考试结果", as
     unanswered_number: 0,
   });
 });
-test("三个题目：正确作答 1 题并直接交卷，然后查看考试结果", async function ({ api, publicDbPool }) {
+test("三个题目：正确作答 1 题，跳过 1 题并直接交卷，然后查看考试结果", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   const { templateId } = await prepareExaminationTemplate(DEFAULT_QUESTIONS);
   const examination_id = await prepareExamination({ userId: alice.id, templateId });
   const plan = new ExamPlan(api, alice.token, examination_id);
   await plan.start();
   await plan.commitGetNext([0]);
+  await plan.commitGetNext([]);
   await plan.end();
 
   const result = await plan.getResult();

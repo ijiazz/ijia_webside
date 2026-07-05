@@ -1,13 +1,14 @@
-import { QuestionWork } from "@/routes/_school/-components/question/QuestionWork.tsx";
+import { QuestionAnswer, QuestionWork } from "@/routes/_school/-components/question/QuestionWork.tsx";
 import { ExaminationRecordQuestion, ExaminationStatus } from "@ijia/api-types";
 import { css } from "@emotion/css";
 import { Link } from "@tanstack/react-router";
 import { Alert, Avatar, Button, Card, Collapse, Empty, Rate, Space, Statistic, Typography } from "antd";
-import { clampDifficulty, getRecordStatus } from "../-utils/status_color.ts";
+import { clampDifficulty, getRecordStatus } from "../../-utils/status_color.ts";
 import { useQuery } from "@tanstack/react-query";
 import { getExaminationRecordQueryOption, getExaminationResultQueryOption } from "@/request/examination.ts";
 import { useRef } from "react";
 import { TextStruct } from "@/components/TextStructure.tsx";
+import { formatTimeToString } from "@/common/time.ts";
 
 type ExaminationRecordSectionProps = {
   status: ExaminationStatus.ended | ExaminationStatus.result;
@@ -47,8 +48,8 @@ export function ExaminationRecordSection(props: ExaminationRecordSectionProps) {
       {status === ExaminationStatus.result && resultData && (
         <Card>
           <Space size="large" wrap>
-            <Statistic title="总成绩" value={resultData.grade} />
-            <Statistic title="总用时(秒)" value={Math.round(resultData.effective_time_consumption / 1000)} />
+            <Statistic title="成绩" value={resultData.grade} />
+            <Statistic title="用时" value={formatTimeToString(resultData.effective_time_consumption, "ms")} />
             <Statistic title="正确" value={resultData.correct_number} />
             <Statistic title="部分正确" value={resultData.partially_correct_number} />
             <Statistic title="错误" value={resultData.wrong_number} />
@@ -94,14 +95,19 @@ function RecordQuestionCard({ item }: { item: ExaminationRecordQuestion }) {
       index={item.index}
       value={item.selected}
       correctIndexes={question?.answer?.answer_index}
-      isTimeout={item.isTimeout}
-      score={item.score}
-      useTime={item.use_time}
       readOnly
     >
+      <QuestionAnswer
+        questionType={question?.question_type}
+        correctIndexes={question?.answer?.answer_index}
+        selected={item.selected}
+        isTimeout={item.isTimeout}
+        score={item.score}
+        useTime={item.use_time}
+      />
       {question && (
         <>
-          <div style={{ display: "flex", gap: 24, marginBlockStart: 18 }}>
+          <div style={{ display: "flex", gap: 24 }}>
             <div>
               <Typography.Text type="secondary">难度：</Typography.Text>
               <Rate style={{ lineHeight: 1 }} disabled count={5} value={clampDifficulty(question.difficulty_level)} />
@@ -123,7 +129,7 @@ function RecordQuestionCard({ item }: { item: ExaminationRecordQuestion }) {
             </div>
           </div>
           {question.answer && (
-            <Collapse size="small" ghost style={{ marginBlockStart: 12 }} styles={{ header: { padding: 0 } }}>
+            <Collapse size="small" ghost styles={{ header: { padding: 0 } }}>
               <Collapse.Panel header="答案解析" key="answer">
                 <TextStruct
                   text={question.answer.explanation_text}

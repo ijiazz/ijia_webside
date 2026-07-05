@@ -1,7 +1,7 @@
 import { checkValue, queryInt } from "@/common/check.ts";
 import { HttpError } from "@/common/errors.ts";
-import routeGroup from "../_route.ts";
-import { deleteExamination } from "../_sql/examination_delete.sql.ts";
+import routeGroup from "./_route.ts";
+import { deleteExamination } from "./_sql/examination_delete.sql.ts";
 
 export default routeGroup.create({
   method: "DELETE",

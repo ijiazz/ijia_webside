@@ -68,7 +68,7 @@ export async function getNextExaminationQuestion(
           0
         ) AS index
       ON CONFLICT (exam_id, index) DO UPDATE
-        SET question_start_time=EXCLUDED.question_start_time
+        SET question_start_time=COALESCE(examination_user_answer.question_start_time, EXCLUDED.question_start_time)
       RETURNING question_start_time, index, exam_id`}
   ) ${select([
     "u.index",

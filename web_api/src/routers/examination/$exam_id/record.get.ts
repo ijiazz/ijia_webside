@@ -1,6 +1,6 @@
 import { checkValue, queryInt } from "@/common/check.ts";
-import routeGroup from "../../_route.ts";
-import { getExaminationRecord } from "../../_sql/examination_record.sql.ts";
+import routeGroup from "../_route.ts";
+import { getExaminationRecord } from "../_sql/examination_record.sql.ts";
 import { ExaminationRecordOutput } from "@ijia/api-types";
 
 export default routeGroup.create({

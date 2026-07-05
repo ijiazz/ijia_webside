@@ -36,7 +36,20 @@ test("获取下一题时，应按顺序返回未提交的题目", async function
   const q3 = await nextExaminationQuestion(api, alice.token, examination_id);
   expect(q3.question?.index).toBe(2);
 });
+test("重复获取下下一题，数据应不会改变", async function ({ api, publicDbPool }) {
+  const alice = await prepareUniqueUser("alice");
+  await preparePassedQuestions(3, alice.id);
+  const examination_id = await prepareExamination({
+    userId: alice.id,
+    questionTotal: 3,
+  });
 
+  await startExamination(api, alice.token, examination_id);
+
+  const { question: q1 } = await nextExaminationQuestion(api, alice.token, examination_id);
+  const { question: q2 } = await nextExaminationQuestion(api, alice.token, examination_id);
+  expect(q1).toEqual(q2);
+});
 test("获取别人考试的题目应返回 404", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   const bob = await prepareUniqueUser("bob");

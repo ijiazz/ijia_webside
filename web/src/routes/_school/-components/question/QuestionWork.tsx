@@ -3,6 +3,7 @@ import { QUESTION_TYPE_LABEL } from "./const.ts";
 import { OptionsBoard } from "./OptionsBoard/OptionsBoard.tsx";
 import { QuestionAttachments } from "./OptionsBoard/QuestionAttachments.tsx";
 import { Card, CardProps, Space, Tag, Typography } from "antd";
+import { formatTimeToString } from "@/common/time.ts";
 
 export type QuestionWorkData = Partial<QuestionPrivate>;
 
@@ -14,20 +15,13 @@ export type QuestionWorkProps = Omit<CardProps, "title" | "styles" | "onChange">
   value?: number[] | null;
   /** 题号 */
   index?: number;
-  /** 题目做题用时。单位毫秒 */
-  useTime?: number | null;
-  /** 做题是否超时 */
-  isTimeout?: boolean;
-  /** 得分 */
-  score?: number | null;
   /** 选择选项时触发 */
   onChange?: (indexes: number[]) => void;
   readOnly?: boolean;
   children?: React.ReactNode;
 };
 export function QuestionWork(props: QuestionWorkProps) {
-  const { data, index, value, onChange, correctIndexes, children, useTime, isTimeout, score, readOnly, ...rest } =
-    props;
+  const { data, index, value, onChange, correctIndexes, children, readOnly, ...rest } = props;
 
   if (!data.question_type) {
     return <Typography.Text type="secondary">题目不存在</Typography.Text>;
@@ -65,32 +59,50 @@ export function QuestionWork(props: QuestionWorkProps) {
             readOnly={readOnly}
           />
         )}
-        <div>
-          {value && value.length > 0 && (
-            <div style={{ display: "flex", gap: 16 }}>
-              <div style={{ marginRight: 24 }}>
-                你的答案：
-                {toAnswer(value, data.question_type)}
-              </div>
-              {typeof score === "number" && (
-                <Typography.Text type={score === 0 ? "danger" : "success"}>得分：{score}</Typography.Text>
-              )}
-              {typeof useTime === "number" && (
-                <Typography.Text type="secondary">耗时：{(useTime / 1000).toFixed(2)}秒</Typography.Text>
-              )}
-              {isTimeout && <Tag color="red">超时</Tag>}
-            </div>
-          )}
-          {correctIndexes && (
-            <div>
-              正确答案：
-              {toAnswer(correctIndexes, data.question_type)}
-            </div>
-          )}
-        </div>
+        {children}
       </div>
-      {children}
     </Card>
+  );
+}
+export type QuestionAnswerProps = {
+  /** 正确答案选项索引 */
+  correctIndexes?: number[];
+  /** 当前选择的选项索引 */
+  selected?: number[] | null;
+  /** 题目做题用时。单位毫秒 */
+  useTime?: number | null;
+  /** 做题是否超时 */
+  isTimeout?: boolean;
+  /** 得分 */
+  score?: number | null;
+  questionType?: ExamQuestionType;
+};
+export function QuestionAnswer(props: QuestionAnswerProps) {
+  const { selected, correctIndexes, useTime, isTimeout, score, questionType } = props;
+  return (
+    <div>
+      {selected && selected.length > 0 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ marginRight: 24 }}>
+            你的答案：
+            {questionType && toAnswer(selected, questionType)}
+          </div>
+          {typeof score === "number" && (
+            <Typography.Text type={score === 0 ? "danger" : "success"}>得分：{score}</Typography.Text>
+          )}
+          {typeof useTime === "number" && (
+            <Typography.Text type="secondary">耗时：{formatTimeToString(useTime, "ms")}</Typography.Text>
+          )}
+          {isTimeout && <Tag color="red">超时</Tag>}
+        </div>
+      )}
+      {correctIndexes && (
+        <div>
+          正确答案：
+          {questionType && toAnswer(correctIndexes, questionType)}
+        </div>
+      )}
+    </div>
   );
 }
 

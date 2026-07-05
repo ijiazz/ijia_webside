@@ -1,6 +1,6 @@
 import { ExaminationInfoOutput } from "@/api.ts";
 import { Button, Card, Descriptions, Flex, Space, Tag, Typography } from "antd";
-import { getTimeRange, STATUS_LABELS } from "../-utils/const.ts";
+import { getTimeRange, STATUS_LABELS } from "../../-utils/const.ts";
 
 type ExaminationPageHeaderProps = {
   exam: ExaminationInfoOutput;
@@ -22,18 +22,8 @@ export function ExaminationPageHeader(props: ExaminationPageHeaderProps) {
       </Flex>
 
       <Card style={{ width: "100%" }}>
-        <Space>
-          <span>
-            总分：<b>{exam.total_score}</b>
-          </span>
-          &nbsp;&nbsp;
-          {typeof exam.score === "number" && (
-            <span>
-              得分：<b>{exam.score}</b>
-            </span>
-          )}
-        </Space>
         <Descriptions column={1} size="small">
+          <Descriptions.Item label="总分">{exam.total_score}</Descriptions.Item>
           <Descriptions.Item label="题目总数">{exam.question_number ?? 0}</Descriptions.Item>
           <Descriptions.Item label=" 允许考试时间">
             {getTimeRange(exam.allow_time_start, exam.allow_time_end)}
