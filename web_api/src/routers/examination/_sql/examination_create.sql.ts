@@ -1,6 +1,7 @@
-import { HttpError } from "@/common/errors.ts";
 import { dbPool } from "@/db/client.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
+import { PaperTemplateGenRules } from "@ijia/api-types";
+import { DbExamPaperTemplate } from "@ijia/school-db/db";
 
 export type CreateExaminationOption = {
   title: string;
@@ -25,31 +26,23 @@ export async function createEmptyExamination(option: CreateExaminationOption) {
   const [examResult] = await dbPool.queryRows<{ id: number }>(sql);
   return examResult?.id;
 }
-export async function createExaminationByQuestionTotal(total: number, option: CreateExaminationOption) {
-  if (!Number.isSafeInteger(total) || total < 0) throw new HttpError(400, "题目数量必须是非负整数");
+export async function createExaminationByQuestionTotal(
+  option: CreateExaminationOption,
+  templateRules: PaperTemplateGenRules,
+) {
+  await using t = dbPool.begin();
+  const { id: templateId } = await t.queryFirstRow(
+    insertIntoValues("exam_paper_template", {
+      gen_rules: templateRules,
+      owner_id: option.userId,
+    } satisfies Partial<DbExamPaperTemplate>).returning<{ id: number }>("id"),
+  );
 
-  const sql = v.gen`
-    WITH update AS (
-      INSERT INTO exam_paper_template (exam_number)
-      VALUES (1)
-      RETURNING id
-    )
-    INSERT INTO examination (template_id, question_total, user_id, title, allow_time_start, allow_time_end, result_allow_view_date, use_time_total_limit)
-    SELECT 
-      (SELECT id FROM update) template_id,
-      ${total} question_total,
-      ${option.userId} user_id,
-      ${option.title} title,
-      ${option.allowTimeStart ?? null} allow_time_start,
-      ${option.allowTimeEnd ?? null} allow_time_end,
-      ${option.resultAllowViewDate ?? null} result_allow_view_date,
-      ${option.useTimeTotalLimit ?? 0} use_time_total_limit
-    RETURNING id
-  `;
-  const [examResult] = await dbPool.queryRows<{ id: number }>(sql);
+  const [examResult] = await dbPool.queryRows<{ id: number }>(createExamTemplate(templateId, option));
+  await t.commit();
   return examResult?.id;
 }
-export async function createExaminationByTemplate(templateId: number, option: CreateExaminationOption) {
+function createExamTemplate(templateId: number, option: CreateExaminationOption) {
   const q = v.gen`
   WITH tb AS(
     UPDATE exam_paper_template
@@ -70,7 +63,9 @@ export async function createExaminationByTemplate(templateId: number, option: Cr
     FROM tb
     RETURNING id
   `;
-
-  const [result] = await dbPool.queryRows<{ id: number }>(q);
+  return q;
+}
+export async function createExaminationByTemplate(templateId: number, option: CreateExaminationOption) {
+  const [result] = await dbPool.queryRows<{ id: number }>(createExamTemplate(templateId, option));
   return result?.id;
 }

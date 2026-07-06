@@ -83,13 +83,39 @@ export type ExaminationResultOutput = {
   unanswered_number: number;
 };
 
-export type ExaminationCreateByTemplate = {
+type CreateExaminationOption = {
+  /** 考试允许开始的时间 */
+  allowTimeStart?: string;
+  /** 考试允许结束的时间 */
+  allowTimeEnd?: string;
+  /** 允许查看考试结果的时间 */
+  resultAllowViewDate?: string;
+  /** 总时间限制（单位秒），默认不限制 */
+  useTimeTotalLimit?: number;
+};
+export type QuestionRules = {
+  /** 题型数量 */
+  number?: number;
+  /** 题型分数 */
+  score?: number;
+  /** 题型时间限制（单位秒） */
+  timeLimit?: number;
+};
+export type PaperTemplateGenRules = {
+  questions?: QuestionRules;
+  questionByType?: {
+    [key in ExamQuestionType]?: QuestionRules;
+  };
+};
+export type ExaminationCreateByTemplate = CreateExaminationOption & {
   template_id: string;
+  template?: undefined;
 };
-export type ExaminationCreateByNewTemplate = {
+export type ExaminationCreateByNewTemplate = CreateExaminationOption & {
   template_id?: undefined;
-  question_total: number;
+  paperTemplate?: PaperTemplateGenRules;
 };
+
 export type ExaminationCreateInput = ExaminationCreateByTemplate | ExaminationCreateByNewTemplate;
 export type ExaminationCreateOutput = {
   examination_id: string;

@@ -26,7 +26,10 @@ export default routeGroup.create({
       throw new HttpError(400, "自定义考试模板未开放");
       // examinationId = await createExaminationByTemplate(body.template_id, { title, userId });
     } else {
-      examinationId = await createExaminationByQuestionTotal(body.question_total, { title, userId });
+      examinationId = await createExaminationByQuestionTotal(
+        { title, userId },
+        { questions: { number: body.question_total } },
+      );
     }
     return { examination_id: examinationId.toString() };
   },

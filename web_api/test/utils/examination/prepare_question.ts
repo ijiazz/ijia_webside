@@ -113,7 +113,7 @@ export function prepareExamination(
   if (typeof templateId === "number") {
     return createExaminationByTemplate(templateId, { title, ...rest });
   } else if (typeof questionTotal === "number") {
-    return createExaminationByQuestionTotal(questionTotal, { title, ...rest });
+    return createExaminationByQuestionTotal({ title, ...rest }, { questions: { number: questionTotal } });
   } else {
     return createEmptyExamination({ title, ...rest });
   }

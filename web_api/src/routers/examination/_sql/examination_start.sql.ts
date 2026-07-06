@@ -1,30 +1,19 @@
 import { HttpError } from "@/common/errors.ts";
 import { dbPool } from "@/db/client.ts";
-import { ReviewStatus } from "@/dto.ts";
+import { PaperTemplateGenRules, QuestionRules, ReviewStatus } from "@ijia/api-types";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
 import { DbExamination } from "@ijia/school-db/db";
 import { DbTransaction } from "@asla/pg";
+async function insertQuestion(t: DbTransaction, templateId: number, rules: QuestionRules) {
+  const { number = 100, score = 2, timeLimit = null } = rules;
 
-async function ensureTemplateQuestions(t: DbTransaction, templateId: number, questionTotal: number) {
-  const [row] = await t.queryRows<{ total: number }>(v.gen`
-    SELECT COUNT(*)::int AS total
-    FROM exam_paper_template_question
-    WHERE paper_template_id=${templateId}
-  `);
-  if (!row || row.total > 0 || questionTotal <= 0) {
-    return;
-  }
-  const needAdd = questionTotal - row.total;
-  if (needAdd <= 0) {
-    return;
-  }
   //TODO: 题库数量增多后，需要重新设计题目随机抽取逻辑
   await t.queryCount(v.gen`
-  INSERT INTO exam_paper_template_question (index, paper_template_id, question_id, score, option_map)
+  INSERT INTO exam_paper_template_question (index, paper_template_id, question_id, score, time_limit, option_map)
     SELECT 
       (row_number() OVER () - 1) AS index,
-      ${templateId} template_id, q.id question_id, 1 score,
+      ${templateId} template_id, q.id question_id, ${score} score, ${timeLimit} time_limit,
       (SELECT ARRAY_AGG(index_map) FROM 
         (SELECT (row_number() OVER () - 1) AS index_map
           FROM exam_question_option AS qo
@@ -38,10 +27,25 @@ async function ensureTemplateQuestions(t: DbTransaction, templateId: number, que
       WHERE review_status=${ReviewStatus.passed}
         AND is_system_gen=FALSE
       ORDER BY random()
-      LIMIT ${needAdd}
+      LIMIT ${number}
     ) AS q
   `);
-  return;
+  await t.query(v.gen`UPDATE exam_paper_template SET gen_rules=question_total+${number} WHERE id=${templateId}`);
+}
+async function ensureTemplateQuestions(t: DbTransaction, templateId: number) {
+  const [row] = await t.queryRows<{ gen_rules: PaperTemplateGenRules }>(v.gen`
+    SELECT gen_rules
+    FROM exam_paper_template_question
+    WHERE paper_template_id=${templateId} AND gen_rules IS NOT NULL
+  `);
+  if (!row) return;
+  const rules = row.gen_rules;
+  if (rules.questions) {
+    await insertQuestion(t, templateId, rules.questions);
+  } else if (rules.questionByType) {
+    //TODO: 按题型生成题目
+    return;
+  }
 }
 type SelectRaw = Pick<
   DbExamination,
@@ -67,7 +71,7 @@ export async function startExamination(examId: number, userId: number) {
   const templateId = row.template_id;
 
   if (typeof templateId === "number" && row.question_total) {
-    await ensureTemplateQuestions(t, templateId, row.question_total);
+    await ensureTemplateQuestions(t, templateId);
   }
 
   await t.execute(v.gen`UPDATE examination SET start_time=now() WHERE id=${examId}`);
