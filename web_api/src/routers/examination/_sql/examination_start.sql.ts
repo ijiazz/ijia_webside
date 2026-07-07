@@ -35,8 +35,8 @@ async function insertQuestion(t: DbTransaction, templateId: number, rules: Quest
 async function ensureTemplateQuestions(t: DbTransaction, templateId: number) {
   const [row] = await t.queryRows<{ gen_rules: PaperTemplateGenRules }>(v.gen`
     SELECT gen_rules
-    FROM exam_paper_template_question
-    WHERE paper_template_id=${templateId} AND gen_rules IS NOT NULL
+    FROM exam_paper_template
+    WHERE id=${templateId} AND gen_rules IS NOT NULL
   `);
   if (!row) return;
   const rules = row.gen_rules;

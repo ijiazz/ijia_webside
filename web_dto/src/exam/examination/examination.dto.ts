@@ -109,7 +109,7 @@ export type PaperTemplateGenRules = {
 };
 export type ExaminationCreateByTemplate = CreateExaminationOption & {
   template_id: string;
-  template?: undefined;
+  paperTemplate?: undefined;
 };
 export type ExaminationCreateByNewTemplate = CreateExaminationOption & {
   template_id?: undefined;

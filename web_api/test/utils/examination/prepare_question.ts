@@ -106,14 +106,18 @@ export async function prepareExaminationTemplate(questions: TemplateQuestionInpu
 
   return { templateId, questionIds };
 }
-export function prepareExamination(
+export async function prepareExamination(
   option: Omit<CreateExaminationOption, "title"> & { title?: string; templateId?: number; questionTotal?: number },
-) {
+): Promise<number> {
   const { templateId, questionTotal, title = "考试标题", ...rest } = option;
   if (typeof templateId === "number") {
-    return createExaminationByTemplate(templateId, { title, ...rest });
+    const id = await createExaminationByTemplate(templateId, { title, ...rest });
+    if (typeof id !== "number") throw new Error("Failed to create examination by template");
+    return id;
   } else if (typeof questionTotal === "number") {
-    return createExaminationByQuestionTotal({ title, ...rest }, { questions: { number: questionTotal } });
+    const id = await createExaminationByQuestionTotal({ title, ...rest }, { questions: { number: questionTotal } });
+    if (typeof id !== "number") throw new Error("Failed to create examination by question total");
+    return id;
   } else {
     return createEmptyExamination({ title, ...rest });
   }

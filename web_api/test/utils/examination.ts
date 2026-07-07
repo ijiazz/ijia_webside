@@ -7,10 +7,13 @@ export * from "./examination/query.ts";
 export async function createPracticeExamination(
   api: Api,
   token: string,
-  body: { template_id: string } | { question_total: number },
+  body: { template_id: string; question_total?: undefined } | { question_total: number },
 ) {
   return api["/examination"].put({
-    body,
+    body:
+      body.question_total !== undefined
+        ? { paperTemplate: { questions: { number: body.question_total } } }
+        : { template_id: body.template_id },
     [JWT_TOKEN_KEY]: token,
   });
 }

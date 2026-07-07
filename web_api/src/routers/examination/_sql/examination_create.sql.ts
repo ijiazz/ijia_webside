@@ -14,7 +14,7 @@ export type CreateExaminationOption = {
 /**
  * 创建一个空的，未绑定试卷的的考试
  */
-export async function createEmptyExamination(option: CreateExaminationOption) {
+export async function createEmptyExamination(option: CreateExaminationOption): Promise<number> {
   const sql = insertIntoValues("examination", {
     user_id: option.userId,
     title: option.title,
@@ -23,13 +23,13 @@ export async function createEmptyExamination(option: CreateExaminationOption) {
     allow_result_view_date: option.resultAllowViewDate,
     use_time_total_limit: option.useTimeTotalLimit,
   }).returning<{ id: number }>(["id"]);
-  const [examResult] = await dbPool.queryRows<{ id: number }>(sql);
-  return examResult?.id;
+  const examResult = await dbPool.queryFirstRow<{ id: number }>(sql);
+  return examResult.id;
 }
 export async function createExaminationByQuestionTotal(
   option: CreateExaminationOption,
   templateRules: PaperTemplateGenRules,
-) {
+): Promise<number | undefined> {
   await using t = dbPool.begin();
   const { id: templateId } = await t.queryFirstRow(
     insertIntoValues("exam_paper_template", {
@@ -38,7 +38,7 @@ export async function createExaminationByQuestionTotal(
     } satisfies Partial<DbExamPaperTemplate>).returning<{ id: number }>("id"),
   );
 
-  const [examResult] = await dbPool.queryRows<{ id: number }>(createExamTemplate(templateId, option));
+  const [examResult] = await t.queryRows<{ id: number }>(createExamTemplate(templateId, option));
   await t.commit();
   return examResult?.id;
 }
@@ -65,7 +65,10 @@ function createExamTemplate(templateId: number, option: CreateExaminationOption)
   `;
   return q;
 }
-export async function createExaminationByTemplate(templateId: number, option: CreateExaminationOption) {
+export async function createExaminationByTemplate(
+  templateId: number,
+  option: CreateExaminationOption,
+): Promise<number | undefined> {
   const [result] = await dbPool.queryRows<{ id: number }>(createExamTemplate(templateId, option));
   return result?.id;
 }
