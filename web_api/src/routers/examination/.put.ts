@@ -1,8 +1,10 @@
 import { checkValueAsync, queryInt } from "@/common/check.ts";
 import routeGroup from "./_route.ts";
-import { createExaminationByQuestionTotal } from "./_sql/examination_create.sql.ts";
+import { createExaminationByRules } from "./_sql/examination_create.sql.ts";
 import { ExpectType, optional } from "@asla/wokao";
 import { HttpError } from "@/common/errors.ts";
+import { PaperTemplateGenRulesInput } from "@ijia/api-types";
+import { PaperTemplateGenRules } from "./_utils/question_gen_rules.ts";
 const CreateExaminationInputSchema = {
   allowTimeStart: optional.string,
   allowTimeEnd: optional.string,
@@ -41,7 +43,8 @@ export default routeGroup.create({
     let examinationId: number | undefined;
     const title = "模拟考试";
     if (body.paperTemplate) {
-      examinationId = await createExaminationByQuestionTotal({ title, userId }, body.paperTemplate);
+      const rules = getRules(body.paperTemplate);
+      examinationId = await createExaminationByRules({ title, userId }, rules);
     } else {
       throw new HttpError(400, "自定义考试模板未开放");
       // examinationId = await createExaminationByTemplate(body.template_id, { title, userId });
@@ -51,3 +54,37 @@ export default routeGroup.create({
     return { examination_id: examinationId.toString() };
   },
 });
+const DEFAULT_SCORE = 2;
+function getRules(templateRules: PaperTemplateGenRulesInput): PaperTemplateGenRules {
+  if (templateRules.questions) {
+    const total = templateRules.questions.number ?? 100;
+    return {
+      total,
+      rules: [{
+        number: total,
+        score: templateRules.questions.score ?? DEFAULT_SCORE,
+        timeLimit: templateRules.questions.timeLimit,
+      }],
+    };
+  }
+  if (templateRules.questionByType) {
+    const rules: PaperTemplateGenRules["rules"] = [];
+    let total = 0;
+    for (const [type, rule] of Object.entries(templateRules.questionByType)) {
+      if (!rule) continue;
+      const number = rule.number ?? 10;
+      total += number;
+      rules.push({
+        number,
+        score: rule.score ?? DEFAULT_SCORE,
+        timeLimit: rule.timeLimit,
+        type: type as any,
+      });
+    }
+    return {
+      total,
+      rules,
+    };
+  }
+  throw new HttpError(400, "考试模板规则不合法");
+}

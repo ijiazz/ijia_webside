@@ -4,7 +4,7 @@ import { DbExamPaperTemplateQuestion, DbExamQuestion, DbExamQuestionOption, Revi
 import { ExamQuestionType } from "@/dto.ts";
 import {
   createEmptyExamination,
-  createExaminationByQuestionTotal,
+  createExaminationByRules,
   createExaminationByTemplate,
   CreateExaminationOption,
 } from "@/routers/examination/mod.ts";
@@ -115,7 +115,7 @@ export async function prepareExamination(
     if (typeof id !== "number") throw new Error("Failed to create examination by template");
     return id;
   } else if (typeof questionTotal === "number") {
-    const id = await createExaminationByQuestionTotal({ title, ...rest }, { questions: { number: questionTotal } });
+    const id = await createExaminationByRules({ title, ...rest }, { total: questionTotal, rules: [{ number: questionTotal, score: 2 }] });
     if (typeof id !== "number") throw new Error("Failed to create examination by question total");
     return id;
   } else {

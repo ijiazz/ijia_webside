@@ -17,13 +17,13 @@ export type ExaminationAnswerInput = {
 export type ExaminationQuestionOutput = {
   /** 如果为空，表示全部做完 */
   question:
-    | (QuestionPrivate & {
-        /** 返回索引，确保题库被记录 */
-        index: number;
-        /** 开始做题的时间 */
-        start_time: string;
-      })
-    | null;
+  | (QuestionPrivate & {
+    /** 返回索引，确保题库被记录 */
+    index: number;
+    /** 开始做题的时间 */
+    start_time: string;
+  })
+  | null;
 };
 
 /** 考试中返回的题目 */
@@ -93,7 +93,7 @@ type CreateExaminationOption = {
   /** 总时间限制（单位秒），默认不限制 */
   useTimeTotalLimit?: number;
 };
-export type QuestionRules = {
+export type QuestionRulesInput = {
   /** 题型数量 */
   number?: number;
   /** 题型分数 */
@@ -101,10 +101,10 @@ export type QuestionRules = {
   /** 题型时间限制（单位秒） */
   timeLimit?: number;
 };
-export type PaperTemplateGenRules = {
-  questions?: QuestionRules;
+export type PaperTemplateGenRulesInput = {
+  questions?: QuestionRulesInput;
   questionByType?: {
-    [key in ExamQuestionType]?: QuestionRules;
+    [key in ExamQuestionType]?: QuestionRulesInput;
   };
 };
 export type ExaminationCreateByTemplate = CreateExaminationOption & {
@@ -113,7 +113,7 @@ export type ExaminationCreateByTemplate = CreateExaminationOption & {
 };
 export type ExaminationCreateByNewTemplate = CreateExaminationOption & {
   template_id?: undefined;
-  paperTemplate?: PaperTemplateGenRules;
+  paperTemplate?: PaperTemplateGenRulesInput;
 };
 
 export type ExaminationCreateInput = ExaminationCreateByTemplate | ExaminationCreateByNewTemplate;

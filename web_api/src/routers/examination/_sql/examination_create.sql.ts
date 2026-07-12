@@ -1,7 +1,7 @@
 import { dbPool } from "@/db/client.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
-import { PaperTemplateGenRules } from "@ijia/api-types";
 import { DbExamPaperTemplate } from "@ijia/school-db/db";
+import { PaperTemplateGenRules } from "../_utils/question_gen_rules.ts";
 
 export type CreateExaminationOption = {
   title: string;
@@ -26,14 +26,11 @@ export async function createEmptyExamination(option: CreateExaminationOption): P
   const examResult = await dbPool.queryFirstRow<{ id: number }>(sql);
   return examResult.id;
 }
-export async function createExaminationByQuestionTotal(
-  option: CreateExaminationOption,
-  templateRules: PaperTemplateGenRules,
-): Promise<number | undefined> {
+export async function createExaminationByRules(option: CreateExaminationOption, rules: PaperTemplateGenRules): Promise<number | undefined> {
   await using t = dbPool.begin();
   const { id: templateId } = await t.queryFirstRow(
     insertIntoValues("exam_paper_template", {
-      gen_rules: templateRules,
+      gen_rules: rules,
       owner_id: option.userId,
     } satisfies Partial<DbExamPaperTemplate>).returning<{ id: number }>("id"),
   );
@@ -42,18 +39,19 @@ export async function createExaminationByQuestionTotal(
   await t.commit();
   return examResult?.id;
 }
+
 function createExamTemplate(templateId: number, option: CreateExaminationOption) {
   const q = v.gen`
   WITH tb AS(
     UPDATE exam_paper_template
     SET exam_number = exam_number + 1
     WHERE id=${templateId}
-    RETURNING id, question_total
+    RETURNING id, question_total, gen_rules
   )
   INSERT INTO examination (template_id, question_total, user_id, title, allow_time_start, allow_time_end, result_allow_view_date, use_time_total_limit)
     SELECT 
       id AS template_id,
-      question_total,
+      (question_total + COALESCE(gen_rules->>'total', '0')::int) AS question_total,
       ${option.userId} user_id,
       ${option.title} title,
       ${option.allowTimeStart ?? null} allow_time_start,

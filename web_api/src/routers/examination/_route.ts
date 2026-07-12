@@ -7,7 +7,7 @@ export default routeGroup;
 
 export {
   createEmptyExamination,
-  createExaminationByQuestionTotal,
+  createExaminationByRules,
   createExaminationByTemplate,
   type CreateExaminationOption,
 } from "./_sql/examination_create.sql.ts";
