@@ -49,10 +49,12 @@ export function RouteComponent() {
           </Link>
         </Space>
       </div>
-      <ExaminationList
-        data={data}
-        onDeleted={(examId) => setData((prev) => prev.filter((item) => item.id !== examId))}
-      />
+      {data.length > 0 && (
+        <ExaminationList
+          data={data}
+          onDeleted={(examId) => setData((prev) => prev.filter((item) => item.id !== examId))}
+        />
+      )}
       <LoadMoreIndicator
         error={!!next.error}
         hasMore={next.hasMore}

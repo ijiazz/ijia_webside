@@ -1,10 +1,12 @@
 import { createExamination } from "@/request/examination.ts";
 import { css } from "@emotion/css";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
-import { Button, Card, InputNumber, Space, Statistic, Typography } from "antd";
+import { Button, Card, Space, Statistic, Typography } from "antd";
 import { useMessage } from "@/provider/AntdProvider.tsx";
-import { Controller, FormProvider, useForm } from "react-hook-form";
-import { FormItem, getAntdErrorStatus } from "@/components/form.tsx";
+import { FormProvider, useForm } from "react-hook-form";
+import { ExaminationCreateByNewTemplate } from "@ijia/api-types";
+import { OptionFormItems } from "./-components/simulate/OptionForm.tsx";
+import { QuestionRule } from "./-components/simulate/QuestionRule.tsx";
 
 export const Route = createLazyFileRoute("/_school/examination/simulate")({
   component: RouteComponent,
@@ -12,14 +14,25 @@ export const Route = createLazyFileRoute("/_school/examination/simulate")({
 
 const MAX_QUESTION_COUNT = 65535;
 
+type FormValues = ExaminationCreateByNewTemplate;
+
 function RouteComponent() {
   const navigate = Route.useNavigate();
   const { stat } = Route.useLoaderData();
-  const form = useForm<CreateFormValues>({});
+  const form = useForm<FormValues>({
+    defaultValues: {
+      paperTemplate: {
+        questions: {
+          number: 50,
+          score: 2,
+        },
+      },
+    },
+  });
   const message = useMessage();
   const { isSubmitting } = form.formState;
   const handleSubmit = form.handleSubmit(async (values) => {
-    const result = await createExamination({ question_total: values.question_total });
+    const result = await createExamination(values);
     message.success("模拟考试已创建");
     navigate({ to: `/examination/$examId`, params: { examId: result.examination_id }, replace: true });
   });
@@ -41,29 +54,11 @@ function RouteComponent() {
           </Typography.Text>
         </div>
         <FormProvider {...form}>
-          <form onSubmit={handleSubmit}>
-            <Controller
-              name="question_total"
-              rules={{
-                required: "请输入题目数量",
-                min: { value: 0, message: "题目数量不能小于 0" },
-                max: { value: MAX_QUESTION_COUNT, message: `题目数量不能大于 ${MAX_QUESTION_COUNT}` },
-              }}
-              render={({ field, fieldState }) => {
-                return (
-                  <FormItem label="题目数量">
-                    <InputNumber
-                      {...field}
-                      status={getAntdErrorStatus(fieldState)}
-                      min={0}
-                      max={MAX_QUESTION_COUNT}
-                      precision={0}
-                      style={{ width: "100%" }}
-                    />
-                  </FormItem>
-                );
-              }}
-            />
+          <form onSubmit={handleSubmit} className={GrowFlexCSS} style={{ flexDirection: "column" }}>
+            <div className={GrowFlexCSS} style={{ gap: 14 }}>
+              <QuestionRule maxQuestionCount={MAX_QUESTION_COUNT} prefix="paperTemplate.questions." />
+            </div>
+            {!import.meta.env.PROD && <OptionFormItems />}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 24, alignItems: "center" }}>
               <Link to="/examination">
                 <Button>返回考试列表</Button>
@@ -78,10 +73,12 @@ function RouteComponent() {
     </div>
   );
 }
-
-type CreateFormValues = {
-  question_total: number;
-};
+const GrowFlexCSS = css`
+  display: flex;
+  > * {
+    flex-grow: 1;
+  }
+`;
 const PageCSS = css`
   max-width: 750px;
   margin: 0 auto;
