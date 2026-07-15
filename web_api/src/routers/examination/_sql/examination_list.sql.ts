@@ -5,6 +5,7 @@ import { select } from "@asla/yoursql";
 import { DbExamination } from "@ijia/school-db/db";
 import { HttpError } from "@/common/errors.ts";
 import { jsonb_build_object } from "@/common/sql_util.ts";
+import { getUserAvatarPath } from "@/common/oss_url.ts";
 
 export async function getExaminationList(
   userId: number,
@@ -111,10 +112,20 @@ type ExaminationBaseRow = Pick<DbExamination, "allow_time_end" | "allow_time_sta
   id: string;
   question_number: number | null;
   status: ExaminationStatus;
+  owner: {
+    id: string;
+    nickname: string;
+    avatar_url: string | null;
+  } | null;
 };
 function toExaminationInfo(row: ExaminationBaseRow): ExaminationInfoOutput {
   return {
     ...row,
+    owner: row.owner ? {
+      id: row.owner.id,
+      nickname: row.owner.nickname,
+      avatar_url: getUserAvatarPath(row.owner.avatar_url) ?? undefined,
+    } : undefined,
     allow_time_end: row.allow_time_end ? row.allow_time_end.toISOString() : null,
     allow_time_start: row.allow_time_start ? row.allow_time_start.toISOString() : null,
   };
