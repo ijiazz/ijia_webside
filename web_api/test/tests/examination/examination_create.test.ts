@@ -26,6 +26,7 @@ test("允许用户给自己创建模拟考试", async function ({ api, publicDbP
 
   expect(detail.title).toBe("模拟考试");
   expect(detail.question_number, "总数应等于2").toBe(2);
+  expect(detail.owner?.id, "自己创建的模拟考试，owner 应为自己").toBe(alice.id.toString());
   expect(detail.status).toBe(ExaminationStatus.ready);
 });
 

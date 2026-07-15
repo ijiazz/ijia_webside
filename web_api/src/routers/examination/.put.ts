@@ -44,7 +44,7 @@ export default routeGroup.create({
     const title = "模拟考试";
     if (body.paperTemplate) {
       const rules = getRules(body.paperTemplate);
-      examinationId = await createExaminationByRules({ title, userId }, rules);
+      examinationId = await createExaminationByRules({ title, userId }, { rules, ownerId: userId });
     } else {
       throw new HttpError(400, "自定义考试模板未开放");
       // examinationId = await createExaminationByTemplate(body.template_id, { title, userId });

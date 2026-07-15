@@ -115,7 +115,13 @@ export async function prepareExamination(
     if (typeof id !== "number") throw new Error("Failed to create examination by template");
     return id;
   } else if (typeof questionTotal === "number") {
-    const id = await createExaminationByRules({ title, ...rest }, { total: questionTotal, rules: [{ number: questionTotal, score: 2 }] });
+    const id = await createExaminationByRules({ title, ...rest }, {
+      rules: {
+        rules: [{ number: questionTotal, score: 2 }],
+        total: questionTotal
+      },
+      ownerId: rest.userId
+    });
     if (typeof id !== "number") throw new Error("Failed to create examination by question total");
     return id;
   } else {

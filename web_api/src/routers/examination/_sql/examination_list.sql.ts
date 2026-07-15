@@ -4,6 +4,7 @@ import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
 import { DbExamination } from "@ijia/school-db/db";
 import { HttpError } from "@/common/errors.ts";
+import { jsonb_build_object } from "@/common/sql_util.ts";
 
 export async function getExaminationList(
   userId: number,
@@ -25,7 +26,15 @@ export async function getExaminationList(
     "e.grade_total AS total_score",
     "e.question_total AS question_number",
     `${examinationStatus("e")} AS status`,
-  ])
+    `${select(
+      jsonb_build_object({
+        id: "u.id::TEXT",
+        nickname: "u.nickname",
+        avatar_url: "u.avatar",
+      }))
+      .from("exam_paper_template", { as: "p" })
+      .innerJoin("public.user", { as: "u", on: "p.owner_id=u.id" })
+      .where(`p.id=e.template_id AND e.template_id IS NOT NULL`).toSelect()} AS owner`,])
     .from("examination", { as: "e" })
     .where(() => {
       const conditions = [`e.user_id=${v(userId)}`];
