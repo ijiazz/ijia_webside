@@ -4,10 +4,13 @@ import examinationRoutes from "@/routers/examination/mod.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import {
   createPracticeExamination,
+  DEFAULT_QUESTIONS,
   deleteExamination,
   endExamination,
   getExamination,
   getExaminationRealQuestionTotal,
+  prepareExamination,
+  prepareExaminationTemplate,
   preparePassedQuestions,
   startExamination,
 } from "#test/utils/examination.ts";
@@ -69,6 +72,25 @@ test("删除考试时，模板和模板题绑定会一起删除", async function
   await expect(getExaminationRealQuestionTotal(+examination_id)).resolves.toBe(0);
   await expect(getExamination(api, alice.token, examination_id)).responseStatus(404);
 });
+
+test("别人分配的考试，不能被删除", async function ({ api, publicDbPool }) {
+  const alice = await prepareUniqueUser("alice");
+  const bob = await prepareUniqueUser("bob");
+  {
+    const { templateId } = await prepareExaminationTemplate(DEFAULT_QUESTIONS, { ownerId: alice.id });
+    const examId = await prepareExamination({ userId: bob.id, templateId });
+    const exam = await getExamination(api, bob.token, examId);
+    expect(exam.owner?.id).toBe(alice.id.toString());
+    await expect(deleteExamination(api, bob.token, examId)).responseStatus(403);
+  }
+  {
+    const { templateId } = await prepareExaminationTemplate(DEFAULT_QUESTIONS,);
+    const examId = await prepareExamination({ userId: bob.id, templateId });
+    const exam = await getExamination(api, bob.token, examId);
+    expect(exam.owner?.id).toBe(undefined);
+    await expect(deleteExamination(api, bob.token, examId)).responseStatus(403);
+  }
+})
 async function getTemplateId(examination_id: number) {
   const result = await dbPool.queryRows<{ template_id: number }>(v.gen`
     SELECT template_id FROM examination WHERE id=${+examination_id}`);

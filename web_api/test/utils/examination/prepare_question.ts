@@ -70,7 +70,8 @@ export const DEFAULT_QUESTIONS: TemplateQuestionInput[] = [
   { answer_index: [1], question_type: ExamQuestionType.SingleChoice },
   { answer_index: [2], question_type: ExamQuestionType.SingleChoice },
 ];
-export async function prepareExaminationTemplate(questions: TemplateQuestionInput[]) {
+export async function prepareExaminationTemplate(questions: TemplateQuestionInput[], options: { ownerId?: number } = {}) {
+  const { ownerId = null } = options;
   let questionIds: number[] = [];
   if (questions.length) {
     questionIds = await crateReviewedQuestions(
@@ -84,6 +85,7 @@ export async function prepareExaminationTemplate(questions: TemplateQuestionInpu
   const { id: templateId } = await dbPool.queryFirstRow<{ id: number }>(
     insertIntoValues("exam_paper_template", {
       question_total: questions.length,
+      owner_id: ownerId
     }).returning(["id"]),
   );
   if (questionIds.length) {

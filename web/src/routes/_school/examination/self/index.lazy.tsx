@@ -1,4 +1,4 @@
-import { createLazyFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link, useLoaderData } from "@tanstack/react-router";
 import { ExaminationList } from "./-components/ExaminationList.tsx";
 import { css } from "@emotion/css";
 import { Button, Segmented, Space } from "antd";
@@ -13,6 +13,7 @@ export const Route = createLazyFileRoute("/_school/examination/self/")({
   component: RouteComponent,
 });
 export function RouteComponent() {
+  const { userInfo } = useLoaderData({ from: "/_school" });
   const [statusFilter, setStatusFilter] = useState(statusOptions[0].value);
   const status = useMemo(() => statusFilter.split(",").map((item) => item as ExaminationStatus), [statusFilter]);
   const { ref } = useElementOverScreen({
@@ -51,6 +52,7 @@ export function RouteComponent() {
       </div>
       {data.length > 0 && (
         <ExaminationList
+          currentUserId={userInfo?.user_id?.toString()}
           data={data}
           onDeleted={(examId) => setData((prev) => prev.filter((item) => item.id !== examId))}
         />

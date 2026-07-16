@@ -9,10 +9,11 @@ import { getTimeRange, STATUS_LABELS } from "../../-utils/const.ts";
 export type ExaminationListProps = {
   data?: ExaminationInfoOutput[];
   onDeleted?: (examId: string) => void;
+  currentUserId?: string;
 };
 
 export function ExaminationList(props: ExaminationListProps) {
-  const { data: items = [], onDeleted } = props;
+  const { data: items = [], onDeleted, currentUserId } = props;
   const modals = useModal();
   const message = useMessage();
 
@@ -43,9 +44,11 @@ export function ExaminationList(props: ExaminationListProps) {
                   <Link to="/examination/$examId" params={{ examId: item.id }}>
                     查看
                   </Link>
-                  <Button type="link" danger style={{ paddingInline: 0 }} onClick={() => onDelete(item)}>
-                    删除
-                  </Button>
+                  {item.owner && currentUserId && item.owner.id === currentUserId && (
+                    <Button type="link" danger style={{ paddingInline: 0 }} onClick={() => onDelete(item)}>
+                      删除
+                    </Button>
+                  )}
                 </Space>
               </div>
               <Space>
