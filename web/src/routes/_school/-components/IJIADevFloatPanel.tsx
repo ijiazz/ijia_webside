@@ -75,7 +75,7 @@ const PanelCSS = css`
 `;
 
 async function devLogin(loginEmail: string) {
-  const response = await fetch("/api/passport/login", {
+  const response = await fetch("/api/test/passport/login", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ email: loginEmail }),

@@ -14,13 +14,12 @@ import {
   examinationRoutes,
   uploadRoutes,
 } from "@/routers/mod.ts";
-import passportRoutes from "@/routers/passport/mod.ts";
 
 import { setUserInfo } from "@/middleware/auth.ts";
 import { addServeStatic } from "@/routers/file/mod.ts";
 import { ENV, RunMode } from "@/config.ts";
 
-export function createHonoApp() {
+export async function createHonoApp() {
   const hono = createHono();
 
   uploadRoutes.apply(hono);
@@ -38,7 +37,12 @@ export function createHonoApp() {
   questionRoutes.apply(hono, options);
   examinationRoutes.apply(hono, options);
   if (ENV.MODE === RunMode.E2E) {
+    const [{ default: passportRoutes }, { default: examinationRoutes }] = await Promise.all([
+      import("@/routers/test/passport.ts"),
+      import("@/routers/test/examination.ts"),
+    ]);
     passportRoutes.apply(hono, options);
+    examinationRoutes.apply(hono, options);
   }
   return hono;
 }

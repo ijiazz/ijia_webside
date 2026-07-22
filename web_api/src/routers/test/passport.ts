@@ -16,7 +16,7 @@ export default routeGroup;
 // 仅用于 e2e 测试，实际登录逻辑会更复杂
 routeGroup.create({
   method: "POST",
-  routePath: "/passport/login",
+  routePath: "/test/passport/login",
   async validateInput({ req }) {
     return checkValueAsync(req.json(), { email: "string" });
   },

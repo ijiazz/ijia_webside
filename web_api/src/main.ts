@@ -11,7 +11,7 @@ async function bootstrap() {
   console.log(`Server listen: ${ENV.LISTEN_ADDR}:${ENV.LISTEN_PORT}`);
   console.log(`Mode: ${ENV.MODE}`);
 
-  const hono = createHonoApp();
+  const hono = await createHonoApp();
   const listenOption: ListenOption = {
     hostname: ENV.LISTEN_ADDR,
     port: ENV.LISTEN_PORT,

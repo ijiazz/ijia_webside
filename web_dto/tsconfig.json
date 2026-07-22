@@ -11,7 +11,7 @@
     "declarationMap": true,
     "rootDir": "./src",
     "outDir": "./dist",
-    "noEmit": false
+    "noEmit": false,
   },
-  "files": ["./src/mod.ts"]
+  "include": ["./src"],
 }

@@ -8,6 +8,7 @@ import {
   createExaminationByTemplate,
   CreateExaminationOption,
 } from "@/routers/examination/mod.ts";
+import { TemplateQuestionInput } from "@ijia/api-types/test";
 
 async function crateReviewedQuestions(questions: Partial<DbExamQuestion>[]): Promise<number[]> {
   const values = insertIntoValues("exam_question", questions).returning<{
@@ -56,12 +57,7 @@ export async function preparePassedQuestions(count: number, userId: number) {
 
   return crateReviewedQuestions(questions);
 }
-export type TemplateQuestionInput = Pick<DbExamQuestion, "answer_index" | "question_type"> & {
-  score?: number;
-  option_map?: number[];
-  options?: Partial<DbExamQuestionOption>[];
-  time_limit?: number;
-};
+
 /**
  * 答案为 0、1、2
  */

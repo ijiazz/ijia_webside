@@ -1,0 +1,1 @@
+export { default } from "./examination/_route.ts";
