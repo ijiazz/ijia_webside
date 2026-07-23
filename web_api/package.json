@@ -11,8 +11,8 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "build": "rollup -c build/rollup.config.js",
-    "check-type": "tsgo -p tsconfig.json",
+    "build": "rolldown -c build/rolldown.config.ts",
+    "check-type": "tsc -p tsconfig.json",
     "start": "node --env-file=.env dist/main.js"
   },
   "dependencies": {
@@ -33,8 +33,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@types/nodemailer": "^7.0.11",
-    "vitest": "^4.1.0"
+    "@types/nodemailer": "^7.0.11"
   },
   "buildMeta": {
     "commitSha": "dev",

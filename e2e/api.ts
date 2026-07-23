@@ -1,4 +1,4 @@
-export * from "../web_api/src/dto.ts";
+export * from "@ijia/api-types";
 
 export type HttpError = {
   message: string;
