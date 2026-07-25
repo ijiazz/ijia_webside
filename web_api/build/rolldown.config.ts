@@ -7,7 +7,6 @@ const root = path.resolve(import.meta.dirname, "..");
 const sourceRoot = path.join(root, "src");
 const deps = Object.keys(packageJson.dependencies);
 
-
 export default defineConfig({
   input: { main: "src/main.ts" },
   output: {
@@ -15,7 +14,7 @@ export default defineConfig({
     dir: "dist",
     sourcemap: true,
     sourcemapExcludeSources: true,
-    preserveModules: true
+    preserveModules: true,
   },
   external: (source, importer, isResolved) => {
     if (isResolved) {
@@ -28,4 +27,4 @@ export default defineConfig({
       }
     }
   },
-})
+});
