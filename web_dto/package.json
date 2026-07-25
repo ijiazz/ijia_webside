@@ -5,9 +5,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "check-type": "tsgo --noEmit",
+    "check-type": "tsc --noEmit",
     "genApiDoc": "typedoc",
-    "build": "tsgo"
+    "build": "tsc"
   },
   "exports": {
     ".": "./dist/mod.js"

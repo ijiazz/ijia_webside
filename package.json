@@ -11,14 +11,10 @@
   },
   "devDependencies": {
     "@ijia/school-db": "catalog:",
-    "@rollup/plugin-node-resolve": "^16.0.3",
-    "@rollup/plugin-typescript": "^12.3.0",
-    "@typescript/native-preview": "7.0.0-dev.20260421.2",
-    "oxfmt": "^0.40.0",
-    "prettier": "^3.8.1",
-    "rollup": "^4.59.0",
-    "tslib": "^2.8.1",
-    "vitest": "^4.1.0"
+    "oxfmt": "^0.60.0",
+    "rolldown": "^1.2.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   },
   "devEngines": {
     "runtime": {

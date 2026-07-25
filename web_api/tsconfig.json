@@ -4,8 +4,11 @@
     "target": "ESNext",
     "lib": ["ESNext"],
     "isolatedModules": true,
-    "paths": { "@/*": ["./src/*"], "#test/*": ["./test/*"] },
+    "paths": {
+      "@/*": ["./src/*"],
+      "#test/*": ["./test/*"]
+    },
     "jsx": "react"
   },
-  "exclude": ["node_modules", "dist", "scripts", "../web_dto/_api.ts"]
+  "exclude": ["node_modules", "dist"]
 }
