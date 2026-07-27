@@ -1,13 +1,6 @@
 name: Deploy WEB
 on:
   workflow_dispatch:
-    inputs:
-      force_rebuild:
-        description: "Force rebuild even if artifact exists"
-        required: false
-        type: boolean
-        default: false
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,7 +10,6 @@ jobs:
     steps:
       - name: Download previous artifact
         id: fetch_artifact
-        if: inputs.force_rebuild != 'true'
         uses: dawidd6/action-download-artifact@v11
         with:
           name: ${{ env.WEB_ARTIFACT_NAME }}
@@ -29,10 +21,10 @@ jobs:
         run: echo ${{ steps.fetch_artifact.outputs.artifacts }}
       - uses: actions/checkout@v6
       - name: Setup project
-        if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
+        if: steps.fetch_artifact.outputs.found_artifact =='false'
         uses: ./.github/actions/setup-project
       - name: Build
-        if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
+        if: steps.fetch_artifact.outputs.found_artifact =='false'
         run: pnpm build
         env:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
@@ -42,7 +34,7 @@ jobs:
 
         working-directory: ./web
       - name: Upload artifacts
-        if: steps.fetch_artifact.outputs.found_artifact =='false' || inputs.force_rebuild == 'true'
+        if: steps.fetch_artifact.outputs.found_artifact =='false'
         id: upload_artifact
         uses: actions/upload-artifact@v7
         with:

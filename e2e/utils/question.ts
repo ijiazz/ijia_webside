@@ -1,4 +1,4 @@
-import { CommitQuestionReviewParam, CreateQuestionParam, ExamQuestionType, ReviewStatus } from "@/api.ts";
+import { CommitQuestionReviewParam, CreateQuestionParam, ExamQuestionType, ReviewStatus } from "@ijia/api-types";
 import { dbPool } from "@/db/client.ts";
 import { getAppURLFromRoute } from "@/utils/app.ts";
 import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";

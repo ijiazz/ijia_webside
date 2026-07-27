@@ -1,15 +1,15 @@
 import { HoFetch, createFetchSuite, InferFetchSuite, FetchSuiteBase, HoFetchStatusError } from "@asla/hofetch";
-import { ApiDefined, REQUEST_AUTH_KEY } from "@/api.ts";
+import { ApiDefined, REQUEST_AUTH_KEY } from "@ijia/api-types";
 import { env } from "@/playwright.config.ts";
 export type Api = {
   [x: string]: FetchSuiteBase;
 } & InferFetchSuite<ApiDefined>;
 
 function createHoFetch() {
-  const API_PREFIX = "/api";
+  const API_PREFIX = undefined;
   const http = new HoFetch({
     bodyParser: {},
-    defaultOrigin: new URL(env.WEB_URL).origin,
+    defaultOrigin: env.API_ORIGIN,
     createStatusError(hoResponse) {
       const body = getResponseErrorInfo(hoResponse.bodyData);
       if (body) return new HoFetchStatusError(hoResponse, hoResponse.status + ": " + (body as any).message);
@@ -18,11 +18,11 @@ function createHoFetch() {
   const api: Api = createFetchSuite<ApiDefined>(http, {
     basePath: API_PREFIX,
   });
-  return { http, API_PREFIX, api };
+  return { http, api };
 }
-const { http, API_PREFIX, api } = createHoFetch();
+const { http, api } = createHoFetch();
 
-export { http, API_PREFIX, api };
+export { http, api };
 
 export function isHttpErrorCode(err: any, code: string | number) {
   return typeof err === "object" && err.code === code;

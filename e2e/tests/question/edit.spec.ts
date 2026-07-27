@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import { setContextLogin } from "@/utils/browser.ts";
-import { ReviewStatus } from "@/api.ts";
+import { ReviewStatus } from "@ijia/api-types";
 import { createQuestion, getQuestionEditURL, getUserQuestionURL, setQuestionReviewStatus } from "@/utils/question.ts";
 import { initAdmin, initAlice, loginGetToken } from "@/utils/user.ts";
 

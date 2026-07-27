@@ -2,7 +2,7 @@ import { getAppURLFromRoute } from "@/utils/app.ts";
 import { test } from "@playwright/test";
 import { initAlice, loginGetToken } from "@/utils/user.ts";
 import { changePageToMobile, setContextLogin } from "@/utils/browser.ts";
-import { PostGroupResponse } from "@/api.ts";
+import { PostGroupResponse } from "@ijia/api-types";
 import { getPostListURL, getUserPostURL } from "@/utils/post.ts";
 const { expect, describe } = test;
 

@@ -1,11 +1,15 @@
-import { defineConfig } from "@playwright/test";
-import process from "process";
+import { PlaywrightTestConfig } from "@playwright/test";
+import process from "node:process";
+import path from "node:path";
+const IS_CI = !!process.env.CI;
 export const env = {
-  WEB_URL: process.env.WEB_URL || "http://localhost:5173",
+  WEB_URL: process.env.WEB_URL || (IS_CI ? "https://localhost:4173" : "http://localhost:5173"),
   DATABASE_URL: process.env.DATABASE_URL || "pg://postgres@localhost:5432/ijia_test",
+  API_ORIGIN: process.env.API_ORIGIN || "http://127.0.0.1:3000",
 };
 
-export default defineConfig({
+const WEB_DIR = path.resolve("../web");
+const DEV_CONFIG = {
   testDir: ".",
   workers: 3,
   use: {
@@ -20,4 +24,38 @@ export default defineConfig({
   },
   globalSetup: ["./setup/setup.ts"],
   testIgnore: [/benchmark/],
-});
+} satisfies PlaywrightTestConfig;
+
+const CI_CONFIG = {
+  ...DEV_CONFIG,
+  use: undefined,
+  reporter: "html",
+  maxFailures: 10,
+
+  webServer: {
+    command: "deno task preview",
+    env: {
+      API_ORIGIN: env.API_ORIGIN,
+    },
+    cwd: WEB_DIR,
+  },
+  projects: [
+    {
+      name: "Chrome",
+      use: {
+        browserName: "chromium",
+      },
+    },
+    // CI 的 webkit 总是出现测试失败，暂时不使用
+    /* ,
+    {
+      name: "WebKit",
+      use: {
+        browserName: "webkit",
+      },
+    }, */
+  ],
+} satisfies PlaywrightTestConfig;
+
+const config = IS_CI ? CI_CONFIG : DEV_CONFIG;
+export default config;
