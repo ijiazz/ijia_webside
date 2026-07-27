@@ -11,7 +11,7 @@
     "report": "playwright show-report"
   },
   "dependencies": {
-    "@asla/hofetch": "jsr:@asla/hofetch@^0.0.1",
+    "@asla/hofetch": "catalog:",
     "@asla/pg": "catalog:",
     "@asla/yoursql": "catalog:",
     "@ijia/api-types": "workspace:^",

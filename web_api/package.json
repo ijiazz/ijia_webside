@@ -16,7 +16,7 @@
     "start": "node --env-file=.env dist/main.js"
   },
   "dependencies": {
-    "@asla/hofetch": "jsr:^0.0.1",
+    "@asla/hofetch": "catalog:",
     "@asla/pg": "catalog:",
     "@asla/wokao": "jsr:^0.0.3",
     "@asla/yoursql": "catalog:",

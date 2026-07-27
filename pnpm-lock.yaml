@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@asla/hofetch':
+      specifier: npm:@jsr/asla__hofetch@^0.0.2
+      version: 0.0.2
     '@asla/pg':
       specifier: npm:@jsr/asla__pg@^0.2.4
       version: 0.2.4
@@ -45,8 +48,8 @@ importers:
   e2e:
     dependencies:
       '@asla/hofetch':
-        specifier: jsr:@asla/hofetch@^0.0.1
-        version: '@jsr/asla__hofetch@0.0.1'
+        specifier: 'catalog:'
+        version: '@jsr/asla__hofetch@0.0.2'
       '@asla/pg':
         specifier: 'catalog:'
         version: '@jsr/asla__pg@0.2.4'
@@ -75,8 +78,8 @@ importers:
         specifier: ^6.1.0
         version: 6.2.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@asla/hofetch':
-        specifier: jsr:@asla/hofetch@^0.0.1
-        version: '@jsr/asla__hofetch@0.0.1'
+        specifier: 'catalog:'
+        version: '@jsr/asla__hofetch@0.0.2'
       '@asla/wokao':
         specifier: jsr:@asla/wokao@^0.0.3
         version: '@jsr/asla__wokao@0.0.3'
@@ -163,8 +166,8 @@ importers:
   web_api:
     dependencies:
       '@asla/hofetch':
-        specifier: jsr:^0.0.1
-        version: '@jsr/asla__hofetch@0.0.1'
+        specifier: 'catalog:'
+        version: '@jsr/asla__hofetch@0.0.2'
       '@asla/pg':
         specifier: 'catalog:'
         version: '@jsr/asla__pg@0.2.4'
@@ -1026,8 +1029,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@jsr/asla__hofetch@0.0.1':
-    resolution: {integrity: sha512-UO90cqDucrg3M3Fxea1Jrw15DLP2N+3pQAbAyNolnL6jx2ANEDhb1NGrTFMfZ5xVUQcB01KhhqpaKW2eE3FTYw==, tarball: https://npm.jsr.io/~/11/@jsr/asla__hofetch/0.0.1.tgz}
+  '@jsr/asla__hofetch@0.0.2':
+    resolution: {integrity: sha512-yRoxwEcywT1A0tYB5JiSWqc4Y1c5EsIZoiDMS6fy8HsobQOegN+OmRuHAcXmFSvRF1aF5VKr74xpkk2O3CLIOA==, tarball: https://npm.jsr.io/~/11/@jsr/asla__hofetch/0.0.2.tgz}
 
   '@jsr/asla__pg@0.2.4':
     resolution: {integrity: sha512-cIh9yGe99KN63YX33ltZ0Xpg2I2RGMRtGt3QcqZbhT0q22n9CrL/XE83XxPqDm8r0mp9wcDCyCEJazjULkQNgg==, tarball: https://npm.jsr.io/~/11/@jsr/asla__pg/0.2.4.tgz}
@@ -4100,7 +4103,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@jsr/asla__hofetch@0.0.1': {}
+  '@jsr/asla__hofetch@0.0.2': {}
 
   '@jsr/asla__pg@0.2.4':
     dependencies:
