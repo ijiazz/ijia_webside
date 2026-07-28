@@ -31,7 +31,7 @@ importers:
     devDependencies:
       '@ijia/school-db':
         specifier: 'catalog:'
-        version: '@jsr/ijia__school-db@0.0.4'
+        version: '@jsr/ijia__school-db@0.0.5-alpha.12'
       oxfmt:
         specifier: ^0.60.0
         version: 0.60.0
