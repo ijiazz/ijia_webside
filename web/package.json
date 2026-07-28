@@ -9,11 +9,12 @@
     "check-type": "tsc --noEmit",
     "dev": "vite",
     "build": "vite build",
+    "preview": "vite preview",
     "build:ssr": "vite build --outDir dist/server --ssr src/index.server.tsx"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
-    "@asla/hofetch": "jsr:@asla/hofetch@^0.0.1",
+    "@asla/hofetch": "catalog:",
     "@asla/wokao": "jsr:@asla/wokao@^0.0.3",
     "@emotion/css": "^11.13.5",
     "@ijia/api-types": "workspace:^",

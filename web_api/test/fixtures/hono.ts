@@ -17,8 +17,8 @@ export const test = viTest.extend<HonoContext>({
   },
   async hoFetch({ hono }, use) {
     const hoFetch = new HoFetch({
-      fetch: async (req) => {
-        const result = await hono.fetch(req);
+      fetch: async (url, req) => {
+        const result = await hono.fetch(new Request(url, req));
         if (result instanceof Response) return result;
         throw new Error("返回的不是 Response 对象");
       },

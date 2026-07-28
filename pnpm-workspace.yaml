@@ -8,6 +8,7 @@ allowBuilds:
   core-js: true
   esbuild: true
 catalog:
+  "@asla/hofetch": "npm:@jsr/asla__hofetch@^0.0.2"
   "@asla/pg": "npm:@jsr/asla__pg@^0.2.4"
   "@ijia/school-db": "npm:@jsr/ijia__school-db@^0.0.4"
   "@asla/yoursql": "npm:@jsr/asla__yoursql@0.14.0"

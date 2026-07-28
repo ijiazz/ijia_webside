@@ -1,4 +1,4 @@
-import { ReviewStatus } from "@/api.ts";
+import { ReviewStatus } from "@ijia/api-types";
 import { test, expect } from "@playwright/test";
 import { setContextLogin } from "@/utils/browser.ts";
 import { createQuestion, getUserQuestionURL, setQuestionReviewStatus } from "@/utils/question.ts";

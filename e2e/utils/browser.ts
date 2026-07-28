@@ -1,5 +1,5 @@
 import { Page, BrowserContext } from "@playwright/test";
-import { REQUEST_AUTH_KEY } from "@/api.ts";
+import { REQUEST_AUTH_KEY } from "@ijia/api-types";
 import { env } from "@/playwright.config.ts";
 
 export function changePageToMobile(page: Page) {

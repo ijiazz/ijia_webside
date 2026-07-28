@@ -36,20 +36,9 @@ services:
       JWT_KEY: 123
     extra_hosts:
       - localserver:host-gateway
+    ports:
+      - "3000:3000"
+
     links:
       - redis
       - database
-  web-nginx:
-    image: ijia/web-nginx
-    container_name: ijia-web-nginx
-    build:
-      context: .
-      dockerfile: ./build/dockerfile.web
-      args:
-        - name=value
-    links:
-      - web-api:web_api
-      - web-api:file_server
-    ports:
-      - "9001:443"
-      - "9002:80"
