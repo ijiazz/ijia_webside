@@ -1,20 +1,8 @@
 import type { ViteUserConfig } from "vitest/config";
+import deno from "@deno/vite-plugin";
 
-const rootDir = import.meta.dirname;
 export default {
-  resolve: {
-    tsconfigPaths: true,
-    alias: [
-      {
-        find: /^@\//,
-        replacement: `${rootDir}/src/`,
-      },
-      {
-        find: /^#test\//,
-        replacement: `${rootDir}/test/`,
-      },
-    ],
-  },
+  plugins: [deno()],
   test: {
     include: ["./test/**/*.test.ts"],
     setupFiles: ["./test/asserts/asserts.ts", "./test/setup/db.ts"],

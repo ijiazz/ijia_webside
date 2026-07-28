@@ -6,10 +6,7 @@ import { ENV } from "./env.ts";
 import { getCheckTypeErrorReason } from "@asla/wokao";
 import { unrefTimer } from "@/lib/timer.ts";
 
-export function getPackageJson() {
-  return import("../../package.json", { with: { type: "json" } }).then((mod) => mod.default);
-}
-const rootDir = path.resolve(import.meta.dirname, "../..");
+const rootDir = path.resolve(import.meta.dirname!, "../..");
 const configFilePath = path.join(rootDir, "config.jsonc");
 
 class Watcher {

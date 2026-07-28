@@ -1,0 +1,21 @@
+{
+  "name": "@ijia/api-types",
+  "nodeModulesDir": "manual",
+  "version": "1.0.0",
+  "tasks": {
+    "check-type": "deno check",
+    "genApiDoc": "deno x typedoc"
+  },
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "types": [],
+    "rootDirs": ["./src"]
+  },
+  "exports": {
+    ".": "./src/mod.ts"
+  },
+  "imports": {
+    "@ijia/school-db": "jsr:@ijia/school-db@^0.0.4",
+    "typedoc": "npm:typedoc@^0.28.15"
+  }
+}

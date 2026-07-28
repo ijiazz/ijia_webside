@@ -24,8 +24,26 @@ export function Component() {
 
 ## 开发
 
-在 `/web` 目录下运行 `pnpm vite` 可以启动开发服务器。
+在 `/web` 目录下运行：
+
+```sh
+deno task dev
+```
+
+即可启动 Vite 开发服务器。
 
 ## 构建
 
-在 /web 目录下，运行 `pnpm build` 进行构建，静态资源文件输出在 `/web/dist` 目录下
+在 `/web` 目录下运行：
+
+```sh
+deno task build
+```
+
+即可进行构建，静态资源文件输出在 `/web/dist` 目录下。
+
+类型检查：
+
+```sh
+deno task check-type
+```

@@ -8,10 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Setup project
-        uses: ./.github/actions/setup-project
-      - run: pnpm check-type
-      - run: pnpm check-fmt
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+      - run: deno task setup
+      - run: deno task check-type
+      - run: deno task check-fmt
   test-api:
     runs-on: ubuntu-latest
     env:
@@ -37,10 +42,17 @@ jobs:
           --health-timeout 5s
     steps:
       - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
       - name: Setup project
-        uses: ./.github/actions/setup-project
+        run: |
+          cd web_dto && deno install --frozen
+          cd ../web_api && deno install --frozen
+
       - name: Test
-        run: pnpm test
+        run: deno task test
         env:
           PG_URL: pg://${{env.POSTGRES_USER}}:${{env.POSTGRES_PASSWORD}}@127.0.0.1:5432/${{env.POSTGRES_DB}}
         working-directory: ./web_api

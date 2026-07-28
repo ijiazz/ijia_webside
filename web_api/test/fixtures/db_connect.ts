@@ -1,9 +1,8 @@
 import { test as viTest, afterAll } from "vitest";
 import { dbPool } from "@/db/client.ts";
-import { createInitIjiaDb } from "@ijia/school-db/testlib";
 import process from "node:process";
 import { PgDbQueryPool, DbManage } from "@asla/pg";
-import { DB_CONNECT_INFO, PUBLIC_CONNECT_INFO } from "#test/utils/db.ts";
+import { createInitIjiaDb, DB_CONNECT_INFO, PUBLIC_CONNECT_INFO } from "#test/utils/db.ts";
 
 export interface DbContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
@@ -29,7 +28,7 @@ afterAll(async function () {
 export const test = viTest.extend<DbContext>({
   async ijiaDbPool({}, use) {
     const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
-    await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true });
+    await createInitIjiaDb(dbName);
     dbPool.connectOption = { ...DB_CONNECT_INFO, database: dbName };
     dbPool.open();
     await use(dbPool);

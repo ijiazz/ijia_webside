@@ -1,21 +1,21 @@
 ## 说明
 
-定义接口时，需要更新 `/web_api/src/dto` 下面的文件， 已便前端能够获得接口的类型提示与生成 API 文档\
-在 `/web_api` 目录下运行`pnpm genApiDoc` 可以生成 api 文档，输出在 `/web_api/docs/api` 目录下
+定义接口时，需要同步更新接口 DTO，以便前端能够获得接口类型提示与生成 API 文档。共享类型位于 `/web_dto`，后端接口类型由
+`/web_api/src/dto.ts` 导出。\
+在 `/web_dto` 目录下运行 `deno task genApiDoc` 可以生成 API 文档。
 
 如果需要新增模块，需要 `/web_api/src/bootstrap/hono_app.ts` 文件下注册到 hono
 
 ## 环境准备
 
-首先启动 Postgresql 和 redis 服务
-检查 .env 相关环境变量，确保数据库连接信息正确
+首先启动 Postgresql 和 redis 服务 检查 .env 相关环境变量，确保数据库连接信息正确
 
 ## 启动
 
-web api 服务只需要运行 `/web_api/src/main.ts` 文件即可启动服务，在 `/web_api/.env` 文件里配置环境变量。`/web_api/config.jsonc`是后端的一些配置
+web api 服务只需要运行 `/web_api/src/main.ts` 文件即可启动服务，在 `/web_api/.env`
+文件里配置环境变量。`/web_api/config.jsonc`是后端的一些配置
 
-如果你使用 Deno 作为后端运行时，可以直接在 `/web_api` 目录下运行`deno task start`或 `deno run -A --env src/main.ts` 启动后端服务\
-如果你使用 Node 作为后端运行时，则需要编译后，在 `/web_api` 运行`pnpm run start`或 `node --env-file=.env dist/main.js`启动后端服务
+在 `/web_api` 目录下运行 `deno task start` 启动后端服务。
 
 ## 调试
 
@@ -30,15 +30,26 @@ debug 已经配置了使用 Deno 进行 debug 的 vscode 模板，点击 vscode 
 [如何查询 SQL 语句](../docs/查询SQL语句.md)\
 [如何操作 Redis](../docs/查询SQL语句.md)
 
-## 编译
+## 类型检查
 
-在 `/web_api` 目录下运行 `pnpm build` ，这将编译 ts文件输出到 `/web_api/dist` 目录
+在 `/web_api` 目录下运行：
+
+```sh
+deno task check-type
+```
 
 ## 测试
 
 测试框架使用 [vitest](https://cn.vitest.dev/)
 
-运行 `pnpm test` 将启动测试
+运行：
 
-测试需要连接数据库，在运行测试前需要先启动 PostgreSql 服务和 Redis 服务， 然后配置环境变量 PG_URL 和 REDIS_URL，或者，直接修改
-`vitest.config.ts` 来配置环境变量。 用于测试的角色需要拥有创建数据库的权限 测试运行时会创建数据库，在测试结束后删除
+```sh
+deno task test
+```
+
+将启动测试。
+
+测试需要连接数据库，在运行测试前需要先启动 PostgreSql 服务和 Redis 服务， 然后配置环境变量 PG_URL 和
+REDIS_URL，或者，直接修改 `vitest.config.ts` 来配置环境变量。 用于测试的角色需要拥有创建数据库的权限
+测试运行时会创建数据库，在测试结束后删除

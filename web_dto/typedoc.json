@@ -1,4 +1,4 @@
 {
-  "entryPoints": ["./mod.ts"],
+  "entryPoints": ["./src/mod.ts"],
   "out": "docs/api"
 }

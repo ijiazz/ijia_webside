@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { Readable } from "node:stream";
 import fs from "node:fs/promises";
-import packageJson from "../package.json" with { type: "json" };
+import packageJson from "../deno.json" with { type: "json" };
 
 const ps = spawn("git", ["log", "-n", "1"], { stdio: [null, "pipe", "inherit"] });
 const stdout = Readable.toWeb(ps.stdout!);

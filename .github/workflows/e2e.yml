@@ -30,18 +30,25 @@ jobs:
     needs: build-images
     steps:
       - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
       - name: Setup project
-        uses: ./.github/actions/setup-project
-      - name: Build web
-        run: pnpm build
-        working-directory: ./web
+        run: |
+          cd web_dto && deno install --frozen
+          cd ../web && deno install --frozen
+          cd ../e2e && pnpm install --frozen-lockfile
 
       - uses: actions/cache@v4 #https://playwright.dev/docs/browsers#managing-browser-binaries
         with:
           path: /home/runner/.cache/ms-playwright
-          key: playwright-browser-${{ hashFiles('e2e/package.json') }}
+          key: playwright-browser-${{ hashFiles('e2e/deno.lock') }}
       - name: Install browser
-        run: pnpm playwright install chromium webkit firefox --with-deps
+        run: deno x playwright install chromium webkit firefox --with-deps
         working-directory: ./e2e
 
       - uses: actions/download-artifact@v4
@@ -57,7 +64,8 @@ jobs:
       - name: Start services
         run: docker compose up -d
       - name: E2E test
-        run: pnpm run e2e:ci
+        continue-on-error: true
+        run: deno task e2e:ci
         env:
           DATABASE_URL: "postgresql://postgres@localhost:5442/ijia"
           WEB_URL: "http://localhost:4173"

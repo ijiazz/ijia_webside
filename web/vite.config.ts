@@ -5,6 +5,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import process from "node:process";
 import { buildTimePlugin } from "./build/vitest-pulgins.ts";
+import deno from "@deno/vite-plugin";
 
 const API_ORIGIN = process.env.API_ORIGIN || "http://localhost:3000";
 const buildTime = Date.now();
@@ -42,6 +43,7 @@ export default defineConfig((info) => {
         addExtensions: true,
       }),
       react(),
+      deno(),
       buildTimePlugin({ nextVersion: buildTime }),
       legacy({
         renderLegacyChunks: false,

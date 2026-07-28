@@ -1,0 +1,14 @@
+{
+  "nodeModulesDir": "manual",
+  "test": {
+    "include": [],
+  },
+  "compilerOptions": {
+    "types": ["node"],
+  },
+  "imports": {
+    "@/": "./",
+  },
+  "links": ["../web_dto"],
+  "jsrDepsInNodeModules": true,
+}

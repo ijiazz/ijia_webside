@@ -20,12 +20,18 @@ jobs:
       - name: Set found_artifact output
         run: echo ${{ steps.fetch_artifact.outputs.artifacts }}
       - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        if: steps.fetch_artifact.outputs.found_artifact =='false'
+        with:
+          deno-version: v2.x
       - name: Setup project
         if: steps.fetch_artifact.outputs.found_artifact =='false'
-        uses: ./.github/actions/setup-project
+        run: |
+          cd web_dto && deno install --frozen
+          cd ../web && deno install --frozen
       - name: Build
         if: steps.fetch_artifact.outputs.found_artifact =='false'
-        run: pnpm build
+        run: deno task build
         env:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}

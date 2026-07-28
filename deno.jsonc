@@ -1,0 +1,26 @@
+{
+  "lock": false,
+  "nodeModulesDir": "manual",
+  "tasks": {
+    "check-fmt": "deno x oxfmt --check web_api web e2e",
+    "fmt": "deno x oxfmt web_api web e2e",
+    "setup": "deno run -ER --allow-run script/install.ts",
+    "check-type": "deno run -ER --allow-run script/check-type.ts",
+    "create-db": "deno run -ERN script/create_db.ts",
+  },
+  "test": {
+    "include": [],
+  },
+  "imports": {
+    "oxfmt": "npm:oxfmt@^0.60.0",
+    "@ijia/school-db": "jsr:@ijia/school-db@^0.0.4",
+  },
+  "jsrDepsInNodeModules": true, // jsr 的 @ijia/school-db 包不包含 db 文件, 所以用 npm 包
+  // "catalog": {
+  //   "@asla/pg": "npm:@jsr/asla__pg@^0.2.4",
+  //   "@ijia/school-db": "npm:@jsr/ijia__school-db@^0.0.4",
+  //   "@asla/yoursql": "npm:@jsr/asla__yoursql@0.14.0",
+  //   "evlib": "npm:evlib@^3.1.3"
+  // }
+  "exclude": ["./e2e", "./web", "./web_api", "./web_dto", "node_modules/**"],
+}

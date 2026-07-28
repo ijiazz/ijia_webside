@@ -11,7 +11,7 @@
       "program": "src/main.ts",
       "cwd": "${workspaceFolder}/web_api",
       "sourceMaps": true,
-      "runtimeArgs": ["run", "--no-lock", "-c", "deno.json", "--env"],
+      "runtimeArgs": ["run", "--no-lock", "-c", "deno.jsonc", "--env"],
       "runtimeExecutable": "deno",
     },
     {
@@ -28,7 +28,7 @@
       "program": "src/main.ts",
       "cwd": "${workspaceFolder}/web_api",
       "sourceMaps": true,
-      "runtimeArgs": ["run", "--no-lock", "-c", "deno.json", "--env"],
+      "runtimeArgs": ["run", "--no-lock", "-c", "deno.jsonc", "--env"],
       "runtimeExecutable": "deno",
     },
   ],

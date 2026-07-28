@@ -31,6 +31,6 @@ export function pruneDirty<T>(value: T, dirtyFields: DirtyValue): DeepPartial<T>
 type DirtyValues = {
   readonly [key: string]: DirtyValue;
 };
-type DirtyValue = boolean | DirtyValues | readonly DirtyValues[] | readonly boolean[] | undefined;
+type DirtyValue = string | boolean | DirtyValues | readonly DirtyValue[] | undefined;
 
 type DeepPartial<T> = T extends any[] ? T : T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;

@@ -1,7 +1,6 @@
 {
-  "deno.enablePaths": ["./web_ssr"],
   "files.eol": "\n",
-  "vitest.runtime": "node",
+  "vitest.runtime": "deno",
   "vitest.debugExclude": ["<node_internals>/**"],
-  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.defaultFormatter": "oxc.oxc-vscode"
 }

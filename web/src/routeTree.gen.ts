@@ -11,59 +11,52 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root.tsx'
-import { Route as ThemeRouteRouteImport } from './routes/_theme/route.tsx'
 import { Route as SchoolRouteRouteImport } from './routes/_school/route.tsx'
-import { Route as StoryIndexRouteImport } from './routes/story/index.tsx'
+import { Route as ThemeRouteRouteImport } from './routes/_theme/route.tsx'
 import { Route as homeIndexRouteImport } from './routes/(home)/index.tsx'
-import { Route as ThemeAboutIndexRouteImport } from './routes/_theme/about/index.tsx'
-import { Route as SchoolWallIndexRouteImport } from './routes/_school/wall/index.tsx'
-import { Route as SchoolUserIndexRouteImport } from './routes/_school/user/index.tsx'
-import { Route as SchoolReviewIndexRouteImport } from './routes/_school/review/index.tsx'
-import { Route as SchoolLiveIndexRouteImport } from './routes/_school/live/index.tsx'
+import { Route as StoryIndexRouteImport } from './routes/story/index.tsx'
 import { Route as SchoolExaminationIndexRouteImport } from './routes/_school/examination/index.tsx'
-import { Route as ThemeAboutIntroductionRouteImport } from './routes/_theme/about/introduction.tsx'
-import { Route as ThemeAboutGuideRouteImport } from './routes/_theme/about/guide.tsx'
-import { Route as SchoolWallPublishRouteImport } from './routes/_school/wall/publish.tsx'
-import { Route as SchoolQuestionCreateRouteImport } from './routes/_school/question/create.tsx'
-import { Route as SchoolProfileCenterRouteImport } from './routes/_school/profile/center.tsx'
 import { Route as SchoolExaminationSplatRouteImport } from './routes/_school/examination/$.tsx'
-import { Route as SchoolUserUserIdRouteRouteImport } from './routes/_school/user/$userId/route.tsx'
+import { Route as SchoolLiveIndexRouteImport } from './routes/_school/live/index.tsx'
+import { Route as SchoolProfileCenterRouteImport } from './routes/_school/profile/center.tsx'
+import { Route as SchoolQuestionCreateRouteImport } from './routes/_school/question/create.tsx'
+import { Route as SchoolReviewIndexRouteImport } from './routes/_school/review/index.tsx'
 import { Route as SchoolReviewTypeRouteRouteImport } from './routes/_school/review/$type/route.tsx'
-import { Route as SchoolUserUserIdIndexRouteImport } from './routes/_school/user/$userId/index.tsx'
-import { Route as SchoolReviewTypeIndexRouteImport } from './routes/_school/review/$type/index.tsx'
+import { Route as SchoolUserIndexRouteImport } from './routes/_school/user/index.tsx'
+import { Route as SchoolUserUserIdRouteRouteImport } from './routes/_school/user/$userId/route.tsx'
+import { Route as SchoolWallIndexRouteImport } from './routes/_school/wall/index.tsx'
+import { Route as SchoolWallPublishRouteImport } from './routes/_school/wall/publish.tsx'
+import { Route as ThemeAboutIndexRouteImport } from './routes/_theme/about/index.tsx'
+import { Route as ThemeAboutGuideRouteImport } from './routes/_theme/about/guide.tsx'
+import { Route as ThemeAboutIntroductionRouteImport } from './routes/_theme/about/introduction.tsx'
 import { Route as SchoolQuestionEditQuestionIdRouteImport } from './routes/_school/question/edit.$questionId.tsx'
+import { Route as SchoolReviewTypeIndexRouteImport } from './routes/_school/review/$type/index.tsx'
+import { Route as SchoolUserUserIdIndexRouteImport } from './routes/_school/user/$userId/index.tsx'
 import { Route as SchoolWallListChar123GroupIdChar125RouteRouteImport } from './routes/_school/wall/list.{-$groupId}/route.tsx'
-import { Route as SchoolWallListChar123GroupIdChar125IndexRouteImport } from './routes/_school/wall/list.{-$groupId}/index.tsx'
-import { Route as SchoolUserUserIdQuestionIndexRouteImport } from './routes/_school/user/$userId/question/index.tsx'
 import { Route as SchoolUserUserIdPostIndexRouteImport } from './routes/_school/user/$userId/post/index.tsx'
+import { Route as SchoolUserUserIdQuestionIndexRouteImport } from './routes/_school/user/$userId/question/index.tsx'
+import { Route as SchoolWallListChar123GroupIdChar125IndexRouteImport } from './routes/_school/wall/list.{-$groupId}/index.tsx'
 
+const SchoolExaminationSimulateLazyRouteImport = createFileRoute(
+  '/_school/examination/simulate',
+)()
 const ThemeTestPageIndexLazyRouteImport =
   createFileRoute('/_theme/test-page/')()
 const ThemeTestPageUploadLazyRouteImport = createFileRoute(
   '/_theme/test-page/upload',
 )()
-const SchoolExaminationSimulateLazyRouteImport = createFileRoute(
-  '/_school/examination/simulate',
-)()
 
-const ThemeRouteRoute = ThemeRouteRouteImport.update({
-  id: '/_theme',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/_theme/route.lazy.tsx').then((d) => d.Route),
-)
 const SchoolRouteRoute = SchoolRouteRouteImport.update({
   id: '/_school',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/_school/route.lazy.tsx').then((d) => d.Route),
 )
-const StoryIndexRoute = StoryIndexRouteImport.update({
-  id: '/story/',
-  path: '/story/',
+const ThemeRouteRoute = ThemeRouteRouteImport.update({
+  id: '/_theme',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
-  import('./routes/story/index.lazy.tsx').then((d) => d.Route),
+  import('./routes/_theme/route.lazy.tsx').then((d) => d.Route),
 )
 const homeIndexRoute = homeIndexRouteImport
   .update({
@@ -72,54 +65,23 @@ const homeIndexRoute = homeIndexRouteImport
     getParentRoute: () => rootRouteImport,
   } as any)
   .lazy(() => import('./routes/(home)/index.lazy.tsx').then((d) => d.Route))
-const ThemeTestPageIndexLazyRoute = ThemeTestPageIndexLazyRouteImport.update({
-  id: '/test-page/',
-  path: '/test-page/',
-  getParentRoute: () => ThemeRouteRoute,
+const StoryIndexRoute = StoryIndexRouteImport.update({
+  id: '/story/',
+  path: '/story/',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
-  import('./routes/_theme/test-page/index.lazy.tsx').then((d) => d.Route),
-)
-const ThemeAboutIndexRoute = ThemeAboutIndexRouteImport.update({
-  id: '/about/',
-  path: '/about/',
-  getParentRoute: () => ThemeRouteRoute,
-} as any).lazy(() =>
-  import('./routes/_theme/about/index.lazy.tsx').then((d) => d.Route),
-)
-const SchoolWallIndexRoute = SchoolWallIndexRouteImport.update({
-  id: '/wall/',
-  path: '/wall/',
-  getParentRoute: () => SchoolRouteRoute,
-} as any)
-const SchoolUserIndexRoute = SchoolUserIndexRouteImport.update({
-  id: '/user/',
-  path: '/user/',
-  getParentRoute: () => SchoolRouteRoute,
-} as any)
-const SchoolReviewIndexRoute = SchoolReviewIndexRouteImport.update({
-  id: '/review/',
-  path: '/review/',
-  getParentRoute: () => SchoolRouteRoute,
-} as any)
-const SchoolLiveIndexRoute = SchoolLiveIndexRouteImport.update({
-  id: '/live/',
-  path: '/live/',
-  getParentRoute: () => SchoolRouteRoute,
-} as any).lazy(() =>
-  import('./routes/_school/live/index.lazy.tsx').then((d) => d.Route),
+  import('./routes/story/index.lazy.tsx').then((d) => d.Route),
 )
 const SchoolExaminationIndexRoute = SchoolExaminationIndexRouteImport.update({
   id: '/examination/',
   path: '/examination/',
   getParentRoute: () => SchoolRouteRoute,
 } as any)
-const ThemeTestPageUploadLazyRoute = ThemeTestPageUploadLazyRouteImport.update({
-  id: '/test-page/upload',
-  path: '/test-page/upload',
-  getParentRoute: () => ThemeRouteRoute,
-} as any).lazy(() =>
-  import('./routes/_theme/test-page/upload.lazy.tsx').then((d) => d.Route),
-)
+const SchoolExaminationSplatRoute = SchoolExaminationSplatRouteImport.update({
+  id: '/examination/$',
+  path: '/examination/$',
+  getParentRoute: () => SchoolRouteRoute,
+} as any)
 const SchoolExaminationSimulateLazyRoute =
   SchoolExaminationSimulateLazyRouteImport.update({
     id: '/examination/simulate',
@@ -130,33 +92,12 @@ const SchoolExaminationSimulateLazyRoute =
       (d) => d.Route,
     ),
   )
-const ThemeAboutIntroductionRoute = ThemeAboutIntroductionRouteImport.update({
-  id: '/about/introduction',
-  path: '/about/introduction',
-  getParentRoute: () => ThemeRouteRoute,
-} as any).lazy(() =>
-  import('./routes/_theme/about/introduction.lazy.tsx').then((d) => d.Route),
-)
-const ThemeAboutGuideRoute = ThemeAboutGuideRouteImport.update({
-  id: '/about/guide',
-  path: '/about/guide',
-  getParentRoute: () => ThemeRouteRoute,
-} as any).lazy(() =>
-  import('./routes/_theme/about/guide.lazy.tsx').then((d) => d.Route),
-)
-const SchoolWallPublishRoute = SchoolWallPublishRouteImport.update({
-  id: '/wall/publish',
-  path: '/wall/publish',
+const SchoolLiveIndexRoute = SchoolLiveIndexRouteImport.update({
+  id: '/live/',
+  path: '/live/',
   getParentRoute: () => SchoolRouteRoute,
 } as any).lazy(() =>
-  import('./routes/_school/wall/publish.lazy.tsx').then((d) => d.Route),
-)
-const SchoolQuestionCreateRoute = SchoolQuestionCreateRouteImport.update({
-  id: '/question/create',
-  path: '/question/create',
-  getParentRoute: () => SchoolRouteRoute,
-} as any).lazy(() =>
-  import('./routes/_school/question/create.lazy.tsx').then((d) => d.Route),
+  import('./routes/_school/live/index.lazy.tsx').then((d) => d.Route),
 )
 const SchoolProfileCenterRoute = SchoolProfileCenterRouteImport.update({
   id: '/profile/center',
@@ -165,14 +106,16 @@ const SchoolProfileCenterRoute = SchoolProfileCenterRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_school/profile/center.lazy.tsx').then((d) => d.Route),
 )
-const SchoolExaminationSplatRoute = SchoolExaminationSplatRouteImport.update({
-  id: '/examination/$',
-  path: '/examination/$',
+const SchoolQuestionCreateRoute = SchoolQuestionCreateRouteImport.update({
+  id: '/question/create',
+  path: '/question/create',
   getParentRoute: () => SchoolRouteRoute,
-} as any)
-const SchoolUserUserIdRouteRoute = SchoolUserUserIdRouteRouteImport.update({
-  id: '/user/$userId',
-  path: '/user/$userId',
+} as any).lazy(() =>
+  import('./routes/_school/question/create.lazy.tsx').then((d) => d.Route),
+)
+const SchoolReviewIndexRoute = SchoolReviewIndexRouteImport.update({
+  id: '/review/',
+  path: '/review/',
   getParentRoute: () => SchoolRouteRoute,
 } as any)
 const SchoolReviewTypeRouteRoute = SchoolReviewTypeRouteRouteImport.update({
@@ -180,17 +123,62 @@ const SchoolReviewTypeRouteRoute = SchoolReviewTypeRouteRouteImport.update({
   path: '/review/$type',
   getParentRoute: () => SchoolRouteRoute,
 } as any)
-const SchoolUserUserIdIndexRoute = SchoolUserUserIdIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => SchoolUserUserIdRouteRoute,
+const SchoolUserIndexRoute = SchoolUserIndexRouteImport.update({
+  id: '/user/',
+  path: '/user/',
+  getParentRoute: () => SchoolRouteRoute,
 } as any)
-const SchoolReviewTypeIndexRoute = SchoolReviewTypeIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => SchoolReviewTypeRouteRoute,
+const SchoolUserUserIdRouteRoute = SchoolUserUserIdRouteRouteImport.update({
+  id: '/user/$userId',
+  path: '/user/$userId',
+  getParentRoute: () => SchoolRouteRoute,
+} as any)
+const SchoolWallIndexRoute = SchoolWallIndexRouteImport.update({
+  id: '/wall/',
+  path: '/wall/',
+  getParentRoute: () => SchoolRouteRoute,
+} as any)
+const SchoolWallPublishRoute = SchoolWallPublishRouteImport.update({
+  id: '/wall/publish',
+  path: '/wall/publish',
+  getParentRoute: () => SchoolRouteRoute,
 } as any).lazy(() =>
-  import('./routes/_school/review/$type/index.lazy.tsx').then((d) => d.Route),
+  import('./routes/_school/wall/publish.lazy.tsx').then((d) => d.Route),
+)
+const ThemeAboutIndexRoute = ThemeAboutIndexRouteImport.update({
+  id: '/about/',
+  path: '/about/',
+  getParentRoute: () => ThemeRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_theme/about/index.lazy.tsx').then((d) => d.Route),
+)
+const ThemeAboutGuideRoute = ThemeAboutGuideRouteImport.update({
+  id: '/about/guide',
+  path: '/about/guide',
+  getParentRoute: () => ThemeRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_theme/about/guide.lazy.tsx').then((d) => d.Route),
+)
+const ThemeAboutIntroductionRoute = ThemeAboutIntroductionRouteImport.update({
+  id: '/about/introduction',
+  path: '/about/introduction',
+  getParentRoute: () => ThemeRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_theme/about/introduction.lazy.tsx').then((d) => d.Route),
+)
+const ThemeTestPageIndexLazyRoute = ThemeTestPageIndexLazyRouteImport.update({
+  id: '/test-page/',
+  path: '/test-page/',
+  getParentRoute: () => ThemeRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_theme/test-page/index.lazy.tsx').then((d) => d.Route),
+)
+const ThemeTestPageUploadLazyRoute = ThemeTestPageUploadLazyRouteImport.update({
+  id: '/test-page/upload',
+  path: '/test-page/upload',
+  getParentRoute: () => ThemeRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_theme/test-page/upload.lazy.tsx').then((d) => d.Route),
 )
 const SchoolQuestionEditQuestionIdRoute =
   SchoolQuestionEditQuestionIdRouteImport.update({
@@ -202,6 +190,18 @@ const SchoolQuestionEditQuestionIdRoute =
       (d) => d.Route,
     ),
   )
+const SchoolReviewTypeIndexRoute = SchoolReviewTypeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SchoolReviewTypeRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_school/review/$type/index.lazy.tsx').then((d) => d.Route),
+)
+const SchoolUserUserIdIndexRoute = SchoolUserUserIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SchoolUserUserIdRouteRoute,
+} as any)
 const SchoolWallListChar123GroupIdChar125RouteRoute =
   SchoolWallListChar123GroupIdChar125RouteRouteImport.update({
     id: '/wall/list/{-$groupId}',
@@ -212,13 +212,13 @@ const SchoolWallListChar123GroupIdChar125RouteRoute =
       (d) => d.Route,
     ),
   )
-const SchoolWallListChar123GroupIdChar125IndexRoute =
-  SchoolWallListChar123GroupIdChar125IndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => SchoolWallListChar123GroupIdChar125RouteRoute,
+const SchoolUserUserIdPostIndexRoute =
+  SchoolUserUserIdPostIndexRouteImport.update({
+    id: '/post/',
+    path: '/post/',
+    getParentRoute: () => SchoolUserUserIdRouteRoute,
   } as any).lazy(() =>
-    import('./routes/_school/wall/list.{-$groupId}/index.lazy.tsx').then(
+    import('./routes/_school/user/$userId/post/index.lazy.tsx').then(
       (d) => d.Route,
     ),
   )
@@ -232,13 +232,13 @@ const SchoolUserUserIdQuestionIndexRoute =
       (d) => d.Route,
     ),
   )
-const SchoolUserUserIdPostIndexRoute =
-  SchoolUserUserIdPostIndexRouteImport.update({
-    id: '/post/',
-    path: '/post/',
-    getParentRoute: () => SchoolUserUserIdRouteRoute,
+const SchoolWallListChar123GroupIdChar125IndexRoute =
+  SchoolWallListChar123GroupIdChar125IndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => SchoolWallListChar123GroupIdChar125RouteRoute,
   } as any).lazy(() =>
-    import('./routes/_school/user/$userId/post/index.lazy.tsx').then(
+    import('./routes/_school/wall/list.{-$groupId}/index.lazy.tsx').then(
       (d) => d.Route,
     ),
   )
@@ -422,13 +422,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_theme': {
-      id: '/_theme'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof ThemeRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_school': {
       id: '/_school'
       path: ''
@@ -436,11 +429,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/story/': {
-      id: '/story/'
-      path: '/story'
-      fullPath: '/story/'
-      preLoaderRoute: typeof StoryIndexRouteImport
+    '/_theme': {
+      id: '/_theme'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ThemeRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(home)/': {
@@ -450,102 +443,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof homeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_theme/test-page/': {
-      id: '/_theme/test-page/'
-      path: '/test-page'
-      fullPath: '/test-page/'
-      preLoaderRoute: typeof ThemeTestPageIndexLazyRouteImport
-      parentRoute: typeof ThemeRouteRoute
-    }
-    '/_theme/about/': {
-      id: '/_theme/about/'
-      path: '/about'
-      fullPath: '/about/'
-      preLoaderRoute: typeof ThemeAboutIndexRouteImport
-      parentRoute: typeof ThemeRouteRoute
-    }
-    '/_school/wall/': {
-      id: '/_school/wall/'
-      path: '/wall'
-      fullPath: '/wall/'
-      preLoaderRoute: typeof SchoolWallIndexRouteImport
-      parentRoute: typeof SchoolRouteRoute
-    }
-    '/_school/user/': {
-      id: '/_school/user/'
-      path: '/user'
-      fullPath: '/user/'
-      preLoaderRoute: typeof SchoolUserIndexRouteImport
-      parentRoute: typeof SchoolRouteRoute
-    }
-    '/_school/review/': {
-      id: '/_school/review/'
-      path: '/review'
-      fullPath: '/review/'
-      preLoaderRoute: typeof SchoolReviewIndexRouteImport
-      parentRoute: typeof SchoolRouteRoute
-    }
-    '/_school/live/': {
-      id: '/_school/live/'
-      path: '/live'
-      fullPath: '/live/'
-      preLoaderRoute: typeof SchoolLiveIndexRouteImport
-      parentRoute: typeof SchoolRouteRoute
+    '/story/': {
+      id: '/story/'
+      path: '/story'
+      fullPath: '/story/'
+      preLoaderRoute: typeof StoryIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_school/examination/': {
       id: '/_school/examination/'
       path: '/examination'
       fullPath: '/examination/'
       preLoaderRoute: typeof SchoolExaminationIndexRouteImport
-      parentRoute: typeof SchoolRouteRoute
-    }
-    '/_theme/test-page/upload': {
-      id: '/_theme/test-page/upload'
-      path: '/test-page/upload'
-      fullPath: '/test-page/upload'
-      preLoaderRoute: typeof ThemeTestPageUploadLazyRouteImport
-      parentRoute: typeof ThemeRouteRoute
-    }
-    '/_school/examination/simulate': {
-      id: '/_school/examination/simulate'
-      path: '/examination/simulate'
-      fullPath: '/examination/simulate'
-      preLoaderRoute: typeof SchoolExaminationSimulateLazyRouteImport
-      parentRoute: typeof SchoolRouteRoute
-    }
-    '/_theme/about/introduction': {
-      id: '/_theme/about/introduction'
-      path: '/about/introduction'
-      fullPath: '/about/introduction'
-      preLoaderRoute: typeof ThemeAboutIntroductionRouteImport
-      parentRoute: typeof ThemeRouteRoute
-    }
-    '/_theme/about/guide': {
-      id: '/_theme/about/guide'
-      path: '/about/guide'
-      fullPath: '/about/guide'
-      preLoaderRoute: typeof ThemeAboutGuideRouteImport
-      parentRoute: typeof ThemeRouteRoute
-    }
-    '/_school/wall/publish': {
-      id: '/_school/wall/publish'
-      path: '/wall/publish'
-      fullPath: '/wall/publish'
-      preLoaderRoute: typeof SchoolWallPublishRouteImport
-      parentRoute: typeof SchoolRouteRoute
-    }
-    '/_school/question/create': {
-      id: '/_school/question/create'
-      path: '/question/create'
-      fullPath: '/question/create'
-      preLoaderRoute: typeof SchoolQuestionCreateRouteImport
-      parentRoute: typeof SchoolRouteRoute
-    }
-    '/_school/profile/center': {
-      id: '/_school/profile/center'
-      path: '/profile/center'
-      fullPath: '/profile/center'
-      preLoaderRoute: typeof SchoolProfileCenterRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
     '/_school/examination/$': {
@@ -555,11 +464,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolExaminationSplatRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
-    '/_school/user/$userId': {
-      id: '/_school/user/$userId'
-      path: '/user/$userId'
-      fullPath: '/user/$userId'
-      preLoaderRoute: typeof SchoolUserUserIdRouteRouteImport
+    '/_school/examination/simulate': {
+      id: '/_school/examination/simulate'
+      path: '/examination/simulate'
+      fullPath: '/examination/simulate'
+      preLoaderRoute: typeof SchoolExaminationSimulateLazyRouteImport
+      parentRoute: typeof SchoolRouteRoute
+    }
+    '/_school/live/': {
+      id: '/_school/live/'
+      path: '/live'
+      fullPath: '/live/'
+      preLoaderRoute: typeof SchoolLiveIndexRouteImport
+      parentRoute: typeof SchoolRouteRoute
+    }
+    '/_school/profile/center': {
+      id: '/_school/profile/center'
+      path: '/profile/center'
+      fullPath: '/profile/center'
+      preLoaderRoute: typeof SchoolProfileCenterRouteImport
+      parentRoute: typeof SchoolRouteRoute
+    }
+    '/_school/question/create': {
+      id: '/_school/question/create'
+      path: '/question/create'
+      fullPath: '/question/create'
+      preLoaderRoute: typeof SchoolQuestionCreateRouteImport
+      parentRoute: typeof SchoolRouteRoute
+    }
+    '/_school/review/': {
+      id: '/_school/review/'
+      path: '/review'
+      fullPath: '/review/'
+      preLoaderRoute: typeof SchoolReviewIndexRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
     '/_school/review/$type': {
@@ -569,19 +506,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolReviewTypeRouteRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
-    '/_school/user/$userId/': {
-      id: '/_school/user/$userId/'
-      path: '/'
-      fullPath: '/user/$userId/'
-      preLoaderRoute: typeof SchoolUserUserIdIndexRouteImport
-      parentRoute: typeof SchoolUserUserIdRouteRoute
+    '/_school/user/': {
+      id: '/_school/user/'
+      path: '/user'
+      fullPath: '/user/'
+      preLoaderRoute: typeof SchoolUserIndexRouteImport
+      parentRoute: typeof SchoolRouteRoute
     }
-    '/_school/review/$type/': {
-      id: '/_school/review/$type/'
-      path: '/'
-      fullPath: '/review/$type/'
-      preLoaderRoute: typeof SchoolReviewTypeIndexRouteImport
-      parentRoute: typeof SchoolReviewTypeRouteRoute
+    '/_school/user/$userId': {
+      id: '/_school/user/$userId'
+      path: '/user/$userId'
+      fullPath: '/user/$userId'
+      preLoaderRoute: typeof SchoolUserUserIdRouteRouteImport
+      parentRoute: typeof SchoolRouteRoute
+    }
+    '/_school/wall/': {
+      id: '/_school/wall/'
+      path: '/wall'
+      fullPath: '/wall/'
+      preLoaderRoute: typeof SchoolWallIndexRouteImport
+      parentRoute: typeof SchoolRouteRoute
+    }
+    '/_school/wall/publish': {
+      id: '/_school/wall/publish'
+      path: '/wall/publish'
+      fullPath: '/wall/publish'
+      preLoaderRoute: typeof SchoolWallPublishRouteImport
+      parentRoute: typeof SchoolRouteRoute
+    }
+    '/_theme/about/': {
+      id: '/_theme/about/'
+      path: '/about'
+      fullPath: '/about/'
+      preLoaderRoute: typeof ThemeAboutIndexRouteImport
+      parentRoute: typeof ThemeRouteRoute
+    }
+    '/_theme/about/guide': {
+      id: '/_theme/about/guide'
+      path: '/about/guide'
+      fullPath: '/about/guide'
+      preLoaderRoute: typeof ThemeAboutGuideRouteImport
+      parentRoute: typeof ThemeRouteRoute
+    }
+    '/_theme/about/introduction': {
+      id: '/_theme/about/introduction'
+      path: '/about/introduction'
+      fullPath: '/about/introduction'
+      preLoaderRoute: typeof ThemeAboutIntroductionRouteImport
+      parentRoute: typeof ThemeRouteRoute
+    }
+    '/_theme/test-page/': {
+      id: '/_theme/test-page/'
+      path: '/test-page'
+      fullPath: '/test-page/'
+      preLoaderRoute: typeof ThemeTestPageIndexLazyRouteImport
+      parentRoute: typeof ThemeRouteRoute
+    }
+    '/_theme/test-page/upload': {
+      id: '/_theme/test-page/upload'
+      path: '/test-page/upload'
+      fullPath: '/test-page/upload'
+      preLoaderRoute: typeof ThemeTestPageUploadLazyRouteImport
+      parentRoute: typeof ThemeRouteRoute
     }
     '/_school/question/edit/$questionId': {
       id: '/_school/question/edit/$questionId'
@@ -590,6 +576,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolQuestionEditQuestionIdRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
+    '/_school/review/$type/': {
+      id: '/_school/review/$type/'
+      path: '/'
+      fullPath: '/review/$type/'
+      preLoaderRoute: typeof SchoolReviewTypeIndexRouteImport
+      parentRoute: typeof SchoolReviewTypeRouteRoute
+    }
+    '/_school/user/$userId/': {
+      id: '/_school/user/$userId/'
+      path: '/'
+      fullPath: '/user/$userId/'
+      preLoaderRoute: typeof SchoolUserUserIdIndexRouteImport
+      parentRoute: typeof SchoolUserUserIdRouteRoute
+    }
     '/_school/wall/list/{-$groupId}': {
       id: '/_school/wall/list/{-$groupId}'
       path: '/wall/list/{-$groupId}'
@@ -597,12 +597,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolWallListChar123GroupIdChar125RouteRouteImport
       parentRoute: typeof SchoolRouteRoute
     }
-    '/_school/wall/list/{-$groupId}/': {
-      id: '/_school/wall/list/{-$groupId}/'
-      path: '/'
-      fullPath: '/wall/list/{-$groupId}/'
-      preLoaderRoute: typeof SchoolWallListChar123GroupIdChar125IndexRouteImport
-      parentRoute: typeof SchoolWallListChar123GroupIdChar125RouteRoute
+    '/_school/user/$userId/post/': {
+      id: '/_school/user/$userId/post/'
+      path: '/post'
+      fullPath: '/user/$userId/post/'
+      preLoaderRoute: typeof SchoolUserUserIdPostIndexRouteImport
+      parentRoute: typeof SchoolUserUserIdRouteRoute
     }
     '/_school/user/$userId/question/': {
       id: '/_school/user/$userId/question/'
@@ -611,12 +611,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolUserUserIdQuestionIndexRouteImport
       parentRoute: typeof SchoolUserUserIdRouteRoute
     }
-    '/_school/user/$userId/post/': {
-      id: '/_school/user/$userId/post/'
-      path: '/post'
-      fullPath: '/user/$userId/post/'
-      preLoaderRoute: typeof SchoolUserUserIdPostIndexRouteImport
-      parentRoute: typeof SchoolUserUserIdRouteRoute
+    '/_school/wall/list/{-$groupId}/': {
+      id: '/_school/wall/list/{-$groupId}/'
+      path: '/'
+      fullPath: '/wall/list/{-$groupId}/'
+      preLoaderRoute: typeof SchoolWallListChar123GroupIdChar125IndexRouteImport
+      parentRoute: typeof SchoolWallListChar123GroupIdChar125RouteRoute
     }
   }
 }
