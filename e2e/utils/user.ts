@@ -4,9 +4,8 @@ import { api } from "@/utils/fetch.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { DbPlaUserCreate, Platform } from "@ijia/school-db/db";
 import { getAppURLFromRoute } from "@/utils/app.ts";
-import { BrowserContext } from "@playwright/test";
-import { setContextLogin } from "./browser.ts";
 import { getSeqIntId } from "./seq.ts";
+
 export const E2E_PASSWORD = {
   saved:
     "7bb09a5da06c0db9593efcc439f9c289ac446c084d57b6035e2b8b4d3b1b5d3034091ca9a58ab83d695974a67301df687e7db252d17e57c0089c589155f1676e",
@@ -87,13 +86,3 @@ export async function loginGetToken(email: string, password?: string) {
 }
 
 export const ProfileCenterURL = getAppURLFromRoute("/profile/center");
-
-export async function initContextLogged(context: BrowserContext) {
-  const user = await createNewUser("Alice");
-
-  const token = await loginGetToken(user.email, user.password);
-
-  await setContextLogin(context, token);
-
-  return user;
-}

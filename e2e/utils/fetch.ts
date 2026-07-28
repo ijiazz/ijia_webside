@@ -6,7 +6,7 @@ export type Api = {
 } & InferFetchSuite<ApiDefined>;
 
 function createHoFetch() {
-  const API_PREFIX = undefined;
+  const API_PREFIX = "/api";
   const http = new HoFetch({
     bodyParser: {},
     defaultOrigin: env.API_ORIGIN,

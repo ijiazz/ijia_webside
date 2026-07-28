@@ -9,6 +9,7 @@
     "check-type": "tsc --noEmit",
     "dev": "vite",
     "build": "vite build",
+    "preview": "vite preview",
     "build:ssr": "vite build --outDir dist/server --ssr src/index.server.tsx"
   },
   "dependencies": {

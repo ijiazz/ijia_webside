@@ -1,9 +1,13 @@
-import { createDouyinUser, initContextLogged, ProfileCenterURL } from "@/utils/user.ts";
+import { setContextLogin } from "@/utils/browser.ts";
+import { createDouyinUser, initAlice, loginGetToken, ProfileCenterURL } from "@/utils/user.ts";
 import { test, expect, Page } from "@playwright/test";
 
 const classOptionClassName = ".e2e-class-option";
 test("账号绑定与解除关联", async function ({ page, context }) {
-  const Alice = await initContextLogged(context);
+  const Alice = await initAlice();
+  const token = await loginGetToken(Alice.email, Alice.password);
+  await setContextLogin(context, token);
+
   const bob = await createDouyinUser({
     user_name: "Bob",
     signature: `IJIA学号：<${Alice.id}>`,
@@ -48,7 +52,9 @@ test("账号绑定与解除关联", async function ({ page, context }) {
 });
 
 test("修改基础配置", async function ({ page, context }) {
-  const Alice = await initContextLogged(context);
+  const Alice = await initAlice();
+  const token = await loginGetToken(Alice.email, Alice.password);
+  await setContextLogin(context, token);
   await page.goto(ProfileCenterURL);
 
   const bob = await createDouyinUser({

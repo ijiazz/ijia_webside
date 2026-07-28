@@ -4,7 +4,6 @@ import legacy from "@vitejs/plugin-legacy";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import process from "node:process";
-import path from "node:path";
 import { buildTimePlugin } from "./build/vitest-pulgins.ts";
 
 const API_ORIGIN = process.env.API_ORIGIN || "http://localhost:3000";
@@ -14,7 +13,6 @@ const buildTime = Date.now();
 const rootDir: string = import.meta.dirname!;
 
 export default defineConfig((info) => {
-  const isPreview = info.isPreview;
   return {
     root: rootDir,
     server: {
@@ -29,12 +27,6 @@ export default defineConfig((info) => {
         },
       },
       host: "localhost",
-      https: isPreview
-        ? {
-            key: path.resolve(rootDir, "build/localhost.key"),
-            cert: path.resolve(rootDir, "build/localhost.crt"),
-          }
-        : undefined,
     },
 
     resolve: {
