@@ -1,6 +1,7 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "#test/fixtures/hono.ts";
 import examinationRoutes from "@/routers/examination/mod.ts";
+import testExaminationRoutes from "@/routers/test/examination.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import {
   prepareExamination,
@@ -17,6 +18,7 @@ import { ExaminationStatus, ExamQuestionType } from "@ijia/api-types";
 
 beforeEach<Context>(async ({ hono }) => {
   examinationRoutes.apply(hono);
+  testExaminationRoutes.apply(hono);
 });
 
 test("没有题目的考试可以交卷，并查看考试结果、作答记录", async function ({ api, publicDbPool }) {
@@ -41,7 +43,7 @@ test("正常流程的考试状态", async function ({ api, publicDbPool }) {
   });
   const plan = new ExamPlan(api, alice.token, examId);
 
-  const getExamStatus = () => getExamination(api, alice.token, examId).then((detail) => detail.status);
+  const getExamStatus = () => getExamination(alice.token, examId).then((detail) => detail.status);
   await expect(getExamStatus(), "可开考").resolves.toBe(ExaminationStatus.ready);
   await plan.start();
 
@@ -57,7 +59,7 @@ test("缺考", async function ({ api, publicDbPool }) {
     userId: alice.id,
     allowTimeEnd: new Date(Date.now() + 1000),
   });
-  const getExamStatus = () => getExamination(api, alice.token, examId).then((detail) => detail.status);
+  const getExamStatus = () => getExamination(alice.token, examId).then((detail) => detail.status);
   await expect(getExamStatus(), "可开考").resolves.toBe(ExaminationStatus.ready);
   await setExaminationAllowDate(examId, { to: new Date(Date.now() - 1000) });
   await expect(getExamStatus(), "缺考没有考试接口").resolves.toBe(ExaminationStatus.ended);
@@ -68,13 +70,13 @@ test("终止考试的状态", async function ({ api, publicDbPool }) {
     userId: alice.id,
     allowTimeEnd: new Date(Date.now() + 1000),
   });
-  const getExamStatus = () => getExamination(api, alice.token, examId).then((detail) => detail.status);
+  const getExamStatus = () => getExamination(alice.token, examId).then((detail) => detail.status);
   await expect(getExamStatus(), "可开考").resolves.toBe(ExaminationStatus.ready);
-  await startExamination(api, alice.token, examId);
+  await startExamination(alice.token, examId);
   await expect(getExamStatus(), "进行中").resolves.toBe(ExaminationStatus.ongoing);
   await setExaminationAllowDate(examId, { to: new Date(Date.now() - 1000) });
   await expect(getExamStatus(), "进行中").resolves.toBe(ExaminationStatus.ended);
-  await endExamination(api, alice.token, examId);
+  await endExamination(alice.token, examId);
   await expect(getExamStatus(), "已出结果").resolves.toBe(ExaminationStatus.result);
 });
 

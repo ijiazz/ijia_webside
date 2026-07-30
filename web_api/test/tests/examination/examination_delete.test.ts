@@ -1,6 +1,7 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "#test/fixtures/hono.ts";
 import examinationRoutes from "@/routers/examination/mod.ts";
+import testExaminationRoutes from "@/routers/test/examination.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import {
   createPracticeExamination,
@@ -19,58 +20,59 @@ import { dbPool } from "@/db/client.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   examinationRoutes.apply(hono);
+  testExaminationRoutes.apply(hono);
 });
 
 test("可以删除刚创建的自己的考试", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 0 });
+  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 0 });
 
-  await deleteExamination(api, alice.token, examination_id);
-  await expect(getExamination(api, alice.token, examination_id)).responseStatus(404);
+  await deleteExamination(alice.token, examination_id);
+  await expect(getExamination(alice.token, examination_id)).responseStatus(404);
 });
 test("可以删除已经开始的模拟考试", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 0 });
-  await startExamination(api, alice.token, examination_id);
-  await deleteExamination(api, alice.token, examination_id);
-  await expect(getExamination(api, alice.token, examination_id)).responseStatus(404);
+  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 0 });
+  await startExamination(alice.token, examination_id);
+  await deleteExamination(alice.token, examination_id);
+  await expect(getExamination(alice.token, examination_id)).responseStatus(404);
 });
 test("可以删除已经结束的模拟考试", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 0 });
-  await startExamination(api, alice.token, examination_id);
-  await endExamination(api, alice.token, examination_id);
-  await deleteExamination(api, alice.token, examination_id);
-  await expect(getExamination(api, alice.token, examination_id)).responseStatus(404);
+  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 0 });
+  await startExamination(alice.token, examination_id);
+  await endExamination(alice.token, examination_id);
+  await deleteExamination(alice.token, examination_id);
+  await expect(getExamination(alice.token, examination_id)).responseStatus(404);
 });
 
 test("删除不存在的考试时，应返回 404", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  await expect(deleteExamination(api, alice.token, "999999")).responseStatus(404);
+  await expect(deleteExamination(alice.token, "999999")).responseStatus(404);
 });
 
 test("删除别人的考试时，应返回 404", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   const bob = await prepareUniqueUser("bob");
-  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 0 });
+  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 0 });
 
-  await expect(deleteExamination(api, bob.token, examination_id)).responseStatus(404);
+  await expect(deleteExamination(bob.token, examination_id)).responseStatus(404);
 });
 
 test("删除考试时，模板和模板题绑定会一起删除", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   await preparePassedQuestions(1, alice.id);
 
-  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 1 });
-  await startExamination(api, alice.token, examination_id);
+  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 1 });
+  await startExamination(alice.token, examination_id);
   await expect(getExaminationRealQuestionTotal(+examination_id)).resolves.toBe(1);
   const templateId = await getTemplateId(+examination_id);
-  await deleteExamination(api, alice.token, examination_id);
+  await deleteExamination(alice.token, examination_id);
 
   await expect(getTemplate(templateId)).resolves.toBe(0);
 
   await expect(getExaminationRealQuestionTotal(+examination_id)).resolves.toBe(0);
-  await expect(getExamination(api, alice.token, examination_id)).responseStatus(404);
+  await expect(getExamination(alice.token, examination_id)).responseStatus(404);
 });
 
 test("别人分配的考试，不能被删除", async function ({ api, publicDbPool }) {
@@ -79,16 +81,16 @@ test("别人分配的考试，不能被删除", async function ({ api, publicDbP
   {
     const { templateId } = await prepareExaminationTemplate(DEFAULT_QUESTIONS, { ownerId: alice.id });
     const examId = await prepareExamination({ userId: bob.id, templateId });
-    const exam = await getExamination(api, bob.token, examId);
+    const exam = await getExamination(bob.token, examId);
     expect(exam.owner?.id).toBe(alice.id.toString());
-    await expect(deleteExamination(api, bob.token, examId)).responseStatus(403);
+    await expect(deleteExamination(bob.token, examId)).responseStatus(403);
   }
   {
     const { templateId } = await prepareExaminationTemplate(DEFAULT_QUESTIONS,);
     const examId = await prepareExamination({ userId: bob.id, templateId });
-    const exam = await getExamination(api, bob.token, examId);
+    const exam = await getExamination(bob.token, examId);
     expect(exam.owner?.id).toBe(undefined);
-    await expect(deleteExamination(api, bob.token, examId)).responseStatus(403);
+    await expect(deleteExamination(bob.token, examId)).responseStatus(403);
   }
 })
 async function getTemplateId(examination_id: number) {

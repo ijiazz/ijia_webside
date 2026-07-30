@@ -1,6 +1,7 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "#test/fixtures/hono.ts";
 import examinationRoutes from "@/routers/examination/mod.ts";
+import testExaminationRoutes from "@/routers/test/examination.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import {
   createPracticeExamination,
@@ -16,13 +17,14 @@ import { v } from "@/sql/utils.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   examinationRoutes.apply(hono);
+  testExaminationRoutes.apply(hono);
 });
 
 test("可以获取自己的考试信息", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 0 });
+  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 0 });
 
-  const detail = await getExamination(api, alice.token, examination_id);
+  const detail = await getExamination(alice.token, examination_id);
   expect(detail).toMatchObject({
     id: examination_id,
     title: "模拟考试",
@@ -32,16 +34,16 @@ test("可以获取自己的考试信息", async function ({ api, publicDbPool })
 test("获取他人的考试信息应返回 404", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   const bob = await prepareUniqueUser("bob");
-  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 0 });
+  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 0 });
 
-  await expect(getExamination(api, bob.token, examination_id)).responseStatus(404);
+  await expect(getExamination(bob.token, examination_id)).responseStatus(404);
 });
 
 test("交卷前，查看作答记录应返回 409", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 0 });
+  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 0 });
 
-  await expect(getExaminationRecord(api, alice.token, examination_id)).responseStatus(409);
+  await expect(getExaminationRecord(alice.token, examination_id)).responseStatus(409);
 });
 
 test("结果开放前，查看考试记录不展示正确答案；开放后可查看结果", async function ({ api, publicDbPool }) {

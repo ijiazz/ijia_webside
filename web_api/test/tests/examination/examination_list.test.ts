@@ -12,11 +12,11 @@ test("获取自己的考试列表时，只返回自己的考试", async function
   const alice = await prepareUniqueUser("alice");
   const bob = await prepareUniqueUser("bob");
 
-  await createPracticeExamination(api, alice.token, { question_total: 0 });
-  await createPracticeExamination(api, alice.token, { question_total: 0 });
-  await createPracticeExamination(api, bob.token, { question_total: 0 });
+  await createPracticeExamination(alice.token, { question_total: 0 });
+  await createPracticeExamination(alice.token, { question_total: 0 });
+  await createPracticeExamination(bob.token, { question_total: 0 });
 
-  const list = await listExamination(api, alice.token);
+  const list = await listExamination(alice.token);
   expect(list.items).toHaveLength(2);
   expect(list.items.every((item) => item.title === "模拟考试")).toBe(true);
 });

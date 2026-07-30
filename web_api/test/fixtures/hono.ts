@@ -3,17 +3,27 @@ import { Hono } from "hono";
 import { test as viTest, DbContext } from "./db_connect.ts";
 import { HoFetch, createFetchSuite, InferFetchSuite, HoFetchStatusError } from "@asla/hofetch";
 import { ApiDefined, REQUEST_AUTH_KEY } from "@/dto.ts";
+import type { TestAPI } from "@ijia/api-types/test";
 
-export type Api = InferFetchSuite<ApiDefined>;
+type ApiType = ApiDefined & TestAPI;
+export type Api = InferFetchSuite<ApiType>;
 interface HonoContext {
   hono: Hono;
   hoFetch: HoFetch;
   api: Api;
 }
 export const JWT_TOKEN_KEY = Symbol("jwt_token");
+
+let api: Api | undefined;
+export function getAPI(): Api {
+  if (!api) throw new Error("API has not been initialized");
+  return api;
+}
+
 export const test = viTest.extend<HonoContext>({
   async hono({}, use) {
-    await use(createHono());
+    const hono = createHono();
+    await use(hono);
   },
   async hoFetch({ hono }, use) {
     const hoFetch = new HoFetch({
@@ -37,7 +47,12 @@ export const test = viTest.extend<HonoContext>({
     return use(hoFetch);
   },
   async api({ hoFetch }, use) {
-    return use(createFetchSuite<ApiDefined>(hoFetch));
+    api = createFetchSuite<ApiType>(hoFetch);
+    try {
+      await use(api);
+    } finally {
+      api = undefined;
+    }
   },
 });
 

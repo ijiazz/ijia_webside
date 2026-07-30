@@ -1,6 +1,7 @@
 import { beforeEach, expect } from "vitest";
 import { test, Context } from "#test/fixtures/hono.ts";
 import examinationRoutes from "@/routers/examination/mod.ts";
+import testExaminationRoutes from "@/routers/test/examination.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import {
   createPracticeExamination,
@@ -15,14 +16,15 @@ import { dbPool } from "@/db/client.ts";
 
 beforeEach<Context>(async ({ hono }) => {
   examinationRoutes.apply(hono);
+  testExaminationRoutes.apply(hono);
 });
 
 test("允许用户给自己创建模拟考试", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
   await preparePassedQuestions(2, alice.id);
 
-  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 2 });
-  const detail = await getExamination(api, alice.token, examination_id);
+  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 2 });
+  const detail = await getExamination(alice.token, examination_id);
 
   expect(detail.title).toBe("模拟考试");
   expect(detail.question_number, "总数应等于2").toBe(2);
@@ -34,7 +36,7 @@ test("模拟考试创建后，创建的试卷模板应暂未绑定题目", async
   const alice = await prepareUniqueUser("alice");
   await preparePassedQuestions(2, alice.id);
 
-  const { examination_id } = await createPracticeExamination(api, alice.token, { question_total: 2 });
+  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 2 });
   const { template_id } = await getExaminationTemplate(+examination_id);
 
   await expect(getExaminationRealQuestionNumber(template_id)).resolves.toBe(0);
@@ -53,6 +55,6 @@ test("未到考试开始时间，获取考试信息时状态应为 upcoming", as
     allowTimeStart: new Date(Date.now() + 1000 * 60),
   });
 
-  const detail = await getExamination(api, alice.token, examId.toString());
+  const detail = await getExamination(alice.token, examId.toString());
   expect(detail.status).toBe("upcoming");
 });

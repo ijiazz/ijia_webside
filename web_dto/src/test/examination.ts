@@ -9,14 +9,14 @@ export interface TestExaminationAPI {
     response: { questionIds: number[] };
   };
   "POST /test/template/prepare": {
-    body: { count: number; userId: number };
+    body: PrepareTemplateInput;
     response: {
       templateId: number;
       questionIds: number[];
     };
   };
   "POST /test/examination/prepare": {
-    body: { count: number; userId: number };
+    body: PrepareExaminationInput;
     response: {
       number: number;
     };
