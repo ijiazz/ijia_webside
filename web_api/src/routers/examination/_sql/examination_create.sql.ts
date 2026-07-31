@@ -26,8 +26,11 @@ export async function createEmptyExamination(option: CreateExaminationOption): P
   const examResult = await dbPool.queryFirstRow<{ id: number }>(sql);
   return examResult.id;
 }
-export async function createExaminationByRules(option: CreateExaminationOption, template: { rules: PaperTemplateGenRules, ownerId: number }): Promise<number | undefined> {
-  const { ownerId, rules } = template
+export async function createExaminationByRules(
+  option: CreateExaminationOption,
+  template: { rules: PaperTemplateGenRules; ownerId: number },
+): Promise<number | undefined> {
+  const { ownerId, rules } = template;
   await using t = dbPool.begin();
   const { id: templateId } = await t.queryFirstRow(
     insertIntoValues("exam_paper_template", {

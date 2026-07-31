@@ -60,11 +60,13 @@ function getRules(templateRules: PaperTemplateGenRulesInput): PaperTemplateGenRu
     const total = templateRules.questions.number ?? 100;
     return {
       total,
-      rules: [{
-        number: total,
-        score: templateRules.questions.score ?? DEFAULT_SCORE,
-        timeLimit: templateRules.questions.timeLimit,
-      }],
+      rules: [
+        {
+          number: total,
+          score: templateRules.questions.score ?? DEFAULT_SCORE,
+          timeLimit: templateRules.questions.timeLimit,
+        },
+      ],
     };
   }
   if (templateRules.questionByType) {

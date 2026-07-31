@@ -86,20 +86,19 @@ test("别人分配的考试，不能被删除", async function ({ api, publicDbP
     await expect(deleteExamination(bob.token, examId)).responseStatus(403);
   }
   {
-    const { templateId } = await prepareExaminationTemplate(DEFAULT_QUESTIONS,);
+    const { templateId } = await prepareExaminationTemplate(DEFAULT_QUESTIONS);
     const examId = await prepareExamination({ userId: bob.id, templateId });
     const exam = await getExamination(bob.token, examId);
     expect(exam.owner?.id).toBe(undefined);
     await expect(deleteExamination(bob.token, examId)).responseStatus(403);
   }
-})
+});
 async function getTemplateId(examination_id: number) {
   const result = await dbPool.queryRows<{ template_id: number }>(v.gen`
     SELECT template_id FROM examination WHERE id=${+examination_id}`);
   return result[0]?.template_id;
 }
 async function getTemplate(templateId: number) {
-
   return await dbPool.queryCount(v.gen`
     SELECT * FROM exam_paper_template WHERE id=${templateId}`);
 }

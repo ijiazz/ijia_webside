@@ -65,6 +65,7 @@ export function ExaminationRecordSection(props: ExaminationRecordSectionProps) {
             return (
               <Button
                 key={item.index}
+                aria-label={`查看第${item.index + 1}题作答记录`}
                 className={IndexButtonCSS}
                 style={{ backgroundColor: color }}
                 onClick={() => onScrollToRecord(item.index)}

@@ -32,10 +32,13 @@ export async function getExaminationList(
         id: "u.id::TEXT",
         nickname: "u.nickname",
         avatar_url: "u.avatar",
-      }))
+      }),
+    )
       .from("exam_paper_template", { as: "p" })
       .innerJoin("public.user", { as: "u", on: "p.owner_id=u.id" })
-      .where(`p.id=e.template_id AND e.template_id IS NOT NULL`).toSelect()} AS owner`,])
+      .where(`p.id=e.template_id AND e.template_id IS NOT NULL`)
+      .toSelect()} AS owner`,
+  ])
     .from("examination", { as: "e" })
     .where(() => {
       const conditions = [`e.user_id=${v(userId)}`];
@@ -121,11 +124,13 @@ type ExaminationBaseRow = Pick<DbExamination, "allow_time_end" | "allow_time_sta
 function toExaminationInfo(row: ExaminationBaseRow): ExaminationInfoOutput {
   return {
     ...row,
-    owner: row.owner ? {
-      id: row.owner.id,
-      nickname: row.owner.nickname,
-      avatar_url: getUserAvatarPath(row.owner.avatar_url) ?? undefined,
-    } : undefined,
+    owner: row.owner
+      ? {
+          id: row.owner.id,
+          nickname: row.owner.nickname,
+          avatar_url: getUserAvatarPath(row.owner.avatar_url) ?? undefined,
+        }
+      : undefined,
     allow_time_end: row.allow_time_end ? row.allow_time_end.toISOString() : null,
     allow_time_start: row.allow_time_start ? row.allow_time_start.toISOString() : null,
   };

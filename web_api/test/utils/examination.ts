@@ -21,10 +21,7 @@ export async function preparePassedQuestions(count: number, userId: number) {
   return questionIds;
 }
 
-export function prepareExaminationTemplate(
-  questions: TemplateQuestionInput[],
-  options: { ownerId?: number } = {},
-) {
+export function prepareExaminationTemplate(questions: TemplateQuestionInput[], options: { ownerId?: number } = {}) {
   const api = getAPI();
   return api["/test/template/prepare"].post({
     body: { questions, ownerId: options.ownerId },

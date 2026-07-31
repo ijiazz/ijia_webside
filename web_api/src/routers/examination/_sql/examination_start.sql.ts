@@ -10,8 +10,9 @@ import { PaperTemplateGenRules } from "../_utils/question_gen_rules.ts";
 async function insertQuestion(t: DbTransaction, templateId: number, genRules: PaperTemplateGenRules) {
   const { total, rules } = genRules;
 
-  const selected = rules.map(({ number, score, timeLimit, type }) => {
-    return v.gen`
+  const selected = rules
+    .map(({ number, score, timeLimit, type }) => {
+      return v.gen`
       SELECT q.id, ${score}::INT AS score, ${timeLimit ?? null}::INT AS time_limit, q.question_type
       FROM (
         SELECT id, question_type
@@ -22,8 +23,8 @@ async function insertQuestion(t: DbTransaction, templateId: number, genRules: Pa
         ORDER BY random()
         LIMIT ${number}
       ) AS q`;
-
-  }).join(" UNION ALL ");
+    })
+    .join(" UNION ALL ");
 
   const sql = v.gen`
   WITH q AS (${new String(selected)})
@@ -40,10 +41,10 @@ async function insertQuestion(t: DbTransaction, templateId: number, genRules: Pa
         )
       ) option_map
     FROM q
-  `
+  `;
   //TODO: 题库数量增多后，需要重新设计题目随机抽取逻辑
   const number = await t.queryCount(sql);
-  return number
+  return number;
 }
 async function ensureTemplateQuestions(t: DbTransaction, templateId: number) {
   const [row] = await t.queryRows<{ gen_rules: PaperTemplateGenRules }>(v.gen`

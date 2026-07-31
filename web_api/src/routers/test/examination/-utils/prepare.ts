@@ -12,31 +12,32 @@ export async function createReviewedQuestions(questions: Partial<DbExamQuestion>
   const result = await dbPool.queryRows(values);
   const idList = result.map((item) => item.id);
 
-  const options = result.map((item): Partial<DbExamQuestionOption>[] => {
-    const options: Partial<DbExamQuestionOption>[] = [];
-    switch (item.question_type) {
-      case ExamQuestionType.SingleChoice:
-      case ExamQuestionType.MultipleChoice:
-        options.push(
-          { index: 0, text: "选项-0", question_id: item.id },
-          { index: 1, text: "选项-1", question_id: item.id },
-          { index: 2, text: "选项-2", question_id: item.id },
-          { index: 3, text: "选项-3", question_id: item.id },
-        );
-        break;
-      case ExamQuestionType.TrueOrFalse:
-        options.push(
-          { index: 0, text: "选项-0", question_id: item.id },
-          { index: 1, text: "选项-1", question_id: item.id },
-        );
-        break;
-      default:
-        break;
-    }
-    return options;
-  });
-  await dbPool.execute(insertIntoValues("exam_question_option", options.flat()));
+  const questionOptions = result.flatMap((item) => getDefaultQuestionOptions(item.question_type, item.id));
+  if (questionOptions.length) await dbPool.execute(insertIntoValues("exam_question_option", questionOptions));
   return idList;
+}
+
+function getDefaultQuestionOptions(
+  questionType: ExamQuestionType,
+  questionId: number,
+): Partial<DbExamQuestionOption>[] {
+  switch (questionType) {
+    case ExamQuestionType.SingleChoice:
+    case ExamQuestionType.MultipleChoice:
+      return [
+        { index: 0, text: "选项-0", question_id: questionId },
+        { index: 1, text: "选项-1", question_id: questionId },
+        { index: 2, text: "选项-2", question_id: questionId },
+        { index: 3, text: "选项-3", question_id: questionId },
+      ];
+    case ExamQuestionType.TrueOrFalse:
+      return [
+        { index: 0, text: "选项-0", question_id: questionId },
+        { index: 1, text: "选项-1", question_id: questionId },
+      ];
+    default:
+      return [];
+  }
 }
 
 export async function prepareExaminationTemplate(

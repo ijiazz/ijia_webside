@@ -47,9 +47,7 @@ test("提交未开始作答的题目，应返回 409", async function ({ api, pu
   const examinationId = await prepareExamination({ userId: alice.id, templateId: templateId });
 
   await startExamination(alice.token, examinationId);
-  await expect(answerExaminationQuestion(alice.token, examinationId, { index: 1, answer: [0] })).responseStatus(
-    409,
-  );
+  await expect(answerExaminationQuestion(alice.token, examinationId, { index: 1, answer: [0] })).responseStatus(409);
 });
 
 test("交卷后，不能继续作答", async function ({ api, publicDbPool }) {

@@ -10,10 +10,9 @@ export type QuestionRules = {
   type?: ExamQuestionType;
 };
 
-
 export type PaperTemplateGenRules = {
   total: number;
-  rules: QuestionRules[]
+  rules: QuestionRules[];
 };
 
 export function getQuestionGenRulesTotal(rules: QuestionRules[]): number {

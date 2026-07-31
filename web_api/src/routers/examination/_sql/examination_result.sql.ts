@@ -29,7 +29,8 @@ export async function getExaminationResult(examId: number, userId: number): Prom
           correct_number: "COUNT(1) FILTER(WHERE a.score>0 AND a.score=qb.score)",
           wrong_number: "COUNT(1) FILTER(WHERE a.score=0 AND ARRAY_LENGTH(a.user_answer_select,1) > 0)",
           partially_correct_number: "COUNT(1) FILTER(WHERE a.score>0 AND a.score<qb.score)",
-          unanswered_number: "COUNT(1) FILTER(WHERE a.user_answer_select IS NULL OR ARRAY_LENGTH(a.user_answer_select,1) = 0)",
+          unanswered_number:
+            "COUNT(1) FILTER(WHERE a.user_answer_select IS NULL OR ARRAY_LENGTH(a.user_answer_select,1) = 0)",
         }),
       )
         .from(`(SELECT generate_series(0, e.question_total - 1) AS index) AS stat`)
