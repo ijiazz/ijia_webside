@@ -62,21 +62,19 @@ export async function prepareExaminationTemplate(
     }).returning(["id"]),
   );
   if (questionIds.length) {
-    await dbPool.execute(
-      insertIntoValues(
-        "exam_paper_template_question",
-        questionIds.map(
-          (id, index): Partial<DbExamPaperTemplateQuestion> => ({
-            index,
-            paper_template_id: templateId,
-            question_id: id,
-            time_limit: questions[index].time_limit,
-            score: questions[index].score ?? 1,
-            option_map: questions[index].option_map,
-          }),
-        ),
-      ),
-    );
+    const templateQuestion = questionIds.map((id, index): Partial<DbExamPaperTemplateQuestion> => {
+      const question = questions[index];
+      const score = question.score;
+      return {
+        index,
+        paper_template_id: templateId,
+        question_id: id,
+        time_limit: question.time_limit,
+        score: score ?? (question.question_type === ExamQuestionType.MultipleChoice ? 2 : 1),
+        option_map: question.option_map,
+      };
+    });
+    await dbPool.execute(insertIntoValues("exam_paper_template_question", templateQuestion));
   }
 
   return { templateId, questionIds };
