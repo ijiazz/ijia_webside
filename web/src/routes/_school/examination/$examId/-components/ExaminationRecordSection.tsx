@@ -77,7 +77,7 @@ export function ExaminationRecordSection(props: ExaminationRecordSectionProps) {
         </div>
       )}
 
-      <Card title="作答记录" ref={recordAnchorRefs}>
+      <Card title="作答记录" className="e2e-answer-record-list" ref={recordAnchorRefs}>
         {recordQuestions.map((item) => {
           return <RecordQuestionCard key={item.index} item={item} />;
         })}

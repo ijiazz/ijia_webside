@@ -108,4 +108,6 @@ test("用户可以完成一场考试并查看作答记录", async function ({ pa
   await expect(statisticLocator(page, "错误")).toContainText("2");
   await expect(statisticLocator(page, "未作答")).toContainText("1");
   await expect(page.getByText("作答记录", { exact: true })).toBeVisible();
+
+  await expect(page.locator(".e2e-answer-record-list"), "作答记录应保持快照").toMatchAriaSnapshot();
 });

@@ -13,7 +13,7 @@ export function MultipleOptionsBoard(props: MultipleOptionsBoardProps) {
   const { data, correctIndexes, value, readOnly, ...rest } = props;
 
   const theme = useThemeToken();
-  const hasResult = !!value;
+  const hasResult = correctIndexes && value;
   const selectedSet = new Set(value);
   const correctSet = new Set(correctIndexes);
 

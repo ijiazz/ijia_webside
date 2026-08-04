@@ -1,0 +1,251 @@
+- text: 作答记录 1.【1分】 判断题
+- strong: 考试题目-0
+- radiogroup:
+  - radio "✅正确" [checked]
+  - text: ✅正确
+  - radio "❌错误"
+  - text: ❌错误
+- text: /你的答案：✅ 得分：1 耗时：\d+:\d+:\d+\.\d+ 正确答案：✅ 难度：/
+- list:
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+- text: 出题人： 无
+- button "collapsed 答案解析":
+  - img "collapsed"
+  - text: ""
+- text: 2.【1分】 判断题
+- strong: 考试题目-1
+- radiogroup:
+  - radio "✅正确"
+  - text: ✅正确
+  - radio "❌错误"
+  - text: ❌错误
+- text: 正确答案：❌ 难度：
+- list:
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+- text: 出题人： 无
+- button "collapsed 答案解析":
+  - img "collapsed"
+  - text: ""
+- text: 3.【1分】 单选题
+- strong: 考试题目-2
+- radiogroup:
+  - radio "✅ A. 选项-0" [checked]
+  - text: ✅ A. 选项-0
+  - radio "B. 选项-1"
+  - text: B. 选项-1
+  - radio "C. 选项-2"
+  - text: C. 选项-2
+  - radio "D. 选项-3"
+  - text: D. 选项-3
+- text: /你的答案：A 得分：1 耗时：\d+:\d+:\d+\.\d+ 正确答案：A 难度：/
+- list:
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+- text: 出题人： 无
+- button "collapsed 答案解析":
+  - img "collapsed"
+  - text: ""
+- text: 4.【1分】 单选题
+- strong: 考试题目-3
+- radiogroup:
+  - radio "❌ A. 选项-0" [checked]
+  - text: ❌ A. 选项-0
+  - radio "✅ B. 选项-1"
+  - text: ✅ B. 选项-1
+  - radio "C. 选项-2"
+  - text: C. 选项-2
+  - radio "D. 选项-3"
+  - text: D. 选项-3
+- text: /你的答案：A 得分：0 耗时：\d+:\d+:\d+\.\d+ 正确答案：B 难度：/
+- list:
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+- text: 出题人： 无
+- button "collapsed 答案解析":
+  - img "collapsed"
+  - text: ""
+- text: 5.【2分】 多选题
+- strong: 考试题目-4
+- group:
+  - checkbox "✅ A. 选项-0" [checked]
+  - text: ✅ A. 选项-0
+  - checkbox "B. 选项-1"
+  - text: B. 选项-1
+  - checkbox "✅ C. 选项-2" [checked]
+  - text: ✅ C. 选项-2
+  - checkbox "D. 选项-3"
+  - text: D. 选项-3
+- text: /你的答案：A, C 得分：2 耗时：\d+:\d+:\d+\.\d+ 正确答案：A, C 难度：/
+- list:
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+- text: 出题人： 无
+- button "collapsed 答案解析":
+  - img "collapsed"
+  - text: ""
+- text: 6.【2分】 多选题
+- strong: 考试题目-5
+- group:
+  - checkbox "❌ A. 选项-0" [checked]
+  - text: ❌ A. 选项-0
+  - checkbox "✅ B. 选项-1" [checked]
+  - text: ✅ B. 选项-1
+  - checkbox "C. 选项-2"
+  - text: C. 选项-2
+  - checkbox "✅ D. 选项-3"
+  - text: ✅ D. 选项-3
+- text: /你的答案：A, B 得分：0 耗时：\d+:\d+:\d+\.\d+ 正确答案：B, D 难度：/
+- list:
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+- text: 出题人： 无
+- button "collapsed 答案解析":
+  - img "collapsed"
+  - text: ""
+- text: 7.【2分】 多选题
+- strong: 考试题目-6
+- group:
+  - checkbox "✅ A. 选项-0" [checked]
+  - text: ✅ A. 选项-0
+  - checkbox "B. 选项-1"
+  - text: B. 选项-1
+  - checkbox "C. 选项-2"
+  - text: C. 选项-2
+  - checkbox "✅ D. 选项-3"
+  - text: ✅ D. 选项-3
+- text: /你的答案：A 得分：1 耗时：\d+:\d+:\d+\.\d+ 正确答案：A, D 难度：/
+- list:
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+  - listitem:
+    - radio "star star":
+      - img "star"
+      - img "star"
+- text: 出题人： 无
+- button "collapsed 答案解析":
+  - img "collapsed"
+  - text: ""
