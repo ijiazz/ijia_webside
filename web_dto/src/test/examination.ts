@@ -39,9 +39,10 @@ export type PrepareExaminationInput = {
   questionTotal?: number;
 };
 
-export type TemplateQuestionInput = Pick<DbExamQuestion, "answer_index" | "question_type"> & {
-  score?: number;
-  option_map?: number[];
-  options?: Partial<DbExamQuestionOption>[];
-  time_limit?: number;
-};
+export type TemplateQuestionInput = Pick<DbExamQuestion, "answer_index" | "question_type"> &
+  Pick<Partial<DbExamQuestion>, "difficulty_level" | "user_id" | "answer_text"> & {
+    score?: number;
+    option_map?: number[];
+    options?: Partial<DbExamQuestionOption>[];
+    time_limit?: number;
+  };

@@ -1,4 +1,4 @@
-import { checkValueAsync, optionalInt } from "@/common/check.ts";
+import { checkValueAsync, optionalInt, queryInt } from "@/common/check.ts";
 import { createRoute } from "@/common/context.ts";
 import { ExamQuestionType } from "@/dto.ts";
 import type { TestExaminationAPI } from "@ijia/api-types/test";
@@ -11,6 +11,9 @@ type PrepareTemplateResponse = TestExaminationAPI["POST /test/template/prepare"]
 const PREPARE_TEMPLATE_BODY_SCHEMA = {
   questions: array({
     answer_index: array("number"),
+    answer_text: optional.string,
+    difficulty_level: optionalInt,
+    user_id: optionalInt,
     question_type: enumType([
       ExamQuestionType.MultipleChoice,
       ExamQuestionType.SingleChoice,

@@ -8,7 +8,8 @@ import { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import { v } from "@/sql/utils.ts";
 import { HttpError } from "@/common/errors.ts";
-import { checkValueAsync } from "@/common/check.ts";
+import { checkValueAsync, queryInt } from "@/common/check.ts";
+import { optional } from "@asla/wokao";
 
 const routeGroup = new RouteGroup<HonoContext>();
 export default routeGroup;
@@ -18,17 +19,23 @@ routeGroup.create({
   method: "POST",
   routePath: "/test/passport/login",
   async validateInput({ req }) {
-    return checkValueAsync(req.json(), { email: "string" });
+    return checkValueAsync(req.json(), [{ email: "string", id: optional("undefined") }, { id: queryInt }] as const);
   },
   async handler(unsafeParam, ctx) {
-    const [info] = await dbPool.queryRows<{ id: number }>(
-      v.gen`SELECT id FROM public.user WHERE email = ${unsafeParam.email}`,
-    );
-    if (info === undefined) {
-      return new HttpError(404, { message: "账号不存在" });
+    let id: number | undefined;
+    if (typeof unsafeParam.id === "number") {
+      id = unsafeParam.id;
+    } else {
+      const [info] = await dbPool.queryRows<{ id: number }>(
+        v.gen`SELECT id FROM public.user WHERE email = ${unsafeParam.email}`,
+      );
+      if (info === undefined) {
+        return new HttpError(404, { message: "账号不存在" });
+      }
+      id = info.id;
     }
 
-    const jwtKey = await signToken(info.id);
+    const jwtKey = await signToken(id);
 
     setCookieAuth(ctx, jwtKey.token, jwtKey.maxAge);
     return { token: jwtKey.token };

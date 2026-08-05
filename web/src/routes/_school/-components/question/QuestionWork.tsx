@@ -91,7 +91,7 @@ export function QuestionAnswer(props: QuestionAnswerProps) {
             <Typography.Text type={score === 0 ? "danger" : "success"}>得分：{score}</Typography.Text>
           )}
           {typeof useTime === "number" && (
-            <Typography.Text type="secondary">耗时：{formatTimeToString(useTime, "ms")}</Typography.Text>
+            <Typography.Text type="secondary">用时：{formatTimeToString(useTime, "ms")}</Typography.Text>
           )}
           {isTimeout && <Tag color="red">超时</Tag>}
         </div>

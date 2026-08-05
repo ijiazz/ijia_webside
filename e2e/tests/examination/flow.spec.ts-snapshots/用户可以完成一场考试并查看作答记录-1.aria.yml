@@ -5,7 +5,7 @@
   - text: ✅正确
   - radio "❌错误"
   - text: ❌错误
-- text: /你的答案：✅ 得分：1 耗时：\d+:\d+:\d+\.\d+ 正确答案：✅ 难度：/
+- text: /你的答案：✅ 得分：1 用时：\d+:\d+:\d+\.\d+ 正确答案：✅ 难度：/
 - list:
   - listitem:
     - radio "star star":
@@ -75,7 +75,7 @@
   - text: C. 选项-2
   - radio "D. 选项-3"
   - text: D. 选项-3
-- text: /你的答案：A 得分：1 耗时：\d+:\d+:\d+\.\d+ 正确答案：A 难度：/
+- text: /你的答案：A 得分：1 用时：\d+:\d+:\d+\.\d+ 正确答案：A 难度：/
 - list:
   - listitem:
     - radio "star star":
@@ -112,7 +112,7 @@
   - text: C. 选项-2
   - radio "D. 选项-3"
   - text: D. 选项-3
-- text: /你的答案：A 得分：0 耗时：\d+:\d+:\d+\.\d+ 正确答案：B 难度：/
+- text: /你的答案：A 得分：0 用时：\d+:\d+:\d+\.\d+ 正确答案：B 难度：/
 - list:
   - listitem:
     - radio "star star":
@@ -149,7 +149,7 @@
   - text: ✅ C. 选项-2
   - checkbox "D. 选项-3"
   - text: D. 选项-3
-- text: /你的答案：A, C 得分：2 耗时：\d+:\d+:\d+\.\d+ 正确答案：A, C 难度：/
+- text: /你的答案：A, C 得分：2 用时：\d+:\d+:\d+\.\d+ 正确答案：A, C 难度：/
 - list:
   - listitem:
     - radio "star star":
@@ -186,7 +186,7 @@
   - text: C. 选项-2
   - checkbox "✅ D. 选项-3"
   - text: ✅ D. 选项-3
-- text: /你的答案：A, B 得分：0 耗时：\d+:\d+:\d+\.\d+ 正确答案：B, D 难度：/
+- text: /你的答案：A, B 得分：0 用时：\d+:\d+:\d+\.\d+ 正确答案：B, D 难度：/
 - list:
   - listitem:
     - radio "star star":
@@ -223,7 +223,7 @@
   - text: C. 选项-2
   - checkbox "✅ D. 选项-3"
   - text: ✅ D. 选项-3
-- text: /你的答案：A 得分：1 耗时：\d+:\d+:\d+\.\d+ 正确答案：A, D 难度：/
+- text: /你的答案：A 得分：1 用时：\d+:\d+:\d+\.\d+ 正确答案：A, D 难度：/
 - list:
   - listitem:
     - radio "star star":

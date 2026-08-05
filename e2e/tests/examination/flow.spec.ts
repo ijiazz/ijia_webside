@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import type { TemplateQuestionInput } from "@ijia/api-types/test";
 import { ExamQuestionType } from "@ijia/api-types";
 import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 import {
@@ -7,17 +8,7 @@ import {
   prepareExamination,
   prepareExaminationTemplate,
 } from "@/utils/examination.ts";
-import { initAlice, loginGetToken } from "@/utils/user.ts";
-
-const FULL_FLOW_QUESTIONS = [
-  { question_type: ExamQuestionType.TrueOrFalse, answer_index: [1] },
-  { question_type: ExamQuestionType.TrueOrFalse, answer_index: [0] },
-  { question_type: ExamQuestionType.SingleChoice, answer_index: [0] },
-  { question_type: ExamQuestionType.SingleChoice, answer_index: [1] },
-  { question_type: ExamQuestionType.MultipleChoice, answer_index: [0, 2] },
-  { question_type: ExamQuestionType.MultipleChoice, answer_index: [1, 3] },
-  { question_type: ExamQuestionType.MultipleChoice, answer_index: [0, 3] },
-];
+import { initAlice, initBob, loginGetToken } from "@/utils/user.ts";
 
 function statisticLocator(page: Page, title: string) {
   return page.locator(".ant-statistic", { hasText: title }).first().locator(".ant-statistic-content-value");
@@ -28,9 +19,25 @@ function descriptionLocator(page: Page, title: string) {
 }
 
 test("用户可以完成一场考试并查看作答记录", async function ({ page, context }) {
+  const bob = await initBob();
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+
   const examTitle = "完整考试流程";
+  const FULL_FLOW_QUESTIONS: TemplateQuestionInput[] = [
+    {
+      question_type: ExamQuestionType.TrueOrFalse,
+      answer_index: [1],
+      difficulty_level: 1,
+      user_id: bob.id,
+      answer_text: "答案解析文本",
+    },
+    { question_type: ExamQuestionType.TrueOrFalse, answer_index: [0], difficulty_level: 1 },
+    { question_type: ExamQuestionType.SingleChoice, answer_index: [0], difficulty_level: 5},
+    { question_type: ExamQuestionType.SingleChoice, answer_index: [1] },
+    { question_type: ExamQuestionType.MultipleChoice, answer_index: [0, 2] },
+    { question_type: ExamQuestionType.MultipleChoice, answer_index: [1, 3] },
+    { question_type: ExamQuestionType.MultipleChoice, answer_index: [0, 3] },
+  ];
   const { templateId } = await prepareExaminationTemplate(FULL_FLOW_QUESTIONS, { ownerId: alice.id });
   const examinationId = await prepareExamination({
     userId: alice.id,
@@ -38,6 +45,7 @@ test("用户可以完成一场考试并查看作答记录", async function ({ pa
     title: examTitle,
   });
 
+  const aliceToken = await loginGetToken(alice.email, alice.password);
   await setContextLogin(context, aliceToken);
   await page.goto(getExaminationURL());
 
