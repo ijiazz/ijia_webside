@@ -1,5 +1,5 @@
 import { createLazyFileRoute, useLoaderData, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import {
   answerExaminationQuestion,
@@ -8,12 +8,12 @@ import {
   nextExaminationQuestionQueryOption,
 } from "@/request/examination.ts";
 import { useMessage } from "@/provider/AntdProvider.tsx";
-import { Button, Card, Checkbox, Empty, Progress, Space, Typography } from "antd";
+import { Button, Card, Checkbox, Empty, Space } from "antd";
 import { QuestionWork } from "../../-components/question/QuestionWork.tsx";
 import { ExaminationQuestionOutput } from "@ijia/api-types";
 import { useModal } from "@/components/Modal.ts";
 import { queryClient } from "@/request/client.ts";
-import { formatTimeToString } from "@/common/time.ts";
+import { UseTime } from "./-components/UseTime.tsx";
 
 export const Route = createLazyFileRoute("/_school/examination/$examId/answer")({
   component: RouteComponent,
@@ -51,7 +51,7 @@ function RouteComponent() {
         </div>
       </Card>
       {question ? (
-        <QuestionAnswer question={question} onNext={() => refetch()} />
+        <QuestionAnswer question={question} onNext={() => refetch()} key={question.index} />
       ) : (
         <Card>
           <Empty description="当前没有更多未提交题目，可以直接交卷" />
@@ -89,22 +89,6 @@ function QuestionAnswer(props: { question: NonNullable<ExaminationQuestionOutput
       onOk: async () => answerMutation.mutate([]),
     });
   };
-  const [now, setNow] = useState(Date.now());
-  const { remainingSeconds, usedSeconds, present } = useMemo(
-    () => calc(now, new Date(question.start_time), question.time_limit),
-    [now],
-  );
-  useEffect(() => {
-    if (currentAnswered) {
-      return;
-    }
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, [currentAnswered]);
-  useEffect(() => {
-    setSelectedAnswer([]);
-    setCurrentAnswered(false);
-  }, [question.index]);
 
   return (
     <div>
@@ -116,18 +100,7 @@ function QuestionAnswer(props: { question: NonNullable<ExaminationQuestionOutput
         onChange={currentAnswered ? undefined : setSelectedAnswer}
       />
       <Card>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "end", marginBottom: 12 }}>
-          {!question.time_limit && <Typography.Text type="secondary">用时：{usedSeconds} </Typography.Text>}
-          {typeof present === "number" && (
-            <Progress
-              size="small"
-              percent={present}
-              style={{ flex: 1 }}
-              status="active"
-              format={() => remainingSeconds}
-            />
-          )}
-        </div>
+        <UseTime question={question} currentAnswered={currentAnswered} />
         <div style={{ display: "flex", justifyContent: "end", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <Checkbox checked={autoNext} onChange={(event) => setAutoNext(event.target.checked)}>
             提交后自动开始下一题
@@ -150,17 +123,4 @@ function QuestionAnswer(props: { question: NonNullable<ExaminationQuestionOutput
       </Card>
     </div>
   );
-}
-function calc(now: number, start_time: Date, time_limit?: number | null) {
-  const startAt = start_time.getTime();
-  const useMs = now - startAt;
-  if (!time_limit) return { usedSeconds: formatTimeToString(useMs) };
-  const timeLimit = time_limit * 1000;
-  const remainingMs = Math.max(timeLimit - useMs, 0);
-
-  return {
-    present: 100 - Math.floor((useMs / timeLimit) * 100),
-    remainingSeconds: formatTimeToString(remainingMs),
-    usedSeconds: formatTimeToString(useMs),
-  };
 }
