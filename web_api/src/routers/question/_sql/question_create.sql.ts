@@ -1,49 +1,25 @@
 import { dbPool } from "@/db/client.ts";
-import { CreateQuestionParam } from "@/dto.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
 import { DbExamQuestion } from "@ijia/school-db/db";
-import { checkQuestionTypeOption, parserCreateQuestionInput } from "../_utils/create.schema.ts";
+import { QuestionParsedOption } from "../_utils/create.schema.ts";
 import { SqlLike } from "@asla/pg";
 
 export async function createQuestion(
-  userId: number,
-  input: CreateQuestionParam,
-  option: { skipReview?: boolean } = {},
-): Promise<number> {
-  const { advanced_config } = input;
-
-  const attachmentOptions = parserCreateQuestionInput(input.options, input.attachments);
-
-  const answer_index = input.answer_index.sort((a, b) => a - b);
-
-  checkQuestionTypeOption(input.question_type, input.options?.length ?? 0, answer_index);
-
+  data: DbCreateExamQuestion,
+  options: {
+    themes?: string[];
+    attachmentOptions?: QuestionParsedOption[];
+  } = {},
+) {
+  const { themes, attachmentOptions = [] } = options;
   const updateObject = {
-    user_id: userId,
-    question_text: input.question_text,
-    question_text_struct: input.question_text_struct
-      ? new String(v(JSON.stringify(input.question_text_struct)))
+    ...data,
+    question_text_struct: data.question_text_struct
+      ? new String(v(JSON.stringify(data.question_text_struct)))
       : undefined,
-    question_type: input.question_type,
-    answer_index: answer_index,
-    answer_text: input.explanation_text,
-    answer_text_struct: input.explanation_text_struct
-      ? new String(v(JSON.stringify(input.explanation_text_struct)))
-      : undefined,
-    event_time: input.event_time,
-  } satisfies { [key in keyof DbCreateExamQuestion]?: String | DbCreateExamQuestion[key] };
-  if (advanced_config) {
-    Object.assign(updateObject, {
-      long_time: advanced_config.long_time,
-      difficulty_level: advanced_config.difficulty_level,
-      collection_level: advanced_config.collection_level,
-    });
-  }
-  if (option.skipReview) {
-    //@ts-ignore
-    updateObject.review_status = new String("'passed'::review_status");
-  }
+    answer_text_struct: data.answer_text_struct ? new String(v(JSON.stringify(data.answer_text_struct))) : undefined,
+  } satisfies { [key in keyof DbCreateExamQuestion]: String | DbCreateExamQuestion[key] };
 
   const insertQuestionSql = insertIntoValues("exam_question", updateObject).returning<{ id: number }>(["id"]);
 
@@ -53,14 +29,14 @@ export async function createQuestion(
     insertQuestionSql,
     update("user_profile")
       .set({ exam_question_count: "exam_question_count + 1" })
-      .where(`user_id=${v(userId)}`),
+      .where(`user_id=${v(data.user_id)}`),
   ]);
   const questionId = res.rows![0].id;
 
   const insertReviewSql: SqlLike[] = [];
-  if (!option.skipReview) {
-    insertReviewSql.push(v.gen`SELECT review_question_set_to_reviewing(${questionId}) AS id`);
-  }
+  insertReviewSql.push(
+    v.gen`SELECT review_question_set_to_reviewing(id) FROM exam_question WHERE id=${questionId} AND review_status='pending'`,
+  );
 
   if (attachmentOptions.length > 0) {
     const optionsValues = attachmentOptions.map((media) => {
@@ -77,7 +53,6 @@ export async function createQuestion(
     insertReviewSql.push(insertIntoValues("exam_question_option", optionsValues));
   }
 
-  const themes = advanced_config?.themes;
   if (themes?.length) {
     const themesValues = themes.map((theme) => ({ theme_id: theme, question_id: questionId }));
     insertReviewSql.push(insertIntoValues("exam_question_theme_bind", themesValues));
@@ -88,10 +63,20 @@ export async function createQuestion(
   return questionId;
 }
 
-type DbCreateExamQuestion = Pick<
+export type DbCreateExamQuestion = Pick<
   DbExamQuestion,
-  "user_id" | "question_text" | "question_type" | "answer_text" | "answer_index"
+  "user_id" | "question_text" | "question_type" | "answer_text" | "answer_index" | "review_status"
 > &
-  Partial<Pick<DbExamQuestion, "question_text_struct" | "answer_text_struct" | "long_time">> & {
+  Partial<
+    Pick<
+      DbExamQuestion,
+      | "question_text_struct"
+      | "answer_text_struct"
+      | "long_time"
+      | "is_system_gen"
+      | "difficulty_level"
+      | "collection_level"
+    >
+  > & {
     event_time?: string;
   };

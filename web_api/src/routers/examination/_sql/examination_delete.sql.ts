@@ -23,7 +23,7 @@ export async function deleteExamination(examId: number, userId: number) {
         WHERE q.is_system_gen AND qb.paper_template_id=${templateId}
       `;
     await t.execute([
-      v.gen`DELETE FROM exam_question WHERE id=${templateId} AND id IN (${new String(needDeleteQuestion)})`,
+      v.gen`DELETE FROM exam_question WHERE id IN (${new String(needDeleteQuestion)})`,
       v.gen`DELETE FROM exam_paper_template WHERE id=${templateId}`,
     ]);
   }
