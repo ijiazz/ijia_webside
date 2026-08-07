@@ -2,57 +2,42 @@ import { dbPool } from "@/db/client.ts";
 import { ExamQuestionType } from "@/dto.ts";
 import { insertIntoValues } from "@/sql/utils.ts";
 import type { TemplateQuestionInput } from "@ijia/api-types/test";
-import type { DbExamPaperTemplateQuestion, DbExamQuestion, DbExamQuestionOption } from "@ijia/school-db/db";
+import { DbExamPaperTemplateQuestion, ReviewStatus } from "@ijia/school-db/db";
+import { createQuestion } from "@/routers/question/mod.ts";
 
-export async function createReviewedQuestions(questions: Partial<DbExamQuestion>[]): Promise<number[]> {
-  const values = insertIntoValues("exam_question", questions).returning<{
-    id: number;
-    question_type: ExamQuestionType;
-  }>(["id", "question_type"]);
-  const result = await dbPool.queryRows(values);
-  const idList = result.map((item) => item.id);
-
-  const questionOptions = result.flatMap((item) => getDefaultQuestionOptions(item.question_type, item.id));
-  if (questionOptions.length) await dbPool.execute(insertIntoValues("exam_question_option", questionOptions));
-  return idList;
-}
-
-function getDefaultQuestionOptions(
-  questionType: ExamQuestionType,
-  questionId: number,
-): Partial<DbExamQuestionOption>[] {
-  switch (questionType) {
-    case ExamQuestionType.SingleChoice:
-    case ExamQuestionType.MultipleChoice:
-      return [
-        { index: 0, text: "选项-0", question_id: questionId },
-        { index: 1, text: "选项-1", question_id: questionId },
-        { index: 2, text: "选项-2", question_id: questionId },
-        { index: 3, text: "选项-3", question_id: questionId },
-      ];
-    case ExamQuestionType.TrueOrFalse:
-      return [
-        { index: 0, text: "选项-0", question_id: questionId },
-        { index: 1, text: "选项-1", question_id: questionId },
-      ];
-    default:
-      return [];
+/** 生成题目选项，选项数量不小于最大的答案索引 */
+function genOptions(answerIndex: number[], type: ExamQuestionType) {
+  const maxIndex = Math.max(type === ExamQuestionType.TrueOrFalse ? 1 : 3, ...answerIndex) + 1;
+  const options: { index: number; text: string }[] = [];
+  for (let i = 0; i < maxIndex; i++) {
+    options.push({ index: i, text: `选项-${i}` });
   }
+  return options;
 }
-
 export async function prepareExaminationTemplate(
   questions: TemplateQuestionInput[],
   options: { ownerId?: number } = {},
 ) {
   const { ownerId = null } = options;
   let questionIds: number[] = [];
-  if (questions.length) {
-    questionIds = await createReviewedQuestions(
-      questions.map(({ score, option_map, time_limit, options, ...item }, index) => ({
-        question_text: `考试题目-${index}`,
-        ...item,
-      })),
+  for (let i = 0; i < questions.length; i++) {
+    const item = questions[i];
+    const options = item.options ?? genOptions(item.answer_index, item.question_type);
+
+    const qId = await createQuestion(
+      {
+        user_id: ownerId,
+
+        question_text: `考试题目-${i}`,
+        question_type: item.question_type,
+        answer_index: item.answer_index ?? [0],
+        review_status: ReviewStatus.passed,
+        answer_text: item.answer_text,
+        difficulty_level: item.difficulty_level,
+      },
+      { options },
     );
+    questionIds[i] = qId;
   }
 
   const { id: templateId } = await dbPool.queryFirstRow<{ id: number }>(

@@ -2,9 +2,9 @@ import { checkValueAsync } from "@/common/check.ts";
 import { createRoute } from "@/common/context.ts";
 import type { TestExaminationAPI } from "@ijia/api-types/test";
 import { ExpectType } from "@asla/wokao";
-import { createReviewedQuestions } from "../-utils/prepare.ts";
 import { queryInt } from "@/common/check.ts";
-import { DbExamQuestion, ExamQuestionType, ReviewStatus } from "@ijia/school-db/db";
+import { ExamQuestionType, ReviewStatus } from "@ijia/school-db/db";
+import { createQuestion } from "@/routers/question/mod.ts";
 
 type PrepareReviewedBody = TestExaminationAPI["POST /test/question/prepare-reviewed"]["body"];
 type PrepareReviewedResponse = TestExaminationAPI["POST /test/question/prepare-reviewed"]["response"];
@@ -27,15 +27,21 @@ export default createRoute<PrepareReviewedResponse, PrepareReviewedBody>({
 });
 
 async function preparePassedQuestions(count: number, userId: number) {
-  const questions = new Array(count).fill(0).map(
-    (item, index): Partial<DbExamQuestion> => ({
-      user_id: userId,
-      question_text: `考试题目-${index}`,
-      question_type: ExamQuestionType.SingleChoice,
-      answer_index: [0],
-      review_status: ReviewStatus.passed,
-    }),
-  );
+  const ids: number[] = [];
+  for (let i = 0; i < count; i++) {
+    ids[i] = await createQuestion(
+      {
+        user_id: userId,
+        question_text: `考试题目-${i}`,
+        question_type: ExamQuestionType.SingleChoice,
+        answer_index: [0],
+        review_status: ReviewStatus.passed,
+      },
+      {
+        options: [{ text: "选项-0" }, { text: "选项-1" }, { text: "选项-2" }, { text: "选项-3" }],
+      },
+    );
+  }
 
-  return createReviewedQuestions(questions);
+  return ids;
 }

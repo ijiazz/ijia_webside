@@ -1,4 +1,5 @@
-import type { DbExamQuestion, DbExamQuestionOption } from "@ijia/school-db/db";
+import type { DbExamQuestion } from "@ijia/school-db/db";
+import type { QuestionAttachment } from "../exam.ts";
 
 export interface TestExaminationAPI {
   /**
@@ -43,6 +44,6 @@ export type TemplateQuestionInput = Pick<DbExamQuestion, "answer_index" | "quest
   Pick<Partial<DbExamQuestion>, "difficulty_level" | "user_id" | "answer_text"> & {
     score?: number;
     option_map?: number[];
-    options?: Partial<DbExamQuestionOption>[];
+    options?: QuestionAttachment[];
     time_limit?: number;
   };

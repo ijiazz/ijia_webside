@@ -2,17 +2,21 @@ import { dbPool } from "@/db/client.ts";
 import { insertIntoValues, v } from "@/sql/utils.ts";
 import { update } from "@asla/yoursql";
 import { DbExamQuestion } from "@ijia/school-db/db";
-import { QuestionParsedOption } from "../_utils/create.schema.ts";
+import { parserCreateQuestionInput } from "../_utils/create.schema.ts";
 import { SqlLike } from "@asla/pg";
+import { QuestionAttachment } from "@ijia/api-types";
 
 export async function createQuestion(
   data: DbCreateExamQuestion,
-  options: {
+  adv: {
     themes?: string[];
-    attachmentOptions?: QuestionParsedOption[];
+    options?: QuestionAttachment[];
+    attachments?: QuestionAttachment[];
   } = {},
 ) {
-  const { themes, attachmentOptions = [] } = options;
+  const { themes, attachments, options } = adv;
+  const attachmentOptions = parserCreateQuestionInput(options, attachments);
+
   const updateObject = {
     ...data,
     question_text_struct: data.question_text_struct
@@ -65,11 +69,13 @@ export async function createQuestion(
 
 export type DbCreateExamQuestion = Pick<
   DbExamQuestion,
-  "user_id" | "question_text" | "question_type" | "answer_text" | "answer_index" | "review_status"
+  "question_text" | "question_type" | "answer_index" | "review_status"
 > &
   Partial<
     Pick<
       DbExamQuestion,
+      | "user_id"
+      | "answer_text"
       | "question_text_struct"
       | "answer_text_struct"
       | "long_time"

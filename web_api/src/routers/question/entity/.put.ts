@@ -4,7 +4,6 @@ import { checkValueAsync } from "@/common/check.ts";
 import {
   ADVANCED_CONFIG_SCHEMA,
   checkQuestionTypeOption,
-  parserCreateQuestionInput,
   QUESTION_MEDIA_UPDATE_SCHEMA,
 } from "../_utils/create.schema.ts";
 import { array, enumType, ExpectType, optional } from "@asla/wokao";
@@ -60,7 +59,6 @@ async function createQuestionFromInput(
 ): Promise<number> {
   const { advanced_config = {}, options, attachments } = input;
 
-  const attachmentOptions = parserCreateQuestionInput(options, attachments);
   const answer_index = input.answer_index.sort((a, b) => a - b);
 
   checkQuestionTypeOption(input.question_type, options?.length ?? 0, answer_index);
@@ -84,6 +82,7 @@ async function createQuestionFromInput(
 
   return createQuestion(updateObject, {
     themes: advanced_config?.themes,
-    attachmentOptions,
+    attachments,
+    options,
   });
 }
