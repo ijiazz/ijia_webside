@@ -7,17 +7,23 @@ import type { CheckboxGroupProps } from "antd/es/checkbox/Group.js";
 export type MultipleOptionsBoardProps = Pick<CheckboxGroupProps<number>, "value" | "defaultValue" | "onChange"> & {
   data: QuestionOption[];
   correctIndexes?: number[];
+  readOnly?: boolean;
 };
 export function MultipleOptionsBoard(props: MultipleOptionsBoardProps) {
-  const { data, correctIndexes, value, ...rest } = props;
+  const { data, correctIndexes, value, readOnly, ...rest } = props;
 
   const theme = useThemeToken();
-  const hasResult = !!value;
+  const hasResult = correctIndexes && value;
   const selectedSet = new Set(value);
   const correctSet = new Set(correctIndexes);
 
   return (
-    <Checkbox.Group<number> {...rest} value={value} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+    <Checkbox.Group<number>
+      {...rest}
+      value={value}
+      aria-readonly={readOnly}
+      style={{ display: "flex", flexDirection: "column", gap: 12 }}
+    >
       {data.map(({ file, text }, index) => {
         const status = hasResult ? getStatus(correctSet, index, selectedSet) : undefined;
         const color = status === true ? theme.colorSuccess : status === false ? theme.colorError : undefined;

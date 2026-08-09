@@ -8,8 +8,8 @@
 - 前端位于 `web/`，使用 React、TanStack Router、Ant Design、Vite。
 - 后端位于 `web_api/`，使用 Hono，运行时可为 Node 或 Deno。
 - 前后的接口共享类型与 DTO 位于 `web_dto/`。
-- 数据相关能力依赖 `deps/ijia-data` 子模块。
-  - 其中数据库相关的所有的 sql 文件位于 deps/ijia-data/sql/init 目录下
+- 数据库相关能力封装在 `@ijia/school-db` 包中，包含 SQL 工具、服务层封装和数据访问逻辑。
+  - 数据库表定义在 `db/init/table/public` 目录下， `./db` 目录是一个指向 node_modules 的软链接，里面内容不可修改，如果数据库定义有问题请指出。
 - 单元测试使用 Vitest，E2E 使用 Playwright。
 
 ## 生成代码的基本原则

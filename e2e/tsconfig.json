@@ -3,11 +3,10 @@
   "compilerOptions": {
     "types": ["node"],
     "target": "ESNext",
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
     "isolatedModules": true,
     "paths": {
       "@/*": ["./*"],
-      "@api/*": ["../web_api/src/*"],
       "@api-test/*": ["../web_api/test/*"]
     }
   }

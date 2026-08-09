@@ -1,11 +1,16 @@
 import routeGroup from "../_route.ts";
-import { createQuestion } from "../_sql/question_create.sql.ts";
+import { createQuestion, DbCreateExamQuestion } from "../_sql/question_create.sql.ts";
 import { checkValueAsync } from "@/common/check.ts";
-import { ADVANCED_CONFIG_SCHEMA, QUESTION_MEDIA_UPDATE_SCHEMA } from "../_utils/create.schema.ts";
+import {
+  ADVANCED_CONFIG_SCHEMA,
+  checkQuestionTypeOption,
+  QUESTION_MEDIA_UPDATE_SCHEMA,
+} from "../_utils/create.schema.ts";
 import { array, enumType, ExpectType, optional } from "@asla/wokao";
 import { TEXT_STRUCT_SCHEMA } from "@/common/schema.ts";
-import { ExamQuestionType } from "@/dto.ts";
+import { CreateQuestionParam, ExamQuestionType } from "@/dto.ts";
 import { HttpError } from "@/common/errors.ts";
+import { ReviewStatus, TextStructure } from "@ijia/school-db/db";
 
 const CREATE_QUESTION_PARAM_SCHEMA = {
   question_text: "string",
@@ -43,7 +48,41 @@ export default routeGroup.create({
     if (body.advanced_config && !isAdmin) {
       throw new HttpError(400, "只有管理员才能设置高级配置");
     }
-    const questionId = await createQuestion(userId, body, { skipReview: isAdmin });
+    const questionId = await createQuestionFromInput({ user_id: userId, skipReview: isAdmin }, body);
     return { question_id: questionId.toString() };
   },
 });
+
+async function createQuestionFromInput(
+  config: { skipReview: boolean; user_id: number },
+  input: CreateQuestionParam,
+): Promise<number> {
+  const { advanced_config = {}, options, attachments } = input;
+
+  const answer_index = input.answer_index.sort((a, b) => a - b);
+
+  checkQuestionTypeOption(input.question_type, options?.length ?? 0, answer_index);
+
+  const updateObject: DbCreateExamQuestion = {
+    question_text: input.question_text,
+    question_text_struct: input.question_text_struct as TextStructure[] | null | undefined,
+    question_type: input.question_type,
+    answer_index: answer_index,
+    answer_text: input.explanation_text,
+    answer_text_struct: input.explanation_text_struct as TextStructure[] | null | undefined,
+    event_time: input.event_time,
+
+    user_id: config.user_id,
+    review_status: config.skipReview ? ReviewStatus.passed : ReviewStatus.pending,
+
+    long_time: advanced_config.long_time,
+    difficulty_level: advanced_config.difficulty_level,
+    collection_level: advanced_config.collection_level,
+  };
+
+  return createQuestion(updateObject, {
+    themes: advanced_config?.themes,
+    attachments,
+    options,
+  });
+}

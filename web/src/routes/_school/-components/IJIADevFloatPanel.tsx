@@ -28,7 +28,7 @@ export function IJIADevFloatMenu() {
 type IJIADevFloatMenuContentProps = {};
 
 function IJIADevFloatMenuContent(props: IJIADevFloatMenuContentProps) {
-  const [email, setEmail] = useState<string>("");
+  const [user, setUser] = useState<string>("");
   const { message } = useAntdStatic();
   const { mutate, isPending } = useMutation({
     mutationFn: devLogin,
@@ -42,7 +42,7 @@ function IJIADevFloatMenuContent(props: IJIADevFloatMenuContentProps) {
   });
 
   const onSubmit = () => {
-    const nextEmail = email.trim();
+    const nextEmail = user.trim();
     if (!nextEmail) {
       message.warning("请输入邮箱");
       return;
@@ -53,14 +53,14 @@ function IJIADevFloatMenuContent(props: IJIADevFloatMenuContentProps) {
   return (
     <div className={PanelCSS}>
       <Divider style={{ margin: "10px 0" }} />
-      <Typography.Text strong>邮箱快捷登录</Typography.Text>
+      <Typography.Text strong>快捷登录</Typography.Text>
       <Input
-        value={email}
-        placeholder="输入用户邮箱，例如 test@example.com"
-        onChange={(event) => setEmail(event.currentTarget.value)}
+        value={user}
+        placeholder="输入邮箱或学号"
+        onChange={(event) => setUser(event.currentTarget.value)}
         onPressEnter={onSubmit}
       />
-      <Button type="primary" block loading={isPending} disabled={!email.trim()} onClick={onSubmit}>
+      <Button type="primary" block loading={isPending} disabled={!user.trim()} onClick={onSubmit}>
         登录并刷新
       </Button>
     </div>
@@ -74,11 +74,17 @@ const PanelCSS = css`
   gap: 8px;
 `;
 
-async function devLogin(loginEmail: string) {
-  const response = await fetch("/api/passport/login", {
+async function devLogin(user: string) {
+  let input: { id: string } | { email: string };
+  if (/^\d+$/.test(user)) {
+    input = { id: user };
+  } else {
+    input = { email: user };
+  }
+  const response = await fetch("/api/test/passport/login", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ email: loginEmail }),
+    body: JSON.stringify(input),
     credentials: "include",
   });
 

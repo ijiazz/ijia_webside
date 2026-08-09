@@ -36,13 +36,19 @@ export const queryInt = integer({ acceptString: true });
 /** 断言目标是一个可选的整数，且可以转换字符串 */
 export const optionalInt = optional(queryInt);
 export const date: TypeCheckFn<Date> = function (input: unknown) {
+  let date: Date;
   switch (typeof input) {
     case "string":
-      return new Date(input);
+      date = new Date(input);
+      break;
     case "number":
-      return new Date(input);
+      date = new Date(input);
+      break;
 
     default:
       throw new CheckTypeError("string|number", typeof input);
   }
+
+  if (isNaN(date.getTime())) throw new CheckTypeError("string|number", typeof input);
+  return date;
 };

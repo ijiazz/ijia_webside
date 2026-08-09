@@ -18,6 +18,7 @@ export function QuestionCard(props: QuestionCardProps) {
       data={item}
       className="e2e-question-card"
       e2e-question-id={item.question_id}
+      readOnly
       extra={
         <Space wrap>
           {review?.status === ReviewStatus.pending && <Tag color="blue">审核中</Tag>}

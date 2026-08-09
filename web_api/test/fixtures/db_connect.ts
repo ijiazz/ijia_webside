@@ -10,7 +10,6 @@ export interface DbContext {
   ijiaDbPool: PgDbQueryPool;
   /** 初始化一个空的数据库（初始表和初始数据），需要注意，不同测试之间会共享同一个实例和数据库, 以优化测试速度，如果需要一个全新的数据库，请使用 ijiaDbPool */
   publicDbPool: PgDbQueryPool;
-  emptyDbPool: PgDbQueryPool;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
 const DB_NAME_PREFIX = "test_ijia_";
@@ -46,17 +45,6 @@ export const test = viTest.extend<DbContext>({
     }
     const pool = await publicDbPool;
     await use(pool);
-  },
-  async emptyDbPool({}, use) {
-    const dbName = "test_empty_" + VITEST_WORKER_ID;
-
-    const manage = await getManage();
-    await manage.recreateDb(dbName);
-    await manage.close();
-    dbPool.connectOption = { ...DB_CONNECT_INFO, database: dbName };
-    dbPool.open();
-    await use(dbPool);
-    await clearDropDb(dbPool, dbName);
   },
 });
 

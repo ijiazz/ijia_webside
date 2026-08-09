@@ -7,9 +7,10 @@ export type SingleOptionsBoardProps = Pick<RadioGroupProps, "value" | "defaultVa
   data: QuestionOption[];
   correctIndex?: number;
   onChange?: (value: number | undefined) => void;
+  readOnly?: boolean;
 };
 export function SingleOptionsBoard(props: SingleOptionsBoardProps) {
-  const { data, correctIndex, value, onChange, ...rest } = props;
+  const { data, correctIndex, value, onChange, readOnly, ...rest } = props;
 
   const theme = useThemeToken();
   const hasResult = typeof value === "number" && typeof correctIndex === "number";
@@ -18,6 +19,7 @@ export function SingleOptionsBoard(props: SingleOptionsBoardProps) {
     <Radio.Group
       {...rest}
       value={value}
+      aria-readonly={readOnly}
       onChange={(e) => {
         onChange?.(e.target.value);
       }}
@@ -47,6 +49,7 @@ export function SingleOptionsBoard(props: SingleOptionsBoardProps) {
     </Radio.Group>
   );
 }
+
 function getStatus(correctIndex: number, currentIndex: number, selectIndex: number) {
   if (currentIndex === correctIndex) {
     return true;

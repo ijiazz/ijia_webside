@@ -5,10 +5,11 @@ export type TrueFalseOptionsBoardProps = {
   data: QuestionOption[];
   correct?: boolean;
   value?: number;
+  readOnly?: boolean;
   onChange?: (value: number) => void;
 };
 export function TrueFalseOptionsBoard(props: TrueFalseOptionsBoardProps) {
-  const { value, onChange } = props;
+  const { value, onChange, readOnly } = props;
 
   return (
     <Radio.Group
@@ -16,6 +17,7 @@ export function TrueFalseOptionsBoard(props: TrueFalseOptionsBoardProps) {
       onChange={(e) => {
         onChange?.(e.target.value);
       }}
+      aria-readonly={readOnly}
       optionType="button"
       buttonStyle="solid"
     >

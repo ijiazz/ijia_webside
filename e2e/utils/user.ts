@@ -78,7 +78,7 @@ export async function initAdmin() {
 }
 
 export async function loginGetToken(email: string, password?: string) {
-  const { token, ...rest } = await api["/passport/login"].fetchResult<{ token: string }>({
+  const { token, ...rest } = await api["/test/passport/login"].fetchResult<{ token: string }>({
     body: { email: email },
     method: "POST",
   });

@@ -1,5 +1,6 @@
 temp/
 node_modules/
 dist/
-web_dto/docs/api/
-web/.*
+/web_dto/docs/api/
+/web/.*
+/e2e/playwright-report/

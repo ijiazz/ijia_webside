@@ -51,13 +51,15 @@ function createRoute(define: RouteConfig<any>): Route<any> {
 }
 
 interface CreateRoute<C extends HonoContextLike> {
-  <Res = unknown>(define: RouteConfigWithoutInput<C, Res>): Route<C>;
-  <Res = unknown, Input = unknown>(define: RouteConfigWithInput<C, Res, Input>): Route<C>;
+  <Res, Input>(define: RouteConfigWithInput<C, Res, Input>): Route<C>;
+  <Res>(define: RouteConfigWithoutInput<C, Res>): Route<C>;
 }
 
-export interface RouteApplyOption {
+export interface RouteApplyOption<C extends HonoContextLike = HonoContextLike> {
   basePath?: string;
+  middlewares?: readonly MiddlewareHandler<C>[];
 }
+
 export class Route<C extends HonoContextLike> {
   static create = createRoute;
   static createFactory<C extends HonoContextLike>(): CreateRoute<C> {
@@ -65,7 +67,7 @@ export class Route<C extends HonoContextLike> {
   }
   readonly method: string;
   readonly routePath: string;
-  readonly #middlewares: MiddlewareHandler<C>[];
+  readonly #middlewares: readonly MiddlewareHandler<C>[];
 
   constructor(config: RouteConfig<C>) {
     this.method = config.method;
@@ -75,7 +77,7 @@ export class Route<C extends HonoContextLike> {
     const middlewares: MiddlewareHandler<C>[] = config.middlewares?.filter((item) => typeof item === "function") || [];
     this.#middlewares = [...middlewares, createAutoHandler({ handler, validateInput })];
   }
-  apply(hono: HonoLike, options: RouteApplyOption = {}): void {
+  apply(hono: HonoLike, options: RouteApplyOption<C> = {}): void {
     const { basePath = "" } = options;
     const config = this;
     hono.on(config.method, basePath + config.routePath, ...config.#middlewares);
@@ -88,18 +90,23 @@ export class RouteGroup<C extends HonoContextLike = HonoContextLike> {
   }
   #middlewares: readonly MiddlewareHandler<C>[] = [];
   #routes: Route<C>[] = [];
-  apply(hono: HonoLike, option: RouteApplyOption = {}) {
+  apply(hono: HonoLike, option: RouteApplyOption<C> = {}) {
+    const { middlewares = [], ...rest } = option;
     for (const route of this.#routes) {
-      route.apply(hono, option);
+      route.apply(hono, { ...rest, middlewares: [...this.#middlewares, ...middlewares] });
     }
   }
+  /** @deprecated 已废弃 */
   create<Res, Input>(define: RouteConfigWithInput<C, Res, Input>): Route<C>;
+  /** @deprecated 已废弃 */
   create<Res>(define: RouteConfigWithoutInput<C, Res>): Route<C>;
   create(define: RouteConfig<C>): Route<C> {
-    const { middlewares = [] } = define;
-    const route = new Route({ ...define, middlewares: [...this.#middlewares, ...middlewares] });
+    const route = new Route(define);
     this.#routes.push(route);
     return route;
+  }
+  add(route: Route<C>): void {
+    this.#routes.push(route);
   }
   *[Symbol.iterator](): Generator<Route<C>> {
     yield* this.#routes;

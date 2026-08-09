@@ -1,11 +1,14 @@
 import { TestProject } from "vitest/node";
 
-import { createInitIjiaDb } from "@ijia/school-db/testlib";
-import { DB_CONNECT_INFO } from "#test/utils/db.ts";
+import { initPublicDB } from "./utils/db.ts";
 
-const PUBLIC_DB_NAME = "test_ijia_public";
 export async function setup(project: TestProject) {
-  await createInitIjiaDb(DB_CONNECT_INFO, PUBLIC_DB_NAME, { dropIfExists: true, test: true });
+  try {
+    await initPublicDB();
+  } catch (error) {
+    console.error("初始化公共数据库失败", error);
+    throw error;
+  }
 }
 
 export function teardown() {}
