@@ -18,12 +18,12 @@ export function QuestionRule(props: QuestionRuleProps) {
         name={`${prefix}number`}
         rules={{
           required: "请输入题目数量",
-          min: { value: 0, message: "题目数量不能小于或等于 0" },
+          min: { value: 1, message: "题目数量不能小于或等于 0" },
           max: { value: maxQuestionCount, message: `题目数量不能大于 ${maxQuestionCount}` },
         }}
         render={({ field, fieldState }) => {
           return (
-            <FormItem label="题目数量" required>
+            <FormItem label="题目数量" required error={fieldState.error?.message}>
               <InputNumber
                 {...field}
                 style={{ width: "100%" }}
@@ -45,7 +45,7 @@ export function QuestionRule(props: QuestionRuleProps) {
         }}
         render={({ field, fieldState }) => {
           return (
-            <FormItem label="每题分数" required>
+            <FormItem label="每题分数" required error={fieldState.error?.message}>
               <InputNumber
                 {...field}
                 style={{ width: "100%" }}
@@ -66,7 +66,7 @@ export function QuestionRule(props: QuestionRuleProps) {
         }}
         render={({ field, fieldState }) => {
           return (
-            <FormItem label="每题时间限制" description="单位秒，超时的题目不计入总分">
+            <FormItem label="每题时间限制" description="单位秒，超时的题目不计入总分" error={fieldState.error?.message}>
               <InputNumber
                 {...field}
                 style={{ width: "100%" }}

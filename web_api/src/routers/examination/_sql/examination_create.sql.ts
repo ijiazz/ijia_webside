@@ -9,6 +9,7 @@ export type CreateExaminationOption = {
   allowTimeStart?: Date;
   allowTimeEnd?: Date;
   resultAllowViewDate?: Date;
+  /** 单位毫秒 */
   useTimeTotalLimit?: number;
 };
 /**

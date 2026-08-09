@@ -1,9 +1,10 @@
 
 export interface TestPassportAPI {
   /**
-   * 创建题目
+   * 登录
    */
   "POST /test/passport/login": {
-    body: { email: string };
+    body: { email: string } | { id: string };
+    response: { token: string };
   };
 }

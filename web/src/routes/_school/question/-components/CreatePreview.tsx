@@ -22,7 +22,7 @@ export function CreatePreview(props: { form: ReturnType<typeof useForm<FromValue
       <span>作答时看到的题目界面</span>
       <QuestionWork
         data={previewData}
-        index={1}
+        index={0}
         correctIndexes={formValues.answer_index}
         value={select}
         onChange={setSelect}

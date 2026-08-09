@@ -1,4 +1,4 @@
-import { checkValueAsync, queryInt } from "@/common/check.ts";
+import { checkValueAsync, date, queryInt } from "@/common/check.ts";
 import routeGroup from "./_route.ts";
 import { createExaminationByRules } from "./_sql/examination_create.sql.ts";
 import { ExpectType, optional } from "@asla/wokao";
@@ -6,9 +6,9 @@ import { HttpError } from "@/common/errors.ts";
 import { PaperTemplateGenRulesInput } from "@ijia/api-types";
 import { PaperTemplateGenRules } from "./_utils/question_gen_rules.ts";
 const CreateExaminationInputSchema = {
-  allowTimeStart: optional.string,
-  allowTimeEnd: optional.string,
-  resultAllowViewDate: optional.string,
+  allowTimeStart: optional(date),
+  allowTimeEnd: optional(date),
+  resultAllowViewDate: optional(date),
   useTimeTotalLimit: optional.number,
 } satisfies ExpectType;
 const QuestionRulesSchema = {
@@ -44,7 +44,17 @@ export default routeGroup.create({
     const title = "模拟考试";
     if (body.paperTemplate) {
       const rules = getRules(body.paperTemplate);
-      examinationId = await createExaminationByRules({ title, userId }, { rules, ownerId: userId });
+      examinationId = await createExaminationByRules(
+        {
+          title,
+          userId,
+          useTimeTotalLimit: typeof body.useTimeTotalLimit === "number" ? body.useTimeTotalLimit * 1000 : undefined,
+          allowTimeEnd: body.allowTimeEnd,
+          allowTimeStart: body.allowTimeStart,
+          resultAllowViewDate: body.resultAllowViewDate,
+        },
+        { rules, ownerId: userId },
+      );
     } else {
       throw new HttpError(400, "自定义考试模板未开放");
       // examinationId = await createExaminationByTemplate(body.template_id, { title, userId });

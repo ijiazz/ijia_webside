@@ -76,7 +76,7 @@ const PanelCSS = css`
 
 async function devLogin(user: string) {
   let input: { id: string } | { email: string };
-  if (/\d+/.test(user)) {
+  if (/^\d+$/.test(user)) {
     input = { id: user };
   } else {
     input = { email: user };
