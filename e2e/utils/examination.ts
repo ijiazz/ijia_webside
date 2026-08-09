@@ -17,7 +17,7 @@ export function getExaminationDetailURL(examId: string | number) {
   return getAppURLFromRoute(`/examination/${examId}`);
 }
 export function getShelfExaminationListURL() {
-  return getAppURLFromRoute("/examination");
+  return getAppURLFromRoute("/examination/self");
 }
 
 export function getExaminationAnswerURL(examId: string | number) {
