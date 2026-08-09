@@ -21,13 +21,6 @@ export function getExaminationAnswerURL(examId: string | number) {
   return getAppURLFromRoute(`/examination/${examId}/answer`);
 }
 
-export async function preparePassedQuestions(count: number, userId: number) {
-  const { questionIds } = await api["/test/question/prepare-reviewed"].post({
-    body: { count, userId },
-  });
-  return questionIds;
-}
-
 export function prepareExaminationTemplate(questions: TemplateQuestionInput[], options: { ownerId?: number } = {}) {
   return api["/test/template/prepare"].post({
     body: { questions, ownerId: options.ownerId },

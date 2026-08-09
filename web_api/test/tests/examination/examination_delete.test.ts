@@ -12,7 +12,6 @@ import {
   getExaminationRealQuestionTotal,
   prepareExamination,
   prepareExaminationTemplate,
-  preparePassedQuestions,
   startExamination,
 } from "#test/utils/examination.ts";
 import { v } from "@asla/yoursql";
@@ -64,7 +63,6 @@ test("删除别人的考试时，应返回 404", async function ({ api, publicDb
 
 test("删除考试时，模板和模板题绑定会一起删除", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  await preparePassedQuestions(1, alice.id);
 
   const { examination_id } = await createPracticeExamination(alice.token, { question_total: 1 });
   await startExamination(alice.token, examination_id);

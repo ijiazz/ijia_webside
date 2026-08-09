@@ -13,14 +13,6 @@ export const DEFAULT_QUESTIONS: TemplateQuestionInput[] = [
   { answer_index: [2], question_type: ExamQuestionType.SingleChoice },
 ];
 
-export async function preparePassedQuestions(count: number, userId: number) {
-  const api = getAPI();
-  const { questionIds } = await api["/test/question/prepare-reviewed"].post({
-    body: { count, userId },
-  });
-  return questionIds;
-}
-
 export function prepareExaminationTemplate(questions: TemplateQuestionInput[], options: { ownerId?: number } = {}) {
   const api = getAPI();
   return api["/test/template/prepare"].post({

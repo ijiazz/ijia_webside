@@ -6,7 +6,6 @@ import { prepareUniqueUser } from "#test/utils/user.ts";
 import {
   createPracticeExamination,
   getExaminationRealQuestionTotal,
-  preparePassedQuestions,
   startExamination,
 } from "#test/utils/examination.ts";
 
@@ -17,7 +16,6 @@ beforeEach<Context>(async ({ hono }) => {
 
 test("开始模拟考试时，会生成模板题绑定并初始化首题作答记录", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  await preparePassedQuestions(2, alice.id);
 
   const { examination_id } = await createPracticeExamination(alice.token, { question_total: 2 });
 

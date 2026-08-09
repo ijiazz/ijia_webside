@@ -17,10 +17,9 @@ export async function initPublicDB() {
     return;
   }
   console.log("初始化公共数据库");
-  // await createInitIjiaDb(DB_CONNECT_INFO, PUBLIC_DB_NAME, { dropIfExists: true, test: true });
+  await createInitIjiaDb(DB_CONNECT_INFO, PUBLIC_DB_NAME, { dropIfExists: true, test: true });
 
-  // dbPool.connectOption = PUBLIC_CONNECT_INFO;
-  // dbPool.open();
-  // await preparePassedQuestions(10);
-  // dbPool.close();
+  dbPool.connectOption = PUBLIC_CONNECT_INFO;
+  dbPool.open();
+  await preparePassedQuestions(10);
 }

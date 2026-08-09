@@ -8,7 +8,6 @@ import {
   prepareExamination,
   nextExaminationQuestion,
   startExamination,
-  preparePassedQuestions,
   endExamination,
 } from "#test/utils/examination.ts";
 
@@ -19,7 +18,6 @@ beforeEach<Context>(async ({ hono }) => {
 
 test("获取下一题时，应按顺序返回未提交的题目", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  await preparePassedQuestions(3, alice.id);
   const examination_id = await prepareExamination({
     userId: alice.id,
     questionTotal: 3,
@@ -40,7 +38,6 @@ test("获取下一题时，应按顺序返回未提交的题目", async function
 });
 test("重复获取下下一题，数据应不会改变", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  await preparePassedQuestions(3, alice.id);
   const examination_id = await prepareExamination({
     userId: alice.id,
     questionTotal: 3,

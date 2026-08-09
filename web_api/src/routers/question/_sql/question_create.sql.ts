@@ -29,13 +29,14 @@ export async function createQuestion(
 
   await using t = dbPool.begin();
 
-  const [res] = await t.query([
-    insertQuestionSql,
-    update("user_profile")
-      .set({ exam_question_count: "exam_question_count + 1" })
-      .where(`user_id=${v(data.user_id)}`),
-  ]);
-  const questionId = res.rows![0].id;
+  const { id: questionId } = await t.queryFirstRow(insertQuestionSql);
+  if (typeof data.user_id === "number") {
+    await t.execute(
+      update("user_profile")
+        .set({ exam_question_count: "exam_question_count + 1" })
+        .where(`user_id=${v(data.user_id)}`),
+    );
+  }
 
   const insertReviewSql: SqlLike[] = [];
   insertReviewSql.push(

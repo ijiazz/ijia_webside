@@ -8,7 +8,6 @@ import {
   getExamination,
   getExaminationTemplate,
   prepareExamination,
-  preparePassedQuestions,
 } from "#test/utils/examination.ts";
 import { ExaminationStatus } from "@ijia/api-types";
 import { v } from "@/sql/utils.ts";
@@ -21,7 +20,6 @@ beforeEach<Context>(async ({ hono }) => {
 
 test("允许用户给自己创建模拟考试", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  await preparePassedQuestions(2, alice.id);
 
   const { examination_id } = await createPracticeExamination(alice.token, { question_total: 2 });
   const detail = await getExamination(alice.token, examination_id);
@@ -34,7 +32,6 @@ test("允许用户给自己创建模拟考试", async function ({ api, publicDbP
 
 test("模拟考试创建后，创建的试卷模板应暂未绑定题目", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  await preparePassedQuestions(2, alice.id);
 
   const { examination_id } = await createPracticeExamination(alice.token, { question_total: 2 });
   const { template_id } = await getExaminationTemplate(+examination_id);

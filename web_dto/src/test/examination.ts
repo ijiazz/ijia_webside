@@ -2,13 +2,6 @@ import type { DbExamQuestion } from "@ijia/school-db/db";
 import type { QuestionAttachment } from "../exam.ts";
 
 export interface TestExaminationAPI {
-  /**
-   * 创建题目
-   */
-  "POST /test/question/prepare-reviewed": {
-    body: { count: number; userId: number };
-    response: { questionIds: number[] };
-  };
   "POST /test/template/prepare": {
     body: PrepareTemplateInput;
     response: {
