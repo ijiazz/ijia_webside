@@ -40,10 +40,7 @@ export async function prepareExaminationTemplate(
   }
 
   const { id: templateId } = await dbPool.queryFirstRow<{ id: number }>(
-    insertIntoValues("exam_paper_template", {
-      question_total: questions.length,
-      owner_id: ownerId,
-    }).returning(["id"]),
+    insertIntoValues("exam_paper_template", { owner_id: ownerId }).returning(["id"]),
   );
   if (questionIds.length) {
     const templateQuestion = questionIds.map((id, index): Partial<DbExamPaperTemplateQuestion> => {

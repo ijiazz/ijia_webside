@@ -43,8 +43,7 @@ async function insertQuestion(t: DbTransaction, templateId: number, genRules: Pa
     FROM q
   `;
   //TODO: 题库数量增多后，需要重新设计题目随机抽取逻辑
-  const number = await t.queryCount(sql);
-  return number;
+  await t.execute(sql);
 }
 async function ensureTemplateQuestions(t: DbTransaction, templateId: number) {
   const [row] = await t.queryRows<{ gen_rules: PaperTemplateGenRules }>(v.gen`
@@ -54,12 +53,9 @@ async function ensureTemplateQuestions(t: DbTransaction, templateId: number) {
   `);
   if (!row) return;
   const rules = row.gen_rules;
-  const addedCount = await insertQuestion(t, templateId, rules);
+  await insertQuestion(t, templateId, rules);
   await t.execute(v.gen`
-    UPDATE exam_paper_template SET 
-      gen_rules=NULL,
-      question_total=question_total+${addedCount}
-      WHERE id=${templateId}`);
+    UPDATE exam_paper_template SET gen_rules=NULL WHERE id=${templateId}`);
 }
 type SelectRaw = Pick<
   DbExamination,
