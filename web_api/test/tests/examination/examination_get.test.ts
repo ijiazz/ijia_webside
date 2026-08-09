@@ -11,9 +11,9 @@ import {
   getExaminationRecord,
   prepareExamination,
   prepareExaminationTemplate,
+  setExaminationResultAllowViewDate,
 } from "#test/utils/examination.ts";
-import { dbPool } from "@/db/client.ts";
-import { v } from "@/sql/utils.ts";
+import { ExaminationInfoOutput, ExamQuestionType } from "@ijia/api-types";
 
 beforeEach<Context>(async ({ hono }) => {
   examinationRoutes.apply(hono);
@@ -22,13 +22,32 @@ beforeEach<Context>(async ({ hono }) => {
 
 test("可以获取自己的考试信息", async function ({ api, publicDbPool }) {
   const alice = await prepareUniqueUser("alice");
-  const { examination_id } = await createPracticeExamination(alice.token, { question_total: 0 });
+  {
+    const { examination_id } = await createPracticeExamination(alice.token, { question_total: 0 });
 
-  const detail = await getExamination(alice.token, examination_id);
-  expect(detail).toMatchObject({
-    id: examination_id,
-    title: "模拟考试",
-  });
+    const detail = await getExamination(alice.token, examination_id);
+    expect(detail).toMatchObject({
+      id: examination_id,
+      title: "模拟考试",
+    });
+  }
+  {
+    const { templateId } = await prepareExaminationTemplate([
+      { answer_index: [0], question_type: ExamQuestionType.SingleChoice, score: 1 },
+      { answer_index: [1], question_type: ExamQuestionType.MultipleChoice, score: 2 },
+    ]);
+    const examination_id = await prepareExamination({
+      userId: alice.id,
+      templateId,
+      questionTotal: 0,
+    });
+    const detail = await getExamination(alice.token, examination_id);
+    expect(detail).toMatchObject({
+      id: examination_id.toString(),
+      total_score: 3,
+      question_number: 2,
+    } satisfies Partial<ExaminationInfoOutput>);
+  }
 });
 
 test("获取他人的考试信息应返回 404", async function ({ api, publicDbPool }) {
@@ -60,19 +79,15 @@ test("结果开放前，查看考试记录不展示正确答案；开放后可�
   await plan.commitGetNext([1]);
   await plan.end();
 
+  await expect(plan.getResult(), "结果未开放前获取结果应返回 404").responseStatus(404);
   const recordBefore = await plan.getRecord();
-  expect(recordBefore.questions[0].question?.answer).toBeUndefined();
+  expect(recordBefore.questions[0].question?.answer, "结果未开放前不应展示答案").toBeUndefined();
+  expect(recordBefore.questions[0].score, "结果未开放前不应展示得分").toBeNullable();
+  expect(recordBefore.questions[0].isTimeout, "结果未开放前不应展示是否超时").toBeNullable();
 
-  await setResultAllowViewDate(examination_id, new Date(Date.now() - 1000));
+  await setExaminationResultAllowViewDate(examination_id, new Date(Date.now() - 1000));
 
+  await expect(plan.getResult()).resolves.toBeTypeOf("object");
   const recordAfter = await plan.getRecord();
   expect(recordAfter.questions[0].question?.answer?.answer_index).toEqual([0]);
 });
-
-async function setResultAllowViewDate(examId: number, date: Date) {
-  await dbPool.execute(v.gen`
-    UPDATE examination
-    SET result_allow_view_date = ${date}
-    WHERE id=${examId}
-  `);
-}

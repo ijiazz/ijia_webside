@@ -96,9 +96,7 @@ function getStatusWhere(status: ExaminationStatus) {
     case ExaminationStatus.ongoing:
       return ["e.start_time IS NOT NULL", "e.end_time IS NULL"];
     case ExaminationStatus.ended:
-      return [
-        `((e.end_time IS NOT NULL AND e.grade IS NULL) OR (e.end_time IS NULL AND e.allow_time_end IS NOT NULL AND e.allow_time_end < now()))`,
-      ];
+      return [`(e.end_time IS NOT NULL AND e.result_allow_view_date > now())`];
     case ExaminationStatus.result:
       return [
         "e.end_time IS NOT NULL",
@@ -122,7 +120,7 @@ type ExaminationBaseRow = Pick<DbExamination, "allow_time_end" | "allow_time_sta
   } | null;
 };
 function toExaminationInfo(row: ExaminationBaseRow): ExaminationInfoOutput {
-  return {
+  const data: ExaminationInfoOutput = {
     ...row,
     owner: row.owner
       ? {
@@ -134,6 +132,10 @@ function toExaminationInfo(row: ExaminationBaseRow): ExaminationInfoOutput {
     allow_time_end: row.allow_time_end ? row.allow_time_end.toISOString() : null,
     allow_time_start: row.allow_time_start ? row.allow_time_start.toISOString() : null,
   };
+  if (data.status !== ExaminationStatus.result) {
+    data.score = null;
+  }
+  return data;
 }
 
 function examinationStatus(table: string) {

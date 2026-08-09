@@ -5,8 +5,8 @@
   - text: ✅正确
   - radio "❌错误"
   - text: ❌错误
-- text: /你的答案：✅ 得分：1 用时：\d+:\d+:\d+\.\d+ 正确答案：✅ 难度：/
-- list:
+- text: 你的答案：✅ 得分：1 正确答案：✅ 难度：
+- list "0颗星":
   - listitem:
     - radio "star star":
       - img "star"
@@ -27,7 +27,7 @@
     - radio "star star":
       - img "star"
       - img "star"
-- text: 出题人： 无
+- text: 出题人：--
 - button "collapsed 答案解析":
   - img "collapsed"
   - text: ""
@@ -39,7 +39,7 @@
   - radio "❌错误"
   - text: ❌错误
 - text: 正确答案：❌ 难度：
-- list:
+- list "0颗星":
   - listitem:
     - radio "star star":
       - img "star"
@@ -60,7 +60,7 @@
     - radio "star star":
       - img "star"
       - img "star"
-- text: 出题人： 无
+- text: 出题人：--
 - button "collapsed 答案解析":
   - img "collapsed"
   - text: ""
@@ -75,8 +75,8 @@
   - text: C. 选项-2
   - radio "D. 选项-3"
   - text: D. 选项-3
-- text: /你的答案：A 得分：1 用时：\d+:\d+:\d+\.\d+ 正确答案：A 难度：/
-- list:
+- text: 你的答案：A 得分：1 正确答案：A 难度：
+- list "0颗星":
   - listitem:
     - radio "star star":
       - img "star"
@@ -97,7 +97,7 @@
     - radio "star star":
       - img "star"
       - img "star"
-- text: 出题人： 无
+- text: 出题人：--
 - button "collapsed 答案解析":
   - img "collapsed"
   - text: ""
@@ -112,8 +112,8 @@
   - text: C. 选项-2
   - radio "D. 选项-3"
   - text: D. 选项-3
-- text: /你的答案：A 得分：0 用时：\d+:\d+:\d+\.\d+ 正确答案：B 难度：/
-- list:
+- text: 你的答案：A 得分：0 正确答案：B 难度：
+- list "0颗星":
   - listitem:
     - radio "star star":
       - img "star"
@@ -134,7 +134,7 @@
     - radio "star star":
       - img "star"
       - img "star"
-- text: 出题人： 无
+- text: 出题人：--
 - button "collapsed 答案解析":
   - img "collapsed"
   - text: ""
@@ -149,8 +149,8 @@
   - text: ✅ C. 选项-2
   - checkbox "D. 选项-3"
   - text: D. 选项-3
-- text: /你的答案：A, C 得分：2 用时：\d+:\d+:\d+\.\d+ 正确答案：A, C 难度：/
-- list:
+- text: 你的答案：A, C 得分：2 正确答案：A, C 难度：
+- list "0颗星":
   - listitem:
     - radio "star star":
       - img "star"
@@ -171,7 +171,7 @@
     - radio "star star":
       - img "star"
       - img "star"
-- text: 出题人： 无
+- text: 出题人：--
 - button "collapsed 答案解析":
   - img "collapsed"
   - text: ""
@@ -186,8 +186,8 @@
   - text: C. 选项-2
   - checkbox "✅ D. 选项-3"
   - text: ✅ D. 选项-3
-- text: /你的答案：A, B 得分：0 用时：\d+:\d+:\d+\.\d+ 正确答案：B, D 难度：/
-- list:
+- text: 你的答案：A, B 得分：0 正确答案：B, D 难度：
+- list "0颗星":
   - listitem:
     - radio "star star":
       - img "star"
@@ -208,7 +208,7 @@
     - radio "star star":
       - img "star"
       - img "star"
-- text: 出题人： 无
+- text: 出题人：--
 - button "collapsed 答案解析":
   - img "collapsed"
   - text: ""
@@ -223,8 +223,8 @@
   - text: C. 选项-2
   - checkbox "✅ D. 选项-3"
   - text: ✅ D. 选项-3
-- text: /你的答案：A 得分：1 用时：\d+:\d+:\d+\.\d+ 正确答案：A, D 难度：/
-- list:
+- text: 你的答案：A 得分：1 正确答案：A, D 难度：
+- list "0颗星":
   - listitem:
     - radio "star star":
       - img "star"
@@ -245,7 +245,7 @@
     - radio "star star":
       - img "star"
       - img "star"
-- text: 出题人： 无
+- text: 出题人：--
 - button "collapsed 答案解析":
   - img "collapsed"
   - text: ""

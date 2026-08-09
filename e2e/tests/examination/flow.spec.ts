@@ -59,43 +59,45 @@ test("用户可以完成一场考试并查看作答记录", async function ({ pa
   await expect(page).toHaveURL(getExaminationAnswerURL(examinationId));
   await expect(page.getByText("第1题，")).toBeVisible();
 
-  await expect(page.getByText("考试题目-0")).toBeVisible();
-  await expect(page.getByText("判断题")).toBeVisible();
-  await page.getByText("✅正确").click();
-  await page.getByRole("button", { name: "提交并进入下一题" }).click();
+  {
+    await expect(page.getByText("考试题目-0")).toBeVisible();
+    await expect(page.getByText("判断题")).toBeVisible();
+    await page.getByText("✅正确").click();
+    await page.getByRole("button", { name: "提交并进入下一题" }).click();
 
-  await expect(page.getByText("考试题目-1")).toBeVisible();
-  await expect(page.getByText("判断题")).toBeVisible();
-  await page.getByRole("button", { name: "跳过此题" }).click();
-  await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
-  await page.getByRole("button", { name: "确 定" }).click();
+    await expect(page.getByText("考试题目-1")).toBeVisible();
+    await expect(page.getByText("判断题")).toBeVisible();
+    await page.getByRole("button", { name: "跳过此题" }).click();
+    await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
+    await page.getByRole("button", { name: "确 定" }).click();
 
-  await expect(page.getByText("考试题目-2")).toBeVisible();
-  await expect(page.getByText("单选题")).toBeVisible();
-  await page.getByRole("radio", { name: /选项-0/ }).check();
-  await page.getByRole("button", { name: "提交并进入下一题" }).click();
+    await expect(page.getByText("考试题目-2")).toBeVisible();
+    await expect(page.getByText("单选题")).toBeVisible();
+    await page.getByRole("radio", { name: /选项-0/ }).check();
+    await page.getByRole("button", { name: "提交并进入下一题" }).click();
 
-  await expect(page.getByText("考试题目-3")).toBeVisible();
-  await expect(page.getByText("单选题")).toBeVisible();
-  await page.getByRole("radio", { name: /选项-0/ }).check();
-  await page.getByRole("button", { name: "提交并进入下一题" }).click();
+    await expect(page.getByText("考试题目-3")).toBeVisible();
+    await expect(page.getByText("单选题")).toBeVisible();
+    await page.getByRole("radio", { name: /选项-0/ }).check();
+    await page.getByRole("button", { name: "提交并进入下一题" }).click();
 
-  await expect(page.getByText("考试题目-4")).toBeVisible();
-  await expect(page.getByText("多选题")).toBeVisible();
-  await page.getByRole("checkbox", { name: /选项-0/ }).click();
-  await page.getByRole("checkbox", { name: /选项-2/ }).click();
-  await page.getByRole("button", { name: "提交并进入下一题" }).click();
+    await expect(page.getByText("考试题目-4")).toBeVisible();
+    await expect(page.getByText("多选题")).toBeVisible();
+    await page.getByRole("checkbox", { name: /选项-0/ }).click();
+    await page.getByRole("checkbox", { name: /选项-2/ }).click();
+    await page.getByRole("button", { name: "提交并进入下一题" }).click();
 
-  await expect(page.getByText("考试题目-5")).toBeVisible();
-  await expect(page.getByText("多选题")).toBeVisible();
-  await page.getByRole("checkbox", { name: /选项-0/ }).click();
-  await page.getByRole("checkbox", { name: /选项-1/ }).click();
-  await page.getByRole("button", { name: "提交并进入下一题" }).click();
+    await expect(page.getByText("考试题目-5")).toBeVisible();
+    await expect(page.getByText("多选题")).toBeVisible();
+    await page.getByRole("checkbox", { name: /选项-0/ }).click();
+    await page.getByRole("checkbox", { name: /选项-1/ }).click();
+    await page.getByRole("button", { name: "提交并进入下一题" }).click();
 
-  await expect(page.getByText("考试题目-6")).toBeVisible();
-  await expect(page.getByText("多选题")).toBeVisible();
-  await page.getByRole("checkbox", { name: /选项-0/ }).click();
-  await page.getByRole("button", { name: "提交并进入下一题" }).click();
+    await expect(page.getByText("考试题目-6")).toBeVisible();
+    await expect(page.getByText("多选题")).toBeVisible();
+    await page.getByRole("checkbox", { name: /选项-0/ }).click();
+    await page.getByRole("button", { name: "提交并进入下一题" }).click();
+  }
 
   await expect(page.getByText("当前没有更多未提交题目，可以直接交卷")).toBeVisible();
   await page.getByRole("button", { name: "交 卷" }).click();
@@ -109,6 +111,15 @@ test("用户可以完成一场考试并查看作答记录", async function ({ pa
   await expect(statisticLocator(page, "错误")).toContainText("2");
   await expect(statisticLocator(page, "未作答")).toContainText("1");
   await expect(page.getByText("作答记录", { exact: true })).toBeVisible();
+
+  const targets = page.locator(".e2e-answer-record-list").getByText(/用时：/);
+
+  // 隐藏用时信息，避免快照不一致
+  await targets.evaluateAll((elements) => {
+    for (const element of elements) {
+      element.style.display = "none";
+    }
+  });
 
   await expect(page.locator(".e2e-answer-record-list"), "作答记录应保持快照").toMatchAriaSnapshot();
 });

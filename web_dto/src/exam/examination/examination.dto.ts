@@ -17,13 +17,13 @@ export type ExaminationAnswerInput = {
 export type ExaminationQuestionOutput = {
   /** 如果为空，表示全部做完 */
   question:
-  | (QuestionPrivate & {
-    /** 返回索引，确保题库被记录 */
-    index: number;
-    /** 开始做题的时间 */
-    start_time: string;
-  })
-  | null;
+    | (QuestionPrivate & {
+        /** 返回索引，确保题库被记录 */
+        index: number;
+        /** 开始做题的时间 */
+        start_time: string;
+      })
+    | null;
 };
 
 /** 考试中返回的题目 */
@@ -59,7 +59,7 @@ export type ExaminationRecordQuestion = {
   index: number;
   selected: number[] | null;
   score: number | null;
-  isTimeout: boolean;
+  isTimeout?: boolean | null;
   use_time: number | null;
   question: QuestionRecordItem | null;
 };

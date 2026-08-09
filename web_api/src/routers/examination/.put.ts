@@ -59,7 +59,8 @@ function getRules(templateRules: PaperTemplateGenRulesInput): PaperTemplateGenRu
   if (templateRules.questions) {
     const total = templateRules.questions.number ?? 100;
     return {
-      total,
+      question_total: total,
+      score_total: (templateRules.questions.score ?? DEFAULT_SCORE) * total,
       rules: [
         {
           number: total,
@@ -72,19 +73,23 @@ function getRules(templateRules: PaperTemplateGenRulesInput): PaperTemplateGenRu
   if (templateRules.questionByType) {
     const rules: PaperTemplateGenRules["rules"] = [];
     let total = 0;
+    let score_total = 0;
     for (const [type, rule] of Object.entries(templateRules.questionByType)) {
       if (!rule) continue;
       const number = rule.number ?? 10;
+      const score = rule.score ?? DEFAULT_SCORE;
       total += number;
+      score_total += number * score;
       rules.push({
         number,
-        score: rule.score ?? DEFAULT_SCORE,
+        score,
         timeLimit: rule.timeLimit,
         type: type as any,
       });
     }
     return {
-      total,
+      question_total: total,
+      score_total,
       rules,
     };
   }

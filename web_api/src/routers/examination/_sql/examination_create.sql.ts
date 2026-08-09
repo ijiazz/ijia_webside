@@ -39,30 +39,33 @@ export async function createExaminationByRules(
     } satisfies Partial<DbExamPaperTemplate>).returning<{ id: number }>("id"),
   );
 
-  const [examResult] = await t.queryRows<{ id: number }>(createExamTemplate(templateId, option));
+  const [examResult] = await t.queryRows<{ id: number }>(createExamFromTemplate(templateId, option));
   await t.commit();
   return examResult?.id;
 }
 
-function createExamTemplate(templateId: number, option: CreateExaminationOption) {
+function createExamFromTemplate(templateId: number, option: CreateExaminationOption) {
   const q = v.gen`
   WITH tb AS(
     UPDATE exam_paper_template
     SET exam_number = exam_number + 1
     WHERE id=${templateId}
-    RETURNING id, question_total, gen_rules
+    RETURNING id, gen_rules
+  ), info AS (
+    SELECT count(*)::INT AS question_total, COALESCE(sum(score), 0)::INT AS grade_total, ${templateId} AS id FROM exam_paper_template_question WHERE paper_template_id =${templateId}
   )
-  INSERT INTO examination (template_id, question_total, user_id, title, allow_time_start, allow_time_end, result_allow_view_date, use_time_total_limit)
+  INSERT INTO examination (template_id, question_total, grade_total, user_id, title, allow_time_start, allow_time_end, result_allow_view_date, use_time_total_limit)
     SELECT 
-      id AS template_id,
-      (question_total + COALESCE(gen_rules->>'total', '0')::int) AS question_total,
+      info.id AS template_id,
+      (info.question_total + (SELECT COALESCE(gen_rules->>'question_total', '0')::INT FROM tb)) AS question_total,
+      (info.grade_total + (SELECT COALESCE(gen_rules->>'score_total', '0')::int FROM tb)) AS grade_total,
       ${option.userId} user_id,
       ${option.title} title,
       ${option.allowTimeStart ?? null} allow_time_start,
       ${option.allowTimeEnd ?? null} allow_time_end,
       ${option.resultAllowViewDate ?? null} result_allow_view_date,
       ${option.useTimeTotalLimit ?? 0} use_time_total_limit
-    FROM tb
+    FROM info
     RETURNING id
   `;
   return q;
@@ -71,6 +74,6 @@ export async function createExaminationByTemplate(
   templateId: number,
   option: CreateExaminationOption,
 ): Promise<number | undefined> {
-  const [result] = await dbPool.queryRows<{ id: number }>(createExamTemplate(templateId, option));
+  const [result] = await dbPool.queryRows<{ id: number }>(createExamFromTemplate(templateId, option));
   return result?.id;
 }

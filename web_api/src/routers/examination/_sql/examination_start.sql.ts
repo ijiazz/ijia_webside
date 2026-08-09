@@ -8,7 +8,7 @@ import { DbTransaction } from "@asla/pg";
 import { PaperTemplateGenRules } from "../_utils/question_gen_rules.ts";
 
 async function insertQuestion(t: DbTransaction, templateId: number, genRules: PaperTemplateGenRules) {
-  const { total, rules } = genRules;
+  const { rules } = genRules;
 
   const selected = rules
     .map(({ number, score, timeLimit, type }) => {

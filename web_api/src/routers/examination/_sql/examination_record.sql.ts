@@ -134,9 +134,9 @@ function mapResult(input: RecordRow[], allowViewResult: boolean): ExaminationRec
 
     return {
       index: row.index,
-      isTimeout: row.question ? row.question.is_timeout : false,
+      isTimeout: allowViewResult ? (row.question ? row.question.is_timeout : false) : null,
       selected: row.selected,
-      score: row.score,
+      score: allowViewResult ? row.score : null,
       use_time: row.use_time,
       question,
     };

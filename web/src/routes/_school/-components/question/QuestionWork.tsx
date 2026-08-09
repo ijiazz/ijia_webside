@@ -24,7 +24,11 @@ export function QuestionWork(props: QuestionWorkProps) {
   const { data, index, value, onChange, correctIndexes, children, readOnly, ...rest } = props;
 
   if (!data.question_type) {
-    return <Typography.Text type="secondary">题目不存在</Typography.Text>;
+    return (
+      <Typography.Text {...rest} type="secondary">
+        题目不存在
+      </Typography.Text>
+    );
   }
   return (
     <Card

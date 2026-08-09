@@ -53,11 +53,11 @@ export function ExaminationList(props: ExaminationListProps) {
               </div>
               <Space>
                 <span>
-                  总分：<b>{}</b>
+                  总分：<b>{item.total_score}</b>
                 </span>
                 &nbsp;&nbsp;
                 <span>
-                  得分：<b>{item.score}</b>
+                  得分：<b>{item.score ?? "--"}</b>
                 </span>
               </Space>
               <div>

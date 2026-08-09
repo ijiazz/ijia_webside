@@ -7,11 +7,15 @@ export type QuestionRules = {
   score: number;
   /** 题型时间限制（单位秒） */
   timeLimit?: number;
+  /** 题目类型 */
   type?: ExamQuestionType;
 };
 
 export type PaperTemplateGenRules = {
-  total: number;
+  /** rules 下面的 number 总和 */
+  question_total: number;
+  /** 总分 */
+  score_total: number;
   rules: QuestionRules[];
 };
 

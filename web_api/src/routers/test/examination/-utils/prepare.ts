@@ -26,8 +26,7 @@ export async function prepareExaminationTemplate(
 
     const qId = await createQuestion(
       {
-        user_id: ownerId,
-
+        user_id: item.user_id,
         question_text: `考试题目-${i}`,
         question_type: item.question_type,
         answer_index: item.answer_index ?? [0],

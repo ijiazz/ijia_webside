@@ -1,11 +1,17 @@
 import { ExaminationRecordQuestion } from "@/api.ts";
+import { ButtonProps } from "antd";
 
-export function getRecordStatus(item: ExaminationRecordQuestion): { color: string; text: string } {
-  if ((item.selected?.length ?? 0) === 0) return { color: "#d9d9d9", text: "未作答" };
-  if (!item.question?.answer) return { color: "#1677ff", text: "结果未开放" };
-  if (isCorrectAnswer(item)) return { color: "#52c41a", text: "正确" };
-  if ((item.score ?? 0) > 0) return { color: "#faad14", text: "部分正确" };
-  return { color: "#ff4d4f", text: "错误" };
+export function getRecordStatus(item: ExaminationRecordQuestion): { color: ButtonProps["color"]; text: string } {
+  if ((item.selected?.length ?? 0) === 0) return { color: undefined, text: "未作答" };
+  if (!item.question?.answer) return { color: undefined, text: "结果未开放" };
+  if (isCorrectAnswer(item)) {
+    if (item.isTimeout) {
+      return { color: "cyan", text: "超时" };
+    }
+    return { color: "green", text: "正确" };
+  }
+  if ((item.score ?? 0) > 0) return { color: "orange", text: "部分正确" };
+  return { color: "red", text: "错误" };
 }
 
 export function clampDifficulty(value: number) {
