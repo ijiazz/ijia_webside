@@ -12,7 +12,7 @@ function RouteComponent() {
   const navigate = Route.useNavigate();
   const { userInfo } = useLoaderData({ from: "/_school" });
   if (!userInfo) {
-    throw navigate({ to: getLoginURL(), replace: true });
+    throw navigate({ href: getLoginURL(), replace: true });
   }
   return (
     <div className={PageCSS}>
