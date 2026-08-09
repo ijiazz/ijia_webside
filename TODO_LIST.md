@@ -3,6 +3,7 @@
 - [ ] 允许编辑审核通过的题目
 - [ ] 超级管理员创建题目免审核
 - [ ] 题库数量增多后，需要重新设计题目随机抽取逻辑
+- [ ] 前端放开创建模拟考试 web/src/routes/_school/examination/self/index.lazy.tsx:49
 
 ## 测试用例
 

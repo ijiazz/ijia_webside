@@ -46,6 +46,9 @@ const ThemeTestPageIndexLazyRouteImport =
 const ThemeTestPageUploadLazyRouteImport = createFileRoute(
   '/_theme/test-page/upload',
 )()
+const SchoolExaminationQuestionBankLazyRouteImport = createFileRoute(
+  '/_school/examination/question-bank',
+)()
 const SchoolExaminationExamIdIndexLazyRouteImport = createFileRoute(
   '/_school/examination/$examId/',
 )()
@@ -131,6 +134,16 @@ const ThemeTestPageUploadLazyRoute = ThemeTestPageUploadLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_theme/test-page/upload.lazy.tsx').then((d) => d.Route),
 )
+const SchoolExaminationQuestionBankLazyRoute =
+  SchoolExaminationQuestionBankLazyRouteImport.update({
+    id: '/question-bank',
+    path: '/question-bank',
+    getParentRoute: () => SchoolExaminationRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_school/examination/question-bank.lazy.tsx').then(
+      (d) => d.Route,
+    ),
+  )
 const ThemeAboutIntroductionRoute = ThemeAboutIntroductionRouteImport.update({
   id: '/about/introduction',
   path: '/about/introduction',
@@ -298,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/wall/publish': typeof SchoolWallPublishRoute
   '/about/guide': typeof ThemeAboutGuideRoute
   '/about/introduction': typeof ThemeAboutIntroductionRoute
+  '/examination/question-bank': typeof SchoolExaminationQuestionBankLazyRoute
   '/test-page/upload': typeof ThemeTestPageUploadLazyRoute
   '/examination/': typeof SchoolExaminationIndexRoute
   '/live/': typeof SchoolLiveIndexRoute
@@ -326,6 +340,7 @@ export interface FileRoutesByTo {
   '/wall/publish': typeof SchoolWallPublishRoute
   '/about/guide': typeof ThemeAboutGuideRoute
   '/about/introduction': typeof ThemeAboutIntroductionRoute
+  '/examination/question-bank': typeof SchoolExaminationQuestionBankLazyRoute
   '/test-page/upload': typeof ThemeTestPageUploadLazyRoute
   '/examination': typeof SchoolExaminationIndexRoute
   '/live': typeof SchoolLiveIndexRoute
@@ -360,6 +375,7 @@ export interface FileRoutesById {
   '/_school/wall/publish': typeof SchoolWallPublishRoute
   '/_theme/about/guide': typeof ThemeAboutGuideRoute
   '/_theme/about/introduction': typeof ThemeAboutIntroductionRoute
+  '/_school/examination/question-bank': typeof SchoolExaminationQuestionBankLazyRoute
   '/_theme/test-page/upload': typeof ThemeTestPageUploadLazyRoute
   '/_school/examination/': typeof SchoolExaminationIndexRoute
   '/_school/live/': typeof SchoolLiveIndexRoute
@@ -394,6 +410,7 @@ export interface FileRouteTypes {
     | '/wall/publish'
     | '/about/guide'
     | '/about/introduction'
+    | '/examination/question-bank'
     | '/test-page/upload'
     | '/examination/'
     | '/live/'
@@ -422,6 +439,7 @@ export interface FileRouteTypes {
     | '/wall/publish'
     | '/about/guide'
     | '/about/introduction'
+    | '/examination/question-bank'
     | '/test-page/upload'
     | '/examination'
     | '/live'
@@ -455,6 +473,7 @@ export interface FileRouteTypes {
     | '/_school/wall/publish'
     | '/_theme/about/guide'
     | '/_theme/about/introduction'
+    | '/_school/examination/question-bank'
     | '/_theme/test-page/upload'
     | '/_school/examination/'
     | '/_school/live/'
@@ -574,6 +593,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/test-page/upload'
       preLoaderRoute: typeof ThemeTestPageUploadLazyRouteImport
       parentRoute: typeof ThemeRouteRoute
+    }
+    '/_school/examination/question-bank': {
+      id: '/_school/examination/question-bank'
+      path: '/question-bank'
+      fullPath: '/examination/question-bank'
+      preLoaderRoute: typeof SchoolExaminationQuestionBankLazyRouteImport
+      parentRoute: typeof SchoolExaminationRouteRoute
     }
     '/_theme/about/introduction': {
       id: '/_theme/about/introduction'
@@ -731,6 +757,7 @@ const SchoolExaminationExamIdRouteRouteWithChildren =
 interface SchoolExaminationRouteRouteChildren {
   SchoolExaminationExamIdRouteRoute: typeof SchoolExaminationExamIdRouteRouteWithChildren
   SchoolExaminationSimulateRoute: typeof SchoolExaminationSimulateRoute
+  SchoolExaminationQuestionBankLazyRoute: typeof SchoolExaminationQuestionBankLazyRoute
   SchoolExaminationIndexRoute: typeof SchoolExaminationIndexRoute
   SchoolExaminationSelfIndexRoute: typeof SchoolExaminationSelfIndexRoute
 }
@@ -740,6 +767,8 @@ const SchoolExaminationRouteRouteChildren: SchoolExaminationRouteRouteChildren =
     SchoolExaminationExamIdRouteRoute:
       SchoolExaminationExamIdRouteRouteWithChildren,
     SchoolExaminationSimulateRoute: SchoolExaminationSimulateRoute,
+    SchoolExaminationQuestionBankLazyRoute:
+      SchoolExaminationQuestionBankLazyRoute,
     SchoolExaminationIndexRoute: SchoolExaminationIndexRoute,
     SchoolExaminationSelfIndexRoute: SchoolExaminationSelfIndexRoute,
   }

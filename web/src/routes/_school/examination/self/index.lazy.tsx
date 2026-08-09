@@ -8,6 +8,7 @@ import { useInfiniteLoad } from "@/lib/hook/infiniteLoad.ts";
 import { api } from "@/request/client.ts";
 import { LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
 import { useElementOverScreen } from "@/lib/hook/observer.ts";
+import { IS_ONLINE_HOSTNAME } from "@/common/env.ts";
 
 export const Route = createLazyFileRoute("/_school/examination/self/")({
   component: RouteComponent,
@@ -45,9 +46,11 @@ export function RouteComponent() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Segmented options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
         <Space>
-          <Link to="/examination/simulate">
-            <Button type="primary">创建模拟考试</Button>
-          </Link>
+          {!IS_ONLINE_HOSTNAME && (
+            <Link to="/examination/simulate">
+              <Button type="primary">创建模拟考试</Button>
+            </Link>
+          )}
         </Space>
       </div>
       {data.length > 0 && (
