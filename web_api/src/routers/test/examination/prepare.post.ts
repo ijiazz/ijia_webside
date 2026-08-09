@@ -49,6 +49,7 @@ async function prepareExamination(
         rules: {
           rules: [{ number: questionTotal, score: 2 }],
           question_total: questionTotal,
+          score_total: questionTotal * 2,
         },
         ownerId: rest.userId,
       },

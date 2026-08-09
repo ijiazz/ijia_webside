@@ -91,7 +91,7 @@ function RecordQuestionCard({ item }: { item: ExaminationRecordQuestion }) {
         questionType={question?.question_type}
         correctIndexes={question?.answer?.answer_index}
         selected={item.selected}
-        isTimeout={item.isTimeout}
+        isTimeout={item.isTimeout ?? false}
         score={item.score}
         useTime={item.use_time}
       />
