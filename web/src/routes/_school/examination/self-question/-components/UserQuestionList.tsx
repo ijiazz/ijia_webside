@@ -21,7 +21,7 @@ export function UserQuestionList(props: UserQuestionListProps) {
   const { userId, canManage } = props;
   const { data, setData, reset, next, previous } = useInfiniteLoad<ExamUserQuestion[], string>({
     async load(cursor, forward) {
-      const result = await getUserQuestionListQueryOption({ cursor, userId });
+      const result = await getUserQuestionListQueryOption({ cursor });
       const items = forward ? result.items.slice().reverse() : result.items;
       return {
         items,
@@ -58,7 +58,7 @@ export function UserQuestionList(props: UserQuestionListProps) {
       onOk: async () => {
         await api["/question/entity/:question_id"].delete({ params: { question_id: item.question_id } });
         message.success("已删除");
-        setData((prev) => prev.filter((i) => i.question_id !== item.question_id));
+        setData((prev) => prev.filter((question) => question.question_id !== item.question_id));
       },
       okButtonProps: { danger: true },
     });
@@ -72,22 +72,20 @@ export function UserQuestionList(props: UserQuestionListProps) {
         </LoaderIndicator>
       )}
       <div className={listCSS}>
-        {data.map((item) => {
-          return (
-            <QuestionCard
-              key={item.question_id}
-              data={item}
-              canManage={canManage}
-              onEdit={() =>
-                navigate({
-                  to: "/question/edit/$questionId",
-                  params: { questionId: item.question_id },
-                })
-              }
-              onDelete={() => onDelete(item)}
-            />
-          );
-        })}
+        {data.map((item) => (
+          <QuestionCard
+            key={item.question_id}
+            data={item}
+            canManage={canManage}
+            onEdit={() =>
+              navigate({
+                to: "/question/edit/$questionId",
+                params: { questionId: item.question_id },
+              })
+            }
+            onDelete={() => onDelete(item)}
+          />
+        ))}
       </div>
       <LoadMoreIndicator
         error={!!next.error}

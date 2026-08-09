@@ -9,7 +9,7 @@ test("用户创建题目", async function ({ page, context }) {
   const questionText = "e2e-create-question-text";
 
   await setContextLogin(context, aliceToken);
-  await page.goto(getUserQuestionURL(alice.id));
+  await page.goto(getUserQuestionURL());
 
   await page.getByRole("button", { name: "发布题目" }).click();
   await fillSingleChoiceQuestionForm(page, {
@@ -20,7 +20,7 @@ test("用户创建题目", async function ({ page, context }) {
   });
   await page.getByRole("button", { name: "创建题目" }).click();
 
-  await expect(page).toHaveURL(getUserQuestionURL(alice.id));
+  await expect(page).toHaveURL(getUserQuestionURL());
 
   const createdCard = page.locator(".e2e-question-card", { hasText: questionText });
   await expect(createdCard, "创建后题目应出现在个人题目列表").toHaveCount(1);

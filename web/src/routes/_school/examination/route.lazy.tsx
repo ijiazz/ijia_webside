@@ -20,6 +20,10 @@ function RouteComponent() {
       label: "我的考试",
       key: "/examination/self",
     });
+    items.push({
+      label: "我的题目",
+      key: "/examination/self-question",
+    });
   }
 
   return (
