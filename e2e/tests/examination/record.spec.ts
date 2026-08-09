@@ -4,7 +4,8 @@ import { ExamQuestionType } from "@ijia/api-types";
 import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 import {
   getExaminationAnswerURL,
-  getExaminationURL,
+  getExaminationDetailURL,
+  getShelfExaminationListURL,
   prepareExamination,
   prepareExaminationTemplate,
 } from "@/utils/examination.ts";
@@ -36,7 +37,7 @@ test("作答记录信息展示", async function ({ page, context }) {
 
   const aliceToken = await loginGetToken(alice.email, alice.password);
   await setContextLogin(context, aliceToken);
-  await page.goto(getExaminationURL());
+  await page.goto(getShelfExaminationListURL());
 
   const examItem = page
     .locator("div", { hasText: examTitle })
@@ -44,7 +45,7 @@ test("作答记录信息展示", async function ({ page, context }) {
     .first();
   await examItem.getByRole("link", { name: "查看" }).click();
 
-  await expect(page).toHaveURL(getExaminationURL(examinationId));
+  await expect(page).toHaveURL(getExaminationDetailURL(examinationId));
 
   await page.getByRole("button", { name: "开始考试" }).click();
   await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
@@ -70,7 +71,7 @@ test("作答记录信息展示", async function ({ page, context }) {
     await page.getByRole("button", { name: "确 定" }).click();
   }
 
-  await expect(page).toHaveURL(getExaminationURL(examinationId));
+  await expect(page).toHaveURL(getExaminationDetailURL(examinationId));
 
   const userAvatar = page.getByTestId("question-0").getByRole("link");
   await expect(userAvatar, "用户链接应打开到用户主页").toHaveAttribute("href", `/user/${bob.id}/post`);
@@ -112,7 +113,7 @@ test("未开放成绩", async function ({ page, context }) {
 
   const aliceToken = await loginGetToken(alice.email, alice.password);
   await setContextLogin(context, aliceToken);
-  await page.goto(getExaminationURL());
+  await page.goto(getShelfExaminationListURL());
 
   const examItem = page
     .locator("div", { hasText: examTitle })
@@ -120,7 +121,7 @@ test("未开放成绩", async function ({ page, context }) {
     .first();
   await examItem.getByRole("link", { name: "查看" }).click();
 
-  await expect(page).toHaveURL(getExaminationURL(examinationId));
+  await expect(page).toHaveURL(getExaminationDetailURL(examinationId));
 
   await page.getByRole("button", { name: "开始考试" }).click();
   await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
@@ -141,8 +142,8 @@ test("未开放成绩", async function ({ page, context }) {
     await page.getByRole("button", { name: "确 定" }).click();
   }
 
-  await expect(page).toHaveURL(getExaminationURL(examinationId));
+  await expect(page).toHaveURL(getExaminationDetailURL(examinationId));
   await expect(page.getByText("考试已结束，等待结果开放")).toBeVisible();
 
-  await page.goto(getExaminationURL(examinationId));
+  await page.goto(getExaminationDetailURL(examinationId));
 });

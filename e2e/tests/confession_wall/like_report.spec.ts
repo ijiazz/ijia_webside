@@ -4,6 +4,7 @@ import { createPost } from "@/utils/post.ts";
 import { Locator } from "@playwright/test";
 import { DROPDOWN_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 import { getAppURLFromRoute } from "@/utils/app.ts";
+import { afterTime } from "evlib";
 
 const { expect, beforeAll } = test;
 
@@ -42,6 +43,7 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
     //bob 点赞
     const page = bobPage;
     await setContextLogin(bobContext, bob.token);
+    await afterTime(300);
     await page.goto(getAppURLFromRoute("/wall/list", { userId: bob.id }));
 
     const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
@@ -49,6 +51,7 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
     await expect(firstBtn).toHaveText("1");
     await firstBtn.click();
     await expect(firstBtn).toHaveText("2");
+    await afterTime(300);
   }
 
   {

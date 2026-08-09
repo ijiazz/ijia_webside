@@ -13,8 +13,11 @@ export function getExamTitle(name: string) {
   return `e2e-${name}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 }
 
-export function getExaminationURL(examId?: string | number) {
-  return examId === undefined ? getAppURLFromRoute("/examination") : getAppURLFromRoute(`/examination/${examId}`);
+export function getExaminationDetailURL(examId: string | number) {
+  return getAppURLFromRoute(`/examination/${examId}`);
+}
+export function getShelfExaminationListURL() {
+  return getAppURLFromRoute("/examination");
 }
 
 export function getExaminationAnswerURL(examId: string | number) {

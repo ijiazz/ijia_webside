@@ -3,7 +3,8 @@ import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 import {
   DEFAULT_QUESTIONS,
   getExaminationAnswerURL,
-  getExaminationURL,
+  getExaminationDetailURL,
+  getShelfExaminationListURL,
   prepareExamination,
   prepareExaminationTemplate,
   prepareUserExamination,
@@ -32,7 +33,7 @@ test("用户可以继续一场进行中的考试", async function ({ page, conte
   const { aliceToken, examTitle, examinationId } = await prepareAliceExam("继续考试");
 
   await setContextLogin(context, aliceToken);
-  await page.goto(getExaminationURL(examinationId));
+  await page.goto(getExaminationDetailURL(examinationId));
   await page.getByRole("button", { name: "开始考试" }).click();
   await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: "确 定" }).click();
@@ -44,7 +45,7 @@ test("用户可以继续一场进行中的考试", async function ({ page, conte
   await page.getByRole("button", { name: "提交并进入下一题" }).click();
   await expect(page.getByText("考试题目-1")).toBeVisible();
 
-  await page.goto(getExaminationURL(examinationId));
+  await page.goto(getExaminationDetailURL(examinationId));
   await expect(page.getByRole("heading", { name: examTitle })).toBeVisible();
   await page.getByRole("button", { name: "继续考试" }).click();
 
@@ -59,7 +60,7 @@ test("用户可以删除自己的考试", async function ({ page, context }) {
   const { aliceToken, examTitle } = await prepareAliceExam("删除考试");
 
   await setContextLogin(context, aliceToken);
-  await page.goto(getExaminationURL());
+  await page.goto(getShelfExaminationListURL());
 
   const examItem = page
     .locator("div", { hasText: examTitle })
@@ -89,7 +90,7 @@ test("未开始的考试展示暂未开始状态", async function ({ page, conte
   });
 
   await setContextLogin(context, aliceToken);
-  await page.goto(getExaminationURL(examinationId));
+  await page.goto(getExaminationDetailURL(examinationId));
 
   await expect(page.getByRole("heading", { name: examTitle })).toBeVisible();
   await expect(page.getByText("考试暂未开始")).toBeVisible();
@@ -102,7 +103,7 @@ test("用户可以关闭自动下一题后再开启自动下一题", async funct
   const { examinationId } = await prepareUserExamination(alice.id, "切换自动下一题");
 
   await setContextLogin(context, aliceToken);
-  await page.goto(getExaminationURL(examinationId));
+  await page.goto(getExaminationDetailURL(examinationId));
   await page.getByRole("button", { name: "开始考试" }).click();
   await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: "确 定" }).click();

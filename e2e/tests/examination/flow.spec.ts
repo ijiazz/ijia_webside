@@ -4,7 +4,8 @@ import { ExamQuestionType } from "@ijia/api-types";
 import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 import {
   getExaminationAnswerURL,
-  getExaminationURL,
+  getExaminationDetailURL,
+  getShelfExaminationListURL,
   prepareExamination,
   prepareExaminationTemplate,
 } from "@/utils/examination.ts";
@@ -40,7 +41,7 @@ test("用户可以完成一场考试并查看作答记录", async function ({ pa
 
   const aliceToken = await loginGetToken(alice.email, alice.password);
   await setContextLogin(context, aliceToken);
-  await page.goto(getExaminationURL());
+  await page.goto(getShelfExaminationListURL());
 
   const examItem = page
     .locator("div", { hasText: examTitle })
@@ -49,7 +50,7 @@ test("用户可以完成一场考试并查看作答记录", async function ({ pa
   await expect(page.getByText(examTitle), "考试列表应展示准备好的考试").toBeVisible();
   await examItem.getByRole("link", { name: "查看" }).click();
 
-  await expect(page).toHaveURL(getExaminationURL(examinationId));
+  await expect(page).toHaveURL(getExaminationDetailURL(examinationId));
   await expect(descriptionLocator(page, "题目总数")).toContainText(FULL_FLOW_QUESTIONS.length.toString());
 
   await page.getByRole("button", { name: "开始考试" }).click();
@@ -104,7 +105,7 @@ test("用户可以完成一场考试并查看作答记录", async function ({ pa
   await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: "确 定" }).click();
 
-  await expect(page).toHaveURL(getExaminationURL(examinationId));
+  await expect(page).toHaveURL(getExaminationDetailURL(examinationId));
   await expect(statisticLocator(page, "成绩")).toContainText("5");
   await expect(statisticLocator(page, "正确")).toContainText("3");
   await expect(statisticLocator(page, "部分正确")).toContainText("1");
