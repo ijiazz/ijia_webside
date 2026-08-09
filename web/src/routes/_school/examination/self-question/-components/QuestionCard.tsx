@@ -43,7 +43,7 @@ export function QuestionCard(props: QuestionCardProps) {
                 type="text"
                 aria-label="题目更多操作"
                 icon={<MoreOutlined />}
-              ></Button>
+              />
             </Dropdown>
           )}
         </Space>

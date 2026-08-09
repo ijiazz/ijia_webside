@@ -34,11 +34,11 @@ import { Route as SchoolExaminationExamIdRouteRouteImport } from './routes/_scho
 import { Route as SchoolUserUserIdIndexRouteImport } from './routes/_school/user/$userId/index.tsx'
 import { Route as SchoolReviewTypeIndexRouteImport } from './routes/_school/review/$type/index.tsx'
 import { Route as SchoolExaminationSelfIndexRouteImport } from './routes/_school/examination/self/index.tsx'
+import { Route as SchoolExaminationSelfQuestionIndexRouteImport } from './routes/_school/examination/self-question/index.tsx'
 import { Route as SchoolQuestionEditQuestionIdRouteImport } from './routes/_school/question/edit.$questionId.tsx'
 import { Route as SchoolExaminationExamIdAnswerRouteImport } from './routes/_school/examination/$examId/answer.tsx'
 import { Route as SchoolWallListChar123GroupIdChar125RouteRouteImport } from './routes/_school/wall/list.{-$groupId}/route.tsx'
 import { Route as SchoolWallListChar123GroupIdChar125IndexRouteImport } from './routes/_school/wall/list.{-$groupId}/index.tsx'
-import { Route as SchoolUserUserIdQuestionIndexRouteImport } from './routes/_school/user/$userId/question/index.tsx'
 import { Route as SchoolUserUserIdPostIndexRouteImport } from './routes/_school/user/$userId/post/index.tsx'
 
 const ThemeTestPageIndexLazyRouteImport =
@@ -237,6 +237,16 @@ const SchoolExaminationSelfIndexRoute =
       (d) => d.Route,
     ),
   )
+const SchoolExaminationSelfQuestionIndexRoute =
+  SchoolExaminationSelfQuestionIndexRouteImport.update({
+    id: '/self-question/',
+    path: '/self-question/',
+    getParentRoute: () => SchoolExaminationRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_school/examination/self-question/index.lazy.tsx').then(
+      (d) => d.Route,
+    ),
+  )
 const SchoolQuestionEditQuestionIdRoute =
   SchoolQuestionEditQuestionIdRouteImport.update({
     id: '/question/edit/$questionId',
@@ -277,16 +287,6 @@ const SchoolWallListChar123GroupIdChar125IndexRoute =
       (d) => d.Route,
     ),
   )
-const SchoolUserUserIdQuestionIndexRoute =
-  SchoolUserUserIdQuestionIndexRouteImport.update({
-    id: '/question/',
-    path: '/question/',
-    getParentRoute: () => SchoolUserUserIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/_school/user/$userId/question/index.lazy.tsx').then(
-      (d) => d.Route,
-    ),
-  )
 const SchoolUserUserIdPostIndexRoute =
   SchoolUserUserIdPostIndexRouteImport.update({
     id: '/post/',
@@ -323,12 +323,12 @@ export interface FileRoutesByFullPath {
   '/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125RouteRouteWithChildren
   '/examination/$examId/answer': typeof SchoolExaminationExamIdAnswerRoute
   '/question/edit/$questionId': typeof SchoolQuestionEditQuestionIdRoute
+  '/examination/self-question/': typeof SchoolExaminationSelfQuestionIndexRoute
   '/examination/self/': typeof SchoolExaminationSelfIndexRoute
   '/review/$type/': typeof SchoolReviewTypeIndexRoute
   '/user/$userId/': typeof SchoolUserUserIdIndexRoute
   '/examination/$examId/': typeof SchoolExaminationExamIdIndexLazyRoute
   '/user/$userId/post/': typeof SchoolUserUserIdPostIndexRoute
-  '/user/$userId/question/': typeof SchoolUserUserIdQuestionIndexRoute
   '/wall/list/{-$groupId}/': typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
 export interface FileRoutesByTo {
@@ -351,12 +351,12 @@ export interface FileRoutesByTo {
   '/test-page': typeof ThemeTestPageIndexLazyRoute
   '/examination/$examId/answer': typeof SchoolExaminationExamIdAnswerRoute
   '/question/edit/$questionId': typeof SchoolQuestionEditQuestionIdRoute
+  '/examination/self-question': typeof SchoolExaminationSelfQuestionIndexRoute
   '/examination/self': typeof SchoolExaminationSelfIndexRoute
   '/review/$type': typeof SchoolReviewTypeIndexRoute
   '/user/$userId': typeof SchoolUserUserIdIndexRoute
   '/examination/$examId': typeof SchoolExaminationExamIdIndexLazyRoute
   '/user/$userId/post': typeof SchoolUserUserIdPostIndexRoute
-  '/user/$userId/question': typeof SchoolUserUserIdQuestionIndexRoute
   '/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
 export interface FileRoutesById {
@@ -387,12 +387,12 @@ export interface FileRoutesById {
   '/_school/wall/list/{-$groupId}': typeof SchoolWallListChar123GroupIdChar125RouteRouteWithChildren
   '/_school/examination/$examId/answer': typeof SchoolExaminationExamIdAnswerRoute
   '/_school/question/edit/$questionId': typeof SchoolQuestionEditQuestionIdRoute
+  '/_school/examination/self-question/': typeof SchoolExaminationSelfQuestionIndexRoute
   '/_school/examination/self/': typeof SchoolExaminationSelfIndexRoute
   '/_school/review/$type/': typeof SchoolReviewTypeIndexRoute
   '/_school/user/$userId/': typeof SchoolUserUserIdIndexRoute
   '/_school/examination/$examId/': typeof SchoolExaminationExamIdIndexLazyRoute
   '/_school/user/$userId/post/': typeof SchoolUserUserIdPostIndexRoute
-  '/_school/user/$userId/question/': typeof SchoolUserUserIdQuestionIndexRoute
   '/_school/wall/list/{-$groupId}/': typeof SchoolWallListChar123GroupIdChar125IndexRoute
 }
 export interface FileRouteTypes {
@@ -422,12 +422,12 @@ export interface FileRouteTypes {
     | '/wall/list/{-$groupId}'
     | '/examination/$examId/answer'
     | '/question/edit/$questionId'
+    | '/examination/self-question/'
     | '/examination/self/'
     | '/review/$type/'
     | '/user/$userId/'
     | '/examination/$examId/'
     | '/user/$userId/post/'
-    | '/user/$userId/question/'
     | '/wall/list/{-$groupId}/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -450,12 +450,12 @@ export interface FileRouteTypes {
     | '/test-page'
     | '/examination/$examId/answer'
     | '/question/edit/$questionId'
+    | '/examination/self-question'
     | '/examination/self'
     | '/review/$type'
     | '/user/$userId'
     | '/examination/$examId'
     | '/user/$userId/post'
-    | '/user/$userId/question'
     | '/wall/list/{-$groupId}'
   id:
     | '__root__'
@@ -485,12 +485,12 @@ export interface FileRouteTypes {
     | '/_school/wall/list/{-$groupId}'
     | '/_school/examination/$examId/answer'
     | '/_school/question/edit/$questionId'
+    | '/_school/examination/self-question/'
     | '/_school/examination/self/'
     | '/_school/review/$type/'
     | '/_school/user/$userId/'
     | '/_school/examination/$examId/'
     | '/_school/user/$userId/post/'
-    | '/_school/user/$userId/question/'
     | '/_school/wall/list/{-$groupId}/'
   fileRoutesById: FileRoutesById
 }
@@ -692,6 +692,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolExaminationSelfIndexRouteImport
       parentRoute: typeof SchoolExaminationRouteRoute
     }
+    '/_school/examination/self-question/': {
+      id: '/_school/examination/self-question/'
+      path: '/self-question'
+      fullPath: '/examination/self-question/'
+      preLoaderRoute: typeof SchoolExaminationSelfQuestionIndexRouteImport
+      parentRoute: typeof SchoolExaminationRouteRoute
+    }
     '/_school/question/edit/$questionId': {
       id: '/_school/question/edit/$questionId'
       path: '/question/edit/$questionId'
@@ -719,13 +726,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/wall/list/{-$groupId}/'
       preLoaderRoute: typeof SchoolWallListChar123GroupIdChar125IndexRouteImport
       parentRoute: typeof SchoolWallListChar123GroupIdChar125RouteRoute
-    }
-    '/_school/user/$userId/question/': {
-      id: '/_school/user/$userId/question/'
-      path: '/question'
-      fullPath: '/user/$userId/question/'
-      preLoaderRoute: typeof SchoolUserUserIdQuestionIndexRouteImport
-      parentRoute: typeof SchoolUserUserIdRouteRoute
     }
     '/_school/user/$userId/post/': {
       id: '/_school/user/$userId/post/'
@@ -759,6 +759,7 @@ interface SchoolExaminationRouteRouteChildren {
   SchoolExaminationSimulateRoute: typeof SchoolExaminationSimulateRoute
   SchoolExaminationQuestionBankLazyRoute: typeof SchoolExaminationQuestionBankLazyRoute
   SchoolExaminationIndexRoute: typeof SchoolExaminationIndexRoute
+  SchoolExaminationSelfQuestionIndexRoute: typeof SchoolExaminationSelfQuestionIndexRoute
   SchoolExaminationSelfIndexRoute: typeof SchoolExaminationSelfIndexRoute
 }
 
@@ -770,6 +771,8 @@ const SchoolExaminationRouteRouteChildren: SchoolExaminationRouteRouteChildren =
     SchoolExaminationQuestionBankLazyRoute:
       SchoolExaminationQuestionBankLazyRoute,
     SchoolExaminationIndexRoute: SchoolExaminationIndexRoute,
+    SchoolExaminationSelfQuestionIndexRoute:
+      SchoolExaminationSelfQuestionIndexRoute,
     SchoolExaminationSelfIndexRoute: SchoolExaminationSelfIndexRoute,
   }
 
@@ -794,13 +797,11 @@ const SchoolReviewTypeRouteRouteWithChildren =
 interface SchoolUserUserIdRouteRouteChildren {
   SchoolUserUserIdIndexRoute: typeof SchoolUserUserIdIndexRoute
   SchoolUserUserIdPostIndexRoute: typeof SchoolUserUserIdPostIndexRoute
-  SchoolUserUserIdQuestionIndexRoute: typeof SchoolUserUserIdQuestionIndexRoute
 }
 
 const SchoolUserUserIdRouteRouteChildren: SchoolUserUserIdRouteRouteChildren = {
   SchoolUserUserIdIndexRoute: SchoolUserUserIdIndexRoute,
   SchoolUserUserIdPostIndexRoute: SchoolUserUserIdPostIndexRoute,
-  SchoolUserUserIdQuestionIndexRoute: SchoolUserUserIdQuestionIndexRoute,
 }
 
 const SchoolUserUserIdRouteRouteWithChildren =

@@ -43,6 +43,5 @@ export type QuestionAdvancedConfig = {
 
 export type GetUserQuestionListParam = {
   cursor?: string;
-  userId?: number;
 };
 export type GetUserQuestionListResult = CursorListResult<ExamUserQuestion, string> & {};

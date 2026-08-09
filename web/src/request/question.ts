@@ -4,7 +4,7 @@ import { GetUserQuestionListParam } from "@/api.ts";
 
 export const QUESTION_QUERY_KEY_PREFIX = "question";
 
-export function getUserQuestionListQueryOption(param: GetUserQuestionListParam) {
+export function getUserQuestionListQueryOption(param: GetUserQuestionListParam = {}) {
   return api["/question/list_user"].get({ query: param });
 }
 export function getQuestionDetailQueryOption(questionId: string) {

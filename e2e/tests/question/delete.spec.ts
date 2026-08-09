@@ -13,7 +13,7 @@ test("用户删除题目", async function ({ page, context }) {
   await createQuestion(aliceToken, { question_text: remainText, explanation_text: "保留解析" });
 
   await setContextLogin(context, aliceToken);
-  await page.goto(getUserQuestionURL(alice.id));
+  await page.goto(getUserQuestionURL());
 
   await expect(page.locator(".e2e-question-card"), "初始化时应有两道题目").toHaveCount(2);
 

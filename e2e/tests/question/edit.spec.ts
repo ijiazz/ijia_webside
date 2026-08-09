@@ -17,7 +17,7 @@ test("审核通过的题目不能直接通过 URL 进入编辑页", async functi
   await setQuestionReviewStatus(question_id, admin.token, ReviewStatus.passed, "通过");
   await setContextLogin(context, aliceToken);
 
-  await page.goto(getUserQuestionURL(alice.id));
+  await page.goto(getUserQuestionURL());
 
   const targetCard = page.locator(".e2e-question-card", { hasText: text });
   await targetCard.getByRole("button", { name: "题目更多操作" }).click();
@@ -41,7 +41,7 @@ test.skip("审核通过的题目时，只能修改部分字段", async function 
   });
   await setQuestionReviewStatus(question_id, admin.token, ReviewStatus.passed);
   await setContextLogin(context, aliceToken);
-  await page.goto(getUserQuestionURL(alice.id));
+  await page.goto(getUserQuestionURL());
 
   await openQuestionEditor(page, originalText);
 
@@ -56,7 +56,7 @@ test.skip("审核通过的题目时，只能修改部分字段", async function 
   await explanationTextBox.fill("审核通过后更新解析");
   await page.getByRole("button", { name: "保存题目" }).click();
 
-  await expect(page).toHaveURL(getUserQuestionURL(alice.id));
+  await expect(page).toHaveURL(getUserQuestionURL());
   await expect(
     page.locator(".e2e-question-card", { hasText: updatedText }),
     "审核通过题目应允许更新题目和解析",
@@ -77,7 +77,7 @@ test("编辑审核中的题目时，可以修改全部编辑字段", async funct
     explanation_text: "待审核解析",
   });
   await setContextLogin(context, aliceToken);
-  await page.goto(getUserQuestionURL(alice.id));
+  await page.goto(getUserQuestionURL());
 
   await openQuestionEditor(page, originalText);
 
@@ -91,7 +91,7 @@ test("编辑审核中的题目时，可以修改全部编辑字段", async funct
   await page.getByRole("radio", { name: "设置选项 A 为正确答案" }).check();
   await page.getByRole("button", { name: "保存题目" }).click();
 
-  await expect(page).toHaveURL(getUserQuestionURL(alice.id));
+  await expect(page).toHaveURL(getUserQuestionURL());
   await openQuestionEditor(page, updatedText);
   await expect(page.getByRole("textbox", { name: "选项 A 内容" })).toHaveValue("审核中新选项A");
   await expect(page.getByRole("radio", { name: "设置选项 A 为正确答案" })).toBeChecked();
@@ -111,7 +111,7 @@ test("编辑审核不通过的题目时，可以修改全部编辑字段", async
   });
   await setQuestionReviewStatus(question_id, admin.token, ReviewStatus.rejected, "题目需要修改");
   await setContextLogin(context, aliceToken);
-  await page.goto(getUserQuestionURL(alice.id));
+  await page.goto(getUserQuestionURL());
 
   await openQuestionEditor(page, originalText);
 
@@ -128,7 +128,7 @@ test("编辑审核不通过的题目时，可以修改全部编辑字段", async
   await answerRadio.check();
   await page.getByRole("button", { name: "保存题目" }).click();
 
-  await expect(page).toHaveURL(getUserQuestionURL(alice.id));
+  await expect(page).toHaveURL(getUserQuestionURL());
   await openQuestionEditor(page, updatedText);
   await expect(page.getByRole("textbox", { name: "选项 A 内容" })).toHaveValue("驳回后新选项A");
   await expect(page.getByRole("radio", { name: "设置选项 A 为正确答案" })).toBeChecked();

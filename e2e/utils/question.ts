@@ -21,8 +21,8 @@ export async function createQuestion(token: string, body: Partial<CreateQuestion
   });
 }
 
-export function getUserQuestionURL(userId: number, search?: Record<string, string | number | boolean | undefined>) {
-  return getAppURLFromRoute(`/user/${userId}/question`, search);
+export function getUserQuestionURL(search?: Record<string, string | number | boolean | undefined>) {
+  return getAppURLFromRoute("/examination/self-question", search);
 }
 export function getQuestionEditURL(questionId: string) {
   return getAppURLFromRoute(`/question/edit/${questionId}`);

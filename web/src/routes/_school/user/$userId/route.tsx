@@ -57,16 +57,11 @@ function RouteComponent() {
 }
 enum Tab {
   Post = "post",
-  Question = "question",
 }
 const tabs: TabsProps["items"] = [
   {
     key: Tab.Post,
     label: "帖子",
-  },
-  {
-    key: Tab.Question,
-    label: "题目",
   },
 ];
 

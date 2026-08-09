@@ -9,25 +9,18 @@ import {
   QuestionDetailSelectRaw,
 } from "./select_question.sql.ts";
 
-export async function getUserQuestionPublicList(
-  config: {
-    userId: number | null;
-    isOwner?: boolean;
-  },
+export async function getUserQuestionList(
+  userId: number,
   filters: { cursorNext?: string } = {},
 ): Promise<GetUserQuestionListResult> {
-  const { isOwner, userId } = config;
   const { cursorNext } = filters;
   const limit = 15;
   const cursorNextId = cursorNext ? parseCursorId(cursorNext) : undefined;
 
-  const sql = getQuestionPublicSelect({ withReview: isOwner })
+  const sql = getQuestionPublicSelect({ withReview: true })
     .where(() => {
       const where = [`q.user_id=${v(userId)}`];
 
-      if (!isOwner) {
-        where.push(`q.review_status='passed'`);
-      }
       if (cursorNextId) {
         where.push(`q.id < ${v(cursorNextId)}`);
       }

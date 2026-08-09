@@ -30,7 +30,7 @@ function RouteComponent() {
     if (router.history.canGoBack()) {
       router.history.back();
     } else {
-      router.navigate({ to: "/user" });
+      router.navigate({ to: "/examination/self-question" });
     }
   };
   const { mutateAsync } = useMutation({

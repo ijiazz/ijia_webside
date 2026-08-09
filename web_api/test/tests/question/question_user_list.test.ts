@@ -10,23 +10,32 @@ import { commitQuestionReview } from "@/routers/review/mod.ts";
 beforeEach<Context>(async ({ hono }) => {
   questionRoutes.apply(hono);
 });
-test("审核中、和审核不通过的题目，只有自己能查看", async function ({ api, publicDbPool }) {
-  const blob = await prepareUniqueUser("blob");
+test("用户只能查看自己的题目列表", async function ({ api, publicDbPool }) {
+  const bob = await prepareUniqueUser("bob");
   const alice = await prepareUniqueUser("alice");
   const admin = await prepareUniqueUser("admin", { roles: [Role.Admin] });
 
   const pending = await createSampleQuestion(api, alice.token, { question_text: "待审核题" });
+  const passed = await createSampleQuestion(api, alice.token, { question_text: "审核通过题" });
   const rejected = await createSampleQuestion(api, alice.token, { question_text: "会被拒绝" });
+  const bobQuestion = await createSampleQuestion(api, bob.token, { question_text: "Bob 的题目" });
 
+  const passedReviewId = await getQuestionReviewId(passed.question_id);
   const rejectedReviewId = await getQuestionReviewId(rejected.question_id);
+  await commitQuestionReview(admin.id, { review_id: Number(passedReviewId), is_passed: true, remark: "通过" });
   await commitQuestionReview(admin.id, { review_id: Number(rejectedReviewId), is_passed: false, remark: "不通过" });
   {
     const list = await listUserQuestion(api, { token: alice.token });
-    expect(list.items, "alice 能查看自己审核中、和审核不通过的题目").toHaveLength(2);
+    expect(list.items, "Alice 能查看自己所有审核状态的题目").toHaveLength(3);
+    expect(list.items.map((item) => item.question_id)).toEqual(
+      expect.arrayContaining([pending.question_id, passed.question_id, rejected.question_id]),
+    );
+    expect(list.items.map((item) => item.question_id)).not.toContain(bobQuestion.question_id);
   }
   {
-    const list = await listUserQuestion(api, { token: blob.token });
-    expect(list.items, "blob 不能能查看alice审核中、和审核不通过的题目").toHaveLength(0);
+    const list = await listUserQuestion(api, { token: bob.token });
+    expect(list.items, "Bob 只能查看自己的题目").toHaveLength(1);
+    expect(list.items[0].question_id).toBe(bobQuestion.question_id);
   }
 });
 
