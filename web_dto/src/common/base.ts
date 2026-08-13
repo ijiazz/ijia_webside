@@ -13,7 +13,7 @@ export type InfiniteListResult<T> = {
   items: T[];
   has_more: boolean;
 };
-/** @deprecated 改用 CursorList */
+/** @deprecated 改用 CursorListResult */
 export type CursorListDto<T, C> = CursorListResult<T, C>;
 export type CursorListResult<T, C> = {
   items: T[];
