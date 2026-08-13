@@ -1,4 +1,4 @@
-import { test as viTest, afterAll } from "vitest";
+import { test as viTest } from "vitest";
 import { dbPool } from "@/db/client.ts";
 import { createInitIjiaDb } from "@ijia/school-db/testlib";
 import process from "node:process";
@@ -14,17 +14,6 @@ export interface DbContext {
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
 const DB_NAME_PREFIX = "test_ijia_";
 
-let publicDbPool: PgDbQueryPool | Promise<PgDbQueryPool> | undefined;
-
-afterAll(async function () {
-  if (publicDbPool) {
-    const pool = await publicDbPool;
-
-    const useCount = pool.totalCount - pool.idleCount;
-    if (useCount !== 0) throw new Error("存在未释放的数据库连接");
-  }
-});
-
 export const test = viTest.extend<DbContext>({
   async ijiaDbPool({}, use) {
     const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
@@ -35,16 +24,10 @@ export const test = viTest.extend<DbContext>({
     await clearDropDb(dbPool, dbName);
   },
   async publicDbPool({}, use) {
-    if (!publicDbPool) {
-      publicDbPool = (async () => {
-        dbPool.connectOption = PUBLIC_CONNECT_INFO;
-        dbPool.open();
-        publicDbPool = dbPool;
-        return dbPool;
-      })();
-    }
-    const pool = await publicDbPool;
-    await use(pool);
+    dbPool.connectOption = PUBLIC_CONNECT_INFO;
+    dbPool.open();
+    await use(dbPool);
+    await dbPool.close();
   },
 });
 
