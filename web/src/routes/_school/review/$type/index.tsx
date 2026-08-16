@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_school/review/$type/")({
     parse: (param: any): RouteParam => {
       const list = new Set([
         ReviewTargetType.post,
-        ReviewTargetType.post_comment,
+        ReviewTargetType.comment,
         ReviewTargetType.exam_question,
         ReviewTargetType.comment,
       ]);

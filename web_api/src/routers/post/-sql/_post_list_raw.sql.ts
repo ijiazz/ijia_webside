@@ -26,7 +26,7 @@ export type BaseSelect = {
 };
 
 const BASE_SELECT = {
-  post_id: "p.id",
+  post_id: "p.id::TEXT",
   /**
    * 不是匿名才存在作者信息
    */
@@ -45,14 +45,15 @@ const BASE_SELECT = {
 
   content_text: "p.content_text",
   content_text_structure: "p.content_text_struct",
-  ip_location: "null", //TODO
-  media: "null", //TODO
+  ip_location: "null",
+  media: "null",
   group: jsonb_build_object({ group_id: "g.id", group_name: "g.name" }),
   stat: jsonb_build_object({
     like_total: "p.like_count",
     dislike_total: "ROUND(p.dislike_count::NUMERIC /100, 2)",
-    comment_total: "comment_num",
+    comment_total: "(SELECT comment_total FROM comment_tree WHERE id=p.comment_tree_id)",
   }),
+  comment_tree_id: "p.comment_tree_id::TEXT",
 } satisfies { [key in keyof PublicPost]: string };
 
 function ifIsAuthor(sql: string, currentUserId: number | null) {

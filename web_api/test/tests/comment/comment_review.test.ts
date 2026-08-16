@@ -3,8 +3,8 @@ import { Api, Context, test } from "../../fixtures/hono.ts";
 import { CommitReviewParam, CommitReviewResult, ReviewTargetType } from "@/dto.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
 import { Role } from "@/common/userInfo.ts";
-import { setPostCommentToReviewing } from "@/routers/review/mod.ts";
-import { prepareCommentPost, reportComment, setCommentLike, getSelfPost } from "#test/utils/post.ts";
+import { setCommentToReviewing } from "@/routers/review/mod.ts";
+import { prepareCommentPost, reportComment, setCommentLike, getSelfPost, getCommentTotal } from "#test/utils/post.ts";
 import { commentRoutes, postRoutes, reviewRoutes } from "@/routers/mod.ts";
 import { commitReview, getCommentReviewStatus, getReviewNext, CommentReviewStatus } from "#test/utils/review.ts";
 import { select, v } from "@asla/yoursql";
@@ -22,7 +22,7 @@ test("只有超级管理员可以查看评论审核和提交审核", async funct
 
   const { alice, post, action } = await prepareCommentPost(api);
   const c = await action.createComment("12", { token: alice.token });
-  await setPostCommentToReviewing(c.id);
+  await setCommentToReviewing(c.id);
   await expect(getPostCommentReviewNext(api, alice.token), "普通用户不能获取审核项").responseStatus(403);
   await expect(getPostCommentReviewNext(api, Bob.token), "Admin 用户不能获取审核项").responseStatus(403);
   await expect(getPostCommentReviewNext(api), "未登录不能获取审核项").responseStatus(401);
@@ -44,7 +44,7 @@ test("评论审核通过后，评论应继续保留", async function ({ api, iji
   const Admin = await prepareUniqueUser("Admin", { roles: new Set([Role.Admin]) });
 
   const c = await action.createComment("需要审核的评论", { token: alice.token });
-  const reviewId = await setPostCommentToReviewing(c.id);
+  const reviewId = await setCommentToReviewing(c.id);
 
   const firstPost = await getSelfPost(api, post.id, alice.token);
   expect(firstPost.stat.comment_total).toBe(1);
@@ -55,7 +55,7 @@ test("评论审核通过后，评论应继续保留", async function ({ api, iji
     is_review_pass: true,
   } satisfies Partial<CommentReviewStatus>);
 
-  await expect(getCommitList(api, post.id)).resolves.toMatchObject({
+  await expect(getCommitList(api, post.comment_tree_id)).resolves.toMatchObject({
     items: { length: 1 },
   });
   const afterPost = await getSelfPost(api, post.id, alice.token);
@@ -66,23 +66,22 @@ test("评论审核不通过，直接删除评论", async function ({ api, ijiaDb
   const { alice, action, post } = await prepareCommentPost(api);
   const Admin = await prepareUniqueUser("Admin", { roles: new Set([Role.Admin]) });
 
-  const c = await action.createComment("需要审核的评论", { token: alice.token });
-  const reviewId = await setPostCommentToReviewing(c.id);
+  const c0 = await action.createComment("需要审核的评论", { token: alice.token });
 
-  const firstPost = await getSelfPost(api, post.id, alice.token);
-  expect(firstPost.stat.comment_total).toBe(1);
+  const c = await action.createComment("需要审核的评论2", { token: alice.token, replyCommentId: c0.id });
+  const reviewId = await setCommentToReviewing(c.id);
+
+  await expect(getCommentTotal(post.comment_tree_id)).resolves.toBe(2);
   await commitPostCommentReviewNext(api, { is_passed: false, review_id: reviewId.toString() }, Admin.token);
 
   await expect(getCommentReviewStatus(c.id)).resolves.toMatchObject({
     reviewer_id: Admin.id,
     is_review_pass: false,
   } satisfies Partial<CommentReviewStatus>);
+  await expect(getCommentTotal(post.comment_tree_id), "评论已被删除").resolves.toBe(1);
 
-  await expect(getCommitList(api, post.id), "评论已被删除").resolves.toMatchObject({
-    items: { length: 0 },
-  });
   const afterPost = await getSelfPost(api, post.id, alice.token);
-  expect(afterPost.stat.comment_total, "评论计数变化").toBe(0);
+  expect(afterPost.stat.comment_total, "评论计数变化").toBe(1);
 });
 test("评论审核通过后，应更新举报用户的审核正确/错误统计", async function ({ api, ijiaDbPool }) {
   const { alice, post, action } = await prepareCommentPost(api);
@@ -121,7 +120,7 @@ test("评论审核通过后，应更新举报用户的审核正确/错误统计"
 });
 async function getPostCommentReviewNext(api: Api, token?: string) {
   return getReviewNext(api, {
-    type: ReviewTargetType.post_comment,
+    type: ReviewTargetType.comment,
     token,
   });
 }
@@ -132,17 +131,17 @@ async function commitPostCommentReviewNext(
 ): Promise<CommitReviewResult> {
   return commitReview(api, {
     ...option,
-    type: ReviewTargetType.post_comment,
+    type: ReviewTargetType.comment,
     token,
   });
 }
-async function getCommitList(api: Api, postId: number) {
-  return api["/post/comment/list"].get({ query: { postId: postId } });
+async function getCommitList(api: Api, treeId: string | number) {
+  return api["/get-comment/list"].get({ query: { commentTreeId: treeId.toString() } });
 }
 async function getCommentReviewId(cid: number): Promise<number | null> {
   const r = await dbPool.queryFirstRow<{ review_id: number }>(
     select("review_id")
-      .from("post_comment")
+      .from("comment")
       .where(`id=${v(cid)}`),
   );
   return r.review_id;

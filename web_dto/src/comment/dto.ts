@@ -11,16 +11,16 @@ export type GetCommentListOption = {
 
 export type GetCommentListByCommentIdInput = GetCommentListOption & {
   /** 获取当前评论的信息 */
-  commentId: number;
+  commentId: string;
 };
 export type GetCommentListByPostIdInput = GetCommentListOption & {
   /** 获取指定作品的评论列表 */
-  postId: number;
+  commentTreeId: string;
 };
 
 export type GetCommentListByParentCommentIdInput = GetCommentListOption & {
   /** 获取指定评论的回复列表 */
-  parentCommentId: number;
+  parentCommentId: string;
 };
 
 export type GetCommentListInput =
@@ -29,15 +29,15 @@ export type GetCommentListInput =
   | GetCommentListByParentCommentIdInput;
 
 export type CommentDTO = {
-  comment_id: number;
-  root_comment_id: number | null;
+  comment_tree_id: string;
+  comment_id: string;
+  root_comment_id: string | null;
 
   /** 如果 root_comment_id 为 null，则为0，否则表示该跟评论所有的回复数量 */
   is_root_reply_count: number;
   /** 直接回复当前评论的数量 */
   reply_count: number;
 
-  post_id: number;
   create_time: number;
   content_text: string | null;
   content_text_structure: TextStructure[] | null;
@@ -53,7 +53,7 @@ export type CommentDTO = {
         is_deleted: boolean; // 是否已被删除
       });
   user: {
-    user_id: number;
+    user_id: string;
     user_name: string;
     avatar_url: string | null;
   };
@@ -61,16 +61,14 @@ export type CommentDTO = {
   children?: CommentDTO[]; // 回复的评论
 };
 
-export type CreateCommentByPostIdInput = CreateCommentItemData & {
-  postId: number;
-};
-export type CreateCommentItemData = {
-  text: string;
-  replyCommentId?: number;
-};
-
-export type CreateCommentByPostIdResponse = CreateCommentData;
-
 export type CreateCommentData = {
-  id: number;
+  text: string;
+};
+export type CreateCommentInput = CreateCommentData & {
+  comment_tree_id: string;
+  comment_reply_id?: string; // 回复的评论id
+};
+
+export type CreateCommentOutput = {
+  comment_id: string;
 };

@@ -1,28 +1,26 @@
 export * from "./comment/dto.ts";
 
 import type {
-  CreateCommentByPostIdInput,
-  CreateCommentByPostIdResponse,
+  CreateCommentInput,
   GetCommentListInput,
   GetCommentListOutput,
+  CreateCommentOutput,
 } from "./comment/dto.ts";
 
-export interface PostCommentApi {
-  /** 发布评论  */
+export interface CommentAPI {
+  /** 发布评论。 */
   "PUT /comment": {
-    body: CreateCommentByPostIdInput;
-    response: CreateCommentByPostIdResponse;
+    body: CreateCommentInput;
+    response: CreateCommentOutput;
   };
-
-  /** 获取评论列表 */
-  "GET /comment/list": {
+  /** 获取评论列表。 */
+  "GET /get-comment/list": {
     response: GetCommentListOutput;
     query: GetCommentListInput;
   };
-
   /**
    * 删除评论
-   * 只能删除自己的评论。
+   * 只能删除自己的评论。owner 可以删除所有评论
    */
   "DELETE /comment/:commentId": {
     params: { commentId: string };

@@ -1,4 +1,4 @@
-import { ReviewStatus } from "@ijia/school-db/db";
+import { CommentGroup, DbCommentTree, DbPost, ReviewStatus } from "@ijia/school-db/db";
 import { dbPool } from "@/db/client.ts";
 import { checkTypeCopy, CheckTypeError, optional } from "@asla/wokao";
 import { HttpError } from "@/common/errors.ts";
@@ -20,6 +20,12 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
   if (param.is_anonymous) optionBit |= 0b1000_0000;
   if (param.comment_disabled) optionBit |= 0b0100_0000;
   await using t = dbPool.begin();
+  const result = await t.queryFirstRow<{ id: number }>(
+    insertIntoValues("comment_tree", {
+      owner_id: userId,
+      group_type: CommentGroup.Post,
+    } satisfies Partial<DbCommentTree>).returning("id"),
+  );
 
   const [insert] = await t.query<[QueryRowsResult<{ id: number; group_id: number | null }>, QueryRowsResult]>([
     insertIntoValues("public.post", {
@@ -27,10 +33,12 @@ export async function createPost(userId: number, param: CreatePostParam): Promis
       content_text: content_text ? content_text : null,
       content_text_struct: content_text_structure ? new String(v(JSON.stringify(content_text_structure))) : null,
       group_id,
-      publish_time: group_id === undefined ? "now()" : undefined,
+      publish_time: group_id === undefined ? new String("now()") : undefined,
       is_hide,
       options: toBit(8, optionBit),
-    }).returning(["id", "group_id"]),
+      comment_tree_id: result.id,
+    } satisfies { [key in keyof DbPost]?: DbPost[key] | String }).returning(["id", "group_id"]),
+
     update("user_profile")
       .set({ post_count: "post_count + 1" })
       .where(`user_id=${v(userId)}`),
@@ -114,7 +122,7 @@ export async function updatePostContent(
 }
 export async function updatePostConfig(postId: number, userId: number, param: UpdatePostConfigParam): Promise<number> {
   const { comment_disabled, is_hide } = param;
-  const updateContentSql = await dbPool.queryCount(
+  return dbPool.queryCount(
     update("public.post")
       .set({
         options: updatePostOption("options", { comment_disabled }), // 设置评论关闭
@@ -122,9 +130,9 @@ export async function updatePostConfig(postId: number, userId: number, param: Up
       })
       .where(() => {
         return [`user_id=${v(userId)}`, `id=${v(postId)}`, `(NOT is_delete)`];
-      }),
+      })
+      .returning("id"),
   );
-  return updateContentSql;
 }
 
 function checkCreateContent(param: CreatePostParam) {

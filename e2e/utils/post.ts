@@ -25,7 +25,7 @@ export async function createCommentUseApi(config: {
   replyCommentId?: number;
 }) {
   const { postId, text, replyCommentId, token } = config;
-  return api["/post/comment/entity"].put({
+  return api["/comment"].put({
     body: { text, replyCommentId, postId },
     [JWT_TOKEN_KEY]: token,
   });

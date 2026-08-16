@@ -1,5 +1,5 @@
 import { dbPool } from "@/db/client.ts";
-import { GetPostListParam, Post, PublicPost, CursorListDto, GetUserPostListParam } from "@/dto.ts";
+import { GetPostListParam, Post, PublicPost, GetUserPostListParam, CursorListResult } from "@/dto.ts";
 import { v } from "@/sql/utils.ts";
 import { createSelect, getCursor, getCursorCondition, initRawList } from "./_post_list_raw.sql.ts";
 
@@ -8,7 +8,7 @@ const PUBLIC_EXCLUDE = `(p.publish_time IS NULL OR review_status_is_progress(p.r
 export async function getPublicPostList(
   params: GetPostListParam = {},
   option: { currentUserId?: number } = {},
-): Promise<CursorListDto<PublicPost, string>> {
+): Promise<CursorListResult<PublicPost, string>> {
   const { number = 10, cursor: cursorStr, userId, group_id, post_id, forward, s_content, s_author } = params;
   const { currentUserId = null } = option;
 
@@ -57,7 +57,7 @@ export async function getPost(postId: number, currentUserId: number | null): Pro
 export async function getSelfPostList(
   userId: number,
   params: GetUserPostListParam = {},
-): Promise<CursorListDto<Post, string>> {
+): Promise<CursorListResult<Post, string>> {
   const { number = 10, cursor: cursorStr, group_id, post_id, forward } = params;
 
   const qSql = createSelect(userId)

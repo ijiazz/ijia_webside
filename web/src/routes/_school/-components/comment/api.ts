@@ -16,7 +16,7 @@ export async function createComment(
   data: { text: string },
   replyCommentId?: number | null,
 ): Promise<number> {
-  const { id } = await api["/post/comment/entity"].put({
+  const { id } = await api["/comment"].put({
     body: {
       postId: postId,
       text: data.text,
@@ -46,7 +46,7 @@ export function commentDtoToCommentNode(item: PostCommentDto, parent: PostCommen
 }
 
 export function loadCommentList(query: GetPostCommentListParam) {
-  return api["/post/comment/list"].get({
+  return api["/get-comment/list"].get({
     query: query,
   });
 }

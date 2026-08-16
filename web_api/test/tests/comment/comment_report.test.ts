@@ -5,7 +5,7 @@ import { prepareUniqueUser } from "#test/utils/user.ts";
 import { dbPool } from "@/db/client.ts";
 import { select } from "@asla/yoursql";
 import { postRoutes, commentRoutes } from "@/routers/mod.ts";
-import { commitPostCommentReview, setPostCommentToReviewing } from "@/routers/review/mod.ts";
+import { commitCommentReview, setCommentToReviewing } from "@/routers/review/mod.ts";
 import { ReviewStatus } from "@ijia/school-db/db";
 import "#test/asserts/review.ts";
 
@@ -50,8 +50,8 @@ test("审核通过后，举报人数达到3人后，评论审核状态不变", a
 
   const comment1 = await action.createComment("abc", { token: alice.token });
 
-  const reviewId = await setPostCommentToReviewing(comment1.id);
-  await commitPostCommentReview({ reviewId, isPass: true }); //设置审核通过
+  const reviewId = await setCommentToReviewing(comment1.id);
+  await commitCommentReview({ reviewId, isPass: true }); //设置审核通过
 
   await reportComment(api, comment1.id, "测试举报", alice.token);
   await reportComment(api, comment1.id, "测试举报", bob.token);
@@ -84,7 +84,7 @@ test("已删除的评论不能举报", async function ({ api, publicDbPool }) {
 function getCommentReviewWeight(commentId: number) {
   return dbPool
     .queryFirstRow(
-      select<{ report_count: number }>({ report_count: "dislike_count" }).from("post_comment").where(`id=${commentId}`),
+      select<{ report_count: number }>({ report_count: "dislike_count" }).from("comment").where(`id=${commentId}`),
     )
     .then((item) => +item.report_count);
 }

@@ -52,7 +52,7 @@ function getInfo() {
         ) FROM post AS p
         WHERE id=(r.info->>'target_id')::INT
 
-    ) WHEN 'post_comment' THEN (
+    ) WHEN 'comment' THEN (
       SELECT 
         jsonb_build_array(
           jsonb_build_object(
@@ -63,7 +63,7 @@ function getInfo() {
               'testStructure', c.content_text_struct
             )
           )
-        ) FROM post_comment AS c
+        ) FROM comment AS c
         WHERE id=(r.info->>'target_id')::INT
     )ELSE NULL END
   `;

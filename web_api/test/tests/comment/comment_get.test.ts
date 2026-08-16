@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect } from "vitest";
 import { test, Context } from "#test/fixtures/hono.ts";
-import { prepareCommentPost, prepareCommentToDb, deletePost, updatePostConfigFormApi } from "#test/utils/post.ts";
+import { prepareCommentPost, deletePost, updatePostConfigFormApi } from "#test/utils/post.ts";
 import { DeepPartial } from "#test/utils/common.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
-import commentRoutes from "@/routers/post/comment/mod.ts";
+import commentRoutes from "@/routers/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
-import { PostCommentDto } from "@/dto.ts";
+import { CommentDTO } from "@/dto.ts";
 import { commitPostReview, setPostToReviewing } from "@/routers/review/-sql/post.ts";
+import { createComment } from "@ijia/school-db/query";
 
 beforeEach<Context>(async ({ hono }) => {
   postRoutes.apply(hono);
@@ -15,9 +16,9 @@ beforeEach<Context>(async ({ hono }) => {
 
 test("分页获取根评论列表", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
-  const g1 = await initCommentTree(action.postId, alice.id, { start: 0, count: 5, textPrefix: "root-" });
-  const g2 = await initCommentTree(action.postId, alice.id, { start: 5, count: 5, textPrefix: "root-" }); // 分开创建，错开时间
-  await initCommentTree(action.postId, alice.id, {
+  const g1 = await initCommentTree(action.commentTreeId, alice.id, { start: 0, count: 5, textPrefix: "root-" });
+  const g2 = await initCommentTree(action.commentTreeId, alice.id, { start: 5, count: 5, textPrefix: "root-" }); // 分开创建，错开时间
+  await initCommentTree(action.commentTreeId, alice.id, {
     count: 2,
     textPrefix: "root-1-",
     replyId: g1[0],
@@ -45,19 +46,19 @@ test("分页获取根评论列表", async function ({ api, publicDbPool }) {
 });
 test("获取评论回复的平铺列表", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
-  const g1 = await initCommentTree(action.postId, alice.id, { count: 2, textPrefix: "root-" });
-  const g1_1 = await initCommentTree(action.postId, alice.id, {
+  const g1 = await initCommentTree(action.commentTreeId, alice.id, { count: 2, textPrefix: "root-" });
+  const g1_1 = await initCommentTree(action.commentTreeId, alice.id, {
     count: 3,
     textPrefix: "1-",
     replyId: g1[0],
   });
 
-  const g1_2 = await initCommentTree(action.postId, alice.id, {
+  const g1_2 = await initCommentTree(action.commentTreeId, alice.id, {
     count: 2,
     textPrefix: "1-",
     replyId: g1[1],
   });
-  const g1_2_1 = await initCommentTree(action.postId, alice.id, {
+  const g1_2_1 = await initCommentTree(action.commentTreeId, alice.id, {
     count: 2,
     textPrefix: "1-2-",
     replyId: g1_2[0],
@@ -89,8 +90,8 @@ test("获取评论回复的平铺列表", async function ({ api, publicDbPool })
 
 test("评论列表不能包含已删除的评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
-  const g1 = await initCommentTree(action.postId, alice.id, { count: 3, textPrefix: "root-" });
-  const children = await initCommentTree(action.postId, alice.id, {
+  const g1 = await initCommentTree(action.commentTreeId, alice.id, { count: 3, textPrefix: "root-" });
+  const children = await initCommentTree(action.commentTreeId, alice.id, {
     count: 2,
     textPrefix: "1-",
     replyId: g1[0],
@@ -124,15 +125,15 @@ test("能够获取回复已删除的评论", async function ({ api, publicDbPool
 
   expect(commentList.items).toHaveLength(1);
   expect(commentList.items[0]).toMatchObject({
-    comment_id: reply2.id,
-    reply_to: { is_deleted: true, comment_id: reply.id },
-  } satisfies DeepPartial<PostCommentDto>);
+    comment_id: reply2.id.toString(),
+    reply_to: { is_deleted: true, comment_id: reply.id.toString() },
+  } satisfies DeepPartial<CommentDTO>);
 });
 
 test("获取指定 ID 的评论", async function ({ api, publicDbPool }) {
   const { action, alice, post: postInfo } = await prepareCommentPost(api);
-  const g1 = await initCommentTree(action.postId, alice.id, { start: 0, count: 3, textPrefix: "root-" });
-  const reply = await initCommentTree(action.postId, alice.id, {
+  const g1 = await initCommentTree(action.commentTreeId, alice.id, { start: 0, count: 3, textPrefix: "root-" });
+  const reply = await initCommentTree(action.commentTreeId, alice.id, {
     count: 2,
     textPrefix: "1-",
     replyId: g1[0],
@@ -203,8 +204,8 @@ describe("部分帖子状态下不能获取评论", () => {
 });
 
 async function initCommentTree(
-  postId: number,
-  userId: number,
+  commentTreeId: number | string,
+  userId: number | string,
   config: {
     start?: number;
     count: number;
@@ -213,14 +214,27 @@ async function initCommentTree(
   },
 ) {
   const { replyId, textPrefix = "" } = config;
+
+  if (typeof commentTreeId === "string") {
+    commentTreeId = +commentTreeId;
+  }
+  if (typeof userId === "string") {
+    userId = +userId;
+  }
+
   let i = config.start ?? 0;
   const max = config.count + i;
   const result: number[] = [];
   for (; i < max; i++) {
     const text = textPrefix + i.toString();
+    const res = await createComment({
+      comment_tree_id: commentTreeId,
+      userId,
+      text,
+      replyCommentId: replyId,
+    });
 
-    const [res] = await prepareCommentToDb(postId, userId, [{ text, replyCommentId: replyId }]);
-    result.push(res.id);
+    result.push(res.id!);
   }
   return result;
 }

@@ -75,19 +75,19 @@ test("创建回复评论", async function ({ page }) {
 
 test("删除评论", async function ({ page }) {
   test.setTimeout(30000);
-  const r1 = await createCommentUseApi({ postId, text: "@1@", token: alice.token });
-  const r2 = await createCommentUseApi({ postId, text: "@2@", token: alice.token }); // delete
+  const r1 = await createCommentUseApi({ commentTreeId: postId, text: "@1@", token: alice.token });
+  const r2 = await createCommentUseApi({ commentTreeId: postId, text: "@2@", token: alice.token }); // delete
 
-  const r1_1 = await createCommentUseApi({ postId, text: "@1-1@", replyCommentId: r1.id, token: alice.token }); // delete
-  const r1_2 = await createCommentUseApi({ postId, text: "@1-2@", replyCommentId: r1.id, token: alice.token });
-  const r2_1 = await createCommentUseApi({ postId, text: "@2-1@", replyCommentId: r2.id, token: alice.token });
+  const r1_1 = await createCommentUseApi({ commentTreeId: postId, text: "@1-1@", replyCommentId: r1.id, token: alice.token }); // delete
+  const r1_2 = await createCommentUseApi({ commentTreeId: postId, text: "@1-2@", replyCommentId: r1.id, token: alice.token });
+  const r2_1 = await createCommentUseApi({ commentTreeId: postId, text: "@2-1@", replyCommentId: r2.id, token: alice.token });
 
-  const r1_1_1 = await createCommentUseApi({ postId, text: "@1-1-1@", replyCommentId: r1_1.id, token: alice.token });
-  const r1_2_1 = await createCommentUseApi({ postId, text: "@1-2-1@", replyCommentId: r1_2.id, token: alice.token });
-  const r2_1_1 = await createCommentUseApi({ postId, text: "@2-1-1@", replyCommentId: r2_1.id, token: alice.token }); // delete
+  const r1_1_1 = await createCommentUseApi({ commentTreeId: postId, text: "@1-1-1@", replyCommentId: r1_1.id, token: alice.token });
+  const r1_2_1 = await createCommentUseApi({ commentTreeId: postId, text: "@1-2-1@", replyCommentId: r1_2.id, token: alice.token });
+  const r2_1_1 = await createCommentUseApi({ commentTreeId: postId, text: "@2-1-1@", replyCommentId: r2_1.id, token: alice.token }); // delete
 
   const r1_2_1_1 = await createCommentUseApi({
-    postId,
+    commentTreeId: postId,
     text: "@1-2-1-1@",
     replyCommentId: r1_2_1.id,
     token: alice.token,
@@ -132,8 +132,8 @@ test("帖子作者可以删除其他人评论，其他人只能删除自己的�
   const bobInfo = await initBob();
   const bobToken = await loginGetToken(bobInfo.email, bobInfo.password);
   const [aliceComment, bobComment] = await Promise.all([
-    createCommentUseApi({ postId, text: "@1@", token: alice.token }),
-    createCommentUseApi({ postId, text: "@2@", token: bobToken }),
+    createCommentUseApi({ commentTreeId: postId, text: "@1@", token: alice.token }),
+    createCommentUseApi({ commentTreeId: postId, text: "@2@", token: bobToken }),
   ]);
 
   {

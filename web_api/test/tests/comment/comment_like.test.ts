@@ -8,7 +8,7 @@ import {
   cancelCommentLike,
 } from "../../utils/post.ts";
 import { prepareUniqueUser } from "#test/utils/user.ts";
-import commentRoutes from "@/routers/post/comment/mod.ts";
+import commentRoutes from "@/routers/comment/mod.ts";
 import postRoutes from "@/routers/post/mod.ts";
 
 beforeEach<Context>(async ({ hono }) => {
@@ -71,10 +71,11 @@ test("重复点赞评论或重复取消点赞，将忽略，评论计数不变",
   }
 });
 
-test("已删除的评论不能点赞", async function ({ api, publicDbPool }) {
+test("软删除的评论不能点赞", async function ({ api, publicDbPool }) {
   const { alice, post, action } = await prepareCommentPost(api);
 
-  const comment = await action.createComment("a", { token: alice.token });
+  const root = await action.createComment("root", { token: alice.token });
+  const comment = await action.createComment("reply", { token: alice.token, replyCommentId: root.id });
   await action.deleteComment(comment.id, { token: alice.token });
 
   await expect(setCommentLike(api, comment.id, alice.token)).resolves.toMatchObject({ success: false });
@@ -84,10 +85,11 @@ test("已删除的评论不能点赞", async function ({ api, publicDbPool }) {
   } satisfies Partial<CommentInfo>);
 });
 
-test("已删除的评论可以取消点赞", async function ({ api, publicDbPool }) {
+test("软删除的评论可以取消点赞", async function ({ api, publicDbPool }) {
   const { alice, post, action } = await prepareCommentPost(api);
   const bob = await prepareUniqueUser("bob");
-  const comment = await action.createComment("a", { token: alice.token });
+  const root = await action.createComment("root", { token: alice.token });
+  const comment = await action.createComment("reply", { token: alice.token, replyCommentId: root.id });
   await setCommentLike(api, comment.id, alice.token);
   await setCommentLike(api, comment.id, bob.token);
 

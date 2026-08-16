@@ -1,7 +1,9 @@
 import { dbPool } from "@/db/client.ts";
-import { DEFAULT_LIKE_WEIGHT } from "../-utils/const.ts";
-import { deleteFrom, insertInto, select, withAs } from "@asla/yoursql";
-import { v } from "@/sql/utils.ts";
+import { DEFAULT_LIKE_WEIGHT, DEFAULT_REPORT_WEIGHT, REPORT_THRESHOLD } from "@/common/const.ts";
+import { deleteFrom, insertInto, select, update, withAs } from "@asla/yoursql";
+import { insertIntoValues, v } from "@/sql/utils.ts";
+import { setPostToReviewing } from "@/routers/review/mod.ts";
+import { HttpError } from "@/common/errors.ts";
 
 export async function setPostLike(postId: number, userId: number): Promise<number> {
   const base = withAs("changed_record", () =>
@@ -102,49 +104,50 @@ export async function cancelPostLike(postId: number, userId: number) {
   return count;
 }
 
-export async function setCommentLike(commentId: number, userId: number) {
-  const sql = `
-    WITH insert AS(
-    ${insertInto("post_comment_like", ["weight", "comment_id", "user_id"])
-      .select(() => {
-        return select([`${v(DEFAULT_LIKE_WEIGHT)} as weight`, "id AS comment_id", `${v(userId)} AS user_id`])
-          .from("post_comment")
-          .where([`id=${v(commentId)}`, `(NOT is_delete)`])
-          .toString();
-      })
-      .onConflict(["comment_id", "user_id"])
+export async function reportPost(postId: number, userId: number, reason?: string): Promise<number> {
+  const oldWeight = select(["weight"])
+    .from("post_like")
+    .where([`post_id=${v(postId)}`, `user_id=${v(userId)}`]);
+
+  const sql = `WITH insert_report AS (
+    ${insertIntoValues("post_like", {
+      post_id: postId,
+      user_id: userId,
+      weight: DEFAULT_REPORT_WEIGHT,
+      reason: reason || null,
+    })
+      .onConflict(["post_id", "user_id"])
       .doNotThing()
-      .returning("comment_id")}
-    ), update_comment_stat AS(
-      UPDATE post_comment SET
-        like_count=like_count + 1
-      FROM insert
-      WHERE insert.comment_id = post_comment.id
-      RETURNING post_id
-    )
-    SELECT count(*)::INT FROM insert
+      .returning(["post_id", "user_id", "weight"])
+      .toString()}
+  )
+  ${update("public.post")
+    .set({ dislike_count: `dislike_count - insert_report.weight` })
+    .from("insert_report")
+    .where(`id=insert_report.post_id AND NOT is_delete`)
+    .returning(["id ", "review_id", "dislike_count"])
+    .toString()}
   `;
-  const { count } = await dbPool.queryFirstRow<{ count: number }>(sql);
+  await using t = dbPool.begin();
+  const [o1, insertRecordRes] = await t.query([oldWeight, sql]);
+  if (insertRecordRes.rows?.length) {
+    const row = insertRecordRes.rows[0] as {
+      id: number;
+      review_id: number | null;
+      dislike_count: number;
+    };
+    const isReviewPass = row.review_id !== null;
+    if (!isReviewPass && row.dislike_count >= REPORT_THRESHOLD) {
+      await t.queryCount(setPostToReviewing(row.id));
+    }
+  } else {
+    if (o1.rows?.[0]) {
+      throw new HttpError(400, "请取消点赞后再举报");
+    } else {
+      throw new HttpError(400, "帖子不存在");
+    }
+  }
 
-  return count;
-}
-
-export async function cancelCommentLike(commentId: number, userId: number): Promise<number> {
-  const sql = `
-    WITH updated AS (
-      ${deleteFrom("post_comment_like")
-        .where([`comment_id=${v(commentId)}`, `user_id=${v(userId)}`])
-        .returning(["comment_id"])}
-    ), update_comment_stat AS(
-      UPDATE post_comment SET
-        like_count=like_count - 1
-      FROM updated
-      WHERE updated.comment_id = post_comment.id
-      RETURNING post_id
-    )
-    SELECT count(*)::INT FROM updated
-  `;
-  const { count } = await dbPool.queryFirstRow<{ count: number }>(sql);
-
-  return count;
+  await t.commit();
+  return 1;
 }
