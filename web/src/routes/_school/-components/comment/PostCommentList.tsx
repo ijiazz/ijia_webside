@@ -1,6 +1,6 @@
 import { Avatar, Button, Input, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PostCommentDto } from "@/api.ts";
+import { CommentDTO } from "@/api.ts";
 import { CommentTree, useCommentData, findNodeRoot } from "./CommentItem.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { CloseOutlined, UserOutlined } from "@ant-design/icons";
@@ -49,6 +49,7 @@ export function CommentList(props: CommentListProps) {
     enabled: typeof postId === "number",
   });
   const postInfo = postInfoLoading ? null : data?.item;
+  const commentTreeId = postInfo?.comment_tree_id;
 
   const config = useMemo(() => {
     let createDisabled: string | undefined = "";
@@ -63,8 +64,8 @@ export function CommentList(props: CommentListProps) {
   }, [postInfo, postInfoLoading]);
 
   const loadRoot = useMutation({
-    mutationFn: async (nextCursor?: string | null) =>
-      loadCommentList({ postId, cursor: nextCursor ?? undefined, number: 10 }),
+    mutationFn: async (param: { commentTreeId: string; cursor?: string | null }) =>
+      loadCommentList({ commentTreeId: param.commentTreeId, cursor: param.cursor ?? undefined, number: 10 }),
     onSuccess(res) {
       const nodeList = res.items.map((item) => commentDtoToCommentNode(item, null));
       pushList(nodeList);
@@ -97,14 +98,14 @@ export function CommentList(props: CommentListProps) {
   });
 
   const { isPending: commentLoading, mutateAsync: submitCreateComment } = useMutation({
-    mutationFn: async (param: { postId: number; text: string; replyId?: number }) => {
-      const { postId, text, replyId } = param;
-      return createComment(postId, { text }, replyId);
+    mutationFn: async (param: { commentTreeId: string; text: string; replyId?: string }) => {
+      const { commentTreeId, text, replyId } = param;
+      return createComment(commentTreeId, { text }, replyId);
     },
     onSuccess: async (newCommendId) => {
       setText("");
       setReplyingComment(null);
-      let comment: PostCommentDto | undefined;
+      let comment: CommentDTO | undefined;
       try {
         comment = await loadComment(newCommendId);
       } catch (error) {
@@ -118,31 +119,31 @@ export function CommentList(props: CommentListProps) {
     },
   });
 
-  const commentCreateComment = async (postId: number, text: string) => {
+  const commentCreateComment = async (commentTreeId: string, text: string) => {
     const replyId = replyingComment?.comment_id ?? null;
     await submitCreateComment({
-      postId,
+      commentTreeId,
       text,
-      replyId: typeof replyId === "number" ? replyId : undefined,
+      replyId: replyId ?? undefined,
     });
   };
   const { reloadItem, onLike } = useReload({ replaceItem });
 
   const onCreateComment = () => {
-    if (typeof postId !== "number") return;
+    if (!commentTreeId) return;
 
     if (!text || /^\s+$/.test(text)) {
       message.error("评论不能为空");
       return;
     }
-    commentCreateComment(postId, text);
+    commentCreateComment(commentTreeId, text);
   };
 
   const deleteComment = (node: PostCommentNode) => {
     modals.confirm({
       title: "确认删除？",
       async onOk(...args) {
-        await api["/post/comment/entity/:commentId"].delete({ params: { commentId: node.comment_id } });
+        await api["/comment/:commentId"].delete({ params: { commentId: node.comment_id } });
         deleteItem(node);
       },
     });
@@ -150,8 +151,8 @@ export function CommentList(props: CommentListProps) {
 
   useEffect(() => {
     resetData();
-    loadRoot.mutate(null);
-  }, [postId]);
+    if (commentTreeId) loadRoot.mutate({ commentTreeId });
+  }, [commentTreeId]);
 
   const [text, setText] = useState<string | undefined>();
   const [replyingComment, setReplyingComment] = useState<PostCommentNode | null>(null);
@@ -214,7 +215,9 @@ export function CommentList(props: CommentListProps) {
           hasMore={!!loadRoot.data?.cursor_next}
           isEmpty={commentData.size === 0}
           loading={loadRoot.isPending}
-          onLoad={() => loadRoot.mutate(loadRoot.data?.cursor_next ?? null)}
+          onLoad={() => {
+            if (commentTreeId) loadRoot.mutate({ commentTreeId, cursor: loadRoot.data?.cursor_next });
+          }}
         />
       </div>
       <div style={{ paddingTop: 12, display: "flex", gap: 8, flexDirection: "column" }}>
@@ -254,7 +257,7 @@ export function CommentList(props: CommentListProps) {
         onClose={() => setReportOpen(null)}
         onSubmit={async (reason) => {
           if (!reportOpen) return;
-          const { success } = await api["/post/comment/entity/:commentId/report"].post({
+          const { success } = await api["/comment/:commentId/report"].post({
             body: { reason },
             params: { commentId: reportOpen.comment_id },
           });
@@ -280,7 +283,7 @@ function useReload(config: {
   ) => void;
 }) {
   const { replaceItem } = config;
-  const reloadingRef = useRef<Record<number, Promise<unknown>>>({} as any);
+  const reloadingRef = useRef<Record<string, Promise<unknown>>>({});
 
   const { message } = useAntdStatic();
 

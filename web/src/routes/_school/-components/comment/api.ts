@@ -1,9 +1,9 @@
-import { GetPostCommentListParam, PostCommentDto } from "@/api.ts";
+import { CommentDTO, GetCommentListInput } from "@/api.ts";
 import { api } from "@/request/client.ts";
 import { CommentNode } from "./CommentItem.tsx";
 import { dateToString } from "@/common/date.ts";
 
-export type PostCommentNode = Omit<PostCommentDto, "children" | "create_time"> &
+export type PostCommentNode = Omit<CommentDTO, "children" | "create_time"> &
   CommentNode & {
     create_time_str: string;
     loading?: boolean; // 是否正在加载子评论
@@ -12,22 +12,22 @@ export type PostCommentNode = Omit<PostCommentDto, "children" | "create_time"> &
   };
 
 export async function createComment(
-  postId: number,
+  commentTreeId: string,
   data: { text: string },
-  replyCommentId?: number | null,
-): Promise<number> {
-  const { id } = await api["/comment"].put({
+  replyCommentId?: string | null,
+): Promise<string> {
+  const { comment_id } = await api["/comment"].put({
     body: {
-      postId: postId,
+      comment_tree_id: commentTreeId,
       text: data.text,
-      replyCommentId: typeof replyCommentId === "number" ? replyCommentId : undefined,
+      comment_reply_id: replyCommentId ?? undefined,
     },
   });
 
-  return id;
+  return comment_id;
 }
 
-export function commentDtoToCommentNode(item: PostCommentDto, parent: PostCommentNode | null): PostCommentNode {
+export function commentDtoToCommentNode(item: CommentDTO, parent: PostCommentNode | null): PostCommentNode {
   const { children, create_time, ...reset } = item;
 
   const node = reset as PostCommentNode;
@@ -45,12 +45,12 @@ export function commentDtoToCommentNode(item: PostCommentDto, parent: PostCommen
   return node;
 }
 
-export function loadCommentList(query: GetPostCommentListParam) {
+export function loadCommentList(query: GetCommentListInput) {
   return api["/get-comment/list"].get({
     query: query,
   });
 }
-export async function loadComment(commentId: number): Promise<PostCommentDto | undefined> {
+export async function loadComment(commentId: string): Promise<CommentDTO | undefined> {
   const res = await loadCommentList({ commentId: commentId });
   return res.items[0];
 }
@@ -61,8 +61,8 @@ export async function loadCommentItem(node: PostCommentNode): Promise<PostCommen
   return commentDtoToCommentNode(comment, node);
 }
 
-export async function setCommentLike(commentId: number, isCancel: boolean): Promise<boolean> {
-  const { success } = await api["/post/comment/entity/:commentId/like"].post({
+export async function setCommentLike(commentId: string, isCancel: boolean): Promise<boolean> {
+  const { success } = await api["/comment/:commentId/like"].post({
     params: { commentId },
     query: { isCancel },
   });

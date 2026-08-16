@@ -8,12 +8,14 @@ const { beforeEach } = test;
 
 let alice: AccountInfo & { token: string };
 let postId: number;
+let commentTreeId: number;
 beforeEach(async function ({ context }) {
   const aliceInfo = await initAlice();
   const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
   alice = { ...aliceInfo, token: aliceToken };
-  const { id } = await createPost({ content_text: "comment-test" }, aliceToken);
+  const { id, comment_tree_id } = await createPost({ content_text: "comment-test" }, aliceToken);
   postId = id;
+  commentTreeId = comment_tree_id;
   await setContextLogin(context, alice.token);
 });
 
@@ -75,19 +77,19 @@ test("创建回复评论", async function ({ page }) {
 
 test("删除评论", async function ({ page }) {
   test.setTimeout(30000);
-  const r1 = await createCommentUseApi({ commentTreeId: postId, text: "@1@", token: alice.token });
-  const r2 = await createCommentUseApi({ commentTreeId: postId, text: "@2@", token: alice.token }); // delete
+  const r1 = await createCommentUseApi({ commentTreeId, text: "@1@", token: alice.token });
+  const r2 = await createCommentUseApi({ commentTreeId, text: "@2@", token: alice.token }); // delete
 
-  const r1_1 = await createCommentUseApi({ commentTreeId: postId, text: "@1-1@", replyCommentId: r1.id, token: alice.token }); // delete
-  const r1_2 = await createCommentUseApi({ commentTreeId: postId, text: "@1-2@", replyCommentId: r1.id, token: alice.token });
-  const r2_1 = await createCommentUseApi({ commentTreeId: postId, text: "@2-1@", replyCommentId: r2.id, token: alice.token });
+  const r1_1 = await createCommentUseApi({ commentTreeId, text: "@1-1@", replyCommentId: r1.id, token: alice.token }); // delete
+  const r1_2 = await createCommentUseApi({ commentTreeId, text: "@1-2@", replyCommentId: r1.id, token: alice.token });
+  const r2_1 = await createCommentUseApi({ commentTreeId, text: "@2-1@", replyCommentId: r2.id, token: alice.token });
 
-  const r1_1_1 = await createCommentUseApi({ commentTreeId: postId, text: "@1-1-1@", replyCommentId: r1_1.id, token: alice.token });
-  const r1_2_1 = await createCommentUseApi({ commentTreeId: postId, text: "@1-2-1@", replyCommentId: r1_2.id, token: alice.token });
-  const r2_1_1 = await createCommentUseApi({ commentTreeId: postId, text: "@2-1-1@", replyCommentId: r2_1.id, token: alice.token }); // delete
+  const r1_1_1 = await createCommentUseApi({ commentTreeId, text: "@1-1-1@", replyCommentId: r1_1.id, token: alice.token });
+  const r1_2_1 = await createCommentUseApi({ commentTreeId, text: "@1-2-1@", replyCommentId: r1_2.id, token: alice.token });
+  const r2_1_1 = await createCommentUseApi({ commentTreeId, text: "@2-1-1@", replyCommentId: r2_1.id, token: alice.token }); // delete
 
   const r1_2_1_1 = await createCommentUseApi({
-    commentTreeId: postId,
+    commentTreeId,
     text: "@1-2-1-1@",
     replyCommentId: r1_2_1.id,
     token: alice.token,
@@ -132,42 +134,46 @@ test("帖子作者可以删除其他人评论，其他人只能删除自己的�
   const bobInfo = await initBob();
   const bobToken = await loginGetToken(bobInfo.email, bobInfo.password);
   const [aliceComment, bobComment] = await Promise.all([
-    createCommentUseApi({ commentTreeId: postId, text: "@1@", token: alice.token }),
-    createCommentUseApi({ commentTreeId: postId, text: "@2@", token: bobToken }),
+    createCommentUseApi({ commentTreeId, text: "@1@", token: alice.token }),
+    createCommentUseApi({ commentTreeId, text: "@2@", token: bobToken }),
   ]);
 
   {
     await page.goto(getPostCommentURL({ postId, userId: alice.id }));
     await getCommentMoreBtn(page, aliceComment.id).hover();
+    await expect(getVisibleCommentMenu(page)).toBeVisible();
     await expect(
-      page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
+      getVisibleCommentMenu(page).getByRole("menuitem").filter({ hasText: "删除" }),
       "Alice 能看到自己的评论的“删除”按钮",
     ).not.toBeDisabled();
-    await page.mouse.move(0, 0);
+    await closeCommentMenu(page);
 
     await getCommentMoreBtn(page, bobComment.id).hover();
+    await expect(getVisibleCommentMenu(page)).toBeVisible();
     await expect(
-      page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
+      getVisibleCommentMenu(page).getByRole("menuitem").filter({ hasText: "删除" }),
       "Alice 能看到 Bob 的评论的“删除”按钮",
     ).not.toBeDisabled();
-    await page.mouse.move(0, 0);
+    await closeCommentMenu(page);
   }
   {
-    await setContextLogin(context, alice.token);
+    await setContextLogin(context, bobToken);
     await page.goto(getPostCommentURL({ postId, userId: alice.id }));
     await getCommentMoreBtn(page, aliceComment.id).hover();
+    await expect(getVisibleCommentMenu(page)).toBeVisible();
     await expect(
-      page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
+      getVisibleCommentMenu(page).getByRole("menuitem").filter({ hasText: "删除" }),
       "Bob 不能看到 Alice 的评论的“删除”按钮",
-    ).not.toBeVisible();
-    await page.mouse.move(0, 0);
+    ).toHaveCount(0);
+    await closeCommentMenu(page);
 
     await getCommentMoreBtn(page, bobComment.id).hover();
+    await expect(getVisibleCommentMenu(page)).toBeVisible();
     await expect(
-      page.locator(".e2e-comment-more-operation").getByRole("menuitem").filter({ hasText: "删除" }),
+      getVisibleCommentMenu(page).getByRole("menuitem").filter({ hasText: "删除" }),
       "Bob 的评论的“删除”按钮",
     ).not.toBeDisabled();
-    await page.mouse.move(0, 0);
+    await closeCommentMenu(page);
   }
 });
 
@@ -194,4 +200,11 @@ async function replyComment(page: Page, replyText: string, filterText: string) {
 }
 function getCommentMoreBtn(page: Page, commentId: number) {
   return page.locator(`[e2e-comment-header-id="${commentId}"]`).getByRole("button", { name: "more" });
+}
+function getVisibleCommentMenu(page: Page) {
+  return page.locator(".e2e-comment-more-operation:visible");
+}
+async function closeCommentMenu(page: Page) {
+  await page.keyboard.press("Escape");
+  await expect(getVisibleCommentMenu(page)).toHaveCount(0);
 }

@@ -9,6 +9,7 @@ const { expect, beforeEach } = test;
 let alice: AccountInfo & { token: string };
 let bob: AccountInfo & { token: string };
 let postId: number;
+let commentTreeId: number;
 
 beforeEach(async function () {
   const aliceInfo = await initAlice();
@@ -21,10 +22,11 @@ beforeEach(async function () {
 
   const p = await createPost({ content_text: "alice" }, aliceToken);
   postId = p.id;
+  commentTreeId = p.comment_tree_id;
 });
 
 test("点赞自己和别人的评论", async function ({ page, context, browser }) {
-  await createRootComment(postId, "comment", alice.token);
+  await createRootComment(commentTreeId, "comment", alice.token);
   await setContextLogin(context, alice.token);
   await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId }));
   {
@@ -62,14 +64,14 @@ test("点赞自己和别人的评论", async function ({ page, context, browser 
 });
 
 test("游客禁止点赞", async function ({ page }) {
-  await createRootComment(postId, "comment", alice.token);
+  await createRootComment(commentTreeId, "comment", alice.token);
   await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId }));
   const firstBtn = page.getByRole("dialog").getByRole("button", { name: "heart" });
   await expect(firstBtn).toBeDisabled();
 });
 
 test("举报评论", async function ({ page, context }) {
-  await createRootComment(postId, "comment", alice.token);
+  await createRootComment(commentTreeId, "comment", alice.token);
   await setContextLogin(context, alice.token);
   await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId }));
   await page.getByRole("dialog").getByRole("button", { name: "more" }).click();
@@ -84,9 +86,9 @@ test("举报评论", async function ({ page, context }) {
   await expect(page.getByRole("menuitem", { name: "warning 已举报" })).toBeDisabled();
 });
 
-function createRootComment(postId: number, content: string, token?: string) {
-  return api["/post/comment/entity"].put({
-    body: { text: content, postId },
+function createRootComment(commentTreeId: number, content: string, token?: string) {
+  return api["/comment"].put({
+    body: { text: content, comment_tree_id: commentTreeId.toString() },
     [JWT_TOKEN_KEY]: token,
   });
 }
