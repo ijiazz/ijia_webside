@@ -163,7 +163,6 @@ export function CommentList(props: CommentListProps) {
     <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
       <div style={{ flex: 1, overflow: "auto" }}>
         <CommentTree<PostCommentNode>
-          className="e2e-post-comment-item"
           avatarRender={(node) => {
             const user = node.user;
             return (
@@ -173,7 +172,7 @@ export function CommentList(props: CommentListProps) {
             );
           }}
           headerRender={(node) => (
-            <div e2e-comment-header-id={node.comment_id} className="e2e-post-comment-header">
+            <div className="e2e-comment-header" data-testid={`comment-header-${node.comment_id}`}>
               <CommentHeader
                 node={node}
                 onDelete={() => deleteComment(node)}
@@ -186,7 +185,7 @@ export function CommentList(props: CommentListProps) {
           contentRender={(data, children) => {
             return (
               <div>
-                <div className="e2e-post-comment-content">
+                <div className="e2e-comment-content" data-testid={`comment-content-${data.comment_id}`}>
                   {data.content_text}
                   <CommentFooter
                     node={data}

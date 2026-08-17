@@ -192,9 +192,9 @@ test("帖子作者可以删除其他人评论，其他人只能删除自己的�
   }
 });
 
-const commentItemClassName = ".e2e-post-comment-item";
-const commentContentClassName = ".e2e-post-comment-content";
-const commentHeaderClassName = ".e2e-post-comment-header";
+const commentItemClassName = ".e2e-comment-item";
+const commentContentClassName = ".e2e-comment-content";
+const commentHeaderClassName = ".e2e-comment-header";
 
 function getCommentBtn(page: Page) {
   return page.locator(".e2e-post-item", { hasText: "comment-test" }).getByRole("button", { name: "打开评论" });
@@ -214,7 +214,7 @@ async function replyComment(page: Page, replyText: string, filterText: string) {
   await page.getByRole("button", { name: "发 送" }).click();
 }
 function getCommentMoreBtn(page: Page, commentId: number) {
-  return page.locator(`[e2e-comment-header-id="${commentId}"]`).getByRole("button", { name: "more" });
+  return page.getByTestId(`comment-header-${commentId}`).getByRole("button", { name: "more" });
 }
 function getVisibleCommentMenu(page: Page) {
   return page.locator(".e2e-comment-more-operation:visible");

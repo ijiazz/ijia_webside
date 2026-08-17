@@ -4,7 +4,7 @@ import { createPost } from "@/utils/post.ts";
 import { Locator } from "@playwright/test";
 import { DROPDOWN_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 import { getAppURLFromRoute } from "@/utils/app.ts";
-import { afterTime } from "evlib";
+import { runAfterResponse } from "@/utils/request.ts";
 
 const { expect } = test;
 
@@ -17,8 +17,8 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
   const bobToken = await loginGetToken(bobInfo.email);
   const bob = { ...bobInfo, token: bobToken };
 
-  await createPost({ content_text: "alice" }, aliceToken);
-  await createPost({ content_text: "bob" }, bobToken);
+  const alicePost = await createPost({ content_text: "alice" }, aliceToken);
+  const bobPost = await createPost({ content_text: "bob" }, bobToken);
 
   await setContextLogin(context, alice.token);
   await page.goto(getAppURLFromRoute("/wall/list", { userId: bob.id }));
@@ -26,28 +26,29 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
 
   {
     //alice 点赞
-    const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
+    const postItem = page.getByTestId(`post-${alicePost.id}`);
 
-    await expect(firstBtn).toHaveText("0");
-    await firstBtn.click();
-    await expect(firstBtn).toHaveText("1");
+    await expect(postItem.getByRole("button", { name: "点赞" })).toHaveText("0");
+    await runAfterResponse({ page, matcher: likeRequestMatcher, action: () => postItem.click() });
+
+    await expect(postItem.getByRole("button", { name: "取消点赞" })).toHaveText("1");
   }
 
-  const bobContext = await browser.newContext();
-  const bobPage = await bobContext.newPage();
   {
+    const bobContext = await browser.newContext();
+    const bobPage = await bobContext.newPage();
+
     //bob 点赞
     const page = bobPage;
     await setContextLogin(bobContext, bob.token);
-    await afterTime(300);
     await page.goto(getAppURLFromRoute("/wall/list", { userId: bob.id }));
 
     const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
 
     await expect(firstBtn).toHaveText("1");
-    await firstBtn.click();
+
+    await runAfterResponse({ page, matcher: likeRequestMatcher, action: () => firstBtn.click() });
     await expect(firstBtn).toHaveText("2");
-    await afterTime(300);
   }
 
   {
@@ -55,7 +56,7 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
     await page.reload();
     const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
     await expect(firstBtn).toHaveText("2");
-    await firstBtn.click();
+    await runAfterResponse({ page, matcher: likeRequestMatcher, action: () => firstBtn.click() });
     await expect(firstBtn).toHaveText("1");
   }
 
@@ -105,3 +106,4 @@ test("举报帖子", async function ({ page }) {
 function getLikeBtn(locator: Locator) {
   return locator.locator(".e2e-post-item-like-btn");
 }
+const likeRequestMatcher = /\/post\/entity\/\d+\/like/;

@@ -129,6 +129,7 @@ export function PostList<T extends PublicPost>(props: PostListProps<T>) {
         return (
           <WallPostCard
             className={cx(PostListCSS, "e2e-post-item")}
+            data-testid={`post-${item.post_id}`}
             key={item.post_id}
             item={item}
             moreMenus={moreMenus}

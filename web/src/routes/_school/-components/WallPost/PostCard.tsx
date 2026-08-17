@@ -50,7 +50,7 @@ export function WallPostCard(props: PCardProps) {
           {review?.status === ReviewStatus.rejected && <Tag color="red">审核不通过</Tag>}
           {item.curr_user && (
             <Dropdown menu={{ items: moreMenus }}>
-              <Button className="e2e-post-item-extra-btn" type="text" icon={<MoreOutlined />}></Button>
+              <Button type="text" icon={<MoreOutlined />}></Button>
             </Dropdown>
           )}
         </Space>
@@ -119,8 +119,7 @@ function PostFooter(props: {
         </div>
       ) : (
         <LikeButton
-          aria-label="点赞或取消点击"
-          className="e2e-post-item-like-btn"
+          aria-label={props.isLike ? "取消点赞" : "点赞"}
           disabled={props.likeDisabled}
           isLike={props.isLike}
           onTrigger={(isCancel) => props.onPostLike?.(isCancel)}
