@@ -17,7 +17,7 @@ function getExamTitle(name: string) {
 
 async function prepareAliceExam(name: string) {
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   const examTitle = getExamTitle(name);
   const { templateId } = await prepareExaminationTemplate(DEFAULT_QUESTIONS, { ownerId: alice.id });
   const examinationId = await prepareExamination({
@@ -80,7 +80,7 @@ test("用户可以删除自己的考试", async function ({ page, context }) {
 
 test("未开始的考试展示暂未开始状态", async function ({ page, context }) {
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   const examTitle = getExamTitle("未开始考试");
   const examinationId = await prepareExamination({
     userId: alice.id,
@@ -99,7 +99,7 @@ test("未开始的考试展示暂未开始状态", async function ({ page, conte
 });
 test("用户可以关闭自动下一题后再开启自动下一题", async function ({ page, context }) {
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   const { examinationId } = await prepareUserExamination(alice.id, "切换自动下一题");
 
   await setContextLogin(context, aliceToken);

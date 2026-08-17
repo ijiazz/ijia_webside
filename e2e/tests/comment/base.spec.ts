@@ -11,7 +11,7 @@ let postId: number;
 let commentTreeId: number;
 beforeEach(async function ({ context }) {
   const aliceInfo = await initAlice();
-  const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
+  const aliceToken = await loginGetToken(aliceInfo.email);
   alice = { ...aliceInfo, token: aliceToken };
   const { id, comment_tree_id } = await createPost({ content_text: "comment-test" }, aliceToken);
   postId = id;
@@ -84,9 +84,24 @@ test("删除评论", async function ({ page }) {
   const r1_2 = await createCommentUseApi({ commentTreeId, text: "@1-2@", replyCommentId: r1.id, token: alice.token });
   const r2_1 = await createCommentUseApi({ commentTreeId, text: "@2-1@", replyCommentId: r2.id, token: alice.token });
 
-  const r1_1_1 = await createCommentUseApi({ commentTreeId, text: "@1-1-1@", replyCommentId: r1_1.id, token: alice.token });
-  const r1_2_1 = await createCommentUseApi({ commentTreeId, text: "@1-2-1@", replyCommentId: r1_2.id, token: alice.token });
-  const r2_1_1 = await createCommentUseApi({ commentTreeId, text: "@2-1-1@", replyCommentId: r2_1.id, token: alice.token }); // delete
+  const r1_1_1 = await createCommentUseApi({
+    commentTreeId,
+    text: "@1-1-1@",
+    replyCommentId: r1_1.id,
+    token: alice.token,
+  });
+  const r1_2_1 = await createCommentUseApi({
+    commentTreeId,
+    text: "@1-2-1@",
+    replyCommentId: r1_2.id,
+    token: alice.token,
+  });
+  const r2_1_1 = await createCommentUseApi({
+    commentTreeId,
+    text: "@2-1-1@",
+    replyCommentId: r2_1.id,
+    token: alice.token,
+  }); // delete
 
   const r1_2_1_1 = await createCommentUseApi({
     commentTreeId,
@@ -132,7 +147,7 @@ test("删除评论", async function ({ page }) {
 
 test("帖子作者可以删除其他人评论，其他人只能删除自己的评论", async function ({ page, context }) {
   const bobInfo = await initBob();
-  const bobToken = await loginGetToken(bobInfo.email, bobInfo.password);
+  const bobToken = await loginGetToken(bobInfo.email);
   const [aliceComment, bobComment] = await Promise.all([
     createCommentUseApi({ commentTreeId, text: "@1@", token: alice.token }),
     createCommentUseApi({ commentTreeId, text: "@2@", token: bobToken }),

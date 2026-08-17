@@ -39,7 +39,7 @@ test("用户可以完成一场考试并查看作答记录", async function ({ pa
     title: examTitle,
   });
 
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   await setContextLogin(context, aliceToken);
   await page.goto(getShelfExaminationListURL());
 

@@ -13,11 +13,11 @@ let commentTreeId: number;
 
 beforeEach(async function () {
   const aliceInfo = await initAlice();
-  const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
+  const aliceToken = await loginGetToken(aliceInfo.email);
   alice = { ...aliceInfo, token: aliceToken };
 
   const bobInfo = await initBob();
-  const bobToken = await loginGetToken(bobInfo.email, bobInfo.password);
+  const bobToken = await loginGetToken(bobInfo.email);
   bob = { ...bobInfo, token: bobToken };
 
   const p = await createPost({ content_text: "alice" }, aliceToken);

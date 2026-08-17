@@ -1,32 +1,28 @@
 import { test } from "@playwright/test";
-import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
+import { initAlice, initBob, loginGetToken } from "@/utils/user.ts";
 import { createPost } from "@/utils/post.ts";
 import { Locator } from "@playwright/test";
 import { DROPDOWN_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 import { getAppURLFromRoute } from "@/utils/app.ts";
 import { afterTime } from "evlib";
 
-const { expect, beforeAll } = test;
+const { expect } = test;
 
-let alice: AccountInfo & { token: string };
-let bob: AccountInfo & { token: string };
-
-beforeAll(async function () {
+test("点赞自己和别人的帖子", async function ({ page, context, browser }) {
   const aliceInfo = await initAlice();
-  const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
-  alice = { ...aliceInfo, token: aliceToken };
+  const aliceToken = await loginGetToken(aliceInfo.email);
+  const alice = { ...aliceInfo, token: aliceToken };
 
   const bobInfo = await initBob();
-  const bobToken = await loginGetToken(bobInfo.email, bobInfo.password);
-  bob = { ...bobInfo, token: bobToken };
+  const bobToken = await loginGetToken(bobInfo.email);
+  const bob = { ...bobInfo, token: bobToken };
 
   await createPost({ content_text: "alice" }, aliceToken);
   await createPost({ content_text: "bob" }, bobToken);
-});
 
-test("点赞自己和别人的帖子", async function ({ page, context, browser }) {
   await setContextLogin(context, alice.token);
   await page.goto(getAppURLFromRoute("/wall/list", { userId: bob.id }));
+  // 前置条件
 
   {
     //alice 点赞
@@ -67,14 +63,33 @@ test("点赞自己和别人的帖子", async function ({ page, context, browser 
 });
 
 test("游客禁止点赞", async function ({ page }) {
+  const bobInfo = await initBob();
+  const bobToken = await loginGetToken(bobInfo.email);
+  const bob = { ...bobInfo, token: bobToken };
+
+  await createPost({ content_text: "bob" }, bobToken);
   await page.goto(getAppURLFromRoute("/wall/list", { userId: bob.id }));
+  // 前置条件
+
   const firstBtn = getLikeBtn(page.locator(".e2e-post-item").first());
   await expect(firstBtn).toBeDisabled();
 });
 
 test("举报帖子", async function ({ page }) {
+  const aliceInfo = await initAlice();
+  const aliceToken = await loginGetToken(aliceInfo.email);
+  const alice = { ...aliceInfo, token: aliceToken };
+
+  const bobInfo = await initBob();
+  const bobToken = await loginGetToken(bobInfo.email);
+  const bob = { ...bobInfo, token: bobToken };
+
+  await createPost({ content_text: "bob" }, bobToken);
+
   await setContextLogin(page.context(), alice.token);
   await page.goto(getAppURLFromRoute("/wall/list", { userId: bob.id }));
+  // 前置条件
+
   await page.getByRole("button", { name: "more" }).first().click();
   await page.getByText("举报", { exact: true }).click();
   await page.getByRole("combobox", { name: "* 举报理由 :" }).click();

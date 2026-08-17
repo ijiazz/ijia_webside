@@ -6,9 +6,9 @@ import { initAdmin, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
 
 test("我的题目只展示当前用户的题目", async function ({ page, context }) {
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   const bob = await initBob();
-  const bobToken = await loginGetToken(bob.email, bob.password);
+  const bobToken = await loginGetToken(bob.email);
   const admin = await initAdmin();
 
   await createQuestion(aliceToken, { question_text: "e2e-self-question-pending", explanation_text: "待审核解析" });

@@ -135,6 +135,6 @@ test("分组超过4个时，选择分组应显示下拉框", async function ({ p
 });
 async function initUser() {
   const aliceInfo = await initAlice();
-  const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
+  const aliceToken = await loginGetToken(aliceInfo.email);
   return { ...aliceInfo, token: aliceToken };
 }
