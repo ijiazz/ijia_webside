@@ -22,8 +22,8 @@ beforeEach(async function ({ context }) {
 test("创建一条根评论，然后删除", async function ({ page }) {
   await page.goto(getUserPostURL(alice.id));
 
-  await expect(getCommentBtn(page), "帖子评论数初始为0").toHaveText("0");
-  await getCommentBtn(page).click();
+  await expect(getCommentBtn(page, postId), "帖子评论数初始为0").toHaveText("0");
+  await getCommentBtn(page, postId).click();
 
   await page.getByRole("textbox").fill("e2e-c-1");
   await page.getByRole("button", { name: "发 送" }).click();
@@ -31,9 +31,9 @@ test("创建一条根评论，然后删除", async function ({ page }) {
   await expect(page.locator(commentItemClassName, { hasText: "e2e-c-1" }), "评论被添加到列表中").toHaveCount(1);
   await page.reload();
   await expect(page.locator(commentItemClassName, { hasText: "e2e-c-1" }), "列表中有一个评论").toHaveCount(1);
-  await expect(getCommentBtn(page), "帖子评论数加1").toHaveText("1");
+  await expect(getCommentBtn(page, postId), "帖子评论数加1").toHaveText("1");
 
-  await page.getByRole("dialog").getByRole("button", { name: "more" }).click();
+  await page.locator(".e2e-comment-item").getByRole("button", { name: "更多菜单" }).click();
   await page.getByText("删除").click();
   await page.waitForTimeout(MODAL_ACTION_WAIT_TIME);
   await page.getByRole("button", { name: "确 定" }).click({});
@@ -41,7 +41,7 @@ test("创建一条根评论，然后删除", async function ({ page }) {
   await expect(page.locator(commentItemClassName, { hasText: "e2e-c-1" }), "列表评论被删除").toHaveCount(0);
   await page.reload();
   await expect(page.locator(commentItemClassName, { hasText: "e2e-c-1" }), "列表中不存在评论").toHaveCount(0);
-  await expect(getCommentBtn(page), "帖子评论数减1").toHaveText("0");
+  await expect(getCommentBtn(page, postId), "帖子评论数减1").toHaveText("0");
 });
 
 test("创建回复评论", async function ({ page }) {
@@ -67,7 +67,7 @@ test("创建回复评论", async function ({ page }) {
 
   await page.reload();
 
-  await expect(getCommentBtn(page), "帖子评论数为 6").toHaveText("6");
+  await expect(getCommentBtn(page, postId), "帖子评论数为 6").toHaveText("6");
 
   await page.getByRole("button", { name: "展开1条回复" }).click();
   await page.getByRole("button", { name: "展开3条回复" }).click();
@@ -136,7 +136,7 @@ test("删除评论", async function ({ page }) {
   await expect(page.locator(commentContentClassName), "根评论被删除，它的所有子评论都应被删除").toHaveCount(4);
 
   await page.reload();
-  await expect(getCommentBtn(page), "帖子评论数为 4").toHaveText("4");
+  await expect(getCommentBtn(page, postId), "帖子评论数为 4").toHaveText("4");
 
   await page.getByRole("button", { name: "展开3条回复" }).click(); //r1
 
@@ -196,8 +196,8 @@ const commentItemClassName = ".e2e-comment-item";
 const commentContentClassName = ".e2e-comment-content";
 const commentHeaderClassName = ".e2e-comment-header";
 
-function getCommentBtn(page: Page) {
-  return page.locator(".e2e-post-item", { hasText: "comment-test" }).getByRole("button", { name: "打开评论" });
+function getCommentBtn(page: Page, postId: number) {
+  return page.getByTestId(`post-${postId}`).getByRole("button", { name: "打开评论" });
 }
 async function replyComment(page: Page, replyText: string, filterText: string) {
   await expect(page.getByRole("textbox"), "等待发送完成").toHaveValue("");
@@ -214,7 +214,7 @@ async function replyComment(page: Page, replyText: string, filterText: string) {
   await page.getByRole("button", { name: "发 送" }).click();
 }
 function getCommentMoreBtn(page: Page, commentId: number) {
-  return page.getByTestId(`comment-header-${commentId}`).getByRole("button", { name: "more" });
+  return page.getByTestId(`comment-header-${commentId}`).getByRole("button", { name: "更多菜单" });
 }
 function getVisibleCommentMenu(page: Page) {
   return page.locator(".e2e-comment-more-operation:visible");

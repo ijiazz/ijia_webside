@@ -46,7 +46,7 @@ export function CommentHeader(props: PostHeaderProps) {
       <div>
         {menus.length ? (
           <Dropdown rootClassName="e2e-comment-more-operation" menu={{ items: menus }}>
-            <Button icon={<MoreOutlined />} type="text" />
+            <Button icon={<MoreOutlined />} aria-label="更多菜单" type="text" />
           </Dropdown>
         ) : undefined}
       </div>

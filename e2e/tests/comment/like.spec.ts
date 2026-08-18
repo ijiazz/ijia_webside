@@ -37,12 +37,11 @@ test("点赞自己和别人的评论", async function ({ page, context, browser 
     await expect(firstBtn).toHaveText("1");
   }
 
-  const bobContext = await browser.newContext();
-  await setContextLogin(bobContext, bob.token);
-  const bobPage = await bobContext.newPage();
   {
+    await using bobContext = await browser.newContext();
+    await setContextLogin(bobContext, bob.token);
+    const page = await bobContext.newPage();
     //bob 点赞
-    const page = bobPage;
 
     await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId }));
 

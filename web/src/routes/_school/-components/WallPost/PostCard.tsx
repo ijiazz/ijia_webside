@@ -18,7 +18,7 @@ export type PCardProps = {
 };
 
 export function WallPostCard(props: PCardProps) {
-  const { item, moreMenus, onLike, onOpenComment, className, style } = props;
+  const { item, moreMenus, onLike, onOpenComment, ...rest } = props;
   const theme = useThemeToken();
   const author = item.author;
   const isAnonymous = !author;
@@ -27,6 +27,7 @@ export function WallPostCard(props: PCardProps) {
   const { review, config } = item;
   return (
     <PinkPostCard
+      {...rest}
       icon={
         <VLink to={undefined} target="_blank">
           {isAnonymous ? (
@@ -66,8 +67,6 @@ export function WallPostCard(props: PCardProps) {
           onOpenComment={() => onOpenComment?.(item.post_id)}
         />
       }
-      className={className}
-      style={style}
     >
       <div>
         <PostContent text={item.content_text} textStruct={item.content_text_structure} media={item.media} />

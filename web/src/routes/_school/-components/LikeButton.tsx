@@ -1,7 +1,6 @@
 import { HeartFilled } from "@ant-design/icons";
 import { Button } from "antd";
 import type { ButtonProps } from "antd/lib/index.js";
-import React from "react";
 
 export type LikeButtonProps = Pick<ButtonProps, "style" | "size" | "disabled" | "className"> & {
   isLike?: boolean;

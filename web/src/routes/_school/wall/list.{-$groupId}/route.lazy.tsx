@@ -103,7 +103,7 @@ function PostLayout() {
           rightExtra={
             <PublishBtn
               isLoggedIn={!!currentUser}
-              className="e2e-publish-post-btn"
+              aria-label="发布帖子"
               style={{ marginRight: 12, display: isVertical ? undefined : "none" }}
               type="text"
             />
