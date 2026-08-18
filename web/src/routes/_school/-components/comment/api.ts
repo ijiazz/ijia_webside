@@ -3,7 +3,7 @@ import { api } from "@/request/client.ts";
 import { CommentNode } from "./CommentItem.tsx";
 import { dateToString } from "@/common/date.ts";
 
-export type PostCommentNode = Omit<CommentDTO, "children" | "create_time"> &
+export type CommentVoNode = Omit<CommentDTO, "children" | "create_time"> &
   CommentNode & {
     create_time_str: string;
     loading?: boolean; // 是否正在加载子评论
@@ -27,16 +27,16 @@ export async function createComment(
   return comment_id;
 }
 
-export function commentDtoToCommentNode(item: CommentDTO, parent: PostCommentNode | null): PostCommentNode {
+export function commentDtoToCommentNode(item: CommentDTO, parent: CommentVoNode | null): CommentVoNode {
   const { children, create_time, ...reset } = item;
 
-  const node = reset as PostCommentNode;
+  const node = reset as CommentVoNode;
   node.key = node.comment_id;
   node.create_time_str = dateToString(create_time * 1000, "second");
 
   node.parent = parent ?? null;
   if (children) {
-    node.children = new Map<string | number, PostCommentNode>();
+    node.children = new Map<string | number, CommentVoNode>();
     for (let i = 0; i < children.length; i++) {
       node.children.set(children[i].comment_id, commentDtoToCommentNode(children[i], node));
     }
@@ -55,7 +55,7 @@ export async function loadComment(commentId: string): Promise<CommentDTO | undef
   return res.items[0];
 }
 
-export async function loadCommentItem(node: PostCommentNode): Promise<PostCommentNode | undefined> {
+export async function loadCommentItem(node: CommentVoNode): Promise<CommentVoNode | undefined> {
   const comment = await loadComment(node.comment_id);
   if (!comment) return;
   return commentDtoToCommentNode(comment, node);

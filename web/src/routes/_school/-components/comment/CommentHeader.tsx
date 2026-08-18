@@ -1,12 +1,12 @@
 import { Button, Dropdown, MenuProps, Tag, Typography } from "antd";
 import { CaretRightOutlined, DeleteOutlined, MoreOutlined, WarningOutlined } from "@ant-design/icons";
 import { css, cx } from "@emotion/css";
-import { PostCommentNode } from "./api.ts";
+import { CommentVoNode } from "./api.ts";
 
 const { Text } = Typography;
 
 type PostHeaderProps = {
-  node: Pick<PostCommentNode, "comment_id" | "reply_to" | "curr_user"> & { user?: { user_name: string } };
+  node: Pick<CommentVoNode, "comment_id" | "reply_to" | "curr_user"> & { user?: { user_name: string } };
   className?: string;
   onDelete?: () => void;
   onReport?: () => void;

@@ -1,4 +1,4 @@
-import { CommentList } from "./comment/PostCommentList.tsx";
+import { CommentList } from "./comment/CommentList.tsx";
 import { Drawer, Spin } from "antd";
 import { LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
 import { Suspense } from "react";

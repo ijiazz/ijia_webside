@@ -1,10 +1,10 @@
 import { Button, Tag, Typography } from "antd";
 import { LikeButton } from "../LikeButton.tsx";
-import { PostCommentNode } from "./api.ts";
+import { CommentVoNode } from "./api.ts";
 const { Text } = Typography;
 
 export function CommentFooter(props: {
-  node: PostCommentNode;
+  node: CommentVoNode;
   onLike?: (isCancel: boolean) => void;
   onReply?: () => void;
 }) {

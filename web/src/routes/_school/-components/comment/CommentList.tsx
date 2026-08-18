@@ -12,22 +12,37 @@ import {
   createComment,
   loadCommentItem,
   loadCommentList,
-  PostCommentNode,
+  CommentVoNode,
   setCommentLike,
   loadComment,
 } from "./api.ts";
 import { CommentHeader } from "./CommentHeader.tsx";
 import { CommentFooter } from "./CommentFooter.tsx";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { getPostQueryOption } from "@/request/post.ts";
 import { LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
 import { useModal } from "@/components/Modal.ts";
 
 const { Text } = Typography;
+function useCreatePermission(postId: number) {
+  const { isLoading, data } = useSuspenseQuery(getPostQueryOption({ postId }));
+  const postInfo = data.item;
+  const commentTreeId = postInfo.comment_tree_id;
+  const config = useMemo(() => {
+    let createDisabled: string | undefined = "";
+    if (postInfo) {
+      createDisabled = postInfo.curr_user ? postInfo.curr_user.disabled_comment_reason : "登录后可以评论";
+    } else if (isLoading) {
+      createDisabled = "加载中...";
+    } else createDisabled = "暂时无法评论";
+    return {
+      createDisabled,
+    };
+  }, [postInfo, isLoading]);
 
-export type CreateData = {
-  text: string;
-};
+  return { config, commentTreeId };
+}
+
 export type CommentListProps = {
   postId: number;
 };
@@ -41,27 +56,9 @@ export function CommentList(props: CommentListProps) {
     reset: resetData,
     forceRender,
     replaceItem,
-  } = useCommentData<PostCommentNode>();
+  } = useCommentData<CommentVoNode>();
   const { message } = useAntdStatic();
   const modals = useModal();
-  const { isFetching: postInfoLoading, data } = useQuery({
-    ...getPostQueryOption({ postId }),
-    enabled: typeof postId === "number",
-  });
-  const postInfo = postInfoLoading ? null : data?.item;
-  const commentTreeId = postInfo?.comment_tree_id;
-
-  const config = useMemo(() => {
-    let createDisabled: string | undefined = "";
-    if (postInfo) {
-      createDisabled = postInfo.curr_user ? postInfo.curr_user.disabled_comment_reason : "登录后可以评论";
-    } else if (postInfoLoading) {
-      createDisabled = "加载中...";
-    } else createDisabled = "暂时无法评论";
-    return {
-      createDisabled,
-    };
-  }, [postInfo, postInfoLoading]);
 
   const loadRoot = useMutation({
     mutationFn: async (param: { commentTreeId: string; cursor?: string | null }) =>
@@ -71,12 +68,13 @@ export function CommentList(props: CommentListProps) {
       pushList(nodeList);
     },
   });
+  const { config, commentTreeId } = useCreatePermission(postId);
   const { mutateAsync: loadReply } = useMutation({
     onMutate(parent, context) {
       parent.loading = true;
       forceRender();
     },
-    mutationFn: async (parent: PostCommentNode) => {
+    mutationFn: async (parent: CommentVoNode) => {
       return loadCommentList({
         parentCommentId: parent.comment_id,
         cursor: parent.childrenCursor ?? undefined,
@@ -130,8 +128,6 @@ export function CommentList(props: CommentListProps) {
   const { reloadItem, onLike } = useReload({ replaceItem });
 
   const onCreateComment = () => {
-    if (!commentTreeId) return;
-
     if (!text || /^\s+$/.test(text)) {
       message.error("评论不能为空");
       return;
@@ -139,7 +135,7 @@ export function CommentList(props: CommentListProps) {
     commentCreateComment(commentTreeId, text);
   };
 
-  const deleteComment = (node: PostCommentNode) => {
+  const deleteComment = (node: CommentVoNode) => {
     modals.confirm({
       title: "确认删除？",
       async onOk(...args) {
@@ -151,18 +147,18 @@ export function CommentList(props: CommentListProps) {
 
   useEffect(() => {
     resetData();
-    if (commentTreeId) loadRoot.mutate({ commentTreeId });
+    loadRoot.mutate({ commentTreeId });
   }, [commentTreeId]);
 
   const [text, setText] = useState<string | undefined>();
-  const [replyingComment, setReplyingComment] = useState<PostCommentNode | null>(null);
+  const [replyingComment, setReplyingComment] = useState<CommentVoNode | null>(null);
 
-  const [reportOpen, setReportOpen] = useState<PostCommentNode | null>(null);
+  const [reportOpen, setReportOpen] = useState<CommentVoNode | null>(null);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
       <div style={{ flex: 1, overflow: "auto" }}>
-        <CommentTree<PostCommentNode>
+        <CommentTree<CommentVoNode>
           avatarRender={(node) => {
             const user = node.user;
             return (
@@ -215,7 +211,7 @@ export function CommentList(props: CommentListProps) {
           isEmpty={commentData.size === 0}
           loading={loadRoot.isPending}
           onLoad={() => {
-            if (commentTreeId) loadRoot.mutate({ commentTreeId, cursor: loadRoot.data?.cursor_next });
+            loadRoot.mutate({ commentTreeId, cursor: loadRoot.data?.cursor_next });
           }}
         />
       </div>
@@ -276,17 +272,14 @@ export function CommentList(props: CommentListProps) {
 }
 
 function useReload(config: {
-  replaceItem: (
-    find: PostCommentNode,
-    replace?: (old: PostCommentNode, find: PostCommentNode) => PostCommentNode,
-  ) => void;
+  replaceItem: (find: CommentVoNode, replace?: (old: CommentVoNode, find: CommentVoNode) => CommentVoNode) => void;
 }) {
   const { replaceItem } = config;
   const reloadingRef = useRef<Record<string, Promise<unknown>>>({});
 
   const { message } = useAntdStatic();
 
-  const reloadItem = (node: PostCommentNode) => {
+  const reloadItem = (node: CommentVoNode) => {
     const id = node.comment_id;
     const reloadIng = reloadingRef.current;
     const promise = loadCommentItem(node)
@@ -306,7 +299,7 @@ function useReload(config: {
   const ref = useRef(refObject);
   ref.current = refObject;
 
-  const onLike = (node: PostCommentNode, isCancel: boolean) => {
+  const onLike = (node: CommentVoNode, isCancel: boolean) => {
     const id = node.comment_id;
     replaceItem(node, (old) => {
       const c = old.curr_user;
