@@ -12,7 +12,7 @@ export type PCardProps = {
   item: Post;
   moreMenus?: MenuProps["items"];
   onLike?: (postId: number, isCancel: boolean) => void;
-  onOpenComment?: (postId: number) => void;
+  onOpenComment?: (postId: string) => void;
   className?: string;
   style?: React.CSSProperties;
 };
@@ -64,7 +64,7 @@ export function WallPostCard(props: PCardProps) {
           likeCount={item.stat.like_total}
           likeDisabled={!item.curr_user}
           onPostLike={(isCancel) => onLike?.(item.post_id, isCancel)}
-          onOpenComment={() => onOpenComment?.(item.post_id)}
+          onOpenComment={() => onOpenComment?.(item.post_id.toString())}
         />
       }
     >

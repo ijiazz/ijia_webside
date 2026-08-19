@@ -1,6 +1,6 @@
 import { createLazyFileRoute, useLoaderData } from "@tanstack/react-router";
 import { UserPostList } from "./-components/UserPostList.tsx";
-import { CommentDrawer } from "@/routes/_school/-components/comment.tsx";
+import { PostCommentDrawer } from "@/routes/_school/-components/post/PostCommentDrawer.tsx";
 import { useState } from "react";
 
 export const Route = createLazyFileRoute("/_school/user/$userId/post/")({
@@ -9,21 +9,15 @@ export const Route = createLazyFileRoute("/_school/user/$userId/post/")({
 
 function RouteComponent() {
   const { userInfo: currentUser } = useLoaderData({ from: "/_school" });
-  const { userId }: { userId: number } = Route.useParams({
-    select(params) {
-      return {
-        userId: Number.parseInt(params.userId),
-      };
-    },
-  });
-  const isSelf = !!currentUser && currentUser.user_id === userId;
+  const { userId } = Route.useParams();
+  const isSelf = !!currentUser && currentUser.user_id.toString() === userId;
   const commentDrawer = useCommentDrawer();
 
   return (
     <div>
       <UserPostList canEdit={isSelf} hideReport={isSelf} userId={userId} onOpenComment={commentDrawer.onOpenComment} />
 
-      <CommentDrawer
+      <PostCommentDrawer
         postId={commentDrawer.postId}
         open={commentDrawer.open}
         onClose={commentDrawer.closeCommentDrawer}
@@ -35,7 +29,7 @@ function useCommentDrawer() {
   const { openCommentPostId } = Route.useSearch();
   const navigate = Route.useNavigate();
 
-  const onOpenComment = (postId: number) => {
+  const onOpenComment = (postId: string) => {
     setPostId(postId);
     navigate({
       search: (prev) => ({ ...prev, openCommentPostId: postId }),
@@ -43,7 +37,7 @@ function useCommentDrawer() {
     });
   };
 
-  const [postId, setPostId] = useState<number | undefined>(openCommentPostId);
+  const [postId, setPostId] = useState<string | undefined>(openCommentPostId);
 
   const closeCommentDrawer = () => {
     navigate({

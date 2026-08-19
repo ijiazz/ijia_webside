@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { checkTypeCopy, integer, optional } from "@asla/wokao";
+import { checkTypeCopy, ExpectType, optional } from "@asla/wokao";
 
 const SearchSchema = {
-  openCommentPostId: optional(integer({ acceptString: true })),
-};
+  openCommentPostId: optional.string,
+} satisfies ExpectType;
 export type RouteSearch = {
-  openCommentPostId?: number;
+  openCommentPostId?: string;
 };
 
 export const Route = createFileRoute("/_school/wall/list/{-$groupId}/")({

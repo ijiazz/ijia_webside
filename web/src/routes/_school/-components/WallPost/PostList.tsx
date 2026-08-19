@@ -16,7 +16,7 @@ export type PostListProps<T extends PublicPost> = Pick<React.HTMLAttributes<HTML
   data: T[];
   setData: Dispatch<React.SetStateAction<T[]>>;
   loadItem: (id: number) => Promise<T>;
-  onOpenComment?: (postId: number) => void;
+  onOpenComment?: (postId: string) => void;
   onSetting?: (item: T) => void;
   onEdit?: (item: T) => void;
   canEdit?: boolean;

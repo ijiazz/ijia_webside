@@ -1,6 +1,6 @@
 import { Avatar, Button, Input, Typography } from "antd";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { CommentDTO } from "@/api.ts";
+import { useEffect, useRef, useState } from "react";
+import { CommentDTO, GetCommentListOutput } from "@/api.ts";
 import { CommentTree, useCommentData, findNodeRoot } from "./CommentItem.tsx";
 import { VLink } from "@/lib/components/VLink.tsx";
 import { CloseOutlined, UserOutlined } from "@ant-design/icons";
@@ -19,35 +19,22 @@ import {
 import { CommentHeader } from "./CommentHeader.tsx";
 import { CommentFooter } from "./CommentFooter.tsx";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { getPostQueryOption } from "@/request/post.ts";
 import { LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
 import { useModal } from "@/components/Modal.ts";
 
 const { Text } = Typography;
-function useCreatePermission(postId: number) {
-  const { isLoading, data } = useSuspenseQuery(getPostQueryOption({ postId }));
-  const postInfo = data.item;
-  const commentTreeId = postInfo.comment_tree_id;
-  const config = useMemo(() => {
-    let createDisabled: string | undefined = "";
-    if (postInfo) {
-      createDisabled = postInfo.curr_user ? postInfo.curr_user.disabled_comment_reason : "登录后可以评论";
-    } else if (isLoading) {
-      createDisabled = "加载中...";
-    } else createDisabled = "暂时无法评论";
-    return {
-      createDisabled,
-    };
-  }, [postInfo, isLoading]);
 
-  return { config, commentTreeId };
-}
-
-export type CommentListProps = {
-  postId: number;
+export type CommentListConfig = {
+  createDisabled?: string | undefined;
+  commentTreeId?: string;
+};
+export type CommentListProps = CommentListConfig & {
+  /** 覆盖配置 */
+  overwrite?: () => Promise<CommentListConfig>;
 };
 export function CommentList(props: CommentListProps) {
-  const { postId } = props;
+  const { commentTreeId, createDisabled } = useConfig(props);
+
   const {
     commentData,
     addItem,
@@ -57,18 +44,21 @@ export function CommentList(props: CommentListProps) {
     forceRender,
     replaceItem,
   } = useCommentData<CommentVoNode>();
+
   const { message } = useAntdStatic();
   const modals = useModal();
-
   const loadRoot = useMutation({
-    mutationFn: async (param: { commentTreeId: string; cursor?: string | null }) =>
-      loadCommentList({ commentTreeId: param.commentTreeId, cursor: param.cursor ?? undefined, number: 10 }),
+    mutationFn: async (param: { commentTreeId?: string; cursor?: string | null }) => {
+      if (!param.commentTreeId) {
+        return { items: [] } satisfies GetCommentListOutput;
+      }
+      return loadCommentList({ commentTreeId: param.commentTreeId, cursor: param.cursor ?? undefined, number: 10 });
+    },
     onSuccess(res) {
       const nodeList = res.items.map((item) => commentDtoToCommentNode(item, null));
       pushList(nodeList);
     },
   });
-  const { config, commentTreeId } = useCreatePermission(postId);
   const { mutateAsync: loadReply } = useMutation({
     onMutate(parent, context) {
       parent.loading = true;
@@ -128,6 +118,7 @@ export function CommentList(props: CommentListProps) {
   const { reloadItem, onLike } = useReload({ replaceItem });
 
   const onCreateComment = () => {
+    if (!commentTreeId) return;
     if (!text || /^\s+$/.test(text)) {
       message.error("评论不能为空");
       return;
@@ -211,6 +202,7 @@ export function CommentList(props: CommentListProps) {
           isEmpty={commentData.size === 0}
           loading={loadRoot.isPending}
           onLoad={() => {
+            if (!commentTreeId) return;
             loadRoot.mutate({ commentTreeId, cursor: loadRoot.data?.cursor_next });
           }}
         />
@@ -233,13 +225,13 @@ export function CommentList(props: CommentListProps) {
         )}
         <Input.TextArea
           aria-label="评论内容输入框"
-          disabled={!!config.createDisabled}
-          placeholder={config.createDisabled}
+          disabled={!!createDisabled}
+          placeholder={createDisabled}
           value={text}
           onChange={(text) => setText(text.currentTarget.value)}
         />
         <div style={{ textAlign: "right" }}>
-          {!config.createDisabled && (
+          {!createDisabled && (
             <Button type="primary" loading={commentLoading} onClick={() => onCreateComment()}>
               发送
             </Button>
@@ -347,4 +339,13 @@ function useReload(config: {
     onLike,
     reloadItem,
   };
+}
+
+function useConfig(props: CommentListProps): CommentListConfig {
+  const { overwrite: configInput, commentTreeId, createDisabled } = props;
+  const { isLoading, data } = useSuspenseQuery({ queryKey: [], queryFn: configInput });
+  if (typeof configInput === "function") {
+    return isLoading ? { createDisabled: "加载中..." } : data;
+  }
+  return { commentTreeId, createDisabled, ...data };
 }
