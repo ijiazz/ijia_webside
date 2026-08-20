@@ -1,5 +1,3 @@
-import React from "react";
-
 export function NotFoundPage() {
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>

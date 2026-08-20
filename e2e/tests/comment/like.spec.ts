@@ -3,6 +3,7 @@ import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts"
 import { createPost, getUserPostURL } from "@/utils/post.ts";
 import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";
 import { DROPDOWN_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
+import { getCommentMoreBtn } from "@/utils/comment/locator.ts";
 
 const { expect, beforeEach } = test;
 
@@ -70,10 +71,11 @@ test("游客禁止点赞", async function ({ page }) {
 });
 
 test("举报评论", async function ({ page, context }) {
-  await createRootComment(commentTreeId, "comment", alice.token);
+  const comment = await createRootComment(commentTreeId, "comment", alice.token);
   await setContextLogin(context, alice.token);
   await page.goto(getUserPostURL(alice.id, { openCommentPostId: postId }));
-  await page.getByRole("dialog").getByRole("button", { name: "more" }).click();
+
+  await getCommentMoreBtn(page, comment.comment_id).click();
   await page.getByText("举报", { exact: true }).click();
   await page.getByRole("combobox", { name: "* 举报理由 :" }).click();
   await page.getByTitle("辱骂").locator("div").click();
@@ -81,7 +83,7 @@ test("举报评论", async function ({ page, context }) {
   await page.getByRole("button", { name: "确 定" }).click();
   await expect(page.getByText("已举报", { exact: true })).toHaveCount(1);
 
-  await page.getByRole("dialog").getByRole("button", { name: "more" }).click();
+  await getCommentMoreBtn(page, comment.comment_id).click();
   await expect(page.getByRole("menuitem", { name: "warning 已举报" })).toBeDisabled();
 });
 

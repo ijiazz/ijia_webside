@@ -2,7 +2,7 @@ import { checkTypeCopy, ExpectType, integer, optional } from "@asla/wokao";
 import { createFileRoute } from "@tanstack/react-router";
 
 const SearchSchema = {
-  openCommentPostId: optional.string,
+  openCommentPostId: optional((input) => String(input)),
   openPublish: optional(integer({ acceptString: true })),
 } satisfies ExpectType;
 

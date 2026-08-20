@@ -2,7 +2,7 @@ import { Avatar, Button, Input, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { CommentDTO, GetCommentListOutput } from "@/api.ts";
 import { CommentTree, useCommentData, findNodeRoot } from "./CommentItem.tsx";
-import { VLink } from "@/lib/components/VLink.tsx";
+import { Link } from "@tanstack/react-router";
 import { CloseOutlined, UserOutlined } from "@ant-design/icons";
 import { api } from "@/request/client.ts";
 import { useAntdStatic } from "@/provider/mod.tsx";
@@ -153,9 +153,9 @@ export function CommentList(props: CommentListProps) {
           avatarRender={(node) => {
             const user = node.user;
             return (
-              <VLink to={undefined} target="_blank">
+              <Link to="/user/$userId" params={{ userId: user.user_id }} target="_blank">
                 <Avatar size="small" icon={user.avatar_url ? undefined : <UserOutlined />} src={user.avatar_url} />
-              </VLink>
+              </Link>
             );
           }}
           headerRender={(node) => (

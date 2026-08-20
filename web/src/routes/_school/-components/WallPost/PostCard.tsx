@@ -1,5 +1,5 @@
 import { Avatar, Button, Dropdown, MenuProps, Space, Tag, Tooltip } from "antd";
-import { VLink } from "@/lib/components/VLink.tsx";
+import { Link } from "@tanstack/react-router";
 import { PostContent } from "../post/PostContent.tsx";
 import { MoreOutlined, UserOutlined } from "@ant-design/icons";
 import { PinkPostCard } from "../../wall/-components/PinkCard.tsx";
@@ -29,13 +29,13 @@ export function WallPostCard(props: PCardProps) {
     <PinkPostCard
       {...rest}
       icon={
-        <VLink to={undefined} target="_blank">
-          {isAnonymous ? (
-            <Avatar icon={<UserOutlined />} />
-          ) : (
-            <Avatar src={author?.avatar_url}>{author?.user_id}</Avatar>
-          )}
-        </VLink>
+        isAnonymous ? (
+          <Avatar icon={<UserOutlined />} />
+        ) : (
+          <Link to="/user/$userId" params={{ userId: author.user_id }} target="_blank">
+            <Avatar src={author.avatar_url}>{author.user_id}</Avatar>
+          </Link>
+        )
       }
       header={{
         userName,
@@ -93,16 +93,15 @@ function PostFooter(props: {
         alignItems: "center",
       }}
     >
-      <VLink style={{ color: "inherit" }} target="_blank" aria-label="打开详情页">
-        <Tooltip title="详情页开发中，敬请期待">
-          <Button
-            type="text"
-            icon={<ExportOutlined />}
-            disabled // TODO
-            style={{ fontSize: 16, width: "100%" }}
-          />
-        </Tooltip>
-      </VLink>
+      <Tooltip title="详情页开发中，敬请期待">
+        <Button
+          type="text"
+          aria-label="打开详情页"
+          icon={<ExportOutlined />}
+          disabled
+          style={{ fontSize: 16, width: "100%" }}
+        />
+      </Tooltip>
       <Button
         aria-label="打开评论"
         style={{ fontSize: 16, width: "100%" }}

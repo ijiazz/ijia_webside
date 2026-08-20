@@ -4,6 +4,7 @@ import { createPost, createCommentUseApi, getPostCommentURL, getUserPostURL } fr
 
 import { afterTime } from "evlib";
 import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
+import { closeCommentMenu, getCommentMoreBtn, getVisibleCommentMenu } from "@/utils/comment/locator.ts";
 const { beforeEach } = test;
 
 let alice: AccountInfo & { token: string };
@@ -212,14 +213,4 @@ async function replyComment(page: Page, replyText: string, filterText: string) {
   await expect(page.getByRole("button", { name: "发 送" }), "发送按钮应该可用").not.toBeDisabled();
   await afterTime(200);
   await page.getByRole("button", { name: "发 送" }).click();
-}
-function getCommentMoreBtn(page: Page, commentId: number) {
-  return page.getByTestId(`comment-header-${commentId}`).getByRole("button", { name: "更多菜单" });
-}
-function getVisibleCommentMenu(page: Page) {
-  return page.locator(".e2e-comment-more-operation:visible");
-}
-async function closeCommentMenu(page: Page) {
-  await page.keyboard.press("Escape");
-  await expect(getVisibleCommentMenu(page)).toHaveCount(0);
 }

@@ -101,9 +101,9 @@ function RouteComponent() {
                   }
                   extra={
                     item.url && (
-                      <VLink to={item.url} style={{ color: "inherit" }} target="_blank">
+                      <Link to={item.url} style={{ color: "inherit" }} target="_blank">
                         <Button type="text" icon={<ExportOutlined />}></Button>
-                      </VLink>
+                      </Link>
                     )
                   }
                 >

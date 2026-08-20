@@ -2,7 +2,7 @@ import { Avatar, Button, Dropdown } from "antd";
 import { LogoutOutlined, UserOutlined, HomeOutlined } from "@ant-design/icons";
 import { useNavigate } from "@tanstack/react-router";
 import { css, cx } from "@emotion/css";
-import { VLink } from "@/lib/components/VLink.tsx";
+import { Link } from "@tanstack/react-router";
 import { IS_MOBILE_LAYOUT, useThemeToken } from "@/provider/mod.tsx";
 import { User } from "@/api.ts";
 import { getLoginURL, getLogoutURL } from "@/common/host.ts";
@@ -15,11 +15,11 @@ export function AvatarMenu(props: { user: User | null }) {
 
   if (!user)
     return (
-      <VLink to={getLoginURL(globalThis.location.href)}>
+      <Link to={getLoginURL(globalThis.location.href)}>
         <Button type="text" style={{ color: theme.colorTextSecondary }}>
           登录
         </Button>
-      </VLink>
+      </Link>
     );
   return (
     <Dropdown

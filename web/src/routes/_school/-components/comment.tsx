@@ -1,10 +1,8 @@
 import { CommentList, CommentListProps } from "./comment/CommentList.tsx";
-import { Drawer, Spin } from "antd";
+import { Drawer } from "antd";
 import { LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
 import { Suspense } from "react";
-import { CatchBoundary } from "@tanstack/react-router";
-import { ErrorPage } from "@/components/page_state.tsx";
-import * as sentry from "@sentry/react";
+import { ErrorBoundary, PageSpin } from "@/components/page_state.tsx";
 
 export type CommentDrawerProps = Omit<CommentListProps, "commentTreeId"> & {
   open?: boolean;
@@ -12,7 +10,7 @@ export type CommentDrawerProps = Omit<CommentListProps, "commentTreeId"> & {
   commentTreeId?: string;
 };
 export function CommentDrawer(props: CommentDrawerProps) {
-  const { onClose, open, commentTreeId, ...rest } = props;
+  const { onClose, open, ...rest } = props;
 
   const isHorizontal = useLayoutDirection() === LayoutDirection.Horizontal;
   return (
@@ -31,17 +29,11 @@ export function CommentDrawer(props: CommentDrawerProps) {
         },
       }}
     >
-      <CatchBoundary
-        getResetKey={() => commentTreeId ?? ""}
-        onCatch={(error) => sentry.captureException(error)}
-        errorComponent={({ error, reset, info }) => (
-          <ErrorPage error={error} reset={reset} info={info?.componentStack} />
-        )}
-      >
-        <Suspense fallback={<Spin />}>
-          {commentTreeId && <CommentList commentTreeId={commentTreeId} {...rest} />}
+      <ErrorBoundary>
+        <Suspense fallback={<PageSpin />}>
+          <CommentList commentTreeId={rest.commentTreeId} {...rest} />
         </Suspense>
-      </CatchBoundary>
+      </ErrorBoundary>
     </Drawer>
   );
 }
