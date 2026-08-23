@@ -14,9 +14,12 @@ export interface CommentAPI {
     response: CreateCommentOutput;
   };
   /** 获取评论列表。 */
-  "GET /get-comment/list": {
+  "GET /comment-tree/:commentTreeId/list": {
     response: GetCommentListOutput;
-    query: GetCommentListInput;
+    query?: GetCommentListInput;
+    params: {
+      commentTreeId: string;
+    };
   };
   /**
    * 删除评论

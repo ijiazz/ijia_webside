@@ -19,7 +19,9 @@ export async function createPost(postParam: CreatePostParam, token: string) {
     [JWT_TOKEN_KEY]: token,
   });
   const { comment_tree_id } = await dbPool.queryFirstRow<{ comment_tree_id: number }>(
-    select("comment_tree_id").from("post").where(`id=${v(result.id)}`),
+    select("comment_tree_id")
+      .from("post")
+      .where(`id=${v(result.id)}`),
   );
   return { ...result, comment_tree_id };
 }

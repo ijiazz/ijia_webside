@@ -28,19 +28,22 @@ export class PostComment {
     return { id: Number(result.comment_id) };
   }
   async getComment(commentId: string | number, token?: string) {
-    return this.api["/get-comment/list"].get({
+    return this.api["/comment-tree/:commentTreeId/list"].get({
+      params: { commentTreeId: this.commentTreeId },
       query: { commentId: commentId.toString() },
       [JWT_TOKEN_KEY]: token,
     });
   }
   async getCommentList(option?: GetCommentListOption, token?: string) {
-    return this.api["/get-comment/list"].get({
-      query: { ...option, commentTreeId: this.commentTreeId },
+    return this.api["/comment-tree/:commentTreeId/list"].get({
+      params: { commentTreeId: this.commentTreeId },
+      query: option,
       [JWT_TOKEN_KEY]: token,
     });
   }
   async getReplyList(commentId: string | number, option?: GetCommentListOption, token?: string) {
-    return this.api["/get-comment/list"].get({
+    return this.api["/comment-tree/:commentTreeId/list"].get({
+      params: { commentTreeId: this.commentTreeId },
       query: { ...option, parentCommentId: commentId.toString() },
       [JWT_TOKEN_KEY]: token,
     });

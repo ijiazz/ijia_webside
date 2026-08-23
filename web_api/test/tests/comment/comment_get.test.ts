@@ -170,7 +170,7 @@ describe("部分帖子状态下不能获取评论", () => {
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
-    await expect(action.getCommentList()).resolves.toMatchObject({ items: [] });
+    await expect(action.getCommentList()).responseStatus(404);
   });
   test("不能获取审核不通过的作品的评论", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
@@ -181,7 +181,7 @@ describe("部分帖子状态下不能获取评论", () => {
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
-    await expect(action.getCommentList()).resolves.toMatchObject({ items: [] });
+    await expect(action.getCommentList()).responseStatus(404);
   });
 
   test("不能获取已隐藏的作品的评论", async function ({ api, publicDbPool }) {
@@ -191,15 +191,15 @@ describe("部分帖子状态下不能获取评论", () => {
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
-    await expect(action.getCommentList()).resolves.toMatchObject({ items: [] });
+    await expect(action.getCommentList()).responseStatus(404);
   });
   test("不能获取已删除的作品的评论", async function ({ api, publicDbPool }) {
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
     await deletePost(api, postInfo.id, alice.token);
 
-    await expect(action.getCommentList(undefined, alice.token)).resolves.toMatchObject({ items: [] });
-    await expect(action.getCommentList()).resolves.toMatchObject({ items: [] });
+    await expect(action.getCommentList(undefined, alice.token)).responseStatus(404);
+    await expect(action.getCommentList()).responseStatus(404);
   });
 });
 

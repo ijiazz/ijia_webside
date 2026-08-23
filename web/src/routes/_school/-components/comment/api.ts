@@ -45,18 +45,19 @@ export function commentDtoToCommentNode(item: CommentDTO, parent: CommentVoNode 
   return node;
 }
 
-export function loadCommentList(query: GetCommentListInput) {
-  return api["/get-comment/list"].get({
+export function loadCommentList(commentTreeId: string, query: GetCommentListInput) {
+  return api["/comment-tree/:commentTreeId/list"].get({
+    params: { commentTreeId },
     query: query,
   });
 }
-export async function loadComment(commentId: string): Promise<CommentDTO | undefined> {
-  const res = await loadCommentList({ commentId: commentId });
+export async function loadComment(commentTreeId: string, commentId: string): Promise<CommentDTO | undefined> {
+  const res = await loadCommentList(commentTreeId, { commentId: commentId });
   return res.items[0];
 }
 
 export async function loadCommentItem(node: CommentVoNode): Promise<CommentVoNode | undefined> {
-  const comment = await loadComment(node.comment_id);
+  const comment = await loadComment(node.comment_tree_id, node.comment_id);
   if (!comment) return;
   return commentDtoToCommentNode(comment, node);
 }

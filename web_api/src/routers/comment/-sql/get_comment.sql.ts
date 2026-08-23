@@ -1,18 +1,23 @@
 import { dbPool } from "@/db/client.ts";
-import { CommentDTO, GetCommentListOption, GetCommentListOutput } from "@ijia/api-types";
+import { CommentDTO, GetCommentListOutput } from "@ijia/api-types";
 import { HttpError } from "@/common/errors.ts";
 import { jsonb_build_object } from "@/common/sql_util.ts";
 import { v } from "@/sql/utils.ts";
 import { select } from "@asla/yoursql";
-
+import { CommentGroup, DbCommentTree } from "@ijia/school-db/db";
+export type Filters = {
+  number?: number;
+  cursor?: string;
+  forward?: boolean;
+  commentId?: number;
+  parentCommentId?: number;
+};
 export async function getCommentList(
-  filters: GetCommentListOption & { commentTreeId?: number; commentId?: number; parentCommentId?: number },
+  commentTreeId: number,
+  filters: Filters,
   userId: number | null,
 ): Promise<GetCommentListOutput> {
-  const { number = 20, cursor: cursorStr, forward, commentId, parentCommentId, commentTreeId } = filters;
-  if (!commentTreeId && !parentCommentId && !commentId) {
-    throw new HttpError(400, "必须指定其中一个参数：commentTreeId、parentCommentId、commentId");
-  }
+  const { number = 20, cursor: cursorStr, forward, commentId, parentCommentId } = filters;
 
   let currentUserId = userId;
   if (typeof currentUserId !== "number") currentUserId = null;
@@ -64,28 +69,15 @@ export async function getCommentList(
     .from("comment", { as: "c" })
     .innerJoin("public.user", { as: "u", on: "c.user_id=u.id" })
     .innerJoin("comment_tree", { as: "ct", on: "c.comment_tree_id=ct.id" })
-    .leftJoin("post", { as: "p", on: "ct.id=p.comment_tree_id" })
     .leftJoin("comment", { as: "reply", on: "c.parent_comment_id=reply.id" })
     .where(() => {
-      const where = [`NOT c.is_delete`];
-
-      where.push(
-        `(ct.owner_id = ${v(currentUserId)} OR (p.id IS NOT NULL AND NOT p.is_delete AND ${[
-          "NOT review_status_is_progress(p.review_status)",
-          "NOT p.is_hide",
-        ].join(" AND ")}))`,
-      );
+      const where = [`NOT c.is_delete`, `c.comment_tree_id=${v(commentTreeId)}`];
 
       if (commentId) {
         where.push(`c.id=${v(commentId)}`);
       } else {
-        if (commentTreeId) {
-          where.push(`c.comment_tree_id=${v(commentTreeId)}`, `c.root_comment_id IS NULL`);
-        } else if (parentCommentId) {
-          where.push(`c.root_comment_id =${v(parentCommentId)}`);
-        } else {
-          throw new HttpError(400, "必须指定 commentTreeId、parentCommentId 或 commentId 之一");
-        }
+        if (parentCommentId) where.push(`c.root_comment_id =${v(parentCommentId)}`);
+        else where.push("c.root_comment_id IS NULL");
 
         if (cursor) {
           const timestamp = cursor.timestamp;
@@ -150,3 +142,35 @@ export type TzIdCursor = {
   timestamp: number | null;
   id: number;
 };
+export async function checkGetPermission(
+  commentTreeId: number,
+  userId: number | null,
+): Promise<{ allow: boolean; reason?: string }> {
+  const [res] = await dbPool.queryRows<Pick<DbCommentTree, "group_type" | "owner_id">>(
+    v.gen`SELECT group_type, owner_id FROM comment_tree WHERE id=${commentTreeId} LIMIT 1`,
+  );
+  if (!res) return { allow: false, reason: "评论区不存在" };
+
+  switch (res.group_type) {
+    case CommentGroup.Post: {
+      const [result] = await dbPool.queryRows<{
+        is_hide: boolean;
+        review_unavailable: boolean;
+        comment_disabled: boolean;
+      }>(v.gen`
+        SELECT
+          is_hide,
+          review_status_is_progress(review_status) AS review_unavailable
+        FROM post
+        WHERE comment_tree_id=${commentTreeId} AND NOT is_delete`);
+
+      if (!result) return { allow: false, reason: "评论区不存在或已被删除" };
+      if (typeof res.owner_id === "number" && res.owner_id === userId) return { allow: true };
+      else if (result.review_unavailable || result.is_hide) return { allow: false, reason: "评论区不存在或已被删除" };
+      return { allow: true };
+    }
+
+    default:
+      return { allow: true };
+  }
+}

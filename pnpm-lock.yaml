@@ -16,8 +16,8 @@ catalogs:
       specifier: npm:@jsr/asla__yoursql@^0.14.0
       version: 0.14.0
     '@ijia/school-db':
-      specifier: npm:@jsr/ijia__school-db@^0.0.6-beta.4
-      version: 0.0.6-beta.4
+      specifier: npm:@jsr/ijia__school-db@^0.0.6-beta.6
+      version: 0.0.6-beta.6
     '@types/node':
       specifier: ^26.1.1
       version: 26.1.1
@@ -31,7 +31,7 @@ importers:
     devDependencies:
       '@ijia/school-db':
         specifier: 'catalog:'
-        version: '@jsr/ijia__school-db@0.0.6-beta.4'
+        version: '@jsr/ijia__school-db@0.0.6-beta.6'
       oxfmt:
         specifier: ^0.60.0
         version: 0.60.0
@@ -61,7 +61,7 @@ importers:
         version: link:../web_dto
       '@ijia/school-db':
         specifier: 'catalog:'
-        version: '@jsr/ijia__school-db@0.0.6-beta.4'
+        version: '@jsr/ijia__school-db@0.0.6-beta.6'
       '@playwright/test':
         specifier: ^1.55.0
         version: 1.60.0
@@ -185,7 +185,7 @@ importers:
         version: link:../web_dto
       '@ijia/school-db':
         specifier: 'catalog:'
-        version: '@jsr/ijia__school-db@0.0.6-beta.4'
+        version: '@jsr/ijia__school-db@0.0.6-beta.6'
       '@redis/client':
         specifier: ^6.1.0
         version: 6.1.0
@@ -219,7 +219,7 @@ importers:
     dependencies:
       '@ijia/school-db':
         specifier: 'catalog:'
-        version: '@jsr/ijia__school-db@0.0.6-beta.4'
+        version: '@jsr/ijia__school-db@0.0.6-beta.6'
     devDependencies:
       typedoc:
         specifier: ^0.28.15
@@ -1045,8 +1045,8 @@ packages:
   '@jsr/asla__yoursql@0.14.0':
     resolution: {integrity: sha512-0ZmJ3gZQCNG1/2ULU1rpIaSMDlIZrON0UTdYTV6hRVqfg/E1wU7dHTdHsg/M5cSVwCGOMbEksNHoDR4VSJ6Vrg==, tarball: https://npm.jsr.io/~/11/@jsr/asla__yoursql/0.14.0.tgz}
 
-  '@jsr/ijia__school-db@0.0.6-beta.4':
-    resolution: {integrity: sha512-RQ2Let/OY9qU6OWztwELHHvkZvBNva1/3wSlYE0v9ru5e86KsBgEQZdK9uLuCk72e2LJCOi1UydxPKwqXvLt2Q==, tarball: https://npm.jsr.io/~/11/@jsr/ijia__school-db/0.0.6-beta.4.tgz}
+  '@jsr/ijia__school-db@0.0.6-beta.6':
+    resolution: {integrity: sha512-9dsWsV/YTdk4KTVr5GN98XZy4MIJ9ipThj5Q1Kwtr2vUO2HPqHnzBY2aUE490LJtapBtsji2weago1J86mcBMg==, tarball: https://npm.jsr.io/~/11/@jsr/ijia__school-db/0.0.6-beta.6.tgz}
 
   '@jsr/std__bytes@1.0.6':
     resolution: {integrity: sha512-St6yKggjFGhxS52IFLJWvkchRFbAKg2Xh8UxA4S1EGz7GJ2Ui+ssDDldj/w2c8vCxvl6qgR0HaYbKeFJNqujmA==, tarball: https://npm.jsr.io/~/11/@jsr/std__bytes/1.0.6.tgz}
@@ -4122,7 +4122,7 @@ snapshots:
 
   '@jsr/asla__yoursql@0.14.0': {}
 
-  '@jsr/ijia__school-db@0.0.6-beta.4':
+  '@jsr/ijia__school-db@0.0.6-beta.6':
     dependencies:
       '@jsr/asla__pg': 0.2.4
       '@jsr/asla__yoursql': 0.14.0

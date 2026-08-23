@@ -1,13 +1,15 @@
-import { checkValue, optionalInt } from "@/common/check.ts";
+import { checkValue, optionalInt, queryInt } from "@/common/check.ts";
 import routeGroup from "./_route.ts";
 import { ExpectType, optional } from "@asla/wokao";
-import { GetCommentListOption, GetCommentListOutput } from "@/dto.ts";
-import { getCommentList } from "./-sql/get_comment.sql.ts";
+import { GetCommentListOutput } from "@/dto.ts";
+import { checkGetPermission, getCommentList } from "./-sql/get_comment.sql.ts";
+import { HttpError } from "@/common/errors.ts";
 
 export default routeGroup.create({
   method: "GET",
-  routePath: "/get-comment/list",
+  routePath: "/comment-tree/:commentTreeId/list",
   async validateInput(ctx) {
+    const commentTreeId = checkValue(ctx.req.param("commentTreeId"), queryInt);
     const userId = await ctx
       .get("userInfo")
       .getUserId()
@@ -15,18 +17,22 @@ export default routeGroup.create({
 
     const option = checkValue(ctx.req.query(), getCommentListChecker);
 
-    return { option: option as GetCommentListOption, userId };
+    return { option, userId, commentTreeId };
   },
-  async handler({ option, userId }): Promise<GetCommentListOutput> {
-    return getCommentList(option, userId || null);
+  async handler({ option, userId = null, commentTreeId }): Promise<GetCommentListOutput> {
+    const permission = await checkGetPermission(commentTreeId, userId);
+    if (!permission.allow) {
+      throw new HttpError(404, permission.reason || "没有权限获取评论列表");
+    }
+    return getCommentList(commentTreeId, option, userId);
   },
 });
 
 const getCommentListChecker = {
   number: optionalInt,
   cursor: optional.string,
+  forward: optional.boolean,
 
-  commentTreeId: optionalInt,
   commentId: optionalInt,
   parentCommentId: optionalInt,
-} satisfies ExpectType<GetCommentListOption>;
+} satisfies ExpectType;

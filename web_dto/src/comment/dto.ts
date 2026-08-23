@@ -2,31 +2,17 @@ import type { CursorListResult, TextStructure } from "../common.ts";
 
 export type GetCommentListOutput = CursorListResult<CommentDTO, string> & { needLogin?: boolean };
 
-export type GetCommentListOption = {
+export type GetCommentListInput = {
   number?: number;
   cursor?: string;
   /** 是否向前翻页 */
   forward?: boolean;
-};
 
-export type GetCommentListByCommentIdInput = GetCommentListOption & {
-  /** 获取当前评论的信息 */
-  commentId: string;
-};
-export type GetCommentListByPostIdInput = GetCommentListOption & {
-  /** 获取指定作品的评论列表 */
-  commentTreeId: string;
-};
-
-export type GetCommentListByParentCommentIdInput = GetCommentListOption & {
+  /** 获取指定前评论的信息 */
+  commentId?: string;
   /** 获取指定评论的回复列表 */
-  parentCommentId: string;
+  parentCommentId?: string;
 };
-
-export type GetCommentListInput =
-  | GetCommentListByCommentIdInput
-  | GetCommentListByPostIdInput
-  | GetCommentListByParentCommentIdInput;
 
 export type CommentDTO = {
   comment_tree_id: string;

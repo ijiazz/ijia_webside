@@ -52,7 +52,7 @@ export function CommentList(props: CommentListProps) {
       if (!param.commentTreeId) {
         return { items: [] } satisfies GetCommentListOutput;
       }
-      return loadCommentList({ commentTreeId: param.commentTreeId, cursor: param.cursor ?? undefined, number: 10 });
+      return loadCommentList(param.commentTreeId, { cursor: param.cursor ?? undefined, number: 10 });
     },
     onSuccess(res) {
       const nodeList = res.items.map((item) => commentDtoToCommentNode(item, null));
@@ -65,7 +65,7 @@ export function CommentList(props: CommentListProps) {
       forceRender();
     },
     mutationFn: async (parent: CommentVoNode) => {
-      return loadCommentList({
+      return loadCommentList(parent.comment_tree_id, {
         parentCommentId: parent.comment_id,
         cursor: parent.childrenCursor ?? undefined,
         number: 5,
@@ -90,12 +90,12 @@ export function CommentList(props: CommentListProps) {
       const { commentTreeId, text, replyId } = param;
       return createComment(commentTreeId, { text }, replyId);
     },
-    onSuccess: async (newCommendId) => {
+    onSuccess: async (newCommendId, variables) => {
       setText("");
       setReplyingComment(null);
       let comment: CommentDTO | undefined;
       try {
-        comment = await loadComment(newCommendId);
+        comment = await loadComment(variables.commentTreeId, newCommendId);
       } catch (error) {
         message.error("已创建评论但刷新失败，请手动刷新评论");
         throw error;

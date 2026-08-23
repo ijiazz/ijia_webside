@@ -136,7 +136,7 @@ async function commitPostCommentReviewNext(
   });
 }
 async function getCommitList(api: Api, treeId: string | number) {
-  return api["/get-comment/list"].get({ query: { commentTreeId: treeId.toString() } });
+  return api["/comment-tree/:commentTreeId/list"].get({ params: { commentTreeId: treeId.toString() } });
 }
 async function getCommentReviewId(cid: number): Promise<number | null> {
   const r = await dbPool.queryFirstRow<{ review_id: number }>(

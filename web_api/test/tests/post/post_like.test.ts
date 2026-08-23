@@ -16,7 +16,7 @@ import {
 import { select } from "@asla/yoursql";
 import { dbPool } from "@/db/client.ts";
 import postRoutes from "@/routers/post/mod.ts";
-import { ReviewStatus } from "@ijia/school-db/db";
+import { DbPost, ReviewStatus } from "@ijia/school-db/db";
 import { commitPostReview, setPostToReviewing } from "@/routers/review/mod.ts";
 import "#test/asserts/review.ts";
 
@@ -251,15 +251,13 @@ test("已举报的帖子，不能再点赞", async function ({ api, publicDbPool
 
 const getPostLikeCount = (postId: number) => {
   return dbPool
-    .queryFirstRow(select({ like_count: true }).from("public.post").where(`id=${postId}`))
+    .queryFirstRow<Pick<DbPost, "like_count">>(select(["like_count"]).from("public.post").where(`id=${postId}`))
     .then((item) => item.like_count);
 };
 function getPostReportCount(postId: number) {
   return dbPool
-    .queryFirstRow(
-      select<{ report_count: number }>({ report_count: "ROUND(dislike_count::NUMERIC /100, 2)" })
-        .from("public.post")
-        .where(`id=${postId}`),
+    .queryFirstRow<{ report_count: number }>(
+      select(["ROUND(dislike_count::NUMERIC /100, 2) AS report_count"]).from("public.post").where(`id=${postId}`),
     )
     .then((item) => +item.report_count);
 }
