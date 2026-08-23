@@ -1,6 +1,6 @@
 import { DbComment } from "@ijia/school-db/db";
 import { Api, JWT_TOKEN_KEY } from "#test/fixtures/hono.ts";
-import type { GetCommentListOption } from "@ijia/api-types";
+import type { GetCommentListInput } from "@ijia/api-types";
 import { preparePost } from "./prepare_post.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
@@ -34,14 +34,14 @@ export class PostComment {
       [JWT_TOKEN_KEY]: token,
     });
   }
-  async getCommentList(option?: GetCommentListOption, token?: string) {
+  async getCommentList(option?: GetCommentListInput, token?: string) {
     return this.api["/comment-tree/:commentTreeId/list"].get({
       params: { commentTreeId: this.commentTreeId },
       query: option,
       [JWT_TOKEN_KEY]: token,
     });
   }
-  async getReplyList(commentId: string | number, option?: GetCommentListOption, token?: string) {
+  async getReplyList(commentId: string | number, option?: GetCommentListInput, token?: string) {
     return this.api["/comment-tree/:commentTreeId/list"].get({
       params: { commentTreeId: this.commentTreeId },
       query: { ...option, parentCommentId: commentId.toString() },
