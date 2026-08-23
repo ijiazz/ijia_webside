@@ -7,7 +7,7 @@ export default async function setup() {
   await initPublicClass();
   await initPostGroup();
   await initRoles();
-
+  await dbPool.execute(`CREATE SEQUENCE IF NOT EXISTS test_id_seq START 1;`);
   console.log("setup complete");
 }
 async function initPostGroup() {
