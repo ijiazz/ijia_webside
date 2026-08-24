@@ -39,7 +39,7 @@ test("审核中的帖子只有自己能查看", async function ({ api, publicDbP
   await setPostToReviewing(id);
 
   const aliceView = await getSelfPost(api, id, alice.token);
-  expect(aliceView.post_id).toBe(id.toString());
+  expect(aliceView.post_id).toBe(id);
   expect(aliceView.review?.status).toBe(ReviewStatus.pending);
 
   await expect(getPublicPost(api, id, alice.token), "审核中的帖子，自己不能在公共查询中获取").resolves.toBe(undefined);
@@ -54,7 +54,7 @@ test("审核失败的帖子只有自己能查看", async function ({ api, public
   const reviewId = await setPostToReviewing(id);
   await commitPostReview({ reviewId, isPass: false, remark: "123" });
   const aliceView = await getSelfPost(api, id, alice.token);
-  expect(aliceView.post_id).toBe(id.toString());
+  expect(aliceView.post_id).toBe(id);
   expect(aliceView.review).toMatchObject({
     status: ReviewStatus.rejected,
     remark: "123",
@@ -74,7 +74,7 @@ test("已隐藏的帖子只有自己能查看", async function ({ api, publicDbP
   const { id } = await createPost(api, { content_text: "test1", is_hide: true }, alice.token);
 
   const aliceView = await getSelfPost(api, id, alice.token);
-  expect(aliceView.post_id).toBe(id.toString());
+  expect(aliceView.post_id).toBe(id);
   expect(aliceView.review).toMatchObject({ status: null });
 
   await expect(getPublicPost(api, id, alice.token), "已隐藏的帖子，自己不能在公共查询中获取").resolves.toBe(undefined);
