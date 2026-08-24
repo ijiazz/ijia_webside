@@ -36,9 +36,11 @@ export function dateToTimeString(date: Date | string | number, precision: "hour"
 const pad = (n: number) => n.toString().padStart(2, "0");
 
 export function parseISODate(input: string = "") {
-  const IS_ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/.test(input);
+  if (!input) return undefined;
+  const value = new Date(input);
+  const IS_ISO = !isNaN(value.getTime());
   if (!IS_ISO) {
     return undefined;
   }
-  return new Date(input);
+  return value;
 }
