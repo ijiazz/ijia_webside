@@ -1,5 +1,5 @@
 import { CreateCommentOutput } from "@/dto.ts";
-import routeGroup from "./_route.ts";
+import { createRoute } from "@/common/context.ts";
 import { HttpError } from "@/common/errors.ts";
 import { checkCanCreate, getUserCanCreateCommentLimit } from "./-sql/comment.sql.ts";
 import { checkValueAsync, optionalInt, queryInt } from "@/common/check.ts";
@@ -13,7 +13,7 @@ const BodySchema = {
   text: "string",
 } satisfies ExpectType;
 
-export default routeGroup.create({
+export default createRoute({
   method: "PUT",
   routePath: "/comment",
   async validateInput(ctx) {

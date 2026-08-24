@@ -1,11 +1,11 @@
 import { checkValue, optionalInt, queryInt } from "@/common/check.ts";
-import routeGroup from "./_route.ts";
+import { createRoute } from "@/common/context.ts";
 import { ExpectType, optional } from "@asla/wokao";
 import { GetCommentListOutput } from "@/dto.ts";
 import { checkGetPermission, getCommentList } from "./-sql/get_comment.sql.ts";
 import { HttpError } from "@/common/errors.ts";
 
-export default routeGroup.create({
+export default createRoute({
   method: "GET",
   routePath: "/comment-tree/:commentTreeId/list",
   async validateInput(ctx) {

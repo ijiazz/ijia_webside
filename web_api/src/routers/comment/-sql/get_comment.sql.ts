@@ -125,12 +125,12 @@ export async function getCommentList(
 
 function parserTimestampCursor(cursorStr: string): TzIdCursor {
   const [timestampStr, idStr] = cursorStr.split("-");
-  if (!timestampStr || !idStr) throw new Error("cursor 格式错误");
+  if (!timestampStr || !idStr) throw new HttpError(400, "cursor 格式错误");
   const timestamp = +timestampStr;
-  if (!Number.isFinite(timestamp)) throw new Error("cursor 格式错误");
+  if (!Number.isFinite(timestamp)) throw new HttpError(400, "cursor 格式错误");
 
   const id = +idStr;
-  if (!Number.isInteger(id)) throw new Error("cursor 格式错误");
+  if (!Number.isInteger(id)) throw new HttpError(400, "cursor 格式错误");
 
   return { timestamp: timestamp, id: id };
 }

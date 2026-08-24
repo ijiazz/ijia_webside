@@ -1,8 +1,8 @@
 import { checkValue, queryInt } from "@/common/check.ts";
-import routeGroup from "./_route.ts";
+import { createRoute } from "@/common/context.ts";
 import { deleteComment } from "./-sql/comment.sql.ts";
 
-export default routeGroup.create({
+export default createRoute({
   method: "DELETE",
   routePath: "/comment/:commentId",
   async validateInput(ctx) {

@@ -1,9 +1,9 @@
 import { checkValue, checkValueAsync, queryInt } from "@/common/check.ts";
-import routeGroup from "../_route.ts";
+import { createRoute } from "@/common/context.ts";
 import { reportComment } from "../-sql/like.sql.ts";
 import { optional } from "@asla/wokao";
 
-export default routeGroup.create({
+export default createRoute({
   method: "POST",
   routePath: "/comment/:commentId/report",
   async validateInput(ctx) {

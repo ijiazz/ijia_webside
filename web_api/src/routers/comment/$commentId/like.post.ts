@@ -1,8 +1,8 @@
 import { checkValue, queryInt } from "@/common/check.ts";
-import routeGroup from "../_route.ts";
+import { createRoute } from "@/common/context.ts";
 import { cancelCommentLike, setCommentLike } from "../-sql/like.sql.ts";
 
-export default routeGroup.create({
+export default createRoute({
   method: "POST",
   routePath: "/comment/:commentId/like",
   async validateInput(ctx) {

@@ -29,7 +29,7 @@ export function CommentDrawer(props: CommentDrawerProps) {
         },
       }}
     >
-      <ErrorBoundary>
+      <ErrorBoundary getResetKey={rest.commentTreeId ?? ""}>
         <Suspense fallback={<PageSpin />}>
           <CommentList commentTreeId={rest.commentTreeId} {...rest} />
         </Suspense>
