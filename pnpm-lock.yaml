@@ -16,8 +16,8 @@ catalogs:
       specifier: npm:@jsr/asla__yoursql@^0.14.0
       version: 0.14.0
     '@ijia/school-db':
-      specifier: npm:@jsr/ijia__school-db@^0.0.5
-      version: 0.0.5
+      specifier: npm:@jsr/ijia__school-db@^0.0.6
+      version: 0.0.6
     '@types/node':
       specifier: ^26.1.1
       version: 26.1.1
@@ -31,7 +31,7 @@ importers:
     devDependencies:
       '@ijia/school-db':
         specifier: 'catalog:'
-        version: '@jsr/ijia__school-db@0.0.5'
+        version: '@jsr/ijia__school-db@0.0.6'
       oxfmt:
         specifier: ^0.60.0
         version: 0.60.0
@@ -61,7 +61,7 @@ importers:
         version: link:../web_dto
       '@ijia/school-db':
         specifier: 'catalog:'
-        version: '@jsr/ijia__school-db@0.0.5'
+        version: '@jsr/ijia__school-db@0.0.6'
       '@playwright/test':
         specifier: ^1.55.0
         version: 1.60.0
@@ -115,7 +115,7 @@ importers:
         version: 1.9.3
       cropperjs:
         specifier: ^1.6.2
-        version: 1.6.2
+        version: 1.6.3
       dayjs:
         specifier: ^1.11.13
         version: 1.11.20
@@ -185,7 +185,7 @@ importers:
         version: link:../web_dto
       '@ijia/school-db':
         specifier: 'catalog:'
-        version: '@jsr/ijia__school-db@0.0.5'
+        version: '@jsr/ijia__school-db@0.0.6'
       '@redis/client':
         specifier: ^6.1.0
         version: 6.1.0
@@ -219,7 +219,7 @@ importers:
     dependencies:
       '@ijia/school-db':
         specifier: 'catalog:'
-        version: '@jsr/ijia__school-db@0.0.5'
+        version: '@jsr/ijia__school-db@0.0.6'
     devDependencies:
       typedoc:
         specifier: ^0.28.15
@@ -1045,8 +1045,8 @@ packages:
   '@jsr/asla__yoursql@0.14.0':
     resolution: {integrity: sha512-0ZmJ3gZQCNG1/2ULU1rpIaSMDlIZrON0UTdYTV6hRVqfg/E1wU7dHTdHsg/M5cSVwCGOMbEksNHoDR4VSJ6Vrg==, tarball: https://npm.jsr.io/~/11/@jsr/asla__yoursql/0.14.0.tgz}
 
-  '@jsr/ijia__school-db@0.0.5':
-    resolution: {integrity: sha512-EfM3A1yz73uMZ2zhArnL28CKgCXWqMU6kHHbHlHs+1RtaOrhXyz5M+iRDVmP3XjPBQS+7jElr3bRTntjqqn/QQ==, tarball: https://npm.jsr.io/~/11/@jsr/ijia__school-db/0.0.5.tgz}
+  '@jsr/ijia__school-db@0.0.6':
+    resolution: {integrity: sha512-RBmcRZrcfZIxldoEa3jtrbLp9vkxlt/Y54k5vgM20nV9jRnnWQgt9veunVzP61zieMvvaeHrALbi5KaP1afCjg==, tarball: https://npm.jsr.io/~/11/@jsr/ijia__school-db/0.0.6.tgz}
 
   '@jsr/std__bytes@1.0.6':
     resolution: {integrity: sha512-St6yKggjFGhxS52IFLJWvkchRFbAKg2Xh8UxA4S1EGz7GJ2Ui+ssDDldj/w2c8vCxvl6qgR0HaYbKeFJNqujmA==, tarball: https://npm.jsr.io/~/11/@jsr/std__bytes/1.0.6.tgz}
@@ -2270,8 +2270,8 @@ packages:
     resolution: {integrity: sha512-AdmX6xUzdNASswsFtmwSt7Vj8po9IuqXm0UXz7QKPuEUmPB4XyjGfaAr2PSuELMwkRMVH1EpIkX5bTZGRB3eCA==}
     engines: {node: '>=10'}
 
-  cropperjs@1.6.2:
-    resolution: {integrity: sha512-nhymn9GdnV3CqiEHJVai54TULFAE3VshJTXSqSJKa8yXAKyBKDWdhHarnlIPrshJ0WMFTGuFvG02YjLXfPiuOA==}
+  cropperjs@1.6.3:
+    resolution: {integrity: sha512-BRb0PRIzjbfM5n+i6L2D85pSbXI/w6cnnwb9W9cRKgAmbiP+OjDeq+Irhd86IujZDXm/7JWECfscllFIdrlmfw==}
 
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
@@ -4122,7 +4122,7 @@ snapshots:
 
   '@jsr/asla__yoursql@0.14.0': {}
 
-  '@jsr/ijia__school-db@0.0.5':
+  '@jsr/ijia__school-db@0.0.6':
     dependencies:
       '@jsr/asla__pg': 0.2.4
       '@jsr/asla__yoursql': 0.14.0
@@ -5299,7 +5299,7 @@ snapshots:
       path-type: 4.0.0
       yaml: 1.10.3
 
-  cropperjs@1.6.2: {}
+  cropperjs@1.6.3: {}
 
   csstype@3.1.3: {}
 
@@ -5709,7 +5709,7 @@ snapshots:
 
   react-cropper@2.3.3(react@19.2.3):
     dependencies:
-      cropperjs: 1.6.2
+      cropperjs: 1.6.3
       react: 19.2.3
 
   react-dom@19.2.3(react@19.2.3):

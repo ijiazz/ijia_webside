@@ -28,7 +28,7 @@ describe("默认组", function () {
     await page.goto(getPostListURL());
     await changePageToMobile(page);
 
-    await page.locator(".e2e-publish-post-btn").click();
+    await page.getByRole("button", { name: "发布帖子" }).click();
     await page.getByRole("textbox", { name: "请输入内容" }).click();
     await page.getByRole("textbox", { name: "请输入内容" }).fill("一条移动端普通帖子");
     await page.getByRole("button", { name: "发 布" }).click();
@@ -83,7 +83,7 @@ describe("默认组", function () {
     await expect(postItems.first().getByText("仅自己可见的帖子")).toBeVisible();
 
     {
-      const bobContext = await browser.newContext();
+      await using bobContext = await browser.newContext();
 
       const page = await bobContext.newPage();
 
@@ -135,6 +135,6 @@ test("分组超过4个时，选择分组应显示下拉框", async function ({ p
 });
 async function initUser() {
   const aliceInfo = await initAlice();
-  const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
+  const aliceToken = await loginGetToken(aliceInfo.email);
   return { ...aliceInfo, token: aliceToken };
 }

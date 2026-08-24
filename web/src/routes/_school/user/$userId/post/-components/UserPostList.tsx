@@ -15,10 +15,10 @@ import { api } from "@/request/client.ts";
 import { useElementOverScreen } from "@/lib/hook/observer.ts";
 type PostListProps = {
   groupId?: number;
-  userId: number;
+  userId: string;
   canEdit?: boolean;
   hideReport?: boolean;
-  onOpenComment?: (postId: number) => void;
+  onOpenComment?: (postId: string) => void;
 };
 export function UserPostList(props: PostListProps) {
   const { groupId, userId, canEdit, hideReport, onOpenComment } = props;

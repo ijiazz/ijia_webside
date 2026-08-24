@@ -1,11 +1,10 @@
 import { Button, Tag, Typography } from "antd";
-import React from "react";
 import { LikeButton } from "../LikeButton.tsx";
-import { PostCommentNode } from "./api.ts";
+import { CommentVoNode } from "./api.ts";
 const { Text } = Typography;
 
 export function CommentFooter(props: {
-  node: PostCommentNode;
+  node: CommentVoNode;
   onLike?: (isCancel: boolean) => void;
   onReply?: () => void;
 }) {
@@ -31,7 +30,6 @@ export function CommentFooter(props: {
           <Tag color="red">已举报</Tag>
         ) : (
           <LikeButton
-            className="e2e-post-comment-like-btn"
             disabled={!node.curr_user}
             isLike={node.curr_user?.is_like}
             onTrigger={(isCancel) => onLike?.(isCancel)}
@@ -44,7 +42,6 @@ export function CommentFooter(props: {
       </div>
       <LikeButton
         size="small"
-        className="e2e-post-comment-like-btn"
         disabled={!currUser}
         isLike={currUser?.is_like}
         onTrigger={onLike}

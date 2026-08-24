@@ -16,7 +16,7 @@ export type PostListProps<T extends PublicPost> = Pick<React.HTMLAttributes<HTML
   data: T[];
   setData: Dispatch<React.SetStateAction<T[]>>;
   loadItem: (id: number) => Promise<T>;
-  onOpenComment?: (postId: number) => void;
+  onOpenComment?: (postId: string) => void;
   onSetting?: (item: T) => void;
   onEdit?: (item: T) => void;
   canEdit?: boolean;
@@ -129,6 +129,7 @@ export function PostList<T extends PublicPost>(props: PostListProps<T>) {
         return (
           <WallPostCard
             className={cx(PostListCSS, "e2e-post-item")}
+            data-testid={`post-${item.post_id}`}
             key={item.post_id}
             item={item}
             moreMenus={moreMenus}

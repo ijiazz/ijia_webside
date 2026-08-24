@@ -1,8 +1,7 @@
-import { CreateCommentItemData, GetPostCommentListOption } from "@/dto.ts";
-import { DbPostComment } from "@ijia/school-db/db";
+import { DbComment } from "@ijia/school-db/db";
 import { Api, JWT_TOKEN_KEY } from "#test/fixtures/hono.ts";
+import type { GetCommentListInput } from "@ijia/api-types";
 import { preparePost } from "./prepare_post.ts";
-import { createComment } from "@/routers/post/comment/-sql/post_comment.sql.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
 import { dbPool } from "@/db/client.ts";
@@ -10,62 +9,69 @@ import { dbPool } from "@/db/client.ts";
 export class PostComment {
   constructor(
     readonly api: Api,
-    readonly postId: number,
-  ) {}
+    commentTreeId: string | number,
+  ) {
+    this.commentTreeId = commentTreeId.toString();
+  }
+  readonly commentTreeId: string;
   async createComment(
     text: string,
     option: {
-      replyCommentId?: number;
+      replyCommentId?: number | string;
       token?: string;
     } = {},
   ) {
-    return this.api["/post/comment/entity"].put({
-      body: { text, replyCommentId: option.replyCommentId, postId: this.postId },
+    const result = await this.api["/comment"].put({
+      body: { text, comment_tree_id: this.commentTreeId, comment_reply_id: option.replyCommentId?.toString() },
       [JWT_TOKEN_KEY]: option.token,
     });
+    return { id: Number(result.comment_id) };
   }
-  async getComment(commentId: number, token?: string) {
-    return this.api["/post/comment/list"].get({
-      query: { commentId },
+  async getComment(commentId: string | number, token?: string) {
+    return this.api["/comment-tree/:commentTreeId/list"].get({
+      params: { commentTreeId: this.commentTreeId },
+      query: { commentId: commentId.toString() },
       [JWT_TOKEN_KEY]: token,
     });
   }
-  async getCommentList(option?: GetPostCommentListOption, token?: string) {
-    return this.api["/post/comment/list"].get({
-      query: { ...option, postId: this.postId },
+  async getCommentList(option?: GetCommentListInput, token?: string) {
+    return this.api["/comment-tree/:commentTreeId/list"].get({
+      params: { commentTreeId: this.commentTreeId },
+      query: option,
       [JWT_TOKEN_KEY]: token,
     });
   }
-  async getReplyList(commentId: number, option?: GetPostCommentListOption, token?: string) {
-    return this.api["/post/comment/list"].get({
-      query: { ...option, parentCommentId: commentId },
+  async getReplyList(commentId: string | number, option?: GetCommentListInput, token?: string) {
+    return this.api["/comment-tree/:commentTreeId/list"].get({
+      params: { commentTreeId: this.commentTreeId },
+      query: { ...option, parentCommentId: commentId.toString() },
       [JWT_TOKEN_KEY]: token,
     });
   }
-  async deleteComment(commentId: number, option: { token?: string } = {}) {
-    return this.api["/post/comment/entity/:commentId"].delete({
-      params: { commentId },
+  async deleteComment(commentId: string | number, option: { token?: string } = {}) {
+    return this.api["/comment/:commentId"].delete({
+      params: { commentId: commentId.toString() },
       [JWT_TOKEN_KEY]: option.token,
     });
   }
 }
 
-export async function setCommentLike(api: Api, commentId: number, token?: string) {
-  return api["/post/comment/entity/:commentId/like"].post({
-    params: { commentId },
+export async function setCommentLike(api: Api, commentId: string | number, token?: string) {
+  return api["/comment/:commentId/like"].post({
+    params: { commentId: commentId.toString() },
     [JWT_TOKEN_KEY]: token,
   });
 }
-export async function cancelCommentLike(api: Api, commentId: number, token?: string) {
-  return api["/post/comment/entity/:commentId/like"].post({
-    params: { commentId },
+export async function cancelCommentLike(api: Api, commentId: string | number, token?: string) {
+  return api["/comment/:commentId/like"].post({
+    params: { commentId: commentId.toString() },
     query: { isCancel: true },
     [JWT_TOKEN_KEY]: token,
   });
 }
-export async function reportComment(api: Api, commentId: number, reason?: string, token?: string) {
-  return api["/post/comment/entity/:commentId/report"].post({
-    params: { commentId },
+export async function reportComment(api: Api, commentId: string | number, reason?: string, token?: string) {
+  return api["/comment/:commentId/report"].post({
+    params: { commentId: commentId.toString() },
     body: { reason },
     [JWT_TOKEN_KEY]: token,
   });
@@ -73,32 +79,31 @@ export async function reportComment(api: Api, commentId: number, reason?: string
 
 /** 直接从数据库查询评论的数据 */
 export async function getCommentDbRow(commentId: number) {
-  return dbPool.queryFirstRow(select("*").from("post_comment").where(`id=${commentId}`).limit(1));
+  return dbPool.queryFirstRow(select("*").from("comment").where(`id=${commentId}`).limit(1));
 }
 export async function prepareCommentPost(api: Api) {
-  const post1 = await preparePost(api, undefined);
-  const action = new PostComment(api, post1.post.id);
-  return { ...post1, action };
+  const { alice, post } = await preparePost(api, undefined);
+  const info = await dbPool.queryFirstRow<{ comment_tree_id: number }>(
+    v.gen`SELECT comment_tree_id FROM post WHERE id=${post.id}`,
+  );
+  const action = new PostComment(api, info.comment_tree_id);
+  return { alice, post: { ...post, ...info }, action };
 }
-export async function getPostCommentTotal(postId: number) {
+export async function getCommentTotal(commentTreeId: number) {
   return dbPool
     .queryFirstRow(
-      select("comment_num")
-        .from("public.post")
-        .where(`id=${v(postId)}`),
+      select("comment_total")
+        .from("comment_tree")
+        .where(`id=${v(commentTreeId)}`),
     )
-    .then((r) => r.comment_num);
+    .then((r) => r.comment_total);
 }
 
-export async function prepareCommentToDb(postId: number, userId: number, comments: CreateCommentItemData[]) {
-  return createComment(postId, userId, comments);
-}
-
-export type CommentInfo = Pick<DbPostComment, "like_count" | "dislike_count">;
+export type CommentInfo = Pick<DbComment, "like_count" | "dislike_count">;
 export async function getCommentStat(commentId: number): Promise<CommentInfo> {
   return dbPool.queryFirstRow(
     select<CommentInfo>({ like_count: true, dislike_count: true })
-      .from("post_comment")
+      .from("comment")
       .where(`id=${v(commentId)}`),
   );
 }

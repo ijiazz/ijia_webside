@@ -4,12 +4,10 @@ import { POST_LONG, POST_GROUPS } from "@/utils/post.ts";
 import { DbPostGroupCreate, PUBLIC_CLASS_ROOT_ID } from "@ijia/school-db/db";
 
 export default async function setup() {
-  await dbPool.execute(`CREATE SEQUENCE IF NOT EXISTS e2e_seq START 1 INCREMENT 1`);
-
   await initPublicClass();
   await initPostGroup();
   await initRoles();
-
+  await dbPool.execute(`CREATE SEQUENCE IF NOT EXISTS test_id_seq START 1;`);
   console.log("setup complete");
 }
 async function initPostGroup() {

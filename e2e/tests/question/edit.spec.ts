@@ -6,7 +6,7 @@ import { initAdmin, initAlice, loginGetToken } from "@/utils/user.ts";
 
 test("审核通过的题目不能直接通过 URL 进入编辑页", async function ({ page, context }) {
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   const admin = await initAdmin();
 
   const text = "e2e-edit-passed-before";
@@ -30,7 +30,7 @@ test("审核通过的题目不能直接通过 URL 进入编辑页", async functi
 //TODO: 允许编辑审核通过的题目
 test.skip("审核通过的题目时，只能修改部分字段", async function ({ page, context }) {
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   const admin = await initAdmin();
   const originalText = "e2e-edit-passed-before";
   const updatedText = "e2e-edit-passed-after";
@@ -68,7 +68,7 @@ test.skip("审核通过的题目时，只能修改部分字段", async function 
 
 test("编辑审核中的题目时，可以修改全部编辑字段", async function ({ page, context }) {
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   const originalText = "e2e-edit-pending-before";
   const updatedText = "e2e-edit-pending-after";
 
@@ -100,7 +100,7 @@ test("编辑审核中的题目时，可以修改全部编辑字段", async funct
 
 test("编辑审核不通过的题目时，可以修改全部编辑字段", async function ({ page, context }) {
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   const admin = await initAdmin();
   const originalText = "e2e-edit-rejected-before";
   const updatedText = "e2e-edit-rejected-after";

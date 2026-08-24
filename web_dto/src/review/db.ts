@@ -7,14 +7,13 @@ export enum ReviewDisplayItemType {
   /** 公共评论 */
   comment = "comment",
 }
+//TODO: 从 school-db 中导入 重导出
 export enum ReviewTargetType {
   /** 帖子 */
   post = "post",
-  /** 帖子评论 */
-  post_comment = "post_comment",
   /** 考试题目 */
   exam_question = "question",
-  /** 公共评论 */
+  /** 评论 */
   comment = "comment",
 }
 

@@ -2,7 +2,8 @@ import { api, JWT_TOKEN_KEY } from "@/utils/fetch.ts";
 import { CreatePostParam, GetPostListParam } from "@ijia/api-types";
 import { getAppURLFromRoute } from "@/utils/app.ts";
 import { dbPool } from "@/db/client.ts";
-import { insertIntoValues } from "@/sql/utils.ts";
+import { insertIntoValues, v } from "@/sql/utils.ts";
+import { select } from "@asla/yoursql";
 
 export async function createPostGroup(name: string, description?: string) {
   await dbPool.execute(
@@ -13,22 +14,33 @@ export async function getPublicPost(option: GetPostListParam) {
   return api["/post/list"].get({ query: option });
 }
 export async function createPost(postParam: CreatePostParam, token: string) {
-  return api["/post/entity"].put({
+  const result = await api["/post/entity"].put({
     body: postParam,
     [JWT_TOKEN_KEY]: token,
   });
+  const { comment_tree_id } = await dbPool.queryFirstRow<{ comment_tree_id: number }>(
+    select("comment_tree_id")
+      .from("post")
+      .where(`id=${v(result.id)}`),
+  );
+  return { ...result, comment_tree_id };
 }
 export async function createCommentUseApi(config: {
-  postId: number;
+  commentTreeId: number | string;
   text: string;
   token?: string;
-  replyCommentId?: number;
+  replyCommentId?: number | string;
 }) {
-  const { postId, text, replyCommentId, token } = config;
-  return api["/post/comment/entity"].put({
-    body: { text, replyCommentId, postId },
+  const { commentTreeId, text, replyCommentId, token } = config;
+  const result = await api["/comment"].put({
+    body: {
+      text,
+      comment_tree_id: commentTreeId.toString(),
+      comment_reply_id: replyCommentId?.toString(),
+    },
     [JWT_TOKEN_KEY]: token,
   });
+  return { id: Number(result.comment_id) };
 }
 
 export function getPostListURL() {

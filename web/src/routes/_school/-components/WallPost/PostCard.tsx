@@ -1,5 +1,5 @@
 import { Avatar, Button, Dropdown, MenuProps, Space, Tag, Tooltip } from "antd";
-import { VLink } from "@/lib/components/VLink.tsx";
+import { Link } from "@tanstack/react-router";
 import { PostContent } from "../post/PostContent.tsx";
 import { MoreOutlined, UserOutlined } from "@ant-design/icons";
 import { PinkPostCard } from "../../wall/-components/PinkCard.tsx";
@@ -12,13 +12,13 @@ export type PCardProps = {
   item: Post;
   moreMenus?: MenuProps["items"];
   onLike?: (postId: number, isCancel: boolean) => void;
-  onOpenComment?: (postId: number) => void;
+  onOpenComment?: (postId: string) => void;
   className?: string;
   style?: React.CSSProperties;
 };
 
 export function WallPostCard(props: PCardProps) {
-  const { item, moreMenus, onLike, onOpenComment, className, style } = props;
+  const { item, moreMenus, onLike, onOpenComment, ...rest } = props;
   const theme = useThemeToken();
   const author = item.author;
   const isAnonymous = !author;
@@ -27,14 +27,15 @@ export function WallPostCard(props: PCardProps) {
   const { review, config } = item;
   return (
     <PinkPostCard
+      {...rest}
       icon={
-        <VLink to={undefined} target="_blank">
-          {isAnonymous ? (
-            <Avatar icon={<UserOutlined />} />
-          ) : (
-            <Avatar src={author?.avatar_url}>{author?.user_id}</Avatar>
-          )}
-        </VLink>
+        isAnonymous ? (
+          <Avatar icon={<UserOutlined />} />
+        ) : (
+          <Link to="/user/$userId" params={{ userId: author.user_id }} target="_blank">
+            <Avatar src={author.avatar_url}>{author.user_id}</Avatar>
+          </Link>
+        )
       }
       header={{
         userName,
@@ -50,7 +51,7 @@ export function WallPostCard(props: PCardProps) {
           {review?.status === ReviewStatus.rejected && <Tag color="red">审核不通过</Tag>}
           {item.curr_user && (
             <Dropdown menu={{ items: moreMenus }}>
-              <Button className="e2e-post-item-extra-btn" type="text" icon={<MoreOutlined />}></Button>
+              <Button type="text" icon={<MoreOutlined />}></Button>
             </Dropdown>
           )}
         </Space>
@@ -63,11 +64,9 @@ export function WallPostCard(props: PCardProps) {
           likeCount={item.stat.like_total}
           likeDisabled={!item.curr_user}
           onPostLike={(isCancel) => onLike?.(item.post_id, isCancel)}
-          onOpenComment={() => onOpenComment?.(item.post_id)}
+          onOpenComment={() => onOpenComment?.(item.post_id.toString())}
         />
       }
-      className={className}
-      style={style}
     >
       <div>
         <PostContent text={item.content_text} textStruct={item.content_text_structure} media={item.media} />
@@ -94,16 +93,15 @@ function PostFooter(props: {
         alignItems: "center",
       }}
     >
-      <VLink style={{ color: "inherit" }} target="_blank" aria-label="打开详情页">
-        <Tooltip title="详情页开发中，敬请期待">
-          <Button
-            type="text"
-            icon={<ExportOutlined />}
-            disabled // TODO
-            style={{ fontSize: 16, width: "100%" }}
-          />
-        </Tooltip>
-      </VLink>
+      <Tooltip title="详情页开发中，敬请期待">
+        <Button
+          type="text"
+          aria-label="打开详情页"
+          icon={<ExportOutlined />}
+          disabled
+          style={{ fontSize: 16, width: "100%" }}
+        />
+      </Tooltip>
       <Button
         aria-label="打开评论"
         style={{ fontSize: 16, width: "100%" }}
@@ -119,8 +117,7 @@ function PostFooter(props: {
         </div>
       ) : (
         <LikeButton
-          aria-label="点赞或取消点击"
-          className="e2e-post-item-like-btn"
+          aria-label={props.isLike ? "取消点赞" : "点赞"}
           disabled={props.likeDisabled}
           isLike={props.isLike}
           onTrigger={(isCancel) => props.onPostLike?.(isCancel)}

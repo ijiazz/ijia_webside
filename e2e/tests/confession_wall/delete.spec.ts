@@ -7,7 +7,7 @@ test("删除", async function ({ page, context }) {
   test.setTimeout(30000);
   {
     const aliceInfo = await initAlice();
-    const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
+    const aliceToken = await loginGetToken(aliceInfo.email);
     await createPost({ content_text: "content4" }, aliceToken);
     await createPost({ content_text: "content3" }, aliceToken);
     await createPost({ content_text: "content2" }, aliceToken);
@@ -34,11 +34,11 @@ test("删除", async function ({ page, context }) {
 
 test("不能删除别人的内容", async function ({ page, context }) {
   const aliceInfo = await initAlice();
-  const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
+  const aliceToken = await loginGetToken(aliceInfo.email);
   await createPost({ content_text: "alice" }, aliceToken);
 
   const bobInfo = await initBob();
-  const bobToken = await loginGetToken(bobInfo.email, bobInfo.password);
+  const bobToken = await loginGetToken(bobInfo.email);
 
   await setContextLogin(context, bobToken);
 

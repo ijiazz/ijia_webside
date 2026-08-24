@@ -1,12 +1,12 @@
 import { Button, Dropdown, MenuProps, Tag, Typography } from "antd";
 import { CaretRightOutlined, DeleteOutlined, MoreOutlined, WarningOutlined } from "@ant-design/icons";
 import { css, cx } from "@emotion/css";
-import { PostCommentNode } from "./api.ts";
+import { CommentVoNode } from "./api.ts";
 
 const { Text } = Typography;
 
 type PostHeaderProps = {
-  node: Pick<PostCommentNode, "comment_id" | "reply_to" | "curr_user"> & { user?: { user_name: string } };
+  node: Pick<CommentVoNode, "comment_id" | "reply_to" | "curr_user"> & { user?: { user_name: string } };
   className?: string;
   onDelete?: () => void;
   onReport?: () => void;
@@ -39,14 +39,14 @@ export function CommentHeader(props: PostHeaderProps) {
           <>
             <CaretRightOutlined />
             <span>{node.reply_to.user.user_name}</span>
-            {node.reply_to.is_deleted && <Tag style={{ marginLeft: 4 }}>已删除2</Tag>}
+            {node.reply_to.is_deleted && <Tag style={{ marginLeft: 4 }}>已删除</Tag>}
           </>
         )}
       </Text>
       <div>
         {menus.length ? (
           <Dropdown rootClassName="e2e-comment-more-operation" menu={{ items: menus }}>
-            <Button icon={<MoreOutlined />} type="text" />
+            <Button icon={<MoreOutlined />} aria-label="更多菜单" type="text" />
           </Dropdown>
         ) : undefined}
       </div>

@@ -1,7 +1,6 @@
 import { Context } from "hono";
 import { UserInfo } from "./userInfo.ts";
 import { Route } from "@/lib/route.ts";
-
 type HonoVariables = {
   userInfo: UserInfo;
 };

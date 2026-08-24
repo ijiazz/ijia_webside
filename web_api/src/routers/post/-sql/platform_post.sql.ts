@@ -152,7 +152,6 @@ function toPostListDto(list: SelectAssetList[]) {
     };
     let url: string | undefined;
 
-    //TODO:补充其他平台
     switch (item.platform) {
       case Platform.douYin: {
         url = `https://www.douyin.com/video/${item.post_id}`;

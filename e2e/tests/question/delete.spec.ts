@@ -5,7 +5,7 @@ import { initAlice, loginGetToken } from "@/utils/user.ts";
 
 test("用户删除题目", async function ({ page, context }) {
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   const deletedText = "e2e-delete-question-target";
   const remainText = "e2e-delete-question-remain";
 

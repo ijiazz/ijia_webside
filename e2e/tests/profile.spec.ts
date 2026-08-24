@@ -5,7 +5,7 @@ import { test, expect, Page } from "@playwright/test";
 const classOptionClassName = ".e2e-class-option";
 test("账号绑定与解除关联", async function ({ page, context }) {
   const Alice = await initAlice();
-  const token = await loginGetToken(Alice.email, Alice.password);
+  const token = await loginGetToken(Alice.email);
   await setContextLogin(context, token);
 
   const bob = await createDouyinUser({
@@ -53,7 +53,7 @@ test("账号绑定与解除关联", async function ({ page, context }) {
 
 test("修改基础配置", async function ({ page, context }) {
   const Alice = await initAlice();
-  const token = await loginGetToken(Alice.email, Alice.password);
+  const token = await loginGetToken(Alice.email);
   await setContextLogin(context, token);
   await page.goto(ProfileCenterURL);
 

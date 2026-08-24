@@ -1,4 +1,3 @@
-import React from "react";
 import { css, cx } from "@emotion/css";
 import { CardLayoutProps } from "@/lib/components/card/card.tsx";
 import { PostHeader, PostHeaderProps } from "../../-components/post.tsx";
@@ -6,10 +5,10 @@ import { useThemeToken } from "@/provider/mod.tsx";
 export type { CardLayoutProps };
 
 export function PinkPostCard(props: Omit<CardLayoutProps, "header"> & { header: PostHeaderProps }) {
-  const { children, extra, header, footer, icon, style, className } = props;
+  const { children, extra, header, footer, icon, style, className, ...rest } = props;
   const token = useThemeToken();
   return (
-    <div className={cx(CardLayoutCSS, className)} style={{ background: token.colorBgContainer, ...style }}>
+    <div {...rest} className={cx(CardLayoutCSS, className)} style={{ background: token.colorBgContainer, ...style }}>
       <div className="card-layout-header">
         <div className="card-layout-icon">{icon}</div>
         <PostHeader {...header} style={{ flex: 1 }} />

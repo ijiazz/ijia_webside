@@ -1,5 +1,5 @@
 import { checkValue, checkValueAsync } from "@/common/check.ts";
-import { reportPost } from "../../-sql/report.sql.ts";
+import { reportPost } from "../../-sql/like.sql.ts";
 import routeGroup from "../../_route.ts";
 import { integer, optional } from "@asla/wokao";
 

@@ -11,9 +11,6 @@ import type {
   PostGroupResponse,
   PostUserResponse,
 } from "./post/_dto/mod.ts";
-import type { PostCommentApi } from "./post_comment.ts";
-
-export interface PostApi extends PostCommentApi {}
 
 export interface PostApi {
   /** 获取平台帖子列表 */

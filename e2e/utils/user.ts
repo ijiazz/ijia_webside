@@ -1,52 +1,18 @@
 import { dbPool } from "@/db/client.ts";
-import { createUser, addRoleToUser } from "@ijia/school-db/query";
 import { api } from "@/utils/fetch.ts";
-import { insertIntoValues, v } from "@/sql/utils.ts";
+import { insertIntoValues } from "@/sql/utils.ts";
 import { DbPlaUserCreate, Platform } from "@ijia/school-db/db";
+import { newTestUser, getUniqueIdFormDb } from "@ijia/school-db/testlib";
 import { getAppURLFromRoute } from "@/utils/app.ts";
-import { getSeqIntId } from "./seq.ts";
-
-export const E2E_PASSWORD = {
-  saved:
-    "7bb09a5da06c0db9593efcc439f9c289ac446c084d57b6035e2b8b4d3b1b5d3034091ca9a58ab83d695974a67301df687e7db252d17e57c0089c589155f1676e",
-  salt: "3a150d2378a64a49b7ca8d7e80bb51ab",
-  raw: "123",
-};
-
-async function getNextUserId() {
-  const sql = v.gen`SELECT nextval(pg_get_serial_sequence('public.user', 'id'))::INT AS id`;
-  const { id: id } = await dbPool.queryFirstRow<{ id: number }>(sql);
-  return id;
-}
 
 export type AccountInfo = {
   id: number;
   name: string;
   email: string;
-  password: string;
 };
-async function createNewUser(name?: string): Promise<AccountInfo> {
-  const id = await getNextUserId();
-  if (!name) name = `e2e-${id}`;
-
-  const email = `e2e-${id}@ijiazz.cn`.toLocaleLowerCase();
-  const res = await createUser(email, {
-    id,
-    nickname: name,
-    password: E2E_PASSWORD.saved,
-    salt: E2E_PASSWORD.salt,
-  });
-
-  return {
-    id: res.user_id,
-    name: name,
-    email: email,
-    password: E2E_PASSWORD.raw,
-  };
-}
 
 export async function createDouyinUser(item: Pick<DbPlaUserCreate, "user_name" | "signature">) {
-  const uniqueId = await getSeqIntId();
+  const uniqueId = await getUniqueIdFormDb();
   const uid = "e2e-" + uniqueId;
   const sec_uid = "e2e-sec-" + uniqueId;
 
@@ -63,21 +29,22 @@ export async function createDouyinUser(item: Pick<DbPlaUserCreate, "user_name" |
     sec_uid,
   };
 }
-export function initAlice() {
-  return createNewUser("Alice");
+export async function initAlice(): Promise<AccountInfo> {
+  const res = await newTestUser("Alice");
+  return { id: res.id, name: res.nickname, email: res.email };
 }
-export function initBob() {
-  return createNewUser("Bob");
-}
-
-export async function initAdmin() {
-  const admin = await createNewUser("Admin");
-  await addRoleToUser(admin.id, "admin");
-  const token = await loginGetToken(admin.email, admin.password);
-  return { ...admin, token };
+export async function initBob(): Promise<AccountInfo> {
+  const res = await newTestUser("Bob");
+  return { id: res.id, name: res.nickname, email: res.email };
 }
 
-export async function loginGetToken(email: string, password?: string) {
+export async function initAdmin(): Promise<AccountInfo & { token: string }> {
+  const admin = await newTestUser("Admin", { roles: ["admin"] });
+  const token = await loginGetToken(admin.email);
+  return { id: admin.id, name: admin.nickname, email: admin.email, token };
+}
+
+export async function loginGetToken(email: string) {
   const { token, ...rest } = await api["/test/passport/login"].fetchResult<{ token: string }>({
     body: { email: email },
     method: "POST",

@@ -18,10 +18,15 @@ export function CommentTree<T extends CommentNode>(props: CommentTreeProps<T>) {
   }
 
   return (
-    <div {...reset} className={cx(CommentTreeCSS, `post-comment-level-${testLevel}`, className)}>
+    <div {...reset} className={cx(CommentTreeCSS, className)}>
       {renderMap(data, (item, key) => {
         return (
-          <div key={key}>
+          <div
+            key={key}
+            className="e2e-comment-item"
+            data-comment-level={testLevel}
+            data-testid={`comment-${item.key}`}
+          >
             {avatarRender?.(item)}
             {headerRender?.(item)}
             <div></div>

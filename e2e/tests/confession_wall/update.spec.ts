@@ -43,11 +43,11 @@ test("将作品可见状态修改", async function ({ page, context }) {
 
 async function init(page: Page) {
   const aliceInfo = await initAlice();
-  const aliceToken = await loginGetToken(aliceInfo.email, aliceInfo.password);
+  const aliceToken = await loginGetToken(aliceInfo.email);
   const alice = { ...aliceInfo, token: aliceToken };
 
   const bobInfo = await initBob();
-  const bobToken = await loginGetToken(bobInfo.email, bobInfo.password);
+  const bobToken = await loginGetToken(bobInfo.email);
 
   await createPost({ content_text: "alice" }, aliceToken);
   await createPost({ content_text: "bob" }, bobToken);

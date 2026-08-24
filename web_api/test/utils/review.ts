@@ -84,7 +84,7 @@ export async function getCommentReviewStatus(commentId: number): Promise<Comment
       review_id: "r.id",
       remark: "r.comment",
     })
-      .from("post_comment", { as: "c" })
+      .from("comment", { as: "c" })
       .leftJoin("review", { as: "r", on: "r.id=c.review_id" })
       .where([`c.id=${v(commentId)}`]),
   );

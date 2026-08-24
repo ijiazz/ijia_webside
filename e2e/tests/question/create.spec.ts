@@ -5,7 +5,7 @@ import { initAlice, loginGetToken } from "@/utils/user.ts";
 
 test("用户创建题目", async function ({ page, context }) {
   const alice = await initAlice();
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   const questionText = "e2e-create-question-text";
 
   await setContextLogin(context, aliceToken);

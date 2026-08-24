@@ -1,18 +1,18 @@
-import { CommentList } from "./comment/PostCommentList.tsx";
-import { Drawer, Spin } from "antd";
+import { CommentList, CommentListProps } from "./comment/CommentList.tsx";
+import { Drawer } from "antd";
 import { LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
 import { Suspense } from "react";
+import { ErrorBoundary, PageSpin } from "@/components/page_state.tsx";
 
-export function CommentDrawer(props: {
+export type CommentDrawerProps = Omit<CommentListProps, "commentTreeId"> & {
   open?: boolean;
   onClose?: () => void;
-  /** 需要根据 postId 获取评论权限 */
-  postId?: string | number | null;
-}) {
-  const { onClose, postId: postId, open } = props;
+  commentTreeId?: string;
+};
+export function CommentDrawer(props: CommentDrawerProps) {
+  const { onClose, open, ...rest } = props;
 
   const isHorizontal = useLayoutDirection() === LayoutDirection.Horizontal;
-  const postIdNum = typeof postId === "string" ? +postId : typeof postId === "number" ? postId : undefined;
   return (
     <Drawer
       open={open}
@@ -29,7 +29,11 @@ export function CommentDrawer(props: {
         },
       }}
     >
-      <Suspense fallback={<Spin />}>{postIdNum !== undefined && <CommentList postId={postIdNum} />}</Suspense>
+      <ErrorBoundary getResetKey={rest.commentTreeId ?? ""}>
+        <Suspense fallback={<PageSpin />}>
+          <CommentList commentTreeId={rest.commentTreeId} {...rest} />
+        </Suspense>
+      </ErrorBoundary>
     </Drawer>
   );
 }

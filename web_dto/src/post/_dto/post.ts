@@ -1,11 +1,11 @@
-import type { CursorListDto, TextStructure, ReviewStatus } from "../../common.ts";
+import type { CursorListResult, TextStructure, ReviewStatus } from "../../common.ts";
 import type { PostGroupInfo } from "./post_group.ts";
 import type { PostBase, PostUserInfo } from "./common.ts";
 export type GetPostResponse = {
   item: Post;
 };
-export type PostListResponse = CursorListDto<PublicPost, string> & { needLogin?: boolean };
-export type PostUserResponse = CursorListDto<Post, string>;
+export type PostListResponse = CursorListResult<PublicPost, string> & { needLogin?: boolean };
+export type PostUserResponse = CursorListResult<Post, string>;
 
 type GetPostListBaseParam = {
   number?: number;
@@ -70,6 +70,7 @@ export type PublicPost = PostBase & {
     dislike_total: number;
     comment_total: number;
   };
+  comment_tree_id: string | null;
 };
 
 type PostConfig = {

@@ -35,7 +35,7 @@ test("作答记录信息展示", async function ({ page, context }) {
     title: examTitle,
   });
 
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   await setContextLogin(context, aliceToken);
   await page.goto(getShelfExaminationListURL());
 
@@ -111,7 +111,7 @@ test("未开放成绩", async function ({ page, context }) {
     resultAllowViewDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
   });
 
-  const aliceToken = await loginGetToken(alice.email, alice.password);
+  const aliceToken = await loginGetToken(alice.email);
   await setContextLogin(context, aliceToken);
   await page.goto(getShelfExaminationListURL());
 

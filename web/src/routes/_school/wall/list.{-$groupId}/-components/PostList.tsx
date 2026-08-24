@@ -21,7 +21,7 @@ import { useElementOverScreen } from "@/lib/hook/observer.ts";
 import { getLoginURL } from "@/common/host.ts";
 type PostListProps = {
   userId?: number;
-  onOpenComment?: (postId: number) => void;
+  onOpenComment?: (postId: string) => void;
 };
 export function PublicPostList(props: PostListProps) {
   const { userId, onOpenComment } = props;

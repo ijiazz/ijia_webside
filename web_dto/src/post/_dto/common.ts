@@ -11,6 +11,6 @@ export type PostBase = {
 export type PostUserInfo = {
   user_name: string;
   user_id: string;
-  avatar_url: string;
+  avatar_url?: string | null;
   home_page?: string;
 };
