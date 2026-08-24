@@ -2,40 +2,60 @@ import { PublicPost, PostUserInfo } from "@/dto.ts";
 import { jsonb_build_object } from "@/common/sql_util.ts";
 import { select } from "@asla/yoursql";
 import { v } from "@/sql/utils.ts";
+import { TextStructure } from "@ijia/school-db/db";
+import { getUserAvatarPath } from "@/common/oss_url.ts";
 
 export type BaseSelect = {
   post_id: number;
   author: {
-    user_name: string | null;
-    user_id: number;
+    user_name: string;
+    user_id: string;
     avatar_url: string | null;
   } | null;
   publish_time: string | null;
-  create_time: string;
   update_time: string;
-  context_text: string | null;
-  content_text_structure?: string[];
+  content_text: string | null;
+  content_text_structure: TextStructure[] | null;
   ip_location: string | null;
   media: null;
-  group: number | null;
+  group: { group_id: string; group_name: string } | null;
   stat: {
     like_total: number;
     dislike_total: number;
     comment_total: number;
   };
+  comment_tree_id: string | null;
+
+  curr_user?: CurrUserSelect;
+  config?: ConfigSelect;
+  review?: ReviewSelect;
+};
+type CurrUserSelect = {
+  can_update: boolean;
+  disabled_comment_reason: string | null;
+  like_weight: number | null;
+};
+type ConfigSelect = {
+  is_anonymous: boolean;
+  comment_disabled: boolean;
+  self_visible: boolean;
+};
+type ReviewSelect = {
+  status: number | null;
+  remark: string | null;
 };
 
 const BASE_SELECT = {
-  post_id: "p.id::TEXT",
+  post_id: "p.id",
   /**
    * 不是匿名才存在作者信息
    */
   author: `CASE 
       WHEN (get_bit(p.options, 0)='0') 
       THEN (SELECT ${jsonb_build_object({
-        user_name: "u.nickname",
+        user_name: "COALESCE(u.nickname, '')",
         user_id: "u.id ::TEXT",
-        avatar_url: "'/file/avatar/'||u.avatar",
+        avatar_url: "u.avatar",
       } satisfies { [key in keyof PostUserInfo]: string })}
         FROM public.user AS u
         WHERE u.id = p.user_id)
@@ -54,7 +74,7 @@ const BASE_SELECT = {
     comment_total: "(SELECT comment_total FROM comment_tree WHERE id=p.comment_tree_id)",
   }),
   comment_tree_id: "p.comment_tree_id::TEXT",
-} satisfies { [key in keyof PublicPost]: string };
+} satisfies { [key in keyof BaseSelect]: string };
 
 function ifIsAuthor(sql: string, currentUserId: number | null) {
   if (currentUserId === null) return "null";
@@ -111,29 +131,35 @@ export function getCursor(rawList: any[]) {
   const cursor_next = last ? toTimestampCursor(last.publish_time, last.post_id) : null;
   return { cursor_prev, cursor_next };
 }
-export function initRawList(rawList: any[]) {
-  const list = rawList;
 
-  rawList.forEach((item) => {
-    const currUser = item.curr_user;
-    if (currUser) {
-      const weight = currUser.like_weight;
-      delete currUser.like_weight; // 删除不需要的字段
-      const postItem = currUser as NonNullable<PublicPost["curr_user"]>;
-      if (weight) {
-        postItem.is_like = weight > 0; // 是否点赞
-        postItem.is_report = weight < 0; // 是否举报
-      }
-
-      const curr_user: NonNullable<PublicPost["curr_user"]> = currUser;
-      curr_user.can_comment = curr_user.disabled_comment_reason === null;
-    }
-
-    if (item.publish_time) {
-      item.publish_time = new Date(Math.floor(+item.publish_time) * 1000).toISOString();
-    }
+export function initRawList(rawList: BaseSelect[]): PublicPost[] {
+  return rawList.map(({ curr_user, media, ...rest }): PublicPost => {
+    return {
+      ...rest,
+      author: initAuthor(rest.author),
+      curr_user: initRawCurrUser(curr_user),
+      media: media ?? [],
+      publish_time: rest.publish_time ? new Date(Math.floor(+rest.publish_time) * 1000).toISOString() : null,
+    };
   });
-  return list;
+}
+function initRawCurrUser(currUser?: CurrUserSelect | null): PublicPost["curr_user"] | null {
+  if (!currUser) return null;
+  const { like_weight, can_update, disabled_comment_reason } = currUser;
+  return {
+    is_like: like_weight ? like_weight > 0 : false,
+    is_report: like_weight ? like_weight < 0 : false,
+    can_update: can_update,
+    can_comment: disabled_comment_reason === null,
+    disabled_comment_reason: disabled_comment_reason ?? undefined,
+  };
+}
+function initAuthor(author: BaseSelect["author"]): PublicPost["author"] | null {
+  if (!author) return null;
+  return {
+    ...author,
+    avatar_url: getUserAvatarPath(author.avatar_url),
+  };
 }
 export function getCursorCondition(cursorStr: string, forward?: boolean): string {
   const cursor = parserTimestampCursor(cursorStr);

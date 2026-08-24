@@ -70,7 +70,7 @@ export type PublicPost = PostBase & {
     dislike_total: number;
     comment_total: number;
   };
-  comment_tree_id: string;
+  comment_tree_id: string | null;
 };
 
 type PostConfig = {

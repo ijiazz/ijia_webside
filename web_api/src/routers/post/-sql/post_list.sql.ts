@@ -1,7 +1,7 @@
 import { dbPool } from "@/db/client.ts";
 import { GetPostListParam, Post, PublicPost, GetUserPostListParam, CursorListResult } from "@/dto.ts";
 import { v } from "@/sql/utils.ts";
-import { createSelect, getCursor, getCursorCondition, initRawList } from "./_post_list_raw.sql.ts";
+import { BaseSelect, createSelect, getCursor, getCursorCondition, initRawList } from "./_post_list_raw.sql.ts";
 
 const PUBLIC_EXCLUDE = `(p.publish_time IS NULL OR review_status_is_progress(p.review_status) OR p.is_hide)`; // 审核中和审核不通过和已隐藏
 
@@ -34,7 +34,7 @@ export async function getPublicPostList(
    *  使用 publish_time 和 id 作为指针
    *  因为 publish_time 可能为 null，如果 publish_time 为 null，仅使用 id 作为指针
    */
-  const rawList = await dbPool.queryRows(qSql);
+  const rawList = await dbPool.queryRows<BaseSelect>(qSql);
   const { cursor_next, cursor_prev } = getCursor(rawList);
   return { items: initRawList(rawList), cursor_next, cursor_prev };
 }
@@ -49,7 +49,7 @@ export async function getPost(postId: number, currentUserId: number | null): Pro
       return where;
     })
     .limit(1);
-  const rawList = await dbPool.queryRows(qSql);
+  const rawList = await dbPool.queryRows<BaseSelect>(qSql);
   return initRawList(rawList)[0];
 }
 
@@ -82,7 +82,7 @@ export async function getSelfPostList(
    *  使用 publish_time 和 id 作为指针
    *  因为 publish_time 可能为 null，如果 publish_time 为 null，仅使用 id 作为指针
    */
-  const rawList = await dbPool.queryRows(qSql);
+  const rawList = await dbPool.queryRows<BaseSelect>(qSql);
   const { cursor_next, cursor_prev } = getCursor(rawList);
   return { items: initRawList(rawList), cursor_next, cursor_prev };
 }

@@ -1,4 +1,4 @@
-export function getUserAvatarPath<T extends string | undefined | null>(id: T): T {
-  if (typeof id === "string") return `/file/avatar/${id}` as T;
-  return id;
+export function getUserAvatarPath<T extends string | number | undefined | null>(id: T): T extends number ? string : T {
+  if (typeof id === "string" || typeof id === "number") return `/file/avatar/${id}` as any;
+  return id as any;
 }
