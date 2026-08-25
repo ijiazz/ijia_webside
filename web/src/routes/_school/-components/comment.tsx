@@ -1,22 +1,18 @@
-import { CommentList, CommentListProps } from "./comment/CommentList.tsx";
-import { Drawer } from "antd";
+import { Drawer, DrawerProps } from "antd";
+import type { ErrorBoundaryProps } from "@/components/page_state.tsx";
 import { LayoutDirection, useLayoutDirection } from "@/provider/mod.tsx";
 import { Suspense } from "react";
 import { ErrorBoundary, PageSpin } from "@/components/page_state.tsx";
+export * from "./comment/CommentList.tsx";
 
-export type CommentDrawerProps = Omit<CommentListProps, "commentTreeId"> & {
-  open?: boolean;
-  onClose?: () => void;
-  commentTreeId?: string;
+export type CommentDrawerProps = Omit<DrawerProps, "title" | "size" | "placement"> & {
+  getResetKey?: ErrorBoundaryProps["getResetKey"];
 };
 export function CommentDrawer(props: CommentDrawerProps) {
-  const { onClose, open, ...rest } = props;
-
+  const { children, getResetKey, ...rest } = props;
   const isHorizontal = useLayoutDirection() === LayoutDirection.Horizontal;
   return (
     <Drawer
-      open={open}
-      onClose={onClose}
       title="评论"
       size={isHorizontal ? 450 : "60%"}
       placement={isHorizontal ? "right" : "bottom"}
@@ -28,11 +24,10 @@ export function CommentDrawer(props: CommentDrawerProps) {
           padding: 8,
         },
       }}
+      {...rest}
     >
-      <ErrorBoundary getResetKey={rest.commentTreeId ?? ""}>
-        <Suspense fallback={<PageSpin />}>
-          <CommentList commentTreeId={rest.commentTreeId} {...rest} />
-        </Suspense>
+      <ErrorBoundary getResetKey={getResetKey}>
+        <Suspense fallback={<PageSpin />}>{children}</Suspense>
       </ErrorBoundary>
     </Drawer>
   );

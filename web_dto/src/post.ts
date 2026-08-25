@@ -49,7 +49,7 @@ export interface PostApi {
   /** 获取帖子 */
   "GET /post/entity/:postId": {
     response: GetPostResponse;
-    query?: GetPostListParam;
+    params: { postId: string };
   };
   /** 删除作品 */
   "DELETE /post/entity/:postId": {};

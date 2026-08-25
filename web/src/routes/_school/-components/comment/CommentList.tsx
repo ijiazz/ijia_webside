@@ -18,22 +18,18 @@ import {
 } from "./api.ts";
 import { CommentHeader } from "./CommentHeader.tsx";
 import { CommentFooter } from "./CommentFooter.tsx";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { LoadMoreIndicator } from "@/components/LoadMoreIndicator.tsx";
 import { useModal } from "@/components/Modal.ts";
 
 const { Text } = Typography;
 
-export type CommentListConfig = {
+export type CommentListProps = {
   createDisabled?: string | undefined;
-  commentTreeId?: string;
-};
-export type CommentListProps = CommentListConfig & {
-  /** 覆盖配置 */
-  overwrite?: () => Promise<CommentListConfig>;
+  commentTreeId: string;
 };
 export function CommentList(props: CommentListProps) {
-  const { commentTreeId, createDisabled } = useConfig(props);
+  const { commentTreeId, createDisabled } = props;
 
   const {
     commentData,
@@ -339,13 +335,4 @@ function useReload(config: {
     onLike,
     reloadItem,
   };
-}
-
-function useConfig(props: CommentListProps): CommentListConfig {
-  const { overwrite: configInput, commentTreeId, createDisabled } = props;
-  const { isLoading, data } = useSuspenseQuery({ queryKey: [], queryFn: configInput });
-  if (typeof configInput === "function") {
-    return isLoading ? { createDisabled: "加载中..." } : data;
-  }
-  return { commentTreeId, createDisabled, ...data };
 }

@@ -17,3 +17,10 @@ export function getPostListQueryOption(param: Omit<GetPostListParam, "cursor" | 
     queryFn: () => api["/post/list"].get({ query: param }),
   } satisfies QueryOptions;
 }
+
+export function getPostQueryOption(param: { postId: string }) {
+  return {
+    queryKey: [POST_QUERY_KEY_PREFIX, "/post/:postId", param],
+    queryFn: () => api["/post/entity/:postId"].get({ params: param }),
+  } satisfies QueryOptions;
+}

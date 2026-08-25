@@ -162,7 +162,8 @@ test("帖子作者可以看到所有人的删除按钮，其他人只能看到�
   expect(visitorList.items.map((c) => c.curr_user)).toEqual([null, null]);
 });
 describe("部分帖子状态下不能获取评论", () => {
-  test("不能获取正在审核的作品的评论", async function ({ api, publicDbPool }) {
+  test("正在审核的作品的评论，只有作者能看到", async function ({ api, publicDbPool }) {
+    const bob = await prepareUniqueUser("bob"); // 创建一个用户
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
 
@@ -170,9 +171,10 @@ describe("部分帖子状态下不能获取评论", () => {
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
-    await expect(action.getCommentList()).responseStatus(404);
+    await expect(action.getCommentList(undefined, bob.token), "Bob 不能看大审核中的评论").responseStatus(404);
   });
-  test("不能获取审核不通过的作品的评论", async function ({ api, publicDbPool }) {
+  test("取审核不通过的作品的评论，只有作者能看到", async function ({ api, publicDbPool }) {
+    const bob = await prepareUniqueUser("bob"); // 创建一个用户
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
 
@@ -181,25 +183,27 @@ describe("部分帖子状态下不能获取评论", () => {
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
-    await expect(action.getCommentList()).responseStatus(404);
+    await expect(action.getCommentList(undefined, bob.token), "Bob 不能看审核不通过的评论").responseStatus(404);
   });
 
-  test("不能获取已隐藏的作品的评论", async function ({ api, publicDbPool }) {
+  test("已隐藏的作品的评论，只有作者能看到", async function ({ api, publicDbPool }) {
+    const bob = await prepareUniqueUser("bob"); // 创建一个用户
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
     await updatePostConfigFormApi(api, postInfo.id, { is_hide: true }, alice.token); // 隐藏作品
 
     const authorGet = await action.getCommentList(undefined, alice.token);
     await expect(authorGet.items.length).toBe(1);
-    await expect(action.getCommentList()).responseStatus(404);
+    await expect(action.getCommentList(undefined, bob.token), "Bob 不能看已隐藏的评论").responseStatus(404);
   });
-  test("不能获取已删除的作品的评论", async function ({ api, publicDbPool }) {
+  test("已删除的作品的评论，任何人都看不到", async function ({ api, publicDbPool }) {
+    const bob = await prepareUniqueUser("bob"); // 创建一个用户
     const { action, alice, post: postInfo } = await prepareCommentPost(api);
     await action.createComment("1", { token: alice.token }); // 创建一个评论
     await deletePost(api, postInfo.id, alice.token);
 
-    await expect(action.getCommentList(undefined, alice.token)).responseStatus(404);
-    await expect(action.getCommentList()).responseStatus(404);
+    await expect(action.getCommentList(undefined, alice.token), "作者不能看已删除的评论").responseStatus(404);
+    await expect(action.getCommentList(undefined, bob.token), "Bob 不能看已删除的评论").responseStatus(404);
   });
 });
 

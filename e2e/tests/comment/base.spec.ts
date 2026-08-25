@@ -1,26 +1,17 @@
 import { test, expect, Page } from "@playwright/test";
-import { AccountInfo, initAlice, initBob, loginGetToken } from "@/utils/user.ts";
+import { initAlice, initBob, loginGetToken } from "@/utils/user.ts";
 import { createPost, createCommentUseApi, getPostCommentURL, getUserPostURL } from "@/utils/post.ts";
 
 import { afterTime } from "evlib";
 import { MODAL_ACTION_WAIT_TIME, setContextLogin } from "@/utils/browser.ts";
 import { closeCommentMenu, getCommentMoreBtn, getVisibleCommentMenu } from "@/utils/comment/locator.ts";
-const { beforeEach } = test;
 
-let alice: AccountInfo & { token: string };
-let postId: number;
-let commentTreeId: number;
-beforeEach(async function ({ context }) {
-  const aliceInfo = await initAlice();
-  const aliceToken = await loginGetToken(aliceInfo.email);
-  alice = { ...aliceInfo, token: aliceToken };
-  const { id, comment_tree_id } = await createPost({ content_text: "comment-test" }, aliceToken);
-  postId = id;
-  commentTreeId = comment_tree_id;
-  await setContextLogin(context, alice.token);
-});
+test("创建一条根评论，然后删除", async function ({ page, context }) {
+  const alice = await initAlice();
+  const aliceToken = await loginGetToken(alice.email);
+  const { id: postId } = await createPost({ content_text: "comment-test" }, aliceToken);
+  await setContextLogin(context, aliceToken);
 
-test("创建一条根评论，然后删除", async function ({ page }) {
   await page.goto(getUserPostURL(alice.id));
 
   await expect(getCommentBtn(page, postId), "帖子评论数初始为0").toHaveText("0");
@@ -45,8 +36,13 @@ test("创建一条根评论，然后删除", async function ({ page }) {
   await expect(getCommentBtn(page, postId), "帖子评论数减1").toHaveText("0");
 });
 
-test("创建回复评论", async function ({ page }) {
+test("创建回复评论", async function ({ page, context }) {
   test.setTimeout(30000);
+  const alice = await initAlice();
+  const aliceToken = await loginGetToken(alice.email);
+  const { id: postId } = await createPost({ content_text: "comment-test" }, aliceToken);
+  await setContextLogin(context, aliceToken);
+
   await page.goto(getPostCommentURL({ postId, userId: alice.id }));
   // 先创建1条根评论
   await page.getByRole("textbox").fill("r1");
@@ -76,39 +72,44 @@ test("创建回复评论", async function ({ page }) {
   await expect(page.locator(commentContentClassName).nth(5), "评论应出现在正确位置").toHaveText(/^1-1-2-r2/);
 });
 
-test("删除评论", async function ({ page }) {
+test("删除评论", async function ({ page, context }) {
   test.setTimeout(30000);
-  const r1 = await createCommentUseApi({ commentTreeId, text: "@1@", token: alice.token });
-  const r2 = await createCommentUseApi({ commentTreeId, text: "@2@", token: alice.token }); // delete
+  const alice = await initAlice();
+  const aliceToken = await loginGetToken(alice.email);
+  const { id: postId, comment_tree_id: commentTreeId } = await createPost({ content_text: "comment-test" }, aliceToken);
+  await setContextLogin(context, aliceToken);
 
-  const r1_1 = await createCommentUseApi({ commentTreeId, text: "@1-1@", replyCommentId: r1.id, token: alice.token }); // delete
-  const r1_2 = await createCommentUseApi({ commentTreeId, text: "@1-2@", replyCommentId: r1.id, token: alice.token });
-  const r2_1 = await createCommentUseApi({ commentTreeId, text: "@2-1@", replyCommentId: r2.id, token: alice.token });
+  const r1 = await createCommentUseApi({ commentTreeId, text: "@1@", token: aliceToken });
+  const r2 = await createCommentUseApi({ commentTreeId, text: "@2@", token: aliceToken }); // delete
+
+  const r1_1 = await createCommentUseApi({ commentTreeId, text: "@1-1@", replyCommentId: r1.id, token: aliceToken }); // delete
+  const r1_2 = await createCommentUseApi({ commentTreeId, text: "@1-2@", replyCommentId: r1.id, token: aliceToken });
+  const r2_1 = await createCommentUseApi({ commentTreeId, text: "@2-1@", replyCommentId: r2.id, token: aliceToken });
 
   const r1_1_1 = await createCommentUseApi({
     commentTreeId,
     text: "@1-1-1@",
     replyCommentId: r1_1.id,
-    token: alice.token,
+    token: aliceToken,
   });
   const r1_2_1 = await createCommentUseApi({
     commentTreeId,
     text: "@1-2-1@",
     replyCommentId: r1_2.id,
-    token: alice.token,
+    token: aliceToken,
   });
   const r2_1_1 = await createCommentUseApi({
     commentTreeId,
     text: "@2-1-1@",
     replyCommentId: r2_1.id,
-    token: alice.token,
+    token: aliceToken,
   }); // delete
 
   const r1_2_1_1 = await createCommentUseApi({
     commentTreeId,
     text: "@1-2-1-1@",
     replyCommentId: r1_2_1.id,
-    token: alice.token,
+    token: aliceToken,
   }); // delete
 
   await page.goto(getPostCommentURL({ postId, userId: alice.id }));
@@ -147,10 +148,15 @@ test("删除评论", async function ({ page }) {
 });
 
 test("帖子作者可以删除其他人评论，其他人只能删除自己的评论", async function ({ page, context }) {
+  const alice = await initAlice();
+  const aliceToken = await loginGetToken(alice.email);
+  const { id: postId, comment_tree_id: commentTreeId } = await createPost({ content_text: "comment-test" }, aliceToken);
+  await setContextLogin(context, aliceToken);
+
   const bobInfo = await initBob();
   const bobToken = await loginGetToken(bobInfo.email);
   const [aliceComment, bobComment] = await Promise.all([
-    createCommentUseApi({ commentTreeId, text: "@1@", token: alice.token }),
+    createCommentUseApi({ commentTreeId, text: "@1@", token: aliceToken }),
     createCommentUseApi({ commentTreeId, text: "@2@", token: bobToken }),
   ]);
 
@@ -191,6 +197,40 @@ test("帖子作者可以删除其他人评论，其他人只能删除自己的�
     ).not.toBeDisabled();
     await closeCommentMenu(page);
   }
+});
+
+test("切换不同帖子的评论区时显示对应评论", async function ({ page, context }) {
+  const alice = await initAlice();
+  const aliceToken = await loginGetToken(alice.email);
+  const [firstPost, secondPost] = await Promise.all([
+    createPost({ content_text: "comment-switch-first" }, aliceToken),
+    createPost({ content_text: "comment-switch-second" }, aliceToken),
+  ]);
+  const [firstComment, secondComment] = await Promise.all([
+    createCommentUseApi({ commentTreeId: firstPost.comment_tree_id, text: "first-post-comment", token: aliceToken }),
+    createCommentUseApi({ commentTreeId: secondPost.comment_tree_id, text: "second-post-comment", token: aliceToken }),
+  ]);
+  await setContextLogin(context, aliceToken);
+
+  await page.goto(getUserPostURL(alice.id));
+  await expect(page.getByTestId(`post-${firstPost.id}`)).toBeVisible();
+  await expect(page.getByTestId(`post-${secondPost.id}`)).toBeVisible();
+
+  await getCommentBtn(page, firstPost.id).click();
+  const commentDialog = page.getByRole("dialog", { name: "评论" });
+  await expect(commentDialog.getByTestId(`comment-${firstComment.id}`).locator(commentContentClassName)).toHaveText(
+    /^first-post-comment/,
+  );
+  await expect(commentDialog.locator(commentContentClassName)).toHaveCount(1);
+
+  await commentDialog.getByRole("button", { name: "关闭" }).click();
+  await expect(commentDialog).not.toBeVisible();
+
+  await getCommentBtn(page, secondPost.id).click();
+  await expect(commentDialog.getByTestId(`comment-${secondComment.id}`).locator(commentContentClassName)).toHaveText(
+    /^second-post-comment/,
+  );
+  await expect(commentDialog.locator(commentContentClassName)).toHaveCount(1);
 });
 
 const commentItemClassName = ".e2e-comment-item";
