@@ -1,7 +1,11 @@
 import { HoContext, HoResponse } from "@asla/hofetch";
 import { ApiErrorEvent, apiEvent, IGNORE_ERROR_MSG, IGNORE_UNAUTHORIZED_REDIRECT } from "../event.ts";
 
+let isPending: Promise<void> | null = null;
+
 export async function errorHandler(ctx: HoContext, next: () => Promise<HoResponse>) {
+  if (isPending) return isPending;
+
   if (ctx.allowFailed === true || ctx[IGNORE_ERROR_MSG]) return next();
   const res = await next();
   if (res.ok) return res;
@@ -18,8 +22,10 @@ export async function errorHandler(ctx: HoContext, next: () => Promise<HoRespons
   if (isUnhandled) {
     const { url: redirect } = apiErrorEvent.getRedirect();
     if (redirect) {
-      window.location.assign(redirect);
+      window.location.replace(redirect);
       console.info("全局 http 拦截器重定向到登录页：", redirect, `原因： ${ctx.url}`);
+      isPending = new Promise(() => {});
+      return isPending;
     }
   }
 
