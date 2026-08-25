@@ -3,8 +3,8 @@ import { ApiErrorEvent, apiEvent, IGNORE_ERROR_MSG, IGNORE_UNAUTHORIZED_REDIRECT
 
 let isPending: Promise<void> | null = null;
 
-export async function errorHandler(ctx: HoContext, next: () => Promise<HoResponse>) {
-  if (isPending) return isPending;
+export async function errorHandler(ctx: HoContext, next: () => Promise<HoResponse>): Promise<HoResponse> {
+  if (isPending) await isPending;
 
   if (ctx.allowFailed === true || ctx[IGNORE_ERROR_MSG]) return next();
   const res = await next();
@@ -25,7 +25,7 @@ export async function errorHandler(ctx: HoContext, next: () => Promise<HoRespons
       window.location.replace(redirect);
       console.info("全局 http 拦截器重定向到登录页：", redirect, `原因： ${ctx.url}`);
       isPending = new Promise(() => {});
-      return isPending;
+      await isPending;
     }
   }
 

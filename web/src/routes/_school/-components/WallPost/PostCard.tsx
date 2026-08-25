@@ -93,15 +93,13 @@ function PostFooter(props: {
         alignItems: "center",
       }}
     >
-      <Tooltip title="详情页开发中，敬请期待">
-        <Button
-          type="text"
-          aria-label="打开详情页"
-          icon={<ExportOutlined />}
-          disabled
-          style={{ fontSize: 16, width: "100%" }}
-        />
-      </Tooltip>
+      <Button
+        type="text"
+        aria-label="打开详情页"
+        icon={<ExportOutlined />}
+        disabled
+        style={{ fontSize: 16, width: "100%" }}
+      />
       <Button
         aria-label="打开评论"
         style={{ fontSize: 16, width: "100%" }}
