@@ -17,11 +17,15 @@
     "vitest": "^4.1.10"
   },
   "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^12.1.0",
+      "onFail": "warn"
+    },
     "runtime": {
       "name": "node",
-      "version": "^26.0.0",
-      "onFail": "error"
+      "version": "^26.8.1",
+      "onFail": "download"
     }
-  },
-  "packageManager": "pnpm@11.1.2"
+  }
 }

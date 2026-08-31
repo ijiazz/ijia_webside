@@ -10,7 +10,7 @@ runs:
       with:
         node-version: 26
         cache: pnpm
-    - run: pnpm install --frozen-lockfile
+    - run: pnpm ci
       shell: bash
     - run: pnpm run init-api-types
       shell: bash
